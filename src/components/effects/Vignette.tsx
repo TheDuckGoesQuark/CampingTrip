@@ -9,7 +9,7 @@ export default function Vignette() {
         pointerEvents: 'none',
         zIndex: 10,
         background:
-          'radial-gradient(ellipse at center, transparent 55%, rgba(5,2,12,0.5) 100%)',
+          'radial-gradient(ellipse at center, transparent 65%, rgba(5,2,12,0.35) 100%)',
       }}
     />
   );

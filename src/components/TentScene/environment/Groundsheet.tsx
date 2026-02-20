@@ -13,8 +13,8 @@ export default function Groundsheet() {
     >
       <planeGeometry args={[5, 5.5]} />
       <meshStandardMaterial
-        color="#4a5d3a"
-        roughness={0.95}
+        color="#6a7d5a"
+        roughness={0.92}
         metalness={0}
       />
     </mesh>

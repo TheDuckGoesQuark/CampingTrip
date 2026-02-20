@@ -12,7 +12,7 @@ export default function Lighting() {
   // Smoothly animate lantern intensity rather than snapping
   useFrame(() => {
     if (!lanternLightRef.current) return;
-    const target = lanternOn ? 4.0 : 0;
+    const target = lanternOn ? 5.0 : 0;
     lanternLightRef.current.intensity = THREE.MathUtils.lerp(
       lanternLightRef.current.intensity,
       target,
@@ -22,24 +22,34 @@ export default function Lighting() {
 
   return (
     <>
-      {/* Cold ambient — enough to see shapes; brighter when lantern is on */}
+      {/* Warm ambient — base visibility so nothing is pitch black */}
       <ambientLight
-        intensity={lanternOn ? 0.35 : 0.08}
-        color="#2a1f3e"
+        intensity={lanternOn ? 0.6 : 0.12}
+        color="#8a6a40"
       />
 
-      {/* Warm lantern — casts shadows, falls off with distance */}
+      {/* Warm lantern — main light source, hangs from ridge */}
       <pointLight
         ref={lanternLightRef}
         position={[0, 2.2, 0.5]}
         color="#ffb347"
-        distance={8}
-        decay={1.5}
+        distance={12}
+        decay={1.2}
         castShadow
         shadow-mapSize-width={512}
         shadow-mapSize-height={512}
         shadow-camera-near={0.1}
-        shadow-camera-far={8}
+        shadow-camera-far={10}
+      />
+
+      {/* Floor fill — subtle warm bounce light so props on the floor are visible */}
+      <pointLight
+        position={[0, 0.3, 1.0]}
+        color="#ffcc88"
+        intensity={lanternOn ? 1.0 : 0}
+        distance={5}
+        decay={1.5}
+        castShadow={false}
       />
 
       {/* Cold outdoor light — activates when door is open */}
