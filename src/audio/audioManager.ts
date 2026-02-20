@@ -6,12 +6,7 @@ import { useSessionStore } from '../store/sessionStore';
 const sounds = {
   rainAmbient: null as Howl | null,
   rainHeavy: null as Howl | null,
-  lanternOn: null as Howl | null,
-  lanternOff: null as Howl | null,
   doorRustle: null as Howl | null,
-  catPurr: null as Howl | null,
-  catMeow: null as Howl | null,
-  catScratch: null as Howl | null,
   guitarStrum: null as Howl | null,
 };
 
@@ -51,18 +46,6 @@ export function initAudioManager() {
       }
     }
   );
-
-  // Lantern toggle → click sounds
-  useSceneStore.subscribe(
-    (s) => s.lanternOn,
-    (on) => {
-      if (on) {
-        getOrCreate('lanternOn', '/audio/lantern-click.mp3').play();
-      } else {
-        getOrCreate('lanternOff', '/audio/lantern-click.mp3').play();
-      }
-    }
-  );
 }
 
 // One-shot helpers called by components
@@ -71,12 +54,5 @@ export const audio = {
     const rain = getOrCreate('rainAmbient', '/audio/rain-ambient.mp3', true);
     if (!rain.playing()) rain.play();
   },
-  playCatMeow: () => getOrCreate('catMeow', '/audio/cat-meow.mp3').play(),
-  playCatPurr: () => {
-    const purr = getOrCreate('catPurr', '/audio/cat-purr.mp3', true);
-    if (!purr.playing()) purr.play();
-  },
-  stopCatPurr: () => sounds.catPurr?.stop(),
-  playCatScratch: () => getOrCreate('catScratch', '/audio/cat-scratch.mp3').play(),
   playGuitarStrum: () => getOrCreate('guitarStrum', '/audio/guitar-strum.mp3').play(),
 };

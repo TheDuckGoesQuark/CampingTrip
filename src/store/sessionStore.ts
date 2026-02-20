@@ -8,6 +8,7 @@ interface SessionState {
   setSoundEnabled: (v: boolean) => void;
   setEffectsEnabled: (v: boolean) => void;
   completeWelcome: () => void;
+  resetWelcome: () => void;
 }
 
 export const useSessionStore = create<SessionState>()(
@@ -19,6 +20,7 @@ export const useSessionStore = create<SessionState>()(
       setSoundEnabled: (v) => set({ soundEnabled: v }),
       setEffectsEnabled: (v) => set({ effectsEnabled: v }),
       completeWelcome: () => set({ hasCompletedWelcome: true }),
+      resetWelcome: () => set({ hasCompletedWelcome: false }),
     }),
     { name: 'campingtrip-session' }
   )

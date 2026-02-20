@@ -1,9 +1,13 @@
-import { Suspense, useEffect } from 'react';
+import { Suspense, useEffect, useState, useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { EffectComposer, Bloom, Vignette as VignetteEffect } from '@react-three/postprocessing';
 import SceneContent from './SceneContent';
-import LoadingScreen from '../overlays/LoadingScreen';
+import DebugControls from './DebugControls';
+import InteractionOverlay from './InteractionOverlay';
+import LaptopScreenOverlay from '../overlays/LaptopScreenOverlay';
 import ProjectsOverlay from '../overlays/ProjectsOverlay';
+import TimeOfDayArc from '../overlays/TimeOfDayArc';
+import SettingsMenu from '../overlays/SettingsMenu';
+import Vignette from '../effects/Vignette';
 import { useSceneStore } from '../../store/sceneStore';
 
 interface TentSceneProps {
@@ -11,11 +15,39 @@ interface TentSceneProps {
 }
 
 export default function TentScene({ visible }: TentSceneProps) {
-  // Escape key resets camera focus to default
+  const [debug, setDebug] = useState(false);
+  const [fadeIn, setFadeIn] = useState(true);
+  const overlayRef = useRef<HTMLDivElement>(null);
+
+  // Simple fade-in from black when scene becomes visible
+  useEffect(() => {
+    if (visible && fadeIn) {
+      // Mark wakeUpDone immediately so CameraController works
+      useSceneStore.getState().setWakeUpDone();
+      // Fade out the black overlay
+      const timer = setTimeout(() => {
+        if (overlayRef.current) {
+          overlayRef.current.style.transition = 'opacity 2.5s ease-out';
+          overlayRef.current.style.opacity = '0';
+        }
+        setFadeIn(false);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [visible, fadeIn]);
+
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        useSceneStore.getState().setFocusTarget('default');
+        const store = useSceneStore.getState();
+        if (store.laptopFocused) {
+          store.setLaptopFocused(false);
+        } else {
+          store.setFocusTarget('default');
+        }
+      }
+      if (e.key === 'd' || e.key === 'D') {
+        setDebug((prev) => !prev);
       }
     };
     window.addEventListener('keydown', onKeyDown);
@@ -34,31 +66,22 @@ export default function TentScene({ visible }: TentSceneProps) {
     >
       <Canvas
         shadows
-        camera={{ position: [0, 0.8, 2.5], fov: 65, near: 0.1, far: 100 }}
-        gl={{ antialias: true, alpha: false, toneMapping: 3 }}
+        camera={{ position: [0, 2.8, 3.5], fov: 69, near: 0.1, far: 200 }}
+        gl={{ antialias: true, alpha: false }}
         style={{ width: '100%', height: '100dvh', display: 'block' }}
+        aria-label="Interactive 3D tent scene — use Tab to navigate objects, Enter to interact"
+        role="application"
       >
         <color attach="background" args={['#0a0608']} />
         <Suspense fallback={null}>
-          <SceneContent />
-          <EffectComposer>
-            <Bloom
-              intensity={0.4}
-              luminanceThreshold={0.6}
-              luminanceSmoothing={0.9}
-              radius={0.8}
-            />
-            <VignetteEffect
-              darkness={0.5}
-              offset={0.3}
-            />
-          </EffectComposer>
+          <SceneContent debug={debug} />
+          {debug && <DebugControls />}
         </Suspense>
       </Canvas>
 
-      {/* Black overlay for the wake-up blink sequence */}
+      {/* Fade-in overlay — starts black, fades to transparent */}
       <div
-        id="wake-up-overlay"
+        ref={overlayRef}
         style={{
           position: 'fixed',
           inset: 0,
@@ -69,11 +92,28 @@ export default function TentScene({ visible }: TentSceneProps) {
         }}
       />
 
+      {debug && (
+        <div style={{
+          position: 'fixed', top: 12, left: 12, zIndex: 50,
+          background: 'rgba(0,0,0,0.8)', color: '#0f0', padding: '8px 12px',
+          fontFamily: 'monospace', fontSize: 12, borderRadius: 4,
+        }}>
+          DEBUG MODE — orbit with mouse, press D to toggle
+        </div>
+      )}
+
+      {/* Hidden buttons for keyboard / screen-reader access to 3D objects */}
+      <InteractionOverlay />
+
+      {/* Fullscreen laptop "app" overlay */}
+      <LaptopScreenOverlay />
+
       <ProjectsOverlay />
 
-      <Suspense fallback={null}>
-        <LoadingScreen />
-      </Suspense>
+      {/* Ambient UI overlays */}
+      <Vignette />
+      <TimeOfDayArc />
+      <SettingsMenu />
     </div>
   );
 }

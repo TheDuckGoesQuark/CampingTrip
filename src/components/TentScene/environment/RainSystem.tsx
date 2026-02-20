@@ -1,15 +1,16 @@
 import { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { useSceneStore } from '../../../store/sceneStore';
+import { useSessionStore } from '../../../store/sessionStore';
+import { useTimeStore, getNightFactor } from '../../../store/timeStore';
 
 const RAIN_COUNT = 600;
 const WIND_X = -0.8; // slight wind drift
 
 export default function RainSystem() {
-  const doorState = useSceneStore((s) => s.tentDoorState);
-  const active = doorState === 'open' || doorState === 'opening';
-
+  const effectsEnabled = useSessionStore((s) => s.effectsEnabled);
+  const progress = useTimeStore((s) => s.progress);
+  const nightFactor = getNightFactor(progress);
   const pointsRef = useRef<THREE.Points>(null);
 
   const { positions, velocities } = useMemo(() => {
@@ -25,7 +26,15 @@ export default function RainSystem() {
   }, []);
 
   useFrame((_, delta) => {
-    if (!pointsRef.current || !active) return;
+    if (!pointsRef.current || !effectsEnabled) return;
+
+    // Smoothly fade particle opacity with night factor
+    const mat = pointsRef.current.material as THREE.PointsMaterial;
+    mat.opacity = 0.5 * nightFactor;
+
+    // Skip animation when fully daytime
+    if (nightFactor < 0.01) return;
+
     const pos = pointsRef.current.geometry.attributes.position as THREE.BufferAttribute;
     const arr = pos.array as Float32Array;
 
@@ -41,7 +50,8 @@ export default function RainSystem() {
     pos.needsUpdate = true;
   });
 
-  if (!active) return null;
+  // Don't render during full daytime or when effects disabled
+  if (!effectsEnabled || nightFactor < 0.01) return null;
 
   return (
     <points ref={pointsRef}>

@@ -1,36 +1,36 @@
 import { create } from 'zustand';
-import type { TentDoorState, CatLocation, LaptopState, SceneName, FocusTarget } from '../types/scene';
+import type { TentDoorState, LaptopState, SceneName, FocusTarget } from '../types/scene';
 
 interface SceneState {
   wakeUpDone: boolean;
   tentDoorState: TentDoorState;
-  catLocation: CatLocation;
   lanternOn: boolean;
   laptopState: LaptopState;
+  laptopFocused: boolean;
   currentScene: SceneName;
   focusTarget: FocusTarget;
   setWakeUpDone: () => void;
   setTentDoorState: (s: TentDoorState) => void;
-  setCatLocation: (l: CatLocation) => void;
   toggleLantern: () => void;
   setLaptopState: (s: LaptopState) => void;
+  setLaptopFocused: (f: boolean) => void;
   setCurrentScene: (s: SceneName) => void;
   setFocusTarget: (t: FocusTarget) => void;
 }
 
 export const useSceneStore = create<SceneState>()((set) => ({
   wakeUpDone: false,
-  tentDoorState: 'closed',
-  catLocation: 'sleeping',
+  tentDoorState: 'open',
   lanternOn: true,
   laptopState: 'in-bag',
+  laptopFocused: false,
   currentScene: 'tent',
   focusTarget: 'default',
   setWakeUpDone: () => set({ wakeUpDone: true }),
   setTentDoorState: (s) => set({ tentDoorState: s }),
-  setCatLocation: (l) => set({ catLocation: l }),
   toggleLantern: () => set((state) => ({ lanternOn: !state.lanternOn })),
   setLaptopState: (s) => set({ laptopState: s }),
+  setLaptopFocused: (f) => set({ laptopFocused: f }),
   setCurrentScene: (s) => set({ currentScene: s }),
   setFocusTarget: (t) => set({ focusTarget: t }),
 }));
