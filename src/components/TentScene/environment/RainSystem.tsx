@@ -3,7 +3,8 @@ import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useSceneStore } from '../../../store/sceneStore';
 
-const RAIN_COUNT = 800;
+const RAIN_COUNT = 600;
+const WIND_X = -0.8; // slight wind drift
 
 export default function RainSystem() {
   const doorState = useSceneStore((s) => s.tentDoorState);
@@ -11,15 +12,16 @@ export default function RainSystem() {
 
   const pointsRef = useRef<THREE.Points>(null);
 
-  // Generate random raindrop positions
-  const { positions } = useMemo(() => {
+  const { positions, velocities } = useMemo(() => {
     const pos = new Float32Array(RAIN_COUNT * 3);
+    const vel = new Float32Array(RAIN_COUNT);
     for (let i = 0; i < RAIN_COUNT; i++) {
-      pos[i * 3]     = (Math.random() - 0.5) * 14;  // x
-      pos[i * 3 + 1] = Math.random() * 8;            // y (height)
-      pos[i * 3 + 2] = -4 - Math.random() * 12;     // z (outside the tent)
+      pos[i * 3]     = (Math.random() - 0.5) * 16;
+      pos[i * 3 + 1] = Math.random() * 10;
+      pos[i * 3 + 2] = -4 - Math.random() * 14;
+      vel[i] = 5 + Math.random() * 3; // vary fall speed per drop
     }
-    return { positions: pos };
+    return { positions: pos, velocities: vel };
   }, []);
 
   useFrame((_, delta) => {
@@ -28,9 +30,12 @@ export default function RainSystem() {
     const arr = pos.array as Float32Array;
 
     for (let i = 0; i < RAIN_COUNT; i++) {
-      arr[i * 3 + 1] -= delta * 6; // fall speed
-      if (arr[i * 3 + 1] < 0) {
-        arr[i * 3 + 1] = 8; // reset to top
+      arr[i * 3]     += WIND_X * delta; // wind drift
+      arr[i * 3 + 1] -= velocities[i] * delta;
+      if (arr[i * 3 + 1] < -0.5) {
+        arr[i * 3]     = (Math.random() - 0.5) * 16;
+        arr[i * 3 + 1] = 8 + Math.random() * 2;
+        arr[i * 3 + 2] = -4 - Math.random() * 14;
       }
     }
     pos.needsUpdate = true;
@@ -48,9 +53,9 @@ export default function RainSystem() {
       </bufferGeometry>
       <pointsMaterial
         color="#8ab4cc"
-        size={0.03}
+        size={0.04}
         transparent
-        opacity={0.6}
+        opacity={0.5}
         sizeAttenuation
       />
     </points>

@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
 import * as THREE from 'three';
 
-const CANVAS_COLOR = '#c4a96a';
+const CANVAS_COLOR = '#c9ad6f';
 const FLOOR_COLOR  = '#5c4a1e';
-const POLE_COLOR   = '#8b6040';
+const POLE_COLOR   = '#7a5538';
 
 // A-frame tent dimensions
 const HALF_W     = 3;       // half floor width (floor = 6 wide)
