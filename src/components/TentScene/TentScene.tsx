@@ -1,15 +1,26 @@
-import { Suspense } from 'react';
+import { Suspense, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
 import SceneContent from './SceneContent';
 import LoadingScreen from '../overlays/LoadingScreen';
 import ProjectsOverlay from '../overlays/ProjectsOverlay';
 import Vignette from '../effects/Vignette';
+import { useSceneStore } from '../../store/sceneStore';
 
 interface TentSceneProps {
   visible: boolean;
 }
 
 export default function TentScene({ visible }: TentSceneProps) {
+  // Escape key resets camera focus to default
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        useSceneStore.getState().setFocusTarget('default');
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
   return (
     <div
       style={{

@@ -10,6 +10,7 @@ import Cat from './objects/Cat/Cat';
 import Laptop from './objects/Laptop/Laptop';
 import Guitar from './objects/Guitar/Guitar';
 import SleepingBag from './objects/SleepingBag';
+import Groundsheet from './environment/Groundsheet';
 
 export default function SceneContent() {
   return (
@@ -18,6 +19,7 @@ export default function SceneContent() {
       <WakeUpController />
       <Lighting />
       <TentInterior />
+      <Groundsheet />
       <OutdoorScene />
       <RainSystem />
       <TentDoor />

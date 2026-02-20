@@ -3,3 +3,4 @@ export type CatLocation = 'sleeping' | 'awake-inside' | 'outside' | 'scratching'
 export type LaptopState = 'in-bag' | 'pulled-out' | 'open' | 'closing';
 export type ActiveOverlay = 'none' | 'laptop' | 'guitar';
 export type SceneName = 'tent' | 'forest';
+export type FocusTarget = 'default' | 'lantern' | 'laptop' | 'door' | 'guitar';

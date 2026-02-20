@@ -2,14 +2,15 @@ import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useSceneStore } from '../../../../store/sceneStore';
+import { useInteractive } from '../../../../hooks/useInteractive';
 
 export default function Lantern() {
   const groupRef  = useRef<THREE.Group>(null);
   const glowRef   = useRef<THREE.Mesh>(null);
   const lanternOn = useSceneStore((s) => s.lanternOn);
   const toggle    = useSceneStore((s) => s.toggleLantern);
+  const { hovered, handlers } = useInteractive('lantern');
 
-  // Subtle sway + glow pulse — all in useFrame, zero state
   const t = useRef(0);
   useFrame((_, delta) => {
     t.current += delta;
@@ -29,11 +30,16 @@ export default function Lantern() {
       ref={groupRef}
       position={[0, 2.2, 0.5]}
       onClick={toggle}
+      {...handlers}
     >
       {/* Lantern body */}
       <mesh castShadow>
         <boxGeometry args={[0.18, 0.28, 0.18]} />
-        <meshStandardMaterial color="#5c3d1a" roughness={0.6} metalness={0.4} />
+        <meshStandardMaterial
+          color={hovered ? '#7a5428' : '#5c3d1a'}
+          roughness={0.6}
+          metalness={0.4}
+        />
       </mesh>
 
       {/* Glass pane (glow) */}

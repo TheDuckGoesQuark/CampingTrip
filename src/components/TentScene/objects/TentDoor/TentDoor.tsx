@@ -2,9 +2,8 @@ import { useRef } from 'react';
 import * as THREE from 'three';
 import gsap from 'gsap';
 import { useSceneStore } from '../../../../store/sceneStore';
+import { useInteractive } from '../../../../hooks/useInteractive';
 
-// The door is a child of a pivot group whose origin sits at the top of the door frame.
-// Rotating the pivot's X axis folds the door upward toward the tent ceiling.
 const DOOR_W = 1.6;
 const DOOR_H = 2.2;
 
@@ -12,6 +11,7 @@ export default function TentDoor() {
   const pivotRef = useRef<THREE.Group>(null);
   const { tentDoorState, setTentDoorState } = useSceneStore();
   const isIdle = tentDoorState === 'closed' || tentDoorState === 'open';
+  const { hovered, handlers } = useInteractive('tent-door');
 
   function handleClick() {
     if (!pivotRef.current || !isIdle) return;
@@ -36,31 +36,21 @@ export default function TentDoor() {
   }
 
   return (
-    // Pivot positioned at the top edge of the door frame
-    <group
-      position={[0, DOOR_H, -2.9]}
-      ref={pivotRef}
-    >
-      {/* Door mesh hangs down from the pivot */}
+    <group position={[0, DOOR_H, -2.9]} ref={pivotRef}>
       <mesh
         position={[0, -DOOR_H / 2, 0]}
         onClick={handleClick}
+        {...handlers}
         castShadow
         receiveShadow
       >
         <planeGeometry args={[DOOR_W, DOOR_H]} />
         <meshStandardMaterial
-          color="#c4a96a"
+          color={hovered ? '#d4b87a' : '#c4a96a'}
           roughness={0.9}
           side={THREE.DoubleSide}
         />
       </mesh>
-
-      {/* Subtle click hint — thin outline */}
-      <lineSegments position={[0, -DOOR_H / 2, 0.01]}>
-        <edgesGeometry args={[new THREE.PlaneGeometry(DOOR_W, DOOR_H)]} />
-        <lineBasicMaterial color="#8b6040" transparent opacity={0.3} />
-      </lineSegments>
     </group>
   );
 }
