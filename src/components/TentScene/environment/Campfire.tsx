@@ -2,16 +2,17 @@ import { useRef, useEffect } from 'react';
 import { useGLTF } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { asset } from '../../../utils/assetPath';
 
 // Credit: "Stylized Campfire" by Natalia Campos on Sketchfab (CC-BY)
 // https://sketchfab.com/3d-models/stylized-campfire-3b507b1eb4c142218a4b3baa043e3ed4
 
 const SCALE = 60.0;
 
-useGLTF.preload('/models/stylized_campfire.glb');
+useGLTF.preload(asset('models/stylized_campfire.glb'));
 
 export default function Campfire() {
-  const { scene } = useGLTF('/models/stylized_campfire.glb');
+  const { scene } = useGLTF(asset('models/stylized_campfire.glb'));
   const fireLight = useRef<THREE.PointLight>(null);
   const t = useRef(0);
 

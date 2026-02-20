@@ -6,6 +6,7 @@ import { clone as skeletonClone } from 'three/examples/jsm/utils/SkeletonUtils.j
 import { useInteractionStore } from '../../../store/interactionStore';
 import SceneLabel from '../SceneLabel';
 import { playCatMeow } from '../../../audio/soundEffects';
+import { asset } from '../../../utils/assetPath';
 
 // Credit: "Cat Walk" animation (CC-BY)
 // Cat strolls past the tent outside, looping back and forth
@@ -18,10 +19,10 @@ const WALK_Z = -4.15;
 const WALK_Y = 0.15;
 const PAUSE_DURATION = 6;
 
-useGLTF.preload('/models/cat-walk.glb');
+useGLTF.preload(asset('models/cat-walk.glb'));
 
 export default function WalkingCat() {
-  const { scene, animations } = useGLTF('/models/cat-walk.glb');
+  const { scene, animations } = useGLTF(asset('models/cat-walk.glb'));
   const groupRef = useRef<THREE.Group>(null);
   const mixerRef = useRef<THREE.AnimationMixer | null>(null);
 

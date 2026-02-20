@@ -2,14 +2,15 @@ import { useEffect, useRef } from 'react';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { useInteractionStore } from '../../../store/interactionStore';
+import { asset } from '../../../utils/assetPath';
 
 // Credit: "Akai MPK Mini MIDI Controller" on Sketchfab (CC-BY)
 // https://sketchfab.com/3d-models/akai-mpk-mini-midi-controller-89eae01d0547430bb8e10110eaadaa81
 
-useGLTF.preload('/models/akai_mpk_mini_midi_controller.glb');
+useGLTF.preload(asset('models/akai_mpk_mini_midi_controller.glb'));
 
 export default function MidiController() {
-  const { scene } = useGLTF('/models/akai_mpk_mini_midi_controller.glb');
+  const { scene } = useGLTF(asset('models/akai_mpk_mini_midi_controller.glb'));
   const lightMeshes = useRef<
     { mat: THREE.MeshStandardMaterial; color: THREE.Color; intensity: number }[]
   >([]);

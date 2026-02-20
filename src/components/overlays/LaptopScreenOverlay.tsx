@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSceneStore } from '../../store/sceneStore';
+import { asset } from '../../utils/assetPath';
 
 /**
  * Full-viewport overlay that appears when the laptop screen is "focused".
@@ -48,7 +49,7 @@ export default function LaptopScreenOverlay() {
     >
       {/* Logo */}
       <img
-        src="/images/logo.png"
+        src={asset('images/logo.png')}
         alt="App logo"
         style={{
           width: 96,

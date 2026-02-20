@@ -1,13 +1,14 @@
 import { useRef, useEffect } from 'react';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
+import { asset } from '../../../utils/assetPath';
 
 const TENT_SCALE = 4;
 
-useGLTF.preload('/models/tent.glb');
+useGLTF.preload(asset('models/tent.glb'));
 
 export default function TentInterior() {
-  const { scene } = useGLTF('/models/tent.glb');
+  const { scene } = useGLTF(asset('models/tent.glb'));
   const groupRef = useRef<THREE.Group>(null);
 
   useEffect(() => {

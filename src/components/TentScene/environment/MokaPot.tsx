@@ -1,14 +1,15 @@
 import { useEffect } from 'react';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
+import { asset } from '../../../utils/assetPath';
 
 // Credit: "Moka Pot" on Sketchfab (CC-BY)
 // https://sketchfab.com/3d-models/moka-pot-2ca52d750d95471a953fb2c9eb577da6
 
-useGLTF.preload('/models/moka_pot.glb');
+useGLTF.preload(asset('models/moka_pot.glb'));
 
 export default function MokaPot() {
-  const { scene } = useGLTF('/models/moka_pot.glb');
+  const { scene } = useGLTF(asset('models/moka_pot.glb'));
 
   useEffect(() => {
     scene.traverse((child) => {
