@@ -1,0 +1,27 @@
+:root {
+  /* Colours */
+  --color-bg:          #0a0612;
+  --color-text:        #e8d5b0;
+  --color-text-dim:    #9e8a6a;
+  --color-lantern:     #ffb347;
+  --color-cold:        #4a7fa5;
+  --color-overlay-bg:  rgba(10, 6, 18, 0.92);
+
+  /* Typography */
+  --font-body:    'Courier New', Courier, monospace;
+  --font-display: Georgia, serif;
+  --font-size-sm: 0.75rem;
+  --font-size-md: 0.9rem;
+  --font-size-lg: 1.1rem;
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 32px;
+
+  /* Transitions */
+  --transition-fast:   150ms ease;
+  --transition-medium: 350ms ease;
+  --transition-slow:   700ms ease;
+}
