@@ -24,28 +24,30 @@ export function initAudioManager() {
   initialised = true;
 
   // Mirror master mute to Howler global
-  useSessionStore.subscribe(
-    (s) => s.soundEnabled,
-    (enabled) => {
-      Howler.mute(!enabled);
+  let prevSoundEnabled = useSessionStore.getState().soundEnabled;
+  useSessionStore.subscribe((s) => {
+    if (s.soundEnabled !== prevSoundEnabled) {
+      prevSoundEnabled = s.soundEnabled;
+      Howler.mute(!s.soundEnabled);
     }
-  );
+  });
 
   // Door state → rain cross-fade + door rustle
-  useSceneStore.subscribe(
-    (s) => s.tentDoorState,
-    (state) => {
+  let prevDoorState = useSceneStore.getState().tentDoorState;
+  useSceneStore.subscribe((s) => {
+    if (s.tentDoorState !== prevDoorState) {
+      prevDoorState = s.tentDoorState;
       const rain = getOrCreate('rainAmbient', '/audio/rain-ambient.mp3', true);
-      if (state === 'opening') {
+      if (s.tentDoorState === 'opening') {
         getOrCreate('doorRustle', '/audio/tent-door-rustle.mp3').play();
         if (!rain.playing()) rain.play();
         rain.fade(rain.volume(), 0.85, 800);
       }
-      if (state === 'closed') {
+      if (s.tentDoorState === 'closed') {
         rain.fade(rain.volume(), 0.3, 600);
       }
     }
-  );
+  });
 }
 
 // One-shot helpers called by components
