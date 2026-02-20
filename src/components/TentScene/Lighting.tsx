@@ -9,10 +9,9 @@ export default function Lighting() {
   const doorState   = useSceneStore((s) => s.tentDoorState);
   const doorOpen    = doorState === 'open' || doorState === 'opening';
 
-  // Smoothly animate lantern intensity rather than snapping
   useFrame(() => {
     if (!lanternLightRef.current) return;
-    const target = lanternOn ? 5.0 : 0;
+    const target = lanternOn ? 4.0 : 0;
     lanternLightRef.current.intensity = THREE.MathUtils.lerp(
       lanternLightRef.current.intensity,
       target,
@@ -22,44 +21,53 @@ export default function Lighting() {
 
   return (
     <>
-      {/* Warm ambient — base visibility so nothing is pitch black */}
+      {/* Scene fog — adds atmospheric depth */}
+      <fog attach="fog" args={['#1a0f0a', 3, 18]} />
+
+      {/* Warm ambient — base so nothing is pitch black */}
       <ambientLight
-        intensity={lanternOn ? 0.6 : 0.12}
-        color="#8a6a40"
+        intensity={lanternOn ? 0.5 : 0.1}
+        color="#b08050"
       />
 
-      {/* Warm lantern — main light source, hangs from ridge */}
+      {/* Hemisphere light — warm from above, cool from below */}
+      <hemisphereLight
+        args={['#ffcc88', '#223344', 0.3]}
+      />
+
+      {/* Main lantern light — warm point light */}
       <pointLight
         ref={lanternLightRef}
         position={[0, 2.2, 0.5]}
         color="#ffb347"
-        distance={12}
-        decay={1.2}
+        intensity={4.0}
+        distance={14}
+        decay={1.0}
         castShadow
-        shadow-mapSize-width={512}
-        shadow-mapSize-height={512}
+        shadow-mapSize-width={1024}
+        shadow-mapSize-height={1024}
         shadow-camera-near={0.1}
-        shadow-camera-far={10}
+        shadow-camera-far={12}
       />
 
-      {/* Floor fill — subtle warm bounce light so props on the floor are visible */}
+      {/* Fill from behind camera — illuminate tent interior */}
       <pointLight
-        position={[0, 0.3, 1.0]}
-        color="#ffcc88"
-        intensity={lanternOn ? 1.0 : 0}
-        distance={5}
+        position={[0, 1.2, 3]}
+        color="#ffa060"
+        intensity={lanternOn ? 1.5 : 0}
+        distance={8}
         decay={1.5}
         castShadow={false}
       />
 
-      {/* Cold outdoor light — activates when door is open */}
+      {/* Cold outdoor light when door is open */}
       <spotLight
-        position={[0, 1.5, -5]}
+        position={[0, 2, -6]}
         target-position={[0, 0, 0]}
-        intensity={doorOpen ? 0.8 : 0}
-        color="#4a7fa5"
-        angle={0.4}
-        penumbra={0.8}
+        intensity={doorOpen ? 1.2 : 0}
+        color="#6a9fc5"
+        angle={0.5}
+        penumbra={0.9}
         castShadow={false}
       />
     </>

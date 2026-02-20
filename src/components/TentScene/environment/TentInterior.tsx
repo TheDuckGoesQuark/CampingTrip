@@ -1,156 +1,109 @@
-import { useMemo } from 'react';
+import { useRef, useEffect } from 'react';
+import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
+import gsap from 'gsap';
+import { useSceneStore } from '../../../store/sceneStore';
+import { useInteractive } from '../../../hooks/useInteractive';
 
-const CANVAS_COLOR = '#c9ad6f';
-const FLOOR_COLOR  = '#7a6530';
-const POLE_COLOR   = '#7a5538';
+// Model bbox: roughly -1 to +1 on each axis, ~2 units wide
+// We scale it up so the interior feels like a real tent you're sitting inside.
+const TENT_SCALE = 3.5;
 
-// A-frame tent dimensions
-const HALF_W     = 3;       // half floor width (floor = 6 wide)
-const RIDGE_H    = 3;       // ridge height at centre
-const TENT_FRONT = -3;      // z of front face (toward door)
-const TENT_BACK  = 3;       // z of back face (behind camera)
-const TENT_DEPTH = TENT_BACK - TENT_FRONT; // 6
-
-// Derived
-const SLANT = Math.sqrt(HALF_W ** 2 + RIDGE_H ** 2); // ~4.24
-const TILT  = Math.atan2(HALF_W, RIDGE_H);            // ~0.785 rad (45°)
-
-// Door opening (must fit inside the front triangle)
-const DOOR_W = 1.6;
-const DOOR_H = 2.2;
+// Preload so the model is cached before the scene mounts
+useGLTF.preload('/models/tent.glb');
 
 export default function TentInterior() {
-  const { frontWallGeo, backWallGeo } = useMemo(() => {
-    // Back wall: solid triangle
-    const back = new THREE.Shape();
-    back.moveTo(-HALF_W, 0);
-    back.lineTo(HALF_W, 0);
-    back.lineTo(0, RIDGE_H);
-    back.closePath();
+  const { scene } = useGLTF('/models/tent.glb');
+  const doorRef = useRef<THREE.Object3D>(null);
+  const doorState = useSceneStore((s) => s.tentDoorState);
+  const setDoorState = useSceneStore((s) => s.setTentDoorState);
+  const setFocusTarget = useSceneStore((s) => s.setFocusTarget);
+  const { hovered, handlers } = useInteractive('door');
 
-    // Front wall: triangle with rectangular door cutout
-    const front = new THREE.Shape();
-    front.moveTo(-HALF_W, 0);
-    front.lineTo(HALF_W, 0);
-    front.lineTo(0, RIDGE_H);
-    front.closePath();
+  // Extract named parts from the GLTF scene graph
+  useEffect(() => {
+    scene.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        child.castShadow = true;
+        child.receiveShadow = true;
+      }
+    });
 
-    const hole = new THREE.Path();
-    const hd = DOOR_W / 2;
-    hole.moveTo(-hd, 0);
-    hole.lineTo(hd, 0);
-    hole.lineTo(hd, DOOR_H);
-    hole.lineTo(-hd, DOOR_H);
-    hole.closePath();
-    front.holes.push(hole);
+    const door = scene.getObjectByName('Door');
+    if (door) {
+      doorRef.current = door;
+      // Make door material transparent so we can fade it
+      door.traverse((child) => {
+        if (child instanceof THREE.Mesh && child.material) {
+          const mat = child.material as THREE.MeshStandardMaterial;
+          mat.transparent = true;
+          mat.side = THREE.DoubleSide;
+        }
+      });
+    }
+  }, [scene]);
 
-    return {
-      frontWallGeo: new THREE.ShapeGeometry(front),
-      backWallGeo: new THREE.ShapeGeometry(back),
-    };
-  }, []);
+  // Animate door open/close
+  useEffect(() => {
+    if (!doorRef.current) return;
 
-  const canvasMat = (
-    <meshStandardMaterial color={CANVAS_COLOR} roughness={0.9} side={THREE.DoubleSide} />
-  );
+    if (doorState === 'opening') {
+      // Fold the door flap up/back
+      gsap.to(doorRef.current.rotation, {
+        x: -Math.PI * 0.7,
+        duration: 1.0,
+        ease: 'power2.out',
+        onComplete: () => setDoorState('open'),
+      });
+      // Fade slightly for effect
+      doorRef.current.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          gsap.to(child.material, {
+            opacity: 0.6,
+            duration: 0.8,
+          });
+        }
+      });
+    } else if (doorState === 'closing') {
+      gsap.to(doorRef.current.rotation, {
+        x: 0,
+        duration: 0.8,
+        ease: 'power2.inOut',
+        onComplete: () => setDoorState('closed'),
+      });
+      doorRef.current.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          gsap.to(child.material, {
+            opacity: 1,
+            duration: 0.6,
+          });
+        }
+      });
+    }
+  }, [doorState, setDoorState]);
+
+  function handleDoorClick() {
+    if (doorState === 'closed') {
+      setDoorState('opening');
+      setFocusTarget('door');
+    } else if (doorState === 'open') {
+      setDoorState('closing');
+      setFocusTarget('default');
+    }
+  }
 
   return (
-    <group>
-      {/* ── Floor ── */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-        <planeGeometry args={[HALF_W * 2, TENT_DEPTH]} />
-        <meshStandardMaterial color={FLOOR_COLOR} roughness={0.95} />
-      </mesh>
-
-      {/* ── Left sloped wall ── */}
-      {/* Pivot at left floor edge, tilt inward to meet ridge */}
-      <group position={[-HALF_W, 0, 0]}>
-        <group rotation={[0, 0, -TILT]}>
-          <mesh
-            position={[0, SLANT / 2, 0]}
-            rotation={[0, Math.PI / 2, 0]}
-            receiveShadow
-          >
-            <planeGeometry args={[TENT_DEPTH, SLANT]} />
-            {canvasMat}
-          </mesh>
-        </group>
-      </group>
-
-      {/* ── Right sloped wall ── */}
-      <group position={[HALF_W, 0, 0]}>
-        <group rotation={[0, 0, TILT]}>
-          <mesh
-            position={[0, SLANT / 2, 0]}
-            rotation={[0, -Math.PI / 2, 0]}
-            receiveShadow
-          >
-            <planeGeometry args={[TENT_DEPTH, SLANT]} />
-            {canvasMat}
-          </mesh>
-        </group>
-      </group>
-
-      {/* ── Back wall (solid triangle) ── */}
-      <mesh
-        position={[0, 0, TENT_BACK]}
-        rotation={[0, Math.PI, 0]}
-        receiveShadow
-        geometry={backWallGeo}
-      >
-        {canvasMat}
-      </mesh>
-
-      {/* ── Front wall (triangle with door cutout) ── */}
-      <mesh
-        position={[0, 0, TENT_FRONT]}
-        receiveShadow
-        geometry={frontWallGeo}
-      >
-        {canvasMat}
-      </mesh>
-
-      {/* ── Ridge pole (runs front-to-back along the peak) ── */}
-      <mesh
-        position={[0, RIDGE_H, 0]}
-        rotation={[Math.PI / 2, 0, 0]}
-        castShadow
-      >
-        <cylinderGeometry args={[0.04, 0.04, TENT_DEPTH + 0.4, 8]} />
-        <meshStandardMaterial color={POLE_COLOR} roughness={0.8} />
-      </mesh>
-
-      {/* ── Front A-frame pole (left leg) ── */}
-      <AFrameLeg z={TENT_FRONT} side={-1} />
-
-      {/* ── Front A-frame pole (right leg) ── */}
-      <AFrameLeg z={TENT_FRONT} side={1} />
-
-      {/* ── Back A-frame pole (left leg) ── */}
-      <AFrameLeg z={TENT_BACK} side={-1} />
-
-      {/* ── Back A-frame pole (right leg) ── */}
-      <AFrameLeg z={TENT_BACK} side={1} />
-    </group>
-  );
-}
-
-/**
- * One leg of an A-frame support: runs from the floor edge up to the ridge.
- * `side`: -1 for left, +1 for right.
- */
-function AFrameLeg({ z, side }: { z: number; side: -1 | 1 }) {
-  // Pole runs from (side * HALF_W, 0, z) to (0, RIDGE_H, z)
-  // Centre at midpoint, rotated to match slope
-  return (
-    <mesh
-      position={[side * HALF_W * 0.5, RIDGE_H / 2, z]}
-      rotation={[0, 0, -side * TILT]}
-      castShadow
+    <group
+      scale={[TENT_SCALE, TENT_SCALE, TENT_SCALE]}
+      // Rotate so door faces -Z (toward where camera looks)
+      rotation={[0, -Math.PI / 2, 0]}
+      position={[0, 2.05, 0]}
     >
-      <cylinderGeometry args={[0.03, 0.04, SLANT, 6]} />
-      <meshStandardMaterial color={POLE_COLOR} roughness={0.8} />
-    </mesh>
+      <primitive
+        object={scene}
+        onClick={handleDoorClick}
+        {...handlers}
+      />
+    </group>
   );
 }
