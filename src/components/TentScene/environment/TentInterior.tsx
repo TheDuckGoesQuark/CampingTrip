@@ -30,11 +30,6 @@ export default function TentInterior() {
       }
     });
 
-    // Hide the bed (Krovat) — we don't need it
-    const bed = scene.getObjectByName('Krovat');
-    if (bed) bed.visible = false;
-
-    // Door left visible — it includes the front awning/canopy structure
   }, [scene]);
 
   return (

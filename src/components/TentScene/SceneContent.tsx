@@ -8,6 +8,7 @@ import { useSceneStore } from '../../store/sceneStore';
 import { useTimeStore, lerpKeyframes } from '../../store/timeStore';
 import { useTimeSync } from '../../hooks/useTimeSync';
 import TentInterior from './environment/TentInterior';
+import PicnicArea from './environment/PicnicArea';
 import OutdoorScene from './environment/OutdoorScene';
 import Campfire from './environment/Campfire';
 import Guitar from './environment/Guitar';
@@ -78,6 +79,7 @@ export default function SceneContent({ debug = false }: Props) {
 
       {/* Non-interactive environment */}
       <TentInterior />
+      <PicnicArea />
 
       {/* Interactive objects — wrapped for hover highlight + label + a11y */}
       <InteractiveObject
