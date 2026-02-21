@@ -19,7 +19,7 @@ export default function ScarlettSolo() {
   const focusedId = useInteractionStore((s) => s.focusedId);
   const isHighlighted = hoveredId === 'scarlett' || focusedId === 'scarlett';
 
-  // Initial setup: find emissive meshes, save originals, keep lights ON
+  // Initial setup: find emissive meshes, save originals, turn lights off
   useEffect(() => {
     const lights: typeof lightMeshes.current = [];
 
@@ -43,8 +43,8 @@ export default function ScarlettSolo() {
           });
           // Mark so InteractiveObject skips these
           child.userData.skipHighlight = true;
-          // Ensure lights are on by default
-          stdMat.emissiveIntensity = stdMat.emissiveIntensity || 1;
+          // Turn lights off by default
+          stdMat.emissiveIntensity = 0;
           stdMat.needsUpdate = true;
         }
       });
@@ -53,14 +53,14 @@ export default function ScarlettSolo() {
     lightMeshes.current = lights;
   }, [scene]);
 
-  // Inverted hover: lights go OUT when highlighted, stay ON otherwise
+  // Toggle lights on/off with hover
   useEffect(() => {
     lightMeshes.current.forEach(({ mat, color, intensity }) => {
       if (isHighlighted) {
-        mat.emissiveIntensity = 0;
-      } else {
         mat.emissive.copy(color);
         mat.emissiveIntensity = intensity;
+      } else {
+        mat.emissiveIntensity = 0;
       }
       mat.needsUpdate = true;
     });
