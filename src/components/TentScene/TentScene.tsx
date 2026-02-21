@@ -27,11 +27,11 @@ export default function TentScene({ visible }: TentSceneProps) {
       // Fade out the black overlay
       const timer = setTimeout(() => {
         if (overlayRef.current) {
-          overlayRef.current.style.transition = 'opacity 2.5s ease-out';
+          overlayRef.current.style.transition = 'opacity 1.2s ease-out';
           overlayRef.current.style.opacity = '0';
         }
         setFadeIn(false);
-      }, 300);
+      }, 100);
       return () => clearTimeout(timer);
     }
   }, [visible, fadeIn]);
