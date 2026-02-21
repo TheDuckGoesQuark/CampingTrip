@@ -6,7 +6,7 @@ import styles from './WelcomeScreen.module.css';
 
 const WELCOME_TEXT =
   "you find yourself in a tent. it's raining outside. " +
-  "the lantern glows warm. your cat is probably here somewhere.";
+  "the campfire crackles softly. your cat is probably here somewhere.";
 
 export default function WelcomeScreen() {
   const [typingDone, setTypingDone] = useState(false);
