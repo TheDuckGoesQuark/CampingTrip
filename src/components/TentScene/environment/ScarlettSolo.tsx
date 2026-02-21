@@ -1,6 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
+import { useInteractionStore } from '../../../store/interactionStore';
 import { asset } from '../../../utils/assetPath';
 
 // Credit: "Focusrite Scarlett Solo Interface" on Sketchfab (CC-BY)
@@ -10,15 +11,60 @@ useGLTF.preload(asset('models/focusrite_scarlett_solo_interface.glb'), true);
 
 export default function ScarlettSolo() {
   const { scene } = useGLTF(asset('models/focusrite_scarlett_solo_interface.glb'), true);
+  const lightMeshes = useRef<
+    { mat: THREE.MeshStandardMaterial; color: THREE.Color; intensity: number }[]
+  >([]);
 
+  const hoveredId = useInteractionStore((s) => s.hoveredId);
+  const focusedId = useInteractionStore((s) => s.focusedId);
+  const isHighlighted = hoveredId === 'scarlett' || focusedId === 'scarlett';
+
+  // Initial setup: find emissive meshes, save originals, keep lights ON
   useEffect(() => {
+    const lights: typeof lightMeshes.current = [];
+
     scene.traverse((child) => {
-      if (child instanceof THREE.Mesh) {
-        child.castShadow = true;
-        child.receiveShadow = true;
-      }
+      if (!(child instanceof THREE.Mesh)) return;
+      child.castShadow = true;
+      child.receiveShadow = true;
+
+      const mats = Array.isArray(child.material)
+        ? child.material
+        : [child.material];
+      mats.forEach((mat) => {
+        if (!(mat as THREE.MeshStandardMaterial).isMeshStandardMaterial) return;
+        const stdMat = mat as THREE.MeshStandardMaterial;
+
+        if (stdMat.emissiveMap) {
+          lights.push({
+            mat: stdMat,
+            color: stdMat.emissive.clone(),
+            intensity: stdMat.emissiveIntensity || 1,
+          });
+          // Mark so InteractiveObject skips these
+          child.userData.skipHighlight = true;
+          // Ensure lights are on by default
+          stdMat.emissiveIntensity = stdMat.emissiveIntensity || 1;
+          stdMat.needsUpdate = true;
+        }
+      });
     });
+
+    lightMeshes.current = lights;
   }, [scene]);
+
+  // Inverted hover: lights go OUT when highlighted, stay ON otherwise
+  useEffect(() => {
+    lightMeshes.current.forEach(({ mat, color, intensity }) => {
+      if (isHighlighted) {
+        mat.emissiveIntensity = 0;
+      } else {
+        mat.emissive.copy(color);
+        mat.emissiveIntensity = intensity;
+      }
+      mat.needsUpdate = true;
+    });
+  }, [isHighlighted]);
 
   // Native: ~14.3 x 4.8 x 9.9 units. Scale 0.012 → ~17cm wide
   return (

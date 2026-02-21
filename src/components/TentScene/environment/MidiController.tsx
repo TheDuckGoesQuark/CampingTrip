@@ -35,22 +35,19 @@ export default function MidiController() {
         if (!(mat as THREE.MeshStandardMaterial).isMeshStandardMaterial) return;
         const stdMat = mat as THREE.MeshStandardMaterial;
 
-        // Detect light meshes: anything with meaningful emissive
-        if (stdMat.emissiveIntensity > 0.1) {
-          const hsl = { h: 0, s: 0, l: 0 };
-          stdMat.emissive.getHSL(hsl);
-          if (hsl.l > 0.05) {
-            lights.push({
-              mat: stdMat,
-              color: stdMat.emissive.clone(),
-              intensity: stdMat.emissiveIntensity,
-            });
-            // Mark so InteractiveObject skips these
-            child.userData.skipHighlight = true;
-            // Turn lights off by default
-            stdMat.emissiveIntensity = 0;
-            stdMat.needsUpdate = true;
-          }
+        // Detect light meshes by emissive map presence (robust against
+        // cached scenes where we already zeroed emissiveIntensity)
+        if (stdMat.emissiveMap) {
+          lights.push({
+            mat: stdMat,
+            color: stdMat.emissive.clone(),
+            intensity: stdMat.emissiveIntensity || 1,
+          });
+          // Mark so InteractiveObject skips these
+          child.userData.skipHighlight = true;
+          // Turn lights off by default
+          stdMat.emissiveIntensity = 0;
+          stdMat.needsUpdate = true;
         }
       });
     });
