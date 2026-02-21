@@ -25,6 +25,16 @@ export default function CampfireLoadingScreen() {
   const audioStarted = useRef(false);
   const mountTime = useRef(Date.now());
 
+  // Reset state when welcome is reset (settings → reset preferences)
+  useEffect(() => {
+    if (!hasCompletedWelcome) {
+      setVisible(true);
+      setFadingOut(false);
+      audioStarted.current = false;
+      mountTime.current = Date.now();
+    }
+  }, [hasCompletedWelcome]);
+
   // Animate fire frames
   useEffect(() => {
     const id = setInterval(() => setFrame((f) => (f + 1) % FIRE_FRAMES.length), 400);
