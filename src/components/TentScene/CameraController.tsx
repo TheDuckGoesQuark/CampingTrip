@@ -24,7 +24,7 @@ const MOBILE_MAX_YAW = (85 * Math.PI) / 180;   // ±85° horizontal
 const MOBILE_MAX_PITCH = (25 * Math.PI) / 180;  // ±25° vertical
 
 // Mobile touch-drag sensitivity (maps drag pixels → normalised offset)
-const TOUCH_DRAG_SENSITIVITY = 3.5 / Math.max(window.innerWidth, 1);
+const TOUCH_DRAG_SENSITIVITY = 1.8 / Math.max(window.innerWidth, 1);
 const TOUCH_CLAMP = 1.0;
 // Gyroscope gentle additive layer (much softer than touch)
 const GYRO_WEIGHT = 0.12;
@@ -87,6 +87,13 @@ export default function CameraController() {
         gsap.to(paralaxMul, { current: 1, duration: 0.6, ease: 'power2.in' });
       } else {
         gsap.to(paralaxMul, { current: 0.15, duration: 0.4, ease: 'power2.out' });
+        // Mobile: smoothly center the view so focus presets face the camera
+        if (isTouchDevice()) {
+          gsap.to(touchDragRef.current, {
+            x: 0, y: 0,
+            duration: 0.8, ease: 'power2.inOut',
+          });
+        }
         gsap.to(basePos.current, {
           x: preset.pos.x, y: preset.pos.y, z: preset.pos.z,
           duration: 1.0, ease: 'power2.inOut',
