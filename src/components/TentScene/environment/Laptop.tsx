@@ -75,15 +75,13 @@ export default function Laptop({ screenOn }: Props) {
         }
       } else {
         // Non-screen meshes (body, keyboard, bezel): fix dark materials
-        // Same approach as MokaPot — reduce metalness so scene lights
-        // contribute, add warm emissive for ambient bounce
+        // Reduce metalness so scene lights contribute; keep emissive at zero
+        // so InteractiveObject's hover highlight is clearly visible
         const mat = child.material as THREE.MeshStandardMaterial;
         if (mat?.isMeshStandardMaterial) {
           mat.envMapIntensity = 3.0;
           mat.metalness = Math.min(mat.metalness, 0.65);
           mat.roughness = Math.max(mat.roughness, 0.35);
-          mat.emissive = new THREE.Color(0x331a08);
-          mat.emissiveIntensity = 0.25;
 
           const hsl = { h: 0, s: 0, l: 0 };
           mat.color.getHSL(hsl);
