@@ -1,8 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 import { useSessionStore } from './store/sessionStore';
 import { initAudioManager } from './audio/audioManager';
 import WelcomeScreen from './components/WelcomeScreen/WelcomeScreen';
-import TentScene from './components/TentScene/TentScene';
+
+const TentScene = lazy(() => import('./components/TentScene/TentScene'));
 
 export default function App() {
   const hasCompletedWelcome = useSessionStore((s) => s.hasCompletedWelcome);
@@ -15,7 +16,9 @@ export default function App() {
     <>
       {!hasCompletedWelcome && <WelcomeScreen />}
       {/* TentScene is always mounted so it can preload assets during welcome */}
-      <TentScene visible={hasCompletedWelcome} />
+      <Suspense fallback={null}>
+        <TentScene visible={hasCompletedWelcome} />
+      </Suspense>
     </>
   );
 }

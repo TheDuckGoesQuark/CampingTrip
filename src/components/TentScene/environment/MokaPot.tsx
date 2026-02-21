@@ -6,10 +6,10 @@ import { asset } from '../../../utils/assetPath';
 // Credit: "Moka Pot" on Sketchfab (CC-BY)
 // https://sketchfab.com/3d-models/moka-pot-2ca52d750d95471a953fb2c9eb577da6
 
-useGLTF.preload(asset('models/moka_pot.glb'));
+useGLTF.preload(asset('models/moka_pot.glb'), true);
 
 export default function MokaPot() {
-  const { scene } = useGLTF(asset('models/moka_pot.glb'));
+  const { scene } = useGLTF(asset('models/moka_pot.glb'), true);
 
   useEffect(() => {
     scene.traverse((child) => {

@@ -6,10 +6,10 @@ import { asset } from '../../../utils/assetPath';
 // Credit: "Focusrite Scarlett Solo Interface" on Sketchfab (CC-BY)
 // https://sketchfab.com/3d-models/focusrite-scarlett-solo-interface-f09111be4a5c48228c3b898965d62bba
 
-useGLTF.preload(asset('models/focusrite_scarlett_solo_interface.glb'));
+useGLTF.preload(asset('models/focusrite_scarlett_solo_interface.glb'), true);
 
 export default function ScarlettSolo() {
-  const { scene } = useGLTF(asset('models/focusrite_scarlett_solo_interface.glb'));
+  const { scene } = useGLTF(asset('models/focusrite_scarlett_solo_interface.glb'), true);
 
   useEffect(() => {
     scene.traverse((child) => {

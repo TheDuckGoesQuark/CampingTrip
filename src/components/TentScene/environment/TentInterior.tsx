@@ -5,10 +5,10 @@ import { asset } from '../../../utils/assetPath';
 
 const TENT_SCALE = 4;
 
-useGLTF.preload(asset('models/tent.glb'));
+useGLTF.preload(asset('models/tent.glb'), true);
 
 export default function TentInterior() {
-  const { scene } = useGLTF(asset('models/tent.glb'));
+  const { scene } = useGLTF(asset('models/tent.glb'), true);
   const groupRef = useRef<THREE.Group>(null);
 
   useEffect(() => {
