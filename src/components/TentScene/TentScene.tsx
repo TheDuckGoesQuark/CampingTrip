@@ -8,6 +8,7 @@ import ProjectsOverlay from '../overlays/ProjectsOverlay';
 import TimeOfDayArc from '../overlays/TimeOfDayArc';
 import SettingsMenu from '../overlays/SettingsMenu';
 import Vignette from '../effects/Vignette';
+import VirtualJoystick from '../VirtualJoystick';
 import { useSceneStore } from '../../store/sceneStore';
 
 interface TentSceneProps {
@@ -68,7 +69,7 @@ export default function TentScene({ visible }: TentSceneProps) {
         shadows
         camera={{ position: [0, 2.8, 3.5], fov: 69, near: 0.1, far: 200 }}
         gl={{ antialias: true, alpha: false }}
-        style={{ width: '100%', height: '100dvh', display: 'block' }}
+        style={{ width: '100%', height: '100dvh', display: 'block', touchAction: 'manipulation' }}
         aria-label="Interactive 3D tent scene — use Tab to navigate objects, Enter to interact"
         role="application"
       >
@@ -114,6 +115,7 @@ export default function TentScene({ visible }: TentSceneProps) {
       <Vignette />
       <TimeOfDayArc />
       <SettingsMenu />
+      <VirtualJoystick />
     </div>
   );
 }

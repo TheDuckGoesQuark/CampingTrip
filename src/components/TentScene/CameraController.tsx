@@ -3,6 +3,7 @@ import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import gsap from 'gsap';
 import { useSceneStore } from '../../store/sceneStore';
+import { mobileInput } from '../../mobileInput';
 import type { FocusTarget } from '../../types/scene';
 
 const CAMERA_PRESETS: Record<FocusTarget, { pos: THREE.Vector3; target: THREE.Vector3 }> = {
@@ -19,14 +20,15 @@ const LOOK_Y = 0.4;
 const POS_X = 0.12;
 const POS_Y = 0.08;
 
-// Mobile: angular camera rotation (much wider than desktop parallax)
+// Mobile: angular camera rotation
 const MOBILE_MAX_YAW = (85 * Math.PI) / 180;   // ±85° horizontal
 const MOBILE_MAX_PITCH = (25 * Math.PI) / 180;  // ±25° vertical
 
-// Mobile touch-drag sensitivity (maps drag pixels → normalised offset)
-const TOUCH_DRAG_SENSITIVITY = 1.8 / Math.max(window.innerWidth, 1);
-const TOUCH_CLAMP = 1.0;
-// Gyroscope gentle additive layer (much softer than touch)
+// Joystick: normalised units per second at full deflection
+const JOYSTICK_SPEED = 1.2;
+const ANGLE_CLAMP = 1.0;
+
+// Gyroscope gentle additive layer
 const GYRO_WEIGHT = 0.12;
 
 // Breathing / idle sway
@@ -42,15 +44,14 @@ export default function CameraController() {
   const { camera } = useThree();
   const time = useRef(0);
 
-  // Shared output that feeds the frame loop — normalised to roughly -1..1 (mobile) or -0.5..0.5 (desktop)
+  // Shared output that feeds the frame loop
   const inputRef = useRef({ x: 0, y: 0 });
 
-  // Desktop mouse (absolute position, same as before)
+  // Desktop mouse (absolute position)
   const mouseRef = useRef({ x: 0, y: 0 });
 
-  // Mobile: accumulated touch drag offset
-  const touchDragRef = useRef({ x: 0, y: 0 });
-  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  // Mobile: accumulated camera angle offset (fed by joystick velocity each frame)
+  const angleRef = useRef({ x: 0, y: 0 });
 
   // Mobile: gentle gyroscope additive
   const gyroRef = useRef({ x: 0, y: 0 });
@@ -61,7 +62,7 @@ export default function CameraController() {
   const paralaxMul = useRef(1);
   const prevFocus = useRef<FocusTarget>('default');
 
-  // Focus target transitions (unchanged)
+  // Focus target transitions
   useEffect(() => {
     return useSceneStore.subscribe((state) => {
       const focus = state.focusTarget;
@@ -86,14 +87,18 @@ export default function CameraController() {
         });
         gsap.to(paralaxMul, { current: 1, duration: 0.6, ease: 'power2.in' });
       } else {
-        gsap.to(paralaxMul, { current: 0.15, duration: 0.4, ease: 'power2.out' });
-        // Mobile: smoothly center the view so focus presets face the camera
+        // Mobile: fully zero out parallax so focus preset camera angles work correctly
+        const targetMul = isTouchDevice() ? 0 : 0.15;
+        gsap.to(paralaxMul, { current: targetMul, duration: 0.4, ease: 'power2.out' });
+
+        // Mobile: smoothly center the accumulated angle so the focus view faces forward
         if (isTouchDevice()) {
-          gsap.to(touchDragRef.current, {
+          gsap.to(angleRef.current, {
             x: 0, y: 0,
             duration: 0.8, ease: 'power2.inOut',
           });
         }
+
         gsap.to(basePos.current, {
           x: preset.pos.x, y: preset.pos.y, z: preset.pos.z,
           duration: 1.0, ease: 'power2.inOut',
@@ -106,7 +111,7 @@ export default function CameraController() {
     });
   }, []);
 
-  // Input listeners
+  // Input listeners — desktop: mouse; mobile: gyroscope only (touch replaced by joystick)
   useEffect(() => {
     const isTouch = isTouchDevice();
 
@@ -116,28 +121,7 @@ export default function CameraController() {
       mouseRef.current.y = e.clientY / window.innerHeight - 0.5;
     };
 
-    // ── Mobile: cumulative drag ──
-    const onTouchStart = (e: TouchEvent) => {
-      const t = e.touches[0];
-      touchStartRef.current = { x: t.clientX, y: t.clientY };
-    };
-
-    const onTouchMove = (e: TouchEvent) => {
-      if (!touchStartRef.current) return;
-      const t = e.touches[0];
-      // Inverted: drag right → look left (natural "grab & drag the world" feel)
-      const dx = -(t.clientX - touchStartRef.current.x) * TOUCH_DRAG_SENSITIVITY;
-      const dy = -(t.clientY - touchStartRef.current.y) * TOUCH_DRAG_SENSITIVITY;
-      touchDragRef.current.x = Math.max(-TOUCH_CLAMP, Math.min(TOUCH_CLAMP, touchDragRef.current.x + dx));
-      touchDragRef.current.y = Math.max(-TOUCH_CLAMP, Math.min(TOUCH_CLAMP, touchDragRef.current.y + dy));
-      touchStartRef.current = { x: t.clientX, y: t.clientY };
-    };
-
-    const onTouchEnd = () => {
-      touchStartRef.current = null;
-    };
-
-    // ── Mobile: gentle gyroscope (additive on top of drag) ──
+    // ── Mobile: gentle gyroscope (additive on top of joystick) ──
     const onOrientation = (e: DeviceOrientationEvent) => {
       if (e.beta == null || e.gamma == null) return;
       gyroRef.current.x = Math.max(-0.5, Math.min(0.5, (e.gamma ?? 0) / 45));
@@ -145,10 +129,6 @@ export default function CameraController() {
     };
 
     if (isTouch) {
-      window.addEventListener('touchstart', onTouchStart, { passive: true });
-      window.addEventListener('touchmove', onTouchMove, { passive: true });
-      window.addEventListener('touchend', onTouchEnd, { passive: true });
-      window.addEventListener('touchcancel', onTouchEnd, { passive: true });
       window.addEventListener('deviceorientation', onOrientation, { passive: true });
     } else {
       window.addEventListener('mousemove', onMouseMove, { passive: true });
@@ -156,10 +136,6 @@ export default function CameraController() {
 
     return () => {
       window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('touchstart', onTouchStart);
-      window.removeEventListener('touchmove', onTouchMove);
-      window.removeEventListener('touchend', onTouchEnd);
-      window.removeEventListener('touchcancel', onTouchEnd);
       window.removeEventListener('deviceorientation', onOrientation);
     };
   }, []);
@@ -175,8 +151,16 @@ export default function CameraController() {
 
     // Merge inputs
     if (isTouchDevice()) {
-      inputRef.current.x = touchDragRef.current.x + gyroRef.current.x * GYRO_WEIGHT;
-      inputRef.current.y = touchDragRef.current.y + gyroRef.current.y * GYRO_WEIGHT;
+      // Accumulate joystick velocity into persistent angle offset
+      if (mobileInput.active) {
+        angleRef.current.x += mobileInput.x * JOYSTICK_SPEED * delta;
+        angleRef.current.y += mobileInput.y * JOYSTICK_SPEED * delta;
+        angleRef.current.x = Math.max(-ANGLE_CLAMP, Math.min(ANGLE_CLAMP, angleRef.current.x));
+        angleRef.current.y = Math.max(-ANGLE_CLAMP, Math.min(ANGLE_CLAMP, angleRef.current.y));
+      }
+
+      inputRef.current.x = angleRef.current.x + gyroRef.current.x * GYRO_WEIGHT;
+      inputRef.current.y = angleRef.current.y + gyroRef.current.y * GYRO_WEIGHT;
     } else {
       inputRef.current.x = mouseRef.current.x;
       inputRef.current.y = mouseRef.current.y;
