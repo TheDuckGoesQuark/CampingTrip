@@ -25,8 +25,13 @@ const MOBILE_MAX_YAW = (85 * Math.PI) / 180;   // ±85° horizontal
 const MOBILE_MAX_PITCH = (25 * Math.PI) / 180;  // ±25° vertical
 
 // Joystick: normalised units per second at full deflection
-const JOYSTICK_SPEED = 1.2;
+const JOYSTICK_SPEED = 0.35;
 const ANGLE_CLAMP = 1.0;
+
+// Inertia: smoothing factor for joystick velocity (0 = instant, 1 = no response)
+const JOYSTICK_INERTIA = 0.88;
+// How fast accumulated angle coasts to a stop when joystick is released
+const JOYSTICK_COAST_DECAY = 0.92;
 
 // Gyroscope gentle additive layer
 const GYRO_WEIGHT = 0.12;
@@ -53,8 +58,14 @@ export default function CameraController() {
   // Mobile: accumulated camera angle offset (fed by joystick velocity each frame)
   const angleRef = useRef({ x: 0, y: 0 });
 
+  // Mobile: smoothed joystick velocity (for inertia)
+  const velocityRef = useRef({ x: 0, y: 0 });
+
   // Mobile: gentle gyroscope additive
   const gyroRef = useRef({ x: 0, y: 0 });
+
+  // Saved camera angle for restoring after laptop overlay
+  const savedAngleRef = useRef({ x: 0, y: 0 });
 
   const lookAt = useRef(CAMERA_PRESETS.default.target.clone());
   const basePos = useRef(CAMERA_PRESETS.default.pos.clone());
@@ -111,6 +122,32 @@ export default function CameraController() {
     });
   }, []);
 
+  // Laptop focus: animate camera to center on open, restore on close
+  useEffect(() => {
+    let prev = useSceneStore.getState().laptopFocused;
+    return useSceneStore.subscribe((state) => {
+      const focused = state.laptopFocused;
+      if (focused === prev) return;
+      prev = focused;
+
+      if (focused && isTouchDevice()) {
+        // Save current angle and animate to center
+        savedAngleRef.current.x = angleRef.current.x;
+        savedAngleRef.current.y = angleRef.current.y;
+        gsap.to(angleRef.current, { x: 0, y: 0, duration: 0.8, ease: 'power2.inOut' });
+        gsap.to(velocityRef.current, { x: 0, y: 0, duration: 0.3 });
+      } else if (!focused && isTouchDevice()) {
+        // Restore saved angle
+        gsap.to(angleRef.current, {
+          x: savedAngleRef.current.x,
+          y: savedAngleRef.current.y,
+          duration: 0.8,
+          ease: 'power2.inOut',
+        });
+      }
+    });
+  }, []);
+
   // Input listeners — desktop: mouse; mobile: gyroscope only (touch replaced by joystick)
   useEffect(() => {
     const isTouch = isTouchDevice();
@@ -143,7 +180,6 @@ export default function CameraController() {
   useFrame((_, delta) => {
     const storeState = useSceneStore.getState();
     if (!storeState.wakeUpDone) return;
-    if (storeState.laptopFocused) return;
 
     time.current += delta;
     const t = time.current;
@@ -151,10 +187,25 @@ export default function CameraController() {
 
     // Merge inputs
     if (isTouchDevice()) {
-      // Accumulate joystick velocity into persistent angle offset
-      if (mobileInput.active) {
-        angleRef.current.x += mobileInput.x * JOYSTICK_SPEED * delta;
-        angleRef.current.y += mobileInput.y * JOYSTICK_SPEED * delta;
+      // Smooth joystick velocity with inertia (inverted X for left/right swap)
+      if (mobileInput.active && !storeState.laptopFocused) {
+        const targetVx = -mobileInput.x * JOYSTICK_SPEED;
+        const targetVy = mobileInput.y * JOYSTICK_SPEED;
+        velocityRef.current.x += (targetVx - velocityRef.current.x) * (1 - JOYSTICK_INERTIA);
+        velocityRef.current.y += (targetVy - velocityRef.current.y) * (1 - JOYSTICK_INERTIA);
+      } else if (!storeState.laptopFocused) {
+        // Coast to a stop when released
+        velocityRef.current.x *= JOYSTICK_COAST_DECAY;
+        velocityRef.current.y *= JOYSTICK_COAST_DECAY;
+        // Zero out tiny residual
+        if (Math.abs(velocityRef.current.x) < 0.001) velocityRef.current.x = 0;
+        if (Math.abs(velocityRef.current.y) < 0.001) velocityRef.current.y = 0;
+      }
+
+      // Accumulate smoothed velocity into angle (skip accumulation during laptop focus — GSAP handles it)
+      if (!storeState.laptopFocused) {
+        angleRef.current.x += velocityRef.current.x * delta;
+        angleRef.current.y += velocityRef.current.y * delta;
         angleRef.current.x = Math.max(-ANGLE_CLAMP, Math.min(ANGLE_CLAMP, angleRef.current.x));
         angleRef.current.y = Math.max(-ANGLE_CLAMP, Math.min(ANGLE_CLAMP, angleRef.current.y));
       }
@@ -162,6 +213,7 @@ export default function CameraController() {
       inputRef.current.x = angleRef.current.x + gyroRef.current.x * GYRO_WEIGHT;
       inputRef.current.y = angleRef.current.y + gyroRef.current.y * GYRO_WEIGHT;
     } else {
+      if (storeState.laptopFocused) return;
       inputRef.current.x = mouseRef.current.x;
       inputRef.current.y = mouseRef.current.y;
     }
