@@ -19,10 +19,11 @@ const LOOK_Y = 0.4;
 const POS_X = 0.12;
 const POS_Y = 0.08;
 
-// Mobile touch-drag sensitivity (maps drag pixels to -0.5..0.5 range)
-const TOUCH_DRAG_SENSITIVITY = 1.8 / Math.max(window.innerWidth, 1);
-// Clamp range for accumulated touch drag
-const TOUCH_CLAMP = 0.5;
+// Mobile touch-drag sensitivity (maps drag pixels → normalised offset)
+// Higher = camera responds more per pixel dragged
+const TOUCH_DRAG_SENSITIVITY = 3.5 / Math.max(window.innerWidth, 1);
+// Wider clamp range than desktop (0.5) so mobile users can look further L/R
+const TOUCH_CLAMP = 0.85;
 // Gyroscope gentle additive layer (much softer than touch)
 const GYRO_WEIGHT = 0.12;
 
@@ -115,8 +116,9 @@ export default function CameraController() {
     const onTouchMove = (e: TouchEvent) => {
       if (!touchStartRef.current) return;
       const t = e.touches[0];
-      const dx = (t.clientX - touchStartRef.current.x) * TOUCH_DRAG_SENSITIVITY;
-      const dy = (t.clientY - touchStartRef.current.y) * TOUCH_DRAG_SENSITIVITY;
+      // Inverted: drag right → look left (natural "grab & drag the world" feel)
+      const dx = -(t.clientX - touchStartRef.current.x) * TOUCH_DRAG_SENSITIVITY;
+      const dy = -(t.clientY - touchStartRef.current.y) * TOUCH_DRAG_SENSITIVITY;
       touchDragRef.current.x = Math.max(-TOUCH_CLAMP, Math.min(TOUCH_CLAMP, touchDragRef.current.x + dx));
       touchDragRef.current.y = Math.max(-TOUCH_CLAMP, Math.min(TOUCH_CLAMP, touchDragRef.current.y + dy));
       touchStartRef.current = { x: t.clientX, y: t.clientY };
