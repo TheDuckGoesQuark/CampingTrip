@@ -19,10 +19,10 @@ const WALK_Z = -4.15;
 const WALK_Y = 0.15;
 const PAUSE_DURATION = 6;
 
-useGLTF.preload(asset('models/cat-walk.glb'));
+useGLTF.preload(asset('models/cat-walk.glb'), true);
 
 export default function WalkingCat() {
-  const { scene, animations } = useGLTF(asset('models/cat-walk.glb'));
+  const { scene, animations } = useGLTF(asset('models/cat-walk.glb'), true);
   const groupRef = useRef<THREE.Group>(null);
   const mixerRef = useRef<THREE.AnimationMixer | null>(null);
 

@@ -7,10 +7,10 @@ import { asset } from '../../../utils/assetPath';
 // Credit: "Akai MPK Mini MIDI Controller" on Sketchfab (CC-BY)
 // https://sketchfab.com/3d-models/akai-mpk-mini-midi-controller-89eae01d0547430bb8e10110eaadaa81
 
-useGLTF.preload(asset('models/akai_mpk_mini_midi_controller.glb'));
+useGLTF.preload(asset('models/akai_mpk_mini_midi_controller.glb'), true);
 
 export default function MidiController() {
-  const { scene } = useGLTF(asset('models/akai_mpk_mini_midi_controller.glb'));
+  const { scene } = useGLTF(asset('models/akai_mpk_mini_midi_controller.glb'), true);
   const lightMeshes = useRef<
     { mat: THREE.MeshStandardMaterial; color: THREE.Color; intensity: number }[]
   >([]);

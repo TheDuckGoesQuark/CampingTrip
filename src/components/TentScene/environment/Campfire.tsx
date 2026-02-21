@@ -9,10 +9,10 @@ import { asset } from '../../../utils/assetPath';
 
 const SCALE = 60.0;
 
-useGLTF.preload(asset('models/stylized_campfire.glb'));
+useGLTF.preload(asset('models/stylized_campfire.glb'), true);
 
 export default function Campfire() {
-  const { scene } = useGLTF(asset('models/stylized_campfire.glb'));
+  const { scene } = useGLTF(asset('models/stylized_campfire.glb'), true);
   const fireLight = useRef<THREE.PointLight>(null);
   const t = useRef(0);
 

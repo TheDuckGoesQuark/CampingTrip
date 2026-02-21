@@ -6,10 +6,10 @@ import { asset } from '../../../utils/assetPath';
 // Credit: "Notepad" on Sketchfab (CC-BY)
 // https://sketchfab.com/3d-models/notepadb-0b30d2efe63f41b0a812904b610fe577
 
-useGLTF.preload(asset('models/notepadb.glb'));
+useGLTF.preload(asset('models/notepadb.glb'), true);
 
 export default function Notepad() {
-  const { scene } = useGLTF(asset('models/notepadb.glb'));
+  const { scene } = useGLTF(asset('models/notepadb.glb'), true);
 
   useEffect(() => {
     scene.traverse((child) => {
