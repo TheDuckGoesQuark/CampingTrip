@@ -109,7 +109,8 @@ export default function VirtualJoystick() {
       style={{
         position: 'fixed',
         bottom: 28,
-        right: 28,
+        left: '50%',
+        transform: 'translateX(-50%)',
         width: SIZE,
         height: SIZE,
         borderRadius: '50%',
