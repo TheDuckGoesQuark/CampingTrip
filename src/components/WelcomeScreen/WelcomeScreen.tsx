@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import TypingMessage from './TypingMessage';
 import OptionButtons from './OptionButtons';
+import { useSessionStore } from '../../store/sessionStore';
 import styles from './WelcomeScreen.module.css';
 
 const WELCOME_TEXT =
@@ -9,9 +10,10 @@ const WELCOME_TEXT =
 
 export default function WelcomeScreen() {
   const [typingDone, setTypingDone] = useState(false);
+  const hasCompletedWelcome = useSessionStore((s) => s.hasCompletedWelcome);
 
   return (
-    <div className={styles.screen}>
+    <div className={`${styles.screen} ${hasCompletedWelcome ? styles.fadeOut : ''}`}>
       <div className={styles.inner}>
         <TypingMessage
           text={WELCOME_TEXT}

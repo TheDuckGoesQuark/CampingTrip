@@ -13,17 +13,19 @@ const CAMERA_PRESETS: Record<FocusTarget, { pos: THREE.Vector3; target: THREE.Ve
   guitar:  { pos: new THREE.Vector3(1.2, 0.6, 0.5),  target: new THREE.Vector3(1.6, 0.3, -1.2) },
 };
 
-// Desktop mouse parallax amounts
+// Desktop mouse parallax amounts (unchanged)
 const LOOK_X = 0.8;
 const LOOK_Y = 0.4;
 const POS_X = 0.12;
 const POS_Y = 0.08;
 
+// Mobile: angular camera rotation (much wider than desktop parallax)
+const MOBILE_MAX_YAW = (85 * Math.PI) / 180;   // ±85° horizontal
+const MOBILE_MAX_PITCH = (25 * Math.PI) / 180;  // ±25° vertical
+
 // Mobile touch-drag sensitivity (maps drag pixels → normalised offset)
-// Higher = camera responds more per pixel dragged
 const TOUCH_DRAG_SENSITIVITY = 3.5 / Math.max(window.innerWidth, 1);
-// Wider clamp range than desktop (0.5) so mobile users can look further L/R
-const TOUCH_CLAMP = 0.85;
+const TOUCH_CLAMP = 1.0;
 // Gyroscope gentle additive layer (much softer than touch)
 const GYRO_WEIGHT = 0.12;
 
@@ -40,7 +42,7 @@ export default function CameraController() {
   const { camera } = useThree();
   const time = useRef(0);
 
-  // Shared output that feeds the frame loop — normalised to roughly -0.5..0.5
+  // Shared output that feeds the frame loop — normalised to roughly -1..1 (mobile) or -0.5..0.5 (desktop)
   const inputRef = useRef({ x: 0, y: 0 });
 
   // Desktop mouse (absolute position, same as before)
@@ -164,9 +166,8 @@ export default function CameraController() {
     const t = time.current;
     const mul = paralaxMul.current;
 
-    // Merge inputs into a single -0.5..0.5 value
+    // Merge inputs
     if (isTouchDevice()) {
-      // Touch drag is the primary input; gyro adds a gentle layer
       inputRef.current.x = touchDragRef.current.x + gyroRef.current.x * GYRO_WEIGHT;
       inputRef.current.y = touchDragRef.current.y + gyroRef.current.y * GYRO_WEIGHT;
     } else {
@@ -181,29 +182,71 @@ export default function CameraController() {
     const breatheOffset = Math.sin(t * BREATHE_SPEED * Math.PI * 2) * BREATHE_Y;
     const swayOffset = Math.sin(t * SWAY_SPEED * Math.PI * 2) * SWAY_X;
 
-    // Camera position: subtle depth parallax
-    const targetX = basePos.current.x + ix * POS_X * mul + swayOffset;
-    const targetY = basePos.current.y - iy * POS_Y * mul + breatheOffset;
-    camera.position.x = THREE.MathUtils.lerp(camera.position.x, targetX, 0.06);
-    camera.position.y = THREE.MathUtils.lerp(camera.position.y, targetY, 0.06);
-    camera.position.z = THREE.MathUtils.lerp(camera.position.z, basePos.current.z, 0.06);
+    if (isTouchDevice()) {
+      // ── Mobile: angular rotation for wide FOV ──
+      const yaw = ix * MOBILE_MAX_YAW * mul;
+      const pitch = -iy * MOBILE_MAX_PITCH * mul;
 
-    // LookAt: larger shift for "looking around"
-    lookAt.current.x = THREE.MathUtils.lerp(
-      lookAt.current.x,
-      baseTarget.current.x + ix * LOOK_X * mul + swayOffset * 0.5,
-      0.06
-    );
-    lookAt.current.y = THREE.MathUtils.lerp(
-      lookAt.current.y,
-      baseTarget.current.y - iy * LOOK_Y * mul + breatheOffset * 0.3,
-      0.06
-    );
-    lookAt.current.z = THREE.MathUtils.lerp(
-      lookAt.current.z,
-      baseTarget.current.z,
-      0.06
-    );
+      // Direction from camera to base look target
+      const dx = baseTarget.current.x - basePos.current.x;
+      const dy = baseTarget.current.y - basePos.current.y;
+      const dz = baseTarget.current.z - basePos.current.z;
+      const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+      // Rotate direction by yaw (around Y axis)
+      const cosY = Math.cos(yaw);
+      const sinY = Math.sin(yaw);
+      const rotX = dx * cosY + dz * sinY;
+      const rotZ = -dx * sinY + dz * cosY;
+
+      // Camera position: just breathing/sway, no positional parallax
+      const targetPosX = basePos.current.x + swayOffset;
+      const targetPosY = basePos.current.y + breatheOffset;
+      camera.position.x = THREE.MathUtils.lerp(camera.position.x, targetPosX, 0.06);
+      camera.position.y = THREE.MathUtils.lerp(camera.position.y, targetPosY, 0.06);
+      camera.position.z = THREE.MathUtils.lerp(camera.position.z, basePos.current.z, 0.06);
+
+      // Look at: rotated direction + pitch
+      lookAt.current.x = THREE.MathUtils.lerp(
+        lookAt.current.x,
+        basePos.current.x + rotX + swayOffset * 0.5,
+        0.06,
+      );
+      lookAt.current.y = THREE.MathUtils.lerp(
+        lookAt.current.y,
+        basePos.current.y + dy + Math.sin(pitch) * dist + breatheOffset * 0.3,
+        0.06,
+      );
+      lookAt.current.z = THREE.MathUtils.lerp(
+        lookAt.current.z,
+        basePos.current.z + rotZ,
+        0.06,
+      );
+    } else {
+      // ── Desktop: subtle parallax (unchanged) ──
+      const targetX = basePos.current.x + ix * POS_X * mul + swayOffset;
+      const targetY = basePos.current.y - iy * POS_Y * mul + breatheOffset;
+      camera.position.x = THREE.MathUtils.lerp(camera.position.x, targetX, 0.06);
+      camera.position.y = THREE.MathUtils.lerp(camera.position.y, targetY, 0.06);
+      camera.position.z = THREE.MathUtils.lerp(camera.position.z, basePos.current.z, 0.06);
+
+      lookAt.current.x = THREE.MathUtils.lerp(
+        lookAt.current.x,
+        baseTarget.current.x + ix * LOOK_X * mul + swayOffset * 0.5,
+        0.06,
+      );
+      lookAt.current.y = THREE.MathUtils.lerp(
+        lookAt.current.y,
+        baseTarget.current.y - iy * LOOK_Y * mul + breatheOffset * 0.3,
+        0.06,
+      );
+      lookAt.current.z = THREE.MathUtils.lerp(
+        lookAt.current.z,
+        baseTarget.current.z,
+        0.06,
+      );
+    }
+
     camera.lookAt(lookAt.current);
   });
 

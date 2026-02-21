@@ -2,97 +2,89 @@ import { useEffect, useRef, useState } from 'react';
 import { useProgress } from '@react-three/drei';
 import { useSessionStore } from '../store/sessionStore';
 import { startCampfire, stopCampfire } from '../audio/campfireSynth';
+import { startRain } from '../audio/rainSynth';
 
+// Compact fire frames — 5 lines, ~16 chars wide. Recognisable on narrow screens.
 const FIRE_FRAMES = [
-  [
-    '             )        (        )',
-    '        (         )       )        (',
-    '         )  \'  .    \' .    .  \'  (',
-    '        (   ,  )    (  . )    , )   )',
-    '         ) . (  .  )  (  . )  ( .  (',
-    '        (.,___,. \'.,___,.\' .,___,.)',
-    '              \\\\  |||  //',
-    '               \\\\ ||| //',
-    '            ~~~~°~~~~~~~~°~~~~',
-  ],
-  [
-    '              (       )     (    )',
-    '         )        (       (        )',
-    '          (  \' .     \'.   .  \'   )',
-    '         ) ,   )   (  .)   (  ,  (',
-    '          (. )  . (  .  ) . ) .  )',
-    '        (.,___,. \'.,___,.\' .,___,.)',
-    '              \\\\  |||  //',
-    '               \\\\ ||| //',
-    '            ~~~~°~~~~~~~~°~~~~',
-  ],
-  [
-    '            (     )     (      )',
-    '         (      )    )      (    )',
-    '          ) .\'   .  \'  . \'  .  (',
-    '        (  ,  )   ( .  )  ,  )   )',
-    '         ). ( .  )  ( .  ) ( . (  (',
-    '        (.,___,. \'.,___,.\' .,___,.)',
-    '              \\\\  |||  //',
-    '               \\\\ ||| //',
-    '            ~~~~°~~~~~~~~°~~~~',
-  ],
+  '    ) ( ) (\n   (  .  .  )\n    ) (__) (\n      \\||/\n   ~~\u00B0~~~~\u00B0~~',
+  '   ( )(  )(\n   ( .    . )\n    ) (__) (\n      \\||/\n   ~~\u00B0~~~~\u00B0~~',
+  '    (  )( )\n   (  . .   )\n    ) (__) (\n      \\||/\n   ~~\u00B0~~~~\u00B0~~',
 ];
 
+const MIN_DISPLAY_MS = 2000;
+
 export default function CampfireLoadingScreen() {
-  const { active, progress } = useProgress();
+  const { progress } = useProgress();
   const soundEnabled = useSessionStore((s) => s.soundEnabled);
+  const hasCompletedWelcome = useSessionStore((s) => s.hasCompletedWelcome);
+
   const [visible, setVisible] = useState(true);
+  const [fadingOut, setFadingOut] = useState(false);
   const [frame, setFrame] = useState(0);
-  const containerRef = useRef<HTMLDivElement>(null);
+
   const audioStarted = useRef(false);
+  const mountTime = useRef(Date.now());
 
   // Animate fire frames
   useEffect(() => {
-    const id = setInterval(() => {
-      setFrame((f) => (f + 1) % FIRE_FRAMES.length);
-    }, 350);
+    const id = setInterval(() => setFrame((f) => (f + 1) % FIRE_FRAMES.length), 400);
     return () => clearInterval(id);
   }, []);
 
-  // Start/stop campfire audio
+  // Start campfire audio once welcome is done (user gesture unlocks AudioContext)
   useEffect(() => {
-    if (soundEnabled && !audioStarted.current) {
-      startCampfire(0.15);
-      audioStarted.current = true;
-    }
-    return () => {
-      if (audioStarted.current) {
-        stopCampfire(0.8);
-        audioStarted.current = false;
+    if (!hasCompletedWelcome || !soundEnabled || audioStarted.current) return;
+    startCampfire(0.15);
+    audioStarted.current = true;
+  }, [hasCompletedWelcome, soundEnabled]);
+
+  // Returning users: no prior gesture → unlock AudioContext on first touch/click
+  useEffect(() => {
+    if (!hasCompletedWelcome || !soundEnabled) return;
+    if (audioStarted.current) return;
+    const unlock = () => {
+      if (!audioStarted.current) {
+        startCampfire(0.15);
+        audioStarted.current = true;
       }
     };
-  }, [soundEnabled]);
+    window.addEventListener('touchstart', unlock, { once: true, passive: true });
+    window.addEventListener('click', unlock, { once: true });
+    return () => {
+      window.removeEventListener('touchstart', unlock);
+      window.removeEventListener('click', unlock);
+    };
+  }, [hasCompletedWelcome, soundEnabled]);
 
-  // Fade out when loading completes
+  // Fade out when loading completes + min time elapsed + welcome done
   useEffect(() => {
-    if (!active && progress >= 100) {
-      const timer = setTimeout(() => {
-        if (containerRef.current) {
-          containerRef.current.style.transition = 'opacity 1.2s ease-out';
-          containerRef.current.style.opacity = '0';
-        }
-        setTimeout(() => setVisible(false), 1300);
-      }, 400);
-      return () => clearTimeout(timer);
-    }
-  }, [active, progress]);
+    if (!hasCompletedWelcome || fadingOut) return;
+    if (progress < 100) return;
+
+    const elapsed = Date.now() - mountTime.current;
+    const remaining = Math.max(0, MIN_DISPLAY_MS - elapsed);
+
+    const timer = setTimeout(() => {
+      // Cross-fade audio: campfire out, rain in
+      if (audioStarted.current) stopCampfire(1.5);
+      if (soundEnabled) startRain(0.12);
+
+      setFadingOut(true);
+      setTimeout(() => setVisible(false), 1800);
+    }, remaining);
+
+    return () => clearTimeout(timer);
+  }, [progress, hasCompletedWelcome, soundEnabled, fadingOut]);
 
   if (!visible) return null;
 
   const pct = Math.round(progress);
-  const barWidth = 24;
+  const barWidth = 20;
   const filled = Math.round((pct / 100) * barWidth);
-  const bar = '░'.repeat(filled) + ' '.repeat(barWidth - filled);
+  const bar = '\u2591'.repeat(filled) + '\u00B7'.repeat(barWidth - filled);
 
   return (
     <div
-      ref={containerRef}
       style={{
         position: 'fixed',
         inset: 0,
@@ -104,34 +96,26 @@ export default function CampfireLoadingScreen() {
         zIndex: 50,
         fontFamily: 'Courier New, monospace',
         color: '#9e8a6a',
-        letterSpacing: '0.05em',
         userSelect: 'none',
+        opacity: fadingOut ? 0 : 1,
+        transition: fadingOut ? 'opacity 1.6s ease-out' : 'none',
       }}
     >
-      {/* Campfire ASCII art */}
       <pre
         style={{
           margin: 0,
-          fontSize: 'clamp(0.45rem, 1.6vw, 0.75rem)',
-          lineHeight: 1.3,
+          fontSize: 'clamp(0.75rem, 3.5vw, 1.2rem)',
+          lineHeight: 1.4,
           color: '#c4935a',
           textAlign: 'center',
         }}
       >
-        {FIRE_FRAMES[frame].join('\n')}
+        {FIRE_FRAMES[frame]}
       </pre>
 
-      {/* Loading text + bar */}
-      <div
-        style={{
-          marginTop: '2rem',
-          fontSize: '0.8rem',
-          letterSpacing: '0.12em',
-          textAlign: 'center',
-        }}
-      >
-        <div>setting up camp...</div>
-        <div style={{ marginTop: '0.6rem', opacity: 0.7 }}>
+      <div style={{ marginTop: '2rem', fontSize: '0.8rem', letterSpacing: '0.12em', textAlign: 'center' }}>
+        <div style={{ opacity: 0.9 }}>setting up camp...</div>
+        <div style={{ marginTop: '0.6rem', opacity: 0.5 }}>
           [{bar}] {pct}%
         </div>
       </div>

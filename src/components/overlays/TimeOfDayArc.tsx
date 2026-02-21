@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTimeStore, getTimeOfDay } from '../../store/timeStore';
 
 const SIZE = 120;
@@ -98,6 +98,21 @@ export default function TimeOfDayArc() {
       setManual(false);
     }, 3000);
   }, [setManual]);
+
+  // Swallow native touch events so CameraController (on window) doesn't react
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const stop = (e: TouchEvent) => e.stopPropagation();
+    el.addEventListener('touchstart', stop, { passive: true });
+    el.addEventListener('touchmove', stop, { passive: true });
+    el.addEventListener('touchend', stop, { passive: true });
+    return () => {
+      el.removeEventListener('touchstart', stop);
+      el.removeEventListener('touchmove', stop);
+      el.removeEventListener('touchend', stop);
+    };
+  }, []);
 
   return (
     <div
