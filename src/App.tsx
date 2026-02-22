@@ -1,9 +1,11 @@
 import { useEffect, useState, lazy, Suspense } from 'react';
 import { useSessionStore } from './store/sessionStore';
-import { initAudioManager } from './audio/audioManager';
 import WelcomeScreen from './components/WelcomeScreen/WelcomeScreen';
 import CampfireLoadingScreen from './components/CampfireLoadingScreen';
 
+// Lazy-load the heavy 3D scene so the welcome screen renders instantly.
+// The dynamic import fires as soon as App mounts, so Three.js / R3F download
+// in the background while the user is on the welcome screen.
 const TentScene = lazy(() => import('./components/TentScene/TentScene'));
 
 export default function App() {
@@ -22,10 +24,6 @@ export default function App() {
       setShowWelcome(true);
     }
   }, [hasCompletedWelcome, showWelcome]);
-
-  useEffect(() => {
-    initAudioManager();
-  }, []);
 
   return (
     <>

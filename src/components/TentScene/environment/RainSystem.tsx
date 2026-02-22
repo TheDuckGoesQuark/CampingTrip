@@ -9,8 +9,6 @@ const WIND_X = -0.8; // slight wind drift
 
 export default function RainSystem() {
   const effectsEnabled = useSessionStore((s) => s.effectsEnabled);
-  const progress = useTimeStore((s) => s.progress);
-  const nightFactor = getNightFactor(progress);
   const pointsRef = useRef<THREE.Points>(null);
 
   const { positions, velocities } = useMemo(() => {
@@ -28,12 +26,18 @@ export default function RainSystem() {
   useFrame((_, delta) => {
     if (!pointsRef.current || !effectsEnabled) return;
 
+    // Compute nightFactor inside useFrame to avoid React re-renders
+    const nf = getNightFactor(useTimeStore.getState().progress);
+
     // Smoothly fade particle opacity with night factor
     const mat = pointsRef.current.material as THREE.PointsMaterial;
-    mat.opacity = 0.5 * nightFactor;
+    mat.opacity = 0.5 * nf;
+
+    // Hide during full daytime, show during night
+    pointsRef.current.visible = nf >= 0.01;
 
     // Skip animation when fully daytime
-    if (nightFactor < 0.01) return;
+    if (nf < 0.01) return;
 
     const pos = pointsRef.current.geometry.attributes.position as THREE.BufferAttribute;
     const arr = pos.array as Float32Array;
@@ -50,8 +54,9 @@ export default function RainSystem() {
     pos.needsUpdate = true;
   });
 
-  // Don't render during full daytime or when effects disabled
-  if (!effectsEnabled || nightFactor < 0.01) return null;
+  // Only unmount for the static effectsEnabled toggle (user preference),
+  // not for the rapidly-changing nightFactor
+  if (!effectsEnabled) return null;
 
   return (
     <points ref={pointsRef}>

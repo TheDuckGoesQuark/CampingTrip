@@ -2,6 +2,7 @@ import { useRef, useCallback, useEffect, MutableRefObject } from 'react';
 import * as THREE from 'three';
 import { useInteractionStore } from '../../store/interactionStore';
 import SceneLabel from './SceneLabel';
+import { applyHighlight, removeHighlight, type EmissiveCache } from '../../utils/highlight';
 
 interface Props {
   id: string;
@@ -20,9 +21,7 @@ export default function InteractiveObject({
 }: Props) {
   const groupRef = useRef<THREE.Group>(null);
   const leaveTimer = useRef<ReturnType<typeof setTimeout>>() as MutableRefObject<ReturnType<typeof setTimeout> | undefined>;
-  const originalEmissives = useRef<
-    Map<string, { color: THREE.Color; intensity: number }>
-  >(new Map());
+  const emissiveCache = useRef<EmissiveCache>(new Map());
 
   const hoveredId = useInteractionStore((s) => s.hoveredId);
   const focusedId = useInteractionStore((s) => s.focusedId);
@@ -46,46 +45,10 @@ export default function InteractiveObject({
   // Apply / remove warm highlight on child meshes
   useEffect(() => {
     if (!groupRef.current) return;
-
     if (isHighlighted) {
-      groupRef.current.traverse((child) => {
-        if (!(child instanceof THREE.Mesh) || !child.material) return;
-        if (child.userData?.skipHighlight) return;
-        const mats = Array.isArray(child.material)
-          ? child.material
-          : [child.material];
-        mats.forEach((mat, i) => {
-          if (!mat.isMeshStandardMaterial && !mat.isMeshPhysicalMaterial)
-            return;
-          const key = `${child.uuid}-${i}`;
-          if (!originalEmissives.current.has(key)) {
-            originalEmissives.current.set(key, {
-              color: mat.emissive.clone(),
-              intensity: mat.emissiveIntensity,
-            });
-          }
-          mat.emissive.set(0x442200);
-          mat.emissiveIntensity = 0.35;
-        });
-      });
+      applyHighlight(groupRef.current, emissiveCache.current);
     } else {
-      // Restore originals
-      groupRef.current.traverse((child) => {
-        if (!(child instanceof THREE.Mesh) || !child.material) return;
-        if (child.userData?.skipHighlight) return;
-        const mats = Array.isArray(child.material)
-          ? child.material
-          : [child.material];
-        mats.forEach((mat, i) => {
-          const key = `${child.uuid}-${i}`;
-          const orig = originalEmissives.current.get(key);
-          if (orig) {
-            mat.emissive.copy(orig.color);
-            mat.emissiveIntensity = orig.intensity;
-          }
-        });
-      });
-      originalEmissives.current.clear();
+      removeHighlight(groupRef.current, emissiveCache.current);
     }
   }, [isHighlighted]);
 
