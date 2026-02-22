@@ -25,6 +25,16 @@
 
     <noscript>
       <style>
+        html, body {
+          height: auto !important;
+          overflow: auto !important;
+        }
+        #root {
+          display: none !important;
+        }
+        ::-webkit-scrollbar {
+          display: revert !important;
+        }
         body {
           margin: 0;
           background: #0a0612;
