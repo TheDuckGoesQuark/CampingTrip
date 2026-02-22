@@ -1,16 +1,12 @@
-import { useRef, useCallback } from 'react';
+import { useCallback } from 'react';
+import { getAudioContext } from '../audio/audioContext';
 
 // C pentatonic frequencies
 const NOTES = [261.63, 293.66, 329.63, 392.0, 440.0, 523.25];
 
 export function useTypingSound() {
-  const ctxRef = useRef<AudioContext | null>(null);
-
   const playNote = useCallback(() => {
-    if (!ctxRef.current) {
-      ctxRef.current = new AudioContext();
-    }
-    const ctx = ctxRef.current;
+    const ctx = getAudioContext();
 
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();

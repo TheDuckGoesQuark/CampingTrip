@@ -89,20 +89,24 @@ export function lerpKeyframes(stops: { t: number; value: number }[], t: number):
 
 /**
  * Same as lerpKeyframes but for THREE.Color objects.
- * Returns a new Color.
+ *
+ * Pass a `target` Color to avoid per-frame allocations in render loops.
+ * If no target is given a new Color is returned (convenience for one-off use).
  */
 export function lerpColorKeyframes(
   stops: { t: number; color: THREE.Color }[],
   t: number,
+  target?: THREE.Color,
 ): THREE.Color {
-  if (t <= stops[0].t) return stops[0].color.clone();
-  if (t >= stops[stops.length - 1].t) return stops[stops.length - 1].color.clone();
+  const out = target ?? new THREE.Color();
+  if (t <= stops[0].t) return out.copy(stops[0].color);
+  if (t >= stops[stops.length - 1].t) return out.copy(stops[stops.length - 1].color);
   for (let i = 0; i < stops.length - 1; i++) {
     if (t >= stops[i].t && t <= stops[i + 1].t) {
       const frac = (t - stops[i].t) / (stops[i + 1].t - stops[i].t);
       const smooth = THREE.MathUtils.smoothstep(frac, 0, 1);
-      return stops[i].color.clone().lerp(stops[i + 1].color, smooth);
+      return out.copy(stops[i].color).lerp(stops[i + 1].color, smooth);
     }
   }
-  return stops[stops.length - 1].color.clone();
+  return out.copy(stops[stops.length - 1].color);
 }

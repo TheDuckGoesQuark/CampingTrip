@@ -4,14 +4,7 @@
  */
 
 import { useSessionStore } from '../store/sessionStore';
-
-let ctx: AudioContext | null = null;
-
-function getContext(): AudioContext {
-  if (!ctx) ctx = new AudioContext();
-  if (ctx.state === 'suspended') ctx.resume();
-  return ctx;
-}
+import { getAudioContext } from './audioContext';
 
 /** Check if sound is enabled before playing */
 function isMuted(): boolean {
@@ -22,7 +15,7 @@ function isMuted(): boolean {
 // Two quick ascending sine tones — friendly power-on chirp
 export function playLaptopOn() {
   if (isMuted()) return;
-  const ac = getContext();
+  const ac = getAudioContext();
   const t = ac.currentTime;
   const master = ac.createGain();
   master.gain.value = 0.15;
@@ -59,7 +52,7 @@ export function playLaptopOn() {
 // Descending two-tone — gentle power-down
 export function playLaptopOff() {
   if (isMuted()) return;
-  const ac = getContext();
+  const ac = getAudioContext();
   const t = ac.currentTime;
   const master = ac.createGain();
   master.gain.value = 0.12;
@@ -93,7 +86,7 @@ export function playLaptopOff() {
 // Sawtooth through a low-pass filter with a snappy envelope — classic synth stab
 export function playMidiNote() {
   if (isMuted()) return;
-  const ac = getContext();
+  const ac = getAudioContext();
   const t = ac.currentTime;
   const master = ac.createGain();
   master.gain.value = 0.12;
@@ -129,7 +122,7 @@ export function playMidiNote() {
 // Karplus-Strong plucked string synthesis — multiple strings with staggered timing
 export function playGuitarStrum() {
   if (isMuted()) return;
-  const ac = getContext();
+  const ac = getAudioContext();
   const t = ac.currentTime;
   const master = ac.createGain();
   master.gain.value = 0.1;
@@ -188,7 +181,7 @@ function pluckString(
 // Frequency-swept oscillator through formant filters — charmingly retro
 export function playCatMeow() {
   if (isMuted()) return;
-  const ac = getContext();
+  const ac = getAudioContext();
   const t = ac.currentTime;
   const master = ac.createGain();
   master.gain.value = 0.13;

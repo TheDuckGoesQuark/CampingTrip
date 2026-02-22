@@ -4,7 +4,6 @@ import SceneContent from './SceneContent';
 import DebugControls from './DebugControls';
 import InteractionOverlay from './InteractionOverlay';
 import LaptopScreenOverlay from '../overlays/LaptopScreenOverlay';
-import ProjectsOverlay from '../overlays/ProjectsOverlay';
 import TimeOfDayArc from '../overlays/TimeOfDayArc';
 import SettingsMenu from '../overlays/SettingsMenu';
 import Vignette from '../effects/Vignette';
@@ -47,7 +46,10 @@ export default function TentScene({ visible }: TentSceneProps) {
           store.setFocusTarget('default');
         }
       }
-      if (e.key === 'd' || e.key === 'D') {
+      // Debug toggle: Alt+D, dev builds only
+      if (import.meta.env.DEV && e.altKey && e.key === 'd') {
+        // Skip if user is typing in an input
+        if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
         setDebug((prev) => !prev);
       }
     };
@@ -99,7 +101,7 @@ export default function TentScene({ visible }: TentSceneProps) {
           background: 'rgba(0,0,0,0.8)', color: '#0f0', padding: '8px 12px',
           fontFamily: 'monospace', fontSize: 12, borderRadius: 4,
         }}>
-          DEBUG MODE — orbit with mouse, press D to toggle
+          DEBUG MODE — orbit with mouse, Alt+D to toggle
         </div>
       )}
 
@@ -108,8 +110,6 @@ export default function TentScene({ visible }: TentSceneProps) {
 
       {/* Fullscreen laptop "app" overlay */}
       <LaptopScreenOverlay />
-
-      <ProjectsOverlay />
 
       {/* Ambient UI overlays */}
       <Vignette />

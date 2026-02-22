@@ -2,6 +2,7 @@ import { useRef, useEffect } from 'react';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { asset } from '../../../utils/assetPath';
+import { applyMoireFix } from '../../../utils/materialFixes';
 
 const TENT_SCALE = 4;
 
@@ -12,23 +13,7 @@ export default function TentInterior() {
   const groupRef = useRef<THREE.Group>(null);
 
   useEffect(() => {
-    scene.traverse((child) => {
-      if (child instanceof THREE.Mesh) {
-        child.castShadow = true;
-        child.receiveShadow = true;
-        // Fix moiré: reduce normal map intensity and enable anisotropic filtering
-        const mat = child.material as THREE.MeshStandardMaterial;
-        if (mat.normalMap) {
-          mat.normalScale = new THREE.Vector2(0.3, 0.3);
-          mat.normalMap.anisotropy = 16;
-          mat.normalMap.minFilter = THREE.LinearMipmapLinearFilter;
-          mat.normalMap.generateMipmaps = true;
-        }
-        if (mat.map) {
-          mat.map.anisotropy = 16;
-        }
-      }
-    });
+    applyMoireFix(scene);
 
   }, [scene]);
 
