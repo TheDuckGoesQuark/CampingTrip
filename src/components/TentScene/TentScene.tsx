@@ -4,7 +4,8 @@ import SceneContent from './SceneContent';
 import DebugControls from './DebugControls';
 import InteractionOverlay from './InteractionOverlay';
 import LaptopScreenOverlay from '../overlays/LaptopScreenOverlay';
-import ProjectsOverlay from '../overlays/ProjectsOverlay';
+import NotepadOverlay from '../overlays/NotepadOverlay';
+import MusicPlayerOverlay from '../overlays/MusicPlayerOverlay';
 import TimeOfDayArc from '../overlays/TimeOfDayArc';
 import SettingsMenu from '../overlays/SettingsMenu';
 import Vignette from '../effects/Vignette';
@@ -40,7 +41,9 @@ export default function TentScene({ visible }: TentSceneProps) {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         const store = useSceneStore.getState();
-        if (store.laptopFocused) {
+        if (store.notepadFocused) {
+          store.setNotepadFocused(false);
+        } else if (store.laptopFocused) {
           store.setLaptopFocused(false);
         } else {
           store.setFocusTarget('default');
@@ -105,10 +108,10 @@ export default function TentScene({ visible }: TentSceneProps) {
       {/* Hidden buttons for keyboard / screen-reader access to 3D objects */}
       <InteractionOverlay />
 
-      {/* Fullscreen laptop "app" overlay */}
+      {/* Fullscreen overlays */}
       <LaptopScreenOverlay />
-
-      <ProjectsOverlay />
+      <NotepadOverlay />
+      <MusicPlayerOverlay />
 
       {/* Ambient UI overlays */}
       <Vignette />

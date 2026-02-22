@@ -261,3 +261,117 @@ export function playCatMeow() {
 
   setTimeout(() => master.disconnect(), 1000);
 }
+
+// ─── Page flip ──────────────────────────────────────────────────
+// Short burst of filtered noise — crisp paper-turn sound
+export function playPageFlip() {
+  if (isMuted()) return;
+  const ac = getContext();
+  const t = ac.currentTime;
+  const master = ac.createGain();
+  master.gain.value = 0.1;
+  master.connect(ac.destination);
+
+  // White noise burst
+  const len = Math.round(ac.sampleRate * 0.12);
+  const buf = ac.createBuffer(1, len, ac.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) {
+    data[i] = (Math.random() * 2 - 1);
+  }
+  const noise = ac.createBufferSource();
+  noise.buffer = buf;
+
+  // Bandpass for papery texture
+  const bp = ac.createBiquadFilter();
+  bp.type = 'bandpass';
+  bp.frequency.value = 3000;
+  bp.Q.value = 1.5;
+
+  // Fast attack, short decay
+  const env = ac.createGain();
+  env.gain.setValueAtTime(0.001, t);
+  env.gain.linearRampToValueAtTime(0.5, t + 0.01);
+  env.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+
+  noise.connect(bp).connect(env).connect(master);
+  noise.start(t);
+  noise.stop(t + 0.12);
+
+  setTimeout(() => master.disconnect(), 250);
+}
+
+// ─── Soft click (iPod / UI) ─────────────────────────────────────
+// Gentle tick for button presses and navigation
+export function playSoftClick() {
+  if (isMuted()) return;
+  const ac = getContext();
+  const t = ac.currentTime;
+  const master = ac.createGain();
+  master.gain.value = 0.08;
+  master.connect(ac.destination);
+
+  const osc = ac.createOscillator();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(1200, t);
+  osc.frequency.exponentialRampToValueAtTime(800, t + 0.03);
+
+  const env = ac.createGain();
+  env.gain.setValueAtTime(0.4, t);
+  env.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
+
+  osc.connect(env).connect(master);
+  osc.start(t);
+  osc.stop(t + 0.08);
+
+  setTimeout(() => master.disconnect(), 150);
+}
+
+// ─── Window open (CatOS) ────────────────────────────────────────
+// Soft ascending whoosh for opening a window
+export function playWindowOpen() {
+  if (isMuted()) return;
+  const ac = getContext();
+  const t = ac.currentTime;
+  const master = ac.createGain();
+  master.gain.value = 0.07;
+  master.connect(ac.destination);
+
+  // Noise swoosh
+  const len = Math.round(ac.sampleRate * 0.15);
+  const buf = ac.createBuffer(1, len, ac.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) {
+    data[i] = (Math.random() * 2 - 1);
+  }
+  const noise = ac.createBufferSource();
+  noise.buffer = buf;
+
+  const hp = ac.createBiquadFilter();
+  hp.type = 'highpass';
+  hp.frequency.setValueAtTime(800, t);
+  hp.frequency.linearRampToValueAtTime(4000, t + 0.12);
+
+  const env = ac.createGain();
+  env.gain.setValueAtTime(0.001, t);
+  env.gain.linearRampToValueAtTime(0.3, t + 0.04);
+  env.gain.exponentialRampToValueAtTime(0.001, t + 0.14);
+
+  // Subtle tone underneath
+  const osc = ac.createOscillator();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(600, t);
+  osc.frequency.linearRampToValueAtTime(900, t + 0.1);
+  const oscEnv = ac.createGain();
+  oscEnv.gain.setValueAtTime(0.15, t);
+  oscEnv.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+
+  noise.connect(hp).connect(env).connect(master);
+  osc.connect(oscEnv).connect(master);
+  noise.start(t);
+  noise.stop(t + 0.15);
+  osc.start(t);
+  osc.stop(t + 0.15);
+
+  setTimeout(() => master.disconnect(), 300);
+}
