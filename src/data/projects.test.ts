@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import { projects } from './projects';
-import type { Project } from '../types/project';
 
 describe('projects data', () => {
   it('is a non-empty array', () => {
@@ -14,6 +13,7 @@ describe('projects data', () => {
       expect(project).toHaveProperty('url');
       expect(project).toHaveProperty('description');
       expect(project).toHaveProperty('year');
+      expect(project).toHaveProperty('icon');
     }
   });
 
@@ -23,6 +23,10 @@ describe('projects data', () => {
       expect(typeof project.url).toBe('string');
       expect(typeof project.description).toBe('string');
       expect(typeof project.year).toBe('number');
+      expect(typeof project.icon).toBe('string');
+      if (project.color !== undefined) {
+        expect(typeof project.color).toBe('string');
+      }
     }
   });
 
@@ -36,6 +40,12 @@ describe('projects data', () => {
     for (const project of projects) {
       expect(project.year).toBeGreaterThanOrEqual(2000);
       expect(project.year).toBeLessThanOrEqual(new Date().getFullYear() + 1);
+    }
+  });
+
+  it('project icons are non-empty path strings', () => {
+    for (const project of projects) {
+      expect(project.icon.length).toBeGreaterThan(0);
     }
   });
 });

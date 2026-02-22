@@ -7,6 +7,7 @@ import { useInteractionStore } from '../../../store/interactionStore';
 import SceneLabel from '../SceneLabel';
 import { playCatMeow } from '../../../audio/soundEffects';
 import { asset } from '../../../utils/assetPath';
+import { applyHighlight, removeHighlight, type EmissiveCache } from '../../../utils/highlight';
 
 // Credit: "Cat Walk" animation (CC-BY)
 // Cat strolls past the tent outside, looping back and forth
@@ -19,10 +20,10 @@ const WALK_Z = -4.15;
 const WALK_Y = 0.15;
 const PAUSE_DURATION = 6;
 
-useGLTF.preload(asset('models/cat-walk.glb'));
+useGLTF.preload(asset('models/cat-walk.glb'), true);
 
 export default function WalkingCat() {
-  const { scene, animations } = useGLTF(asset('models/cat-walk.glb'));
+  const { scene, animations } = useGLTF(asset('models/cat-walk.glb'), true);
   const groupRef = useRef<THREE.Group>(null);
   const mixerRef = useRef<THREE.AnimationMixer | null>(null);
 
@@ -38,9 +39,7 @@ export default function WalkingCat() {
     pauseTimer: 0,
   });
 
-  const originalEmissives = useRef<
-    Map<string, { color: THREE.Color; intensity: number }>
-  >(new Map());
+  const emissiveCache = useRef<EmissiveCache>(new Map());
 
   const clonedScene = useMemo(() => skeletonClone(scene), [scene]);
 
@@ -71,41 +70,9 @@ export default function WalkingCat() {
   useEffect(() => {
     if (!clonedScene) return;
     if (isHighlighted) {
-      clonedScene.traverse((child: THREE.Object3D) => {
-        if (!(child instanceof THREE.Mesh) || !child.material) return;
-        const mats = Array.isArray(child.material)
-          ? child.material
-          : [child.material];
-        mats.forEach((mat, i) => {
-          if (!mat.isMeshStandardMaterial && !mat.isMeshPhysicalMaterial)
-            return;
-          const key = `${child.uuid}-${i}`;
-          if (!originalEmissives.current.has(key)) {
-            originalEmissives.current.set(key, {
-              color: mat.emissive.clone(),
-              intensity: mat.emissiveIntensity,
-            });
-          }
-          mat.emissive.set(0x442200);
-          mat.emissiveIntensity = 0.35;
-        });
-      });
+      applyHighlight(clonedScene, emissiveCache.current);
     } else {
-      clonedScene.traverse((child: THREE.Object3D) => {
-        if (!(child instanceof THREE.Mesh) || !child.material) return;
-        const mats = Array.isArray(child.material)
-          ? child.material
-          : [child.material];
-        mats.forEach((mat, i) => {
-          const key = `${child.uuid}-${i}`;
-          const orig = originalEmissives.current.get(key);
-          if (orig) {
-            mat.emissive.copy(orig.color);
-            mat.emissiveIntensity = orig.intensity;
-          }
-        });
-      });
-      originalEmissives.current.clear();
+      removeHighlight(clonedScene, emissiveCache.current);
     }
   }, [isHighlighted, clonedScene]);
 

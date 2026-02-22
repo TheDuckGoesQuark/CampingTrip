@@ -3,7 +3,18 @@ import { render, screen, act } from '@testing-library/react';
 import LaptopScreenOverlay from './LaptopScreenOverlay';
 import { useSceneStore } from '../../store/sceneStore';
 
-describe('LaptopScreenOverlay', () => {
+// Mock the sound effects to avoid AudioContext issues
+vi.mock('../../audio/soundEffects', () => ({
+  playWindowOpen: vi.fn(),
+  playSoftClick: vi.fn(),
+  playLaptopOn: vi.fn(),
+  playLaptopOff: vi.fn(),
+  playMidiNote: vi.fn(),
+  playGuitarStrum: vi.fn(),
+  playCatMeow: vi.fn(),
+}));
+
+describe('LaptopScreenOverlay (CatOS)', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     useSceneStore.setState({ laptopFocused: false });
@@ -18,12 +29,11 @@ describe('LaptopScreenOverlay', () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it('mounts when laptop becomes focused', () => {
+  it('mounts CatOS desktop when laptop becomes focused', () => {
     useSceneStore.setState({ laptopFocused: true });
     render(<LaptopScreenOverlay />);
 
-    // Mounted but opacity starts at 0
-    expect(screen.getByText('Coming soon')).toBeInTheDocument();
+    expect(screen.getByText('CatOS')).toBeInTheDocument();
   });
 
   it('fades in after 650ms delay', () => {
@@ -40,19 +50,43 @@ describe('LaptopScreenOverlay', () => {
     expect(overlay.style.opacity).toBe('1');
   });
 
-  it('shows back button', () => {
+  it('shows menu bar with CatOS branding', () => {
     useSceneStore.setState({ laptopFocused: true });
     render(<LaptopScreenOverlay />);
 
-    const backBtn = screen.getByRole('button');
-    expect(backBtn).toBeInTheDocument();
-    expect(backBtn.textContent).toContain('Back to tent');
+    expect(screen.getByText('CatOS')).toBeInTheDocument();
+    expect(screen.getByText('Finder', { exact: true })).toBeInTheDocument();
   });
 
-  it('shows Esc hint', () => {
+  it('shows back to tent button', () => {
+    useSceneStore.setState({ laptopFocused: true });
+    render(<LaptopScreenOverlay />);
+
+    expect(screen.getByText(/Back to tent/)).toBeInTheDocument();
+  });
+
+  it('shows Esc hint on back button', () => {
     useSceneStore.setState({ laptopFocused: true });
     render(<LaptopScreenOverlay />);
 
     expect(screen.getByText('Esc')).toBeInTheDocument();
+  });
+
+  it('renders project desktop icons', () => {
+    useSceneStore.setState({ laptopFocused: true });
+    render(<LaptopScreenOverlay />);
+
+    // Projects from data/projects.ts
+    expect(screen.getByText('Camping Trip')).toBeInTheDocument();
+  });
+
+  it('renders dock with standard icons', () => {
+    useSceneStore.setState({ laptopFocused: true });
+    render(<LaptopScreenOverlay />);
+
+    expect(screen.getByTitle('Finder')).toBeInTheDocument();
+    expect(screen.getByTitle('Terminal')).toBeInTheDocument();
+    expect(screen.getByTitle('Notes')).toBeInTheDocument();
+    expect(screen.getByTitle('Trash')).toBeInTheDocument();
   });
 });

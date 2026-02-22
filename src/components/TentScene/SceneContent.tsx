@@ -26,7 +26,10 @@ import {
   playLaptopOff,
   playGuitarStrum,
   playMidiNote,
+  playPageFlip,
+  playSoftClick,
 } from '../../audio/soundEffects';
+import { useMusicStore } from '../../store/musicStore';
 
 // Environment intensity keyframes (brighter during day)
 const ENV_INT = [
@@ -66,6 +69,18 @@ export default function SceneContent({ debug = false }: Props) {
       else playLaptopOn();
       return !prev;
     });
+  }, []);
+
+  const activateNotepad = useCallback(() => {
+    if (useSceneStore.getState().notepadFocused) return;
+    playPageFlip();
+    useSceneStore.getState().setFocusTarget('default');
+    useSceneStore.getState().setNotepadFocused(true);
+  }, []);
+
+  const activateMusicPlayer = useCallback(() => {
+    playSoftClick();
+    useMusicStore.getState().open();
   }, []);
 
   return (
@@ -122,8 +137,9 @@ export default function SceneContent({ debug = false }: Props) {
 
       <InteractiveObject
         id="shure-mic"
-        label="Shure SM57"
+        label="Music Player"
         labelPosition={[-0.6, 0.8, -0.4]}
+        onActivate={activateMusicPlayer}
       >
         <ShureMic />
       </InteractiveObject>
@@ -141,6 +157,7 @@ export default function SceneContent({ debug = false }: Props) {
         id="notepad"
         label="Notepad"
         labelPosition={[-0.7, 1.0, -0.7]}
+        onActivate={activateNotepad}
       >
         <Notepad />
       </InteractiveObject>

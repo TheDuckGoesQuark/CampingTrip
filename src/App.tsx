@@ -1,21 +1,42 @@
-import { useEffect } from 'react';
+import { useEffect, useState, lazy, Suspense } from 'react';
 import { useSessionStore } from './store/sessionStore';
-import { initAudioManager } from './audio/audioManager';
 import WelcomeScreen from './components/WelcomeScreen/WelcomeScreen';
-import TentScene from './components/TentScene/TentScene';
+import CampfireLoadingScreen from './components/CampfireLoadingScreen';
+
+// Lazy-load the heavy 3D scene so the welcome screen renders instantly.
+// The dynamic import fires as soon as App mounts, so Three.js / R3F download
+// in the background while the user is on the welcome screen.
+const TentScene = lazy(() => import('./components/TentScene/TentScene'));
 
 export default function App() {
   const hasCompletedWelcome = useSessionStore((s) => s.hasCompletedWelcome);
 
+  // Keep welcome mounted during its fade-out animation, and bring it back on reset
+  const [showWelcome, setShowWelcome] = useState(!hasCompletedWelcome);
   useEffect(() => {
-    initAudioManager();
-  }, []);
+    if (hasCompletedWelcome && showWelcome) {
+      // Fade-out done → unmount
+      const timer = setTimeout(() => setShowWelcome(false), 1400);
+      return () => clearTimeout(timer);
+    }
+    if (!hasCompletedWelcome && !showWelcome) {
+      // Reset triggered → bring welcome back
+      setShowWelcome(true);
+    }
+  }, [hasCompletedWelcome, showWelcome]);
 
   return (
     <>
-      {!hasCompletedWelcome && <WelcomeScreen />}
-      {/* TentScene is always mounted so it can preload assets during welcome */}
-      <TentScene visible={hasCompletedWelcome} />
+      {/* Welcome screen — fades out via CSS when completeWelcome fires, then unmounts */}
+      {showWelcome && <WelcomeScreen />}
+      {/* Campfire loading — always mounted, manages its own visibility/audio/fade */}
+      <CampfireLoadingScreen />
+      {/* Defer TentScene until welcome completes so typing animation gets full CPU */}
+      {hasCompletedWelcome && (
+        <Suspense fallback={null}>
+          <TentScene visible={hasCompletedWelcome} />
+        </Suspense>
+      )}
     </>
   );
 }

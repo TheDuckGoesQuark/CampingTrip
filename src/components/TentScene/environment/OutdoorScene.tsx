@@ -74,8 +74,8 @@ function AnimatedSky() {
     if (!meshRef.current) return;
     const p = useTimeStore.getState().progress;
 
-    _top.copy(lerpColorKeyframes(SKY_TOP, p));
-    _bot.copy(lerpColorKeyframes(SKY_BOTTOM, p));
+    lerpColorKeyframes(SKY_TOP, p, _top);
+    lerpColorKeyframes(SKY_BOTTOM, p, _bot);
 
     const colorAttr = meshRef.current.geometry.attributes.color as THREE.BufferAttribute;
     const arr = colorAttr.array as Float32Array;

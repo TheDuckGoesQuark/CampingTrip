@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { useGLTF } from '@react-three/drei';
-import * as THREE from 'three';
 import { asset } from '../../../utils/assetPath';
+import { applyMoireFix } from '../../../utils/materialFixes';
 
 // Credit: "Cosy Picnic Area" on Sketchfab (CC-BY)
 // https://sketchfab.com/3d-models/cosy-picnic-area-0a1fc21d723e454b91314809871e1031
@@ -11,29 +11,10 @@ const SCALE = 2.88;
 // that length runs mostly along Z. Half-length at scale:
 const HALF_LENGTH = (2.85 * SCALE) / 2; // ~4.1 units
 
-useGLTF.preload(asset('models/cosy_picnic_area.glb'));
-
-function applyMoireFix(obj: THREE.Object3D) {
-  obj.traverse((child) => {
-    if (child instanceof THREE.Mesh) {
-      child.castShadow = true;
-      child.receiveShadow = true;
-      const mat = child.material as THREE.MeshStandardMaterial;
-      if (mat.normalMap) {
-        mat.normalScale = new THREE.Vector2(0.3, 0.3);
-        mat.normalMap.anisotropy = 16;
-        mat.normalMap.minFilter = THREE.LinearMipmapLinearFilter;
-        mat.normalMap.generateMipmaps = true;
-      }
-      if (mat.map) {
-        mat.map.anisotropy = 16;
-      }
-    }
-  });
-}
+useGLTF.preload(asset('models/cosy_picnic_area.glb'), true);
 
 export default function PicnicArea() {
-  const { scene } = useGLTF(asset('models/cosy_picnic_area.glb'));
+  const { scene } = useGLTF(asset('models/cosy_picnic_area.glb'), true);
 
   // Clone for the second blanket so we don't share the same scene graph
   const clonedScene = useMemo(() => scene.clone(true), [scene]);

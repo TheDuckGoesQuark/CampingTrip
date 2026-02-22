@@ -7,8 +7,8 @@ describe('useSceneStore', () => {
       wakeUpDone: false,
       tentDoorState: 'open',
       lanternOn: true,
-      laptopState: 'in-bag',
       laptopFocused: false,
+      notepadFocused: false,
       currentScene: 'tent',
       focusTarget: 'default',
     });
@@ -19,8 +19,8 @@ describe('useSceneStore', () => {
     expect(state.wakeUpDone).toBe(false);
     expect(state.tentDoorState).toBe('open');
     expect(state.lanternOn).toBe(true);
-    expect(state.laptopState).toBe('in-bag');
     expect(state.laptopFocused).toBe(false);
+    expect(state.notepadFocused).toBe(false);
     expect(state.currentScene).toBe('tent');
     expect(state.focusTarget).toBe('default');
   });
@@ -50,22 +50,20 @@ describe('useSceneStore', () => {
     expect(useSceneStore.getState().lanternOn).toBe(true);
   });
 
-  it('setLaptopState transitions through laptop states', () => {
-    const states: Array<'in-bag' | 'pulled-out' | 'open' | 'closing'> = [
-      'in-bag', 'pulled-out', 'open', 'closing',
-    ];
-    for (const s of states) {
-      useSceneStore.getState().setLaptopState(s);
-      expect(useSceneStore.getState().laptopState).toBe(s);
-    }
-  });
-
   it('setLaptopFocused toggles focus state', () => {
     useSceneStore.getState().setLaptopFocused(true);
     expect(useSceneStore.getState().laptopFocused).toBe(true);
 
     useSceneStore.getState().setLaptopFocused(false);
     expect(useSceneStore.getState().laptopFocused).toBe(false);
+  });
+
+  it('setNotepadFocused toggles focus state', () => {
+    useSceneStore.getState().setNotepadFocused(true);
+    expect(useSceneStore.getState().notepadFocused).toBe(true);
+
+    useSceneStore.getState().setNotepadFocused(false);
+    expect(useSceneStore.getState().notepadFocused).toBe(false);
   });
 
   it('setCurrentScene switches scenes', () => {
@@ -77,8 +75,8 @@ describe('useSceneStore', () => {
   });
 
   it('setFocusTarget changes camera preset target', () => {
-    const targets: Array<'default' | 'lantern' | 'laptop' | 'door' | 'guitar'> = [
-      'default', 'lantern', 'laptop', 'door', 'guitar',
+    const targets: Array<'default' | 'lantern' | 'laptop' | 'door' | 'guitar' | 'notepad'> = [
+      'default', 'lantern', 'laptop', 'door', 'guitar', 'notepad',
     ];
     for (const t of targets) {
       useSceneStore.getState().setFocusTarget(t);
