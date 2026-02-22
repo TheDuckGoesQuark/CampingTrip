@@ -4,10 +4,199 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>campingtrip</title>
+    <title>Jordan's Campsite</title>
+    <meta name="description" content="A cosy 3D camping scene — sit inside a tent on a rainy night with a crackling campfire, a wandering cat, and a lantern overhead. Personal website of Jordan Mackie." />
+    <meta name="author" content="Jordan Mackie" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Jordan's Campsite" />
+    <meta property="og:description" content="A cosy 3D camping scene — sit inside a tent on a rainy night with a crackling campfire, a wandering cat, and a lantern overhead." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://jordanscamp.site" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Jordan's Campsite" />
+    <meta name="twitter:description" content="A cosy 3D camping scene — sit inside a tent on a rainy night." />
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+
+    <noscript>
+      <style>
+        body {
+          margin: 0;
+          background: #0a0612;
+          color: #e8d5b0;
+          font-family: 'Courier New', Courier, monospace;
+          line-height: 1.6;
+        }
+        .ns-wrap {
+          max-width: 72ch;
+          margin: 0 auto;
+          padding: 2rem 1rem;
+        }
+        .ns-art {
+          white-space: pre;
+          font-size: clamp(0.45rem, 1.5vw, 0.85rem);
+          line-height: 1.2;
+          color: #9e8a6a;
+          overflow-x: auto;
+          text-align: center;
+          margin-bottom: 2rem;
+        }
+        .ns-wrap h1 {
+          font-family: Georgia, serif;
+          color: #ffb347;
+          font-size: 1.6rem;
+          margin-bottom: 0.5rem;
+        }
+        .ns-wrap h2 {
+          color: #ffb347;
+          font-size: 1rem;
+          margin-top: 2rem;
+          margin-bottom: 0.5rem;
+          border-bottom: 1px solid #332a1a;
+          padding-bottom: 0.25rem;
+        }
+        .ns-wrap p, .ns-wrap li {
+          color: #e8d5b0;
+          font-size: 0.9rem;
+        }
+        .ns-wrap a {
+          color: #ffb347;
+          text-decoration: none;
+        }
+        .ns-wrap a:hover {
+          text-decoration: underline;
+        }
+        .ns-wrap ul {
+          list-style: none;
+          padding: 0;
+        }
+        .ns-wrap li::before {
+          content: '~ ';
+          color: #9e8a6a;
+        }
+        .ns-credits {
+          margin-top: 2rem;
+          padding-top: 1rem;
+          border-top: 1px solid #332a1a;
+          font-size: 0.8rem;
+          color: #9e8a6a;
+        }
+        .ns-credits a {
+          color: #9e8a6a;
+        }
+        .ns-credits li {
+          font-size: 0.8rem;
+          color: #9e8a6a;
+        }
+        .ns-note {
+          background: #1a1024;
+          padding: 1rem;
+          border-radius: 4px;
+          margin: 1.5rem 0;
+          font-size: 0.85rem;
+          color: #9e8a6a;
+        }
+      </style>
+
+      <div class="ns-wrap">
+        <div class="ns-art" role="img" aria-label="ASCII art of a camping scene with a tent, campfire, cat, and trees">
+         .  *    .       *      .    *
+  *        .       .       *          .
+       *       .     *           .
+
+           /\          /\          /\
+          /  \   _____/  \___    /  \
+         /    \ /              \/    \
+        /      |               |      \
+       /       |               |       \
+      /________|    /\_/\_     |________\
+                   / .--. \
+                  /  | .. |  \
+                 /   | .. |   \
+                /    |    |    \
+               /     | .. |     \
+              /______|____|______\
+                      |  |
+            _ . _ .   |  |   . _ . _
+           |_|_|_|_|  |__|  |_|_|_|_|
+                      /  \
+                     / ,, \
+                      '  '
+                   ~campfire~
+
+              /\  ___   /\_/\   ___  /\
+             /  \/   \ ( o.o ) /   \/  \
+            /   /\    \ &gt; ^ &lt; /    /\   \
+                 ^^    ^     ^    ^^
+</div>
+
+        <h1>Jordan's Campsite</h1>
+        <p>
+          A cosy 3D camping scene built with React Three Fiber.
+          Sit inside a tent on a rainy night &mdash; there's a lantern overhead,
+          a cat strolling past, a campfire crackling outside, and a laptop
+          with my projects. Enable JavaScript to experience the full
+          interactive scene.
+        </p>
+
+        <div class="ns-note">
+          This site is an interactive 3D experience that requires JavaScript.
+          Below is a text version of everything you'd find inside the tent.
+        </div>
+
+        <h2>About</h2>
+        <p>
+          Hi, I'm Jordan Mackie. This is my personal website &mdash; a geocities-style
+          art experiment disguised as a camping trip. The scene has a day/night
+          cycle, spatial audio, and a few things to click on.
+        </p>
+
+        <h2>Links</h2>
+        <ul>
+          <li><a href="https://github.com/TheDuckGoesQuark">GitHub</a></li>
+        </ul>
+
+        <h2>What's in the tent</h2>
+        <ul>
+          <li>A laptop with my projects</li>
+          <li>An acoustic guitar</li>
+          <li>A moka pot for coffee</li>
+          <li>A notepad</li>
+          <li>A midi controller and audio interface for making music</li>
+          <li>A lantern you can toggle on and off</li>
+          <li>A cat named Smittens who wanders past</li>
+          <li>A campfire and picnic area outside</li>
+        </ul>
+
+        <div class="ns-credits">
+          <h2>3D model credits</h2>
+          <p>All models used under CC-BY licenses:</p>
+          <ul>
+            <li><a href="https://sketchfab.com/3d-models/stylized-campfire-3b507b1eb4c142218a4b3baa043e3ed4">Stylized Campfire</a> by Natalia Campos</li>
+            <li><a href="https://sketchfab.com/3d-models/cosy-picnic-area-0a1fc21d723e454b91314809871e1031">Cosy Picnic Area</a></li>
+            <li><a href="https://sketchfab.com/3d-models/laptop-7d870e900889481395b4a575b9fa8c3e">Laptop</a></li>
+            <li><a href="https://sketchfab.com/3d-models/shure-sm57-dynamic-microphone-ec2dc94e022547beadee622b1ff34a5d">Shure SM57 Microphone</a></li>
+            <li><a href="https://sketchfab.com/3d-models/moka-pot-2ca52d750d95471a953fb2c9eb577da6">Moka Pot</a></li>
+            <li><a href="https://sketchfab.com/3d-models/notepadb-0b30d2efe63f41b0a812904b610fe577">Notepad</a></li>
+            <li><a href="https://sketchfab.com/3d-models/focusrite-scarlett-solo-interface-f09111be4a5c48228c3b898965d62bba">Focusrite Scarlett Solo</a></li>
+            <li><a href="https://sketchfab.com/3d-models/akai-mpk-mini-midi-controller-89eae01d0547430bb8e10110eaadaa81">Akai MPK Mini Controller</a></li>
+            <li>Acoustic Guitar (CC-BY via Sketchfab)</li>
+            <li>Cat Walk animation (CC-BY via Sketchfab)</li>
+          </ul>
+        </div>
+
+        <div class="ns-credits">
+          <p>
+            Source code: <a href="https://github.com/TheDuckGoesQuark/CampingTrip">MIT License</a>.
+            Design &amp; assets: <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/">CC BY-NC-ND 4.0</a>.
+          </p>
+        </div>
+      </div>
+    </noscript>
   </body>
 </html>
