@@ -6,9 +6,9 @@ import { startRain } from '../audio/rainSynth';
 
 // Compact fire frames — 5 lines, ~16 chars wide. Recognisable on narrow screens.
 const FIRE_FRAMES = [
-  '    ) ( ) (\n   (  .  .  )\n    ) (__) (\n      \\||/\n   ~~\u00B0~~~~\u00B0~~',
-  '   ( )(  )(\n   ( .    . )\n    ) (__) (\n      \\||/\n   ~~\u00B0~~~~\u00B0~~',
-  '    (  )( )\n   (  . .   )\n    ) (__) (\n      \\||/\n   ~~\u00B0~~~~\u00B0~~',
+  "     )  (\n    (  ,')\n   ( '  , )\n    ( ,' )\n      \\||/\n   ~~\u00B0~~~~\u00B0~~",
+  "    (  )\n    (', , )\n   (  , ' )\n    (', )\n      \\||/\n   ~~\u00B0~~~~\u00B0~~",
+  "      )(\n    ( ,  )\n   (' ,  ')\n    ( ,')\n      \\||/\n   ~~\u00B0~~~~\u00B0~~",
 ];
 
 const MIN_DISPLAY_MS = 2000;

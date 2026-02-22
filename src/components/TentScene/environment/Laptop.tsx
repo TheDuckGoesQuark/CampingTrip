@@ -33,6 +33,9 @@ export default function Laptop({ screenOn }: Props) {
   const groupRef = useRef<THREE.Group>(null);
   const logoMeshRef = useRef<THREE.Mesh>(null);
   const screenMeshes = useRef<THREE.Mesh[]>([]);
+  const lightMeshes = useRef<
+    { mat: THREE.MeshStandardMaterial; color: THREE.Color; intensity: number }[]
+  >([]);
   const screenCenter = useRef(new THREE.Vector3(0, 12, -3));
 
   const laptopFocused = useSceneStore((s) => s.laptopFocused);
@@ -43,10 +46,12 @@ export default function Laptop({ screenOn }: Props) {
   const focusedId = useInteractionStore((s) => s.focusedId);
   const setHovered = useInteractionStore((s) => s.setHovered);
   const isLogoHighlighted = hoveredId === 'projects' || focusedId === 'projects';
+  const isLaptopHighlighted = hoveredId === 'laptop' || focusedId === 'laptop';
 
-  // Initial setup: find screen meshes, mark skipHighlight, turn screen off
+  // Initial setup: find screen meshes and emissive lights, configure materials
   useEffect(() => {
     const screens: THREE.Mesh[] = [];
+    const lights: typeof lightMeshes.current = [];
 
     scene.traverse((child) => {
       if (!(child instanceof THREE.Mesh)) return;
@@ -75,13 +80,22 @@ export default function Laptop({ screenOn }: Props) {
         }
       } else {
         // Non-screen meshes (body, keyboard, bezel): fix dark materials
-        // Reduce metalness so scene lights contribute; keep emissive at zero
-        // so InteractiveObject's hover highlight is clearly visible
         const mat = child.material as THREE.MeshStandardMaterial;
         if (mat?.isMeshStandardMaterial) {
           mat.envMapIntensity = 3.0;
           mat.metalness = Math.min(mat.metalness, 0.65);
           mat.roughness = Math.max(mat.roughness, 0.35);
+
+          // Emissive-mapped meshes (LEDs, indicators): toggle on hover
+          if (mat.emissiveMap) {
+            lights.push({
+              mat,
+              color: mat.emissive.clone(),
+              intensity: mat.emissiveIntensity || 1,
+            });
+            child.userData.skipHighlight = true;
+            mat.emissiveIntensity = 0;
+          }
 
           const hsl = { h: 0, s: 0, l: 0 };
           mat.color.getHSL(hsl);
@@ -94,6 +108,7 @@ export default function Laptop({ screenOn }: Props) {
     });
 
     screenMeshes.current = screens;
+    lightMeshes.current = lights;
 
     // Compute screen center for logo placement.
     // Force GLTF internal transforms to resolve first — on first load,
@@ -116,6 +131,19 @@ export default function Laptop({ screenOn }: Props) {
 
     }
   }, [scene]);
+
+  // Toggle emissive lights (LEDs, indicators) on hover — same pattern as Scarlett Solo / MPK
+  useEffect(() => {
+    lightMeshes.current.forEach(({ mat, color, intensity }) => {
+      if (isLaptopHighlighted) {
+        mat.emissive.copy(color);
+        mat.emissiveIntensity = intensity;
+      } else {
+        mat.emissiveIntensity = 0;
+      }
+      mat.needsUpdate = true;
+    });
+  }, [isLaptopHighlighted]);
 
   // Set initial transform imperatively (so GSAP can animate without React overriding)
   useEffect(() => {

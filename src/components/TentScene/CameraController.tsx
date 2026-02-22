@@ -33,6 +33,10 @@ const JOYSTICK_INERTIA = 0.88;
 // How fast accumulated angle coasts to a stop when joystick is released
 const JOYSTICK_COAST_DECAY = 0.92;
 
+// Touch drag: angle units per full-screen-width drag
+const DRAG_SENSITIVITY = 1.2;
+const DRAG_THRESHOLD = 10; // px before a touch is treated as a drag
+
 // Gyroscope gentle additive layer
 const GYRO_WEIGHT = 0.12;
 
@@ -46,7 +50,7 @@ const isTouchDevice = () =>
   typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches;
 
 export default function CameraController() {
-  const { camera } = useThree();
+  const { camera, gl } = useThree();
   const time = useRef(0);
 
   // Shared output that feeds the frame loop
@@ -66,6 +70,19 @@ export default function CameraController() {
 
   // Saved camera angle for restoring after laptop overlay
   const savedAngleRef = useRef({ x: 0, y: 0 });
+
+  // Mobile: touch drag state (direct finger drag on canvas)
+  const touchDragRef = useRef({
+    id: null as number | null,
+    active: false,
+    startX: 0,
+    startY: 0,
+    startAngleX: 0,
+    startAngleY: 0,
+    lastX: 0,
+    lastTime: 0,
+    velX: 0,
+  });
 
   const lookAt = useRef(CAMERA_PRESETS.default.target.clone());
   const basePos = useRef(CAMERA_PRESETS.default.pos.clone());
@@ -165,8 +182,84 @@ export default function CameraController() {
       gyroRef.current.y = Math.max(-0.5, Math.min(0.5, ((e.beta ?? 45) - 45) / 45));
     };
 
+    // ── Mobile: touch drag on canvas for direct angle control ──
+    const canvas = gl.domElement;
+    const drag = touchDragRef.current;
+
+    const onTouchStart = (e: TouchEvent) => {
+      if (drag.id !== null) return; // already tracking a touch
+      if (useSceneStore.getState().laptopFocused) return;
+      const t = e.changedTouches[0];
+      drag.id = t.identifier;
+      drag.active = false; // not yet — need to exceed threshold
+      drag.startX = t.clientX;
+      drag.startY = t.clientY;
+      drag.startAngleX = angleRef.current.x;
+      drag.startAngleY = angleRef.current.y;
+      drag.lastX = t.clientX;
+      drag.lastTime = performance.now();
+      drag.velX = 0;
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (drag.id === null) return;
+      let touch: Touch | null = null;
+      for (let i = 0; i < e.touches.length; i++) {
+        if (e.touches[i].identifier === drag.id) { touch = e.touches[i]; break; }
+      }
+      if (!touch) return;
+
+      const dx = touch.clientX - drag.startX;
+      const dy = touch.clientY - drag.startY;
+
+      if (!drag.active) {
+        if (Math.abs(dx) < DRAG_THRESHOLD && Math.abs(dy) < DRAG_THRESHOLD) return;
+        drag.active = true;
+        // Kill any coasting velocity so it doesn't fight the drag
+        velocityRef.current.x = 0;
+        velocityRef.current.y = 0;
+      }
+
+      // Map horizontal delta to angle (inverted: drag right → look left)
+      angleRef.current.x = Math.max(-ANGLE_CLAMP, Math.min(ANGLE_CLAMP,
+        drag.startAngleX - (dx / window.innerWidth) * DRAG_SENSITIVITY,
+      ));
+      // Gentle vertical
+      angleRef.current.y = Math.max(-ANGLE_CLAMP, Math.min(ANGLE_CLAMP,
+        drag.startAngleY + (dy / window.innerHeight) * DRAG_SENSITIVITY * 0.35,
+      ));
+
+      // Track velocity for release inertia
+      const now = performance.now();
+      const dt = (now - drag.lastTime) / 1000;
+      if (dt > 0.001) {
+        drag.velX = -(touch.clientX - drag.lastX) / window.innerWidth * DRAG_SENSITIVITY / dt;
+      }
+      drag.lastX = touch.clientX;
+      drag.lastTime = now;
+    };
+
+    const onTouchEnd = (e: TouchEvent) => {
+      if (drag.id === null) return;
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        if (e.changedTouches[i].identifier === drag.id) {
+          if (drag.active) {
+            // Hand off velocity to the coast/decay system
+            velocityRef.current.x = drag.velX * 0.25;
+          }
+          drag.id = null;
+          drag.active = false;
+          return;
+        }
+      }
+    };
+
     if (isTouch) {
       window.addEventListener('deviceorientation', onOrientation, { passive: true });
+      canvas.addEventListener('touchstart', onTouchStart, { passive: true });
+      canvas.addEventListener('touchmove', onTouchMove, { passive: true });
+      canvas.addEventListener('touchend', onTouchEnd, { passive: true });
+      canvas.addEventListener('touchcancel', onTouchEnd, { passive: true });
     } else {
       window.addEventListener('mousemove', onMouseMove, { passive: true });
     }
@@ -174,8 +267,12 @@ export default function CameraController() {
     return () => {
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('deviceorientation', onOrientation);
+      canvas.removeEventListener('touchstart', onTouchStart);
+      canvas.removeEventListener('touchmove', onTouchMove);
+      canvas.removeEventListener('touchend', onTouchEnd);
+      canvas.removeEventListener('touchcancel', onTouchEnd);
     };
-  }, []);
+  }, [gl]);
 
   useFrame((_, delta) => {
     const storeState = useSceneStore.getState();
@@ -187,13 +284,16 @@ export default function CameraController() {
 
     // Merge inputs
     if (isTouchDevice()) {
+      // When touch drag is active, skip joystick velocity — drag writes angleRef directly
+      const dragging = touchDragRef.current.active;
+
       // Smooth joystick velocity with inertia (inverted X for left/right swap)
-      if (mobileInput.active && !storeState.laptopFocused) {
+      if (!dragging && mobileInput.active && !storeState.laptopFocused) {
         const targetVx = -mobileInput.x * JOYSTICK_SPEED;
         const targetVy = mobileInput.y * JOYSTICK_SPEED;
         velocityRef.current.x += (targetVx - velocityRef.current.x) * (1 - JOYSTICK_INERTIA);
         velocityRef.current.y += (targetVy - velocityRef.current.y) * (1 - JOYSTICK_INERTIA);
-      } else if (!storeState.laptopFocused) {
+      } else if (!dragging && !storeState.laptopFocused) {
         // Coast to a stop when released
         velocityRef.current.x *= JOYSTICK_COAST_DECAY;
         velocityRef.current.y *= JOYSTICK_COAST_DECAY;
@@ -202,8 +302,8 @@ export default function CameraController() {
         if (Math.abs(velocityRef.current.y) < 0.001) velocityRef.current.y = 0;
       }
 
-      // Accumulate smoothed velocity into angle (skip accumulation during laptop focus — GSAP handles it)
-      if (!storeState.laptopFocused) {
+      // Accumulate smoothed velocity into angle (skip during drag or laptop focus)
+      if (!dragging && !storeState.laptopFocused) {
         angleRef.current.x += velocityRef.current.x * delta;
         angleRef.current.y += velocityRef.current.y * delta;
         angleRef.current.x = Math.max(-ANGLE_CLAMP, Math.min(ANGLE_CLAMP, angleRef.current.x));

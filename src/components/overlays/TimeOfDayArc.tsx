@@ -56,7 +56,6 @@ export default function TimeOfDayArc() {
 
   const [dragging, setDragging] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const releaseTimer = useRef<ReturnType<typeof setTimeout>>();
 
   const { isDaytime, timeStr } = getTimeOfDay(progress);
   const pos = arcPoint(progress);
@@ -71,7 +70,6 @@ export default function TimeOfDayArc() {
       (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
       setDragging(true);
       setManual(true);
-      clearTimeout(releaseTimer.current);
 
       if (containerRef.current) {
         const rect = containerRef.current.getBoundingClientRect();
@@ -92,12 +90,7 @@ export default function TimeOfDayArc() {
 
   const endDrag = useCallback(() => {
     setDragging(false);
-    // Return to real time after 3 seconds of inactivity
-    clearTimeout(releaseTimer.current);
-    releaseTimer.current = setTimeout(() => {
-      setManual(false);
-    }, 3000);
-  }, [setManual]);
+  }, []);
 
   // Swallow native touch events so CameraController (on window) doesn't react
   useEffect(() => {
