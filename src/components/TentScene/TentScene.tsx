@@ -9,6 +9,7 @@ import MusicPlayerOverlay from '../overlays/MusicPlayerOverlay';
 import TimeOfDayArc from '../overlays/TimeOfDayArc';
 import SettingsMenu from '../overlays/SettingsMenu';
 import Vignette from '../effects/Vignette';
+import VirtualJoystick from '../VirtualJoystick';
 import { useSceneStore } from '../../store/sceneStore';
 
 interface TentSceneProps {
@@ -28,11 +29,11 @@ export default function TentScene({ visible }: TentSceneProps) {
       // Fade out the black overlay
       const timer = setTimeout(() => {
         if (overlayRef.current) {
-          overlayRef.current.style.transition = 'opacity 2.5s ease-out';
+          overlayRef.current.style.transition = 'opacity 1.2s ease-out';
           overlayRef.current.style.opacity = '0';
         }
         setFadeIn(false);
-      }, 300);
+      }, 100);
       return () => clearTimeout(timer);
     }
   }, [visible, fadeIn]);
@@ -49,7 +50,10 @@ export default function TentScene({ visible }: TentSceneProps) {
           store.setFocusTarget('default');
         }
       }
-      if (e.key === 'd' || e.key === 'D') {
+      // Debug toggle: Alt+D, dev builds only
+      if (import.meta.env.DEV && e.altKey && e.key === 'd') {
+        // Skip if user is typing in an input
+        if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
         setDebug((prev) => !prev);
       }
     };
@@ -71,7 +75,7 @@ export default function TentScene({ visible }: TentSceneProps) {
         shadows
         camera={{ position: [0, 2.8, 3.5], fov: 69, near: 0.1, far: 200 }}
         gl={{ antialias: true, alpha: false }}
-        style={{ width: '100%', height: '100dvh', display: 'block' }}
+        style={{ width: '100%', height: '100dvh', display: 'block', touchAction: 'manipulation' }}
         aria-label="Interactive 3D tent scene — use Tab to navigate objects, Enter to interact"
         role="application"
       >
@@ -101,7 +105,7 @@ export default function TentScene({ visible }: TentSceneProps) {
           background: 'rgba(0,0,0,0.8)', color: '#0f0', padding: '8px 12px',
           fontFamily: 'monospace', fontSize: 12, borderRadius: 4,
         }}>
-          DEBUG MODE — orbit with mouse, press D to toggle
+          DEBUG MODE — orbit with mouse, Alt+D to toggle
         </div>
       )}
 
@@ -117,6 +121,7 @@ export default function TentScene({ visible }: TentSceneProps) {
       <Vignette />
       <TimeOfDayArc />
       <SettingsMenu />
+      <VirtualJoystick />
     </div>
   );
 }

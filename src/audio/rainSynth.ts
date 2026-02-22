@@ -4,18 +4,13 @@
  * for natural fluctuation (gusts of heavier rain, lulls, drip patterns).
  */
 
-let ctx: AudioContext | null = null;
+import { getAudioContext } from './audioContext';
+
 let masterGain: GainNode | null = null;
 let sources: AudioBufferSourceNode[] = [];
 let playing = false;
 let lfoInterval: ReturnType<typeof setInterval> | null = null;
 let dripInterval: ReturnType<typeof setTimeout> | null = null;
-
-function getContext() {
-  if (!ctx) ctx = new AudioContext();
-  if (ctx.state === 'suspended') ctx.resume();
-  return ctx;
-}
 
 function createNoiseBuffer(context: AudioContext, seconds = 6): AudioBuffer {
   const sr = context.sampleRate;
@@ -51,7 +46,7 @@ function createWhiteBuffer(context: AudioContext, seconds = 4): AudioBuffer {
 
 export function startRain(volume = 0.15) {
   if (playing) return;
-  const context = getContext();
+  const context = getAudioContext();
   sources = [];
 
   masterGain = context.createGain();
@@ -183,14 +178,16 @@ export function startRain(volume = 0.15) {
 }
 
 export function setRainVolume(volume: number, fadeTime = 0.8) {
-  if (!masterGain || !ctx) return;
+  if (!masterGain || !playing) return;
+  const ctx = getAudioContext();
   masterGain.gain.cancelScheduledValues(ctx.currentTime);
   masterGain.gain.setValueAtTime(masterGain.gain.value, ctx.currentTime);
   masterGain.gain.linearRampToValueAtTime(volume, ctx.currentTime + fadeTime);
 }
 
 export function stopRain(fadeTime = 1.5) {
-  if (!masterGain || !ctx) return;
+  if (!masterGain || !playing) return;
+  const ctx = getAudioContext();
   masterGain.gain.cancelScheduledValues(ctx.currentTime);
   masterGain.gain.setValueAtTime(masterGain.gain.value, ctx.currentTime);
   masterGain.gain.linearRampToValueAtTime(0, ctx.currentTime + fadeTime);

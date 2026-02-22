@@ -24,5 +24,15 @@ body {
   overscroll-behavior: none;
 }
 
+/* Disable blue tap highlight on mobile */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Allow touch-drag for camera control on the canvas */
+canvas {
+  touch-action: none;
+}
+
 /* Hide scrollbar globally — everything is in-scene */
 ::-webkit-scrollbar { display: none; }

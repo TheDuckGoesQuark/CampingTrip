@@ -8,7 +8,7 @@ import { asset } from '../../../utils/assetPath';
 // Credit: "Notepad" on Sketchfab (CC-BY)
 // https://sketchfab.com/3d-models/notepadb-0b30d2efe63f41b0a812904b610fe577
 
-useGLTF.preload(asset('models/notepadb.glb'));
+useGLTF.preload(asset('models/notepadb.glb'), true);
 
 // Resting transform (inside tent)
 const REST_POS: [number, number, number] = [-0.7, 0.4, -0.7];
@@ -21,7 +21,7 @@ const FOCUS_ROT: [number, number, number] = [-0.3, 0, 0];
 const FOCUS_SCALE: [number, number, number] = [0.012, 0.012, 0.012];
 
 export default function Notepad() {
-  const { scene } = useGLTF(asset('models/notepadb.glb'));
+  const { scene } = useGLTF(asset('models/notepadb.glb'), true);
   const groupRef = useRef<THREE.Group>(null);
   const notepadFocused = useSceneStore((s) => s.notepadFocused);
 

@@ -3,5 +3,16 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  base: '/CampingTrip/',
+  base: '/',
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          three: ['three'],
+          'r3f': ['@react-three/fiber', '@react-three/drei'],
+          vendor: ['react', 'react-dom', 'zustand', 'gsap'],
+        },
+      },
+    },
+  },
 })

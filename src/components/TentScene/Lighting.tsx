@@ -134,20 +134,20 @@ export default function Lighting({ debug = false }: LightingProps) {
 
     // ── Ambient ──
     if (ambientRef.current) {
-      ambientRef.current.color.copy(lerpColorKeyframes(AMBIENT_COLORS, p));
+      lerpColorKeyframes(AMBIENT_COLORS, p, ambientRef.current.color);
       ambientRef.current.intensity = lerpKeyframes(AMBIENT_INT, p);
     }
 
     // ── Hemisphere ──
     if (hemiRef.current) {
-      hemiRef.current.color.copy(lerpColorKeyframes(HEMI_SKY, p));
-      hemiRef.current.groundColor.copy(lerpColorKeyframes(HEMI_GROUND, p));
+      lerpColorKeyframes(HEMI_SKY, p, hemiRef.current.color);
+      lerpColorKeyframes(HEMI_GROUND, p, hemiRef.current.groundColor);
       hemiRef.current.intensity = lerpKeyframes(HEMI_INT, p);
     }
 
     // ── Main overhead ──
     if (mainRef.current) {
-      mainRef.current.color.copy(lerpColorKeyframes(MAIN_COLORS, p));
+      lerpColorKeyframes(MAIN_COLORS, p, mainRef.current.color);
       mainRef.current.intensity = lerpKeyframes(MAIN_INT, p);
     }
 
