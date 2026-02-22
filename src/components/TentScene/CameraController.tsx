@@ -12,6 +12,7 @@ const CAMERA_PRESETS: Record<FocusTarget, { pos: THREE.Vector3; target: THREE.Ve
   laptop:  { pos: new THREE.Vector3(-1.2, 0.6, 1.5), target: new THREE.Vector3(-1.5, 0.3, 0.5) },
   door:    { pos: new THREE.Vector3(0, 2.2, 1.5),    target: new THREE.Vector3(0, 1.5, -5) },
   guitar:  { pos: new THREE.Vector3(1.2, 0.6, 0.5),  target: new THREE.Vector3(1.6, 0.3, -1.2) },
+  notepad: { pos: new THREE.Vector3(-0.4, 0.8, 0.8), target: new THREE.Vector3(-0.7, 0.4, -0.7) },
 };
 
 // Desktop mouse parallax amounts (unchanged)
@@ -277,6 +278,9 @@ export default function CameraController() {
   useFrame((_, delta) => {
     const storeState = useSceneStore.getState();
     if (!storeState.wakeUpDone) return;
+
+    // Freeze camera while notepad is in focus mode
+    if (storeState.notepadFocused) return;
 
     time.current += delta;
     const t = time.current;

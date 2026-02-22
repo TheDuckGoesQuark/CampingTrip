@@ -3,4 +3,6 @@ export interface Project {
   url: string;
   description: string;
   year: number;
+  icon: string;
+  color?: string;
 }
