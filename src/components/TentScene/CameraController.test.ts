@@ -20,7 +20,6 @@ const CAMERA_PRESETS = {
 };
 
 const LOOK_X = 0.8;
-const LOOK_Y = 0.4;
 const POS_X = 0.12;
 const POS_Y = 0.08;
 const BREATHE_SPEED = 0.22;

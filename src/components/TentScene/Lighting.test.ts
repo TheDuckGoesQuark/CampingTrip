@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import * as THREE from 'three';
 import {
   lerpKeyframes,
-  lerpColorKeyframes,
   getNightFactor,
 } from '../../store/timeStore';
 
@@ -87,7 +86,10 @@ describe('Lighting night factor integration', () => {
     // const nightInt = doorOpen ? 2.5 : 0.8;
     // const dayInt = doorOpen ? 2.0 : 0.3;
     // intensity = lerp(dayInt, nightInt, nf)
-    const doorOpen = true;
+    // Campfire intensity calculation from Lighting.tsx:
+    // const nightInt = doorOpen ? 2.5 : 0.8;
+    // const dayInt = doorOpen ? 2.0 : 0.3;
+    // intensity = lerp(dayInt, nightInt, nf)
     const nightIntensity = THREE.MathUtils.lerp(2.0, 2.5, nightFactor);
     const dayIntensity = THREE.MathUtils.lerp(2.0, 2.5, dayFactor);
 
