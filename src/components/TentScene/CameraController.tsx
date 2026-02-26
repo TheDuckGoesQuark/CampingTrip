@@ -221,9 +221,9 @@ export default function CameraController() {
         velocityRef.current.y = 0;
       }
 
-      // Map horizontal delta to angle (inverted: drag right → look left)
+      // Natural drag: swipe right → scene slides left (look right)
       angleRef.current.x = Math.max(-ANGLE_CLAMP, Math.min(ANGLE_CLAMP,
-        drag.startAngleX - (dx / window.innerWidth) * DRAG_SENSITIVITY,
+        drag.startAngleX + (dx / window.innerWidth) * DRAG_SENSITIVITY,
       ));
       // Gentle vertical
       angleRef.current.y = Math.max(-ANGLE_CLAMP, Math.min(ANGLE_CLAMP,
@@ -234,7 +234,7 @@ export default function CameraController() {
       const now = performance.now();
       const dt = (now - drag.lastTime) / 1000;
       if (dt > 0.001) {
-        drag.velX = -(touch.clientX - drag.lastX) / window.innerWidth * DRAG_SENSITIVITY / dt;
+        drag.velX = (touch.clientX - drag.lastX) / window.innerWidth * DRAG_SENSITIVITY / dt;
       }
       drag.lastX = touch.clientX;
       drag.lastTime = now;
