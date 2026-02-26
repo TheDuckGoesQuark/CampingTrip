@@ -132,15 +132,15 @@ function Stars() {
 
 // ─── Drifting clouds (visible during day, fade at night) ─────────
 
-const CLOUD_DEFS = Array.from({ length: 10 }, () => ({
+const CLOUD_DEFS = Array.from({ length: 14 }, () => ({
   x: (Math.random() - 0.5) * 40,
   y: 6 + Math.random() * 8,
-  z: -14 - Math.random() * 6,
-  speed: 0.08 + Math.random() * 0.15,
-  sx: 2 + Math.random() * 4,
-  sy: 0.4 + Math.random() * 0.8,
-  sz: 1 + Math.random() * 2,
-  baseOpacity: 0.12 + Math.random() * 0.18,
+  z: -14 - Math.random() * 4,
+  speed: 0.06 + Math.random() * 0.14,
+  sx: 2.5 + Math.random() * 4.5,
+  sy: 0.5 + Math.random() * 0.9,
+  sz: 1.2 + Math.random() * 2.3,
+  baseOpacity: 0.25 + Math.random() * 0.25,
 }));
 
 function Clouds() {
