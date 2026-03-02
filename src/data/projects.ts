@@ -3,26 +3,19 @@ import type { Project } from '../types/project';
 export const projects: Project[] = [
   {
     title: 'Camping Trip',
-    url: 'https://example.com/campingtrip',
-    description: 'An interactive 3D personal site built with React Three Fiber. You\'re looking at it right now.',
+    url: 'https://jordanscamp.site/',
+    description:
+      'A cosy little corner of the internet I built for myself. Part portfolio, part business card, part art project \u2014 mostly an excuse to learn React Three Fiber and see if I could make a tent feel like home. Pull up a seat, poke around, and if you\u2019re curious how it all works the code\u2019s on GitHub: github.com/TheDuckGoesQuark/CampingTrip',
     year: 2025,
     icon: 'images/projects/campingtrip.png',
     color: '#4a9eff',
   },
   {
-    title: 'Sound Garden',
-    url: 'https://example.com/soundgarden',
-    description: 'A generative music playground where plants grow from audio frequencies.',
-    year: 2024,
-    icon: 'images/projects/soundgarden.png',
-    color: '#6dd58c',
-  },
-  {
-    title: 'Pixel Letters',
-    url: 'https://example.com/pixelletters',
-    description: 'A pixel-art correspondence tool for sending handwritten-style letters.',
-    year: 2024,
-    icon: 'images/projects/pixelletters.png',
-    color: '#f4a261',
+    title: 'CatMap',
+    url: 'https://catmaps.me',
+    description: 'Identifying and helping track down missing pets.',
+    year: 2026,
+    icon: 'images/projects/catmap.jpg',
+    color: '#1a1a1a',
   },
 ];
