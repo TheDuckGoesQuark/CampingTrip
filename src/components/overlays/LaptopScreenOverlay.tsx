@@ -108,9 +108,10 @@ export default function LaptopScreenOverlay() {
         top: 36, left: 0, right: 0, bottom: 72,
         display: 'flex',
         flexWrap: 'wrap',
-        alignContent: 'flex-start',
+        alignContent: 'center',
+        justifyContent: 'center',
         padding: '24px 32px',
-        gap: 8,
+        gap: 24,
       }}>
         {projects.map((p) => (
           <DesktopIcon
@@ -195,9 +196,9 @@ function DesktopIcon({ project, onClick }: { project: Project; onClick: () => vo
       onMouseLeave={() => setHovered(false)}
       style={{
         display: 'flex', flexDirection: 'column', alignItems: 'center',
-        width: 88, padding: '8px 4px', gap: 6,
+        width: 120, padding: '12px 8px', gap: 8,
         background: hovered ? 'rgba(255,255,255,0.08)' : 'transparent',
-        border: 'none', borderRadius: 8, cursor: 'pointer',
+        border: 'none', borderRadius: 12, cursor: 'pointer',
         transition: 'background 0.15s',
       }}
     >
@@ -207,15 +208,15 @@ function DesktopIcon({ project, onClick }: { project: Project; onClick: () => vo
         <img
           src={asset(project.icon)}
           alt={project.title}
-          width={48} height={48}
-          style={{ borderRadius: 10, objectFit: 'cover' }}
+          width={72} height={72}
+          style={{ borderRadius: 14, objectFit: 'cover' }}
           onError={() => setImgError(true)}
         />
       )}
       <span style={{
-        fontSize: 11, color: '#fff', textAlign: 'center',
+        fontSize: 13, color: '#fff', textAlign: 'center',
         textShadow: '0 1px 3px rgba(0,0,0,0.8)',
-        lineHeight: 1.2, maxWidth: 80,
+        lineHeight: 1.3, maxWidth: 110,
         overflow: 'hidden', textOverflow: 'ellipsis',
         display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
       } as React.CSSProperties}>
@@ -231,10 +232,10 @@ function FallbackIcon({ title, color }: { title: string; color?: string }) {
   const letter = title.charAt(0).toUpperCase();
   return (
     <div style={{
-      width: 48, height: 48, borderRadius: 10,
+      width: 72, height: 72, borderRadius: 14,
       background: `linear-gradient(135deg, ${bg}, ${bg}88)`,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontSize: 22, fontWeight: 700, color: '#fff',
+      fontSize: 28, fontWeight: 700, color: '#fff',
       boxShadow: `0 2px 8px ${bg}44`,
     }}>
       {letter}
@@ -376,7 +377,7 @@ function ProjectWindow({ project, onClose }: { project: Project; onClose: () => 
               : project.description}
           </div>
 
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
             <a
               href={project.url}
               target="_blank"
