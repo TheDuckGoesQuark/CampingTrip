@@ -349,7 +349,7 @@ function ProjectWindow({ project, onClose }: { project: Project; onClose: () => 
         </div>
 
         {/* Content */}
-        <div style={{ padding: '24px 28px' }}>
+        <div style={{ padding: '24px 28px', maxHeight: 'calc(80vh - 38px)', overflowY: 'auto' }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16, marginBottom: 20 }}>
             {imgError ? (
               <FallbackIcon title={project.title} color={project.color} />
@@ -368,27 +368,55 @@ function ProjectWindow({ project, onClose }: { project: Project; onClose: () => 
             </div>
           </div>
 
-          <p style={{ fontSize: 14, lineHeight: 1.6, opacity: 0.7, margin: '0 0 24px' }}>
-            {project.description}
-          </p>
+          <div style={{ fontSize: 14, lineHeight: 1.6, opacity: 0.7, marginBottom: 24 }}>
+            {typeof project.description === 'string'
+              ? project.description.split('\n\n').map((para, i) => (
+                  <p key={i} style={{ margin: i === 0 ? 0 : '12px 0 0' }}>{para}</p>
+                ))
+              : project.description}
+          </div>
 
-          <a
-            href={project.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              display: 'inline-flex', alignItems: 'center', gap: 6,
-              background: 'rgba(74,158,255,0.15)',
-              border: '1px solid rgba(74,158,255,0.3)',
-              color: '#4a9eff', padding: '8px 16px', borderRadius: 8,
-              textDecoration: 'none', fontSize: 13, fontWeight: 500,
-              transition: 'background 0.2s',
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(74,158,255,0.25)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(74,158,255,0.15)'; }}
-          >
-            Visit Project →
-          </a>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <a
+              href={project.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                background: 'rgba(74,158,255,0.15)',
+                border: '1px solid rgba(74,158,255,0.3)',
+                color: '#4a9eff', padding: '8px 16px', borderRadius: 8,
+                textDecoration: 'none', fontSize: 13, fontWeight: 500,
+                transition: 'background 0.2s',
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(74,158,255,0.25)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(74,158,255,0.15)'; }}
+            >
+              Visit Project →
+            </a>
+            {project.github && (
+              <a
+                href={project.github}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  background: 'rgba(255,255,255,0.06)',
+                  border: '1px solid rgba(255,255,255,0.12)',
+                  color: '#e0e0e8', padding: '8px 16px', borderRadius: 8,
+                  textDecoration: 'none', fontSize: 13, fontWeight: 500,
+                  transition: 'background 0.2s',
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.12)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; }}
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                  <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
+                </svg>
+                Source
+              </a>
+            )}
+          </div>
         </div>
       </div>
 
