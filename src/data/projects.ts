@@ -10,6 +10,7 @@ export const projects: Project[] = [
     year: 2025,
     icon: 'images/projects/campingtrip.png',
     color: '#4a9eff',
+    addedAt: '2026-01-15',
   },
   {
     title: 'CatMap',
@@ -18,5 +19,6 @@ export const projects: Project[] = [
     year: 2026,
     icon: 'images/projects/catmap.jpg',
     color: '#1a1a1a',
+    addedAt: '2026-02-01',
   },
 ];

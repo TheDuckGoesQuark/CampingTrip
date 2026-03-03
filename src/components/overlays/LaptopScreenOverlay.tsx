@@ -1,21 +1,30 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useSceneStore } from '../../store/sceneStore';
+import { useSessionStore } from '../../store/sessionStore';
 import { projects } from '../../data/projects';
+import { bookmarks } from '../../data/bookmarks';
 import { asset } from '../../utils/assetPath';
 import { playWindowOpen, playSoftClick } from '../../audio/soundEffects';
-import type { Project } from '../../types/project';
+import type { Project, Bookmark } from '../../types/project';
+
+type OpenItem =
+  | { kind: 'project'; data: Project }
+  | { kind: 'bookmark'; data: Bookmark };
 
 /**
  * CatOS — the laptop's operating system overlay.
- * Shows a desktop with project icons. Clicking a project opens a window.
+ * Shows a desktop with "My Projects" and "Bookmarks" sections.
+ * Items added since the visitor's last session get a "New" badge.
  * Press Escape to close window → desktop → tent.
  */
 export default function LaptopScreenOverlay() {
   const laptopFocused = useSceneStore((s) => s.laptopFocused);
+  const lastVisitedAt = useSessionStore((s) => s.lastVisitedAt);
   const [mounted, setMounted] = useState(false);
   const [opacity, setOpacity] = useState(0);
-  const [openProject, setOpenProject] = useState<Project | null>(null);
+  const [openItem, setOpenItem] = useState<OpenItem | null>(null);
   const [clock, setClock] = useState('');
+  const prevFocused = useRef(false);
 
   // Mount/unmount with fade
   useEffect(() => {
@@ -25,10 +34,18 @@ export default function LaptopScreenOverlay() {
       return () => clearTimeout(timer);
     } else {
       setOpacity(0);
-      setOpenProject(null);
+      setOpenItem(null);
       const timer = setTimeout(() => setMounted(false), 400);
       return () => clearTimeout(timer);
     }
+  }, [laptopFocused]);
+
+  // Update lastVisitedAt when leaving CatOS
+  useEffect(() => {
+    if (prevFocused.current && !laptopFocused) {
+      useSessionStore.getState().updateLastVisited();
+    }
+    prevFocused.current = laptopFocused;
   }, [laptopFocused]);
 
   // Live clock
@@ -50,24 +67,31 @@ export default function LaptopScreenOverlay() {
     if (!mounted) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        if (openProject) {
+        if (openItem) {
           e.stopPropagation();
-          setOpenProject(null);
+          setOpenItem(null);
           playSoftClick();
         }
-        // If no project open, TentScene's handler will close the laptop
+        // If no item open, TentScene's handler will close the laptop
       }
     };
     window.addEventListener('keydown', onKey, true);
     return () => window.removeEventListener('keydown', onKey, true);
-  }, [mounted, openProject]);
+  }, [mounted, openItem]);
 
   const handleProjectClick = useCallback((project: Project) => {
-    setOpenProject(project);
+    setOpenItem({ kind: 'project', data: project });
+    playWindowOpen();
+  }, []);
+
+  const handleBookmarkClick = useCallback((bookmark: Bookmark) => {
+    setOpenItem({ kind: 'bookmark', data: bookmark });
     playWindowOpen();
   }, []);
 
   if (!mounted) return null;
+
+  const hasBookmarks = bookmarks.length > 0;
 
   return (
     <div style={{
@@ -102,39 +126,78 @@ export default function LaptopScreenOverlay() {
       {/* Menu bar */}
       <MenuBar clock={clock} />
 
-      {/* Desktop icons */}
+      {/* Desktop — scrollable sections */}
       <div style={{
         position: 'absolute',
         top: 36, left: 0, right: 0, bottom: 72,
-        display: 'flex',
-        flexWrap: 'wrap',
-        alignContent: 'center',
-        justifyContent: 'center',
+        overflowY: 'auto',
         padding: '24px 32px',
-        gap: 24,
       }}>
-        {projects.map((p) => (
-          <DesktopIcon
-            key={p.title}
-            project={p}
-            onClick={() => handleProjectClick(p)}
-          />
-        ))}
+        {/* My Projects */}
+        <SectionHeader label="My Projects" />
+        <div style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          justifyContent: 'center',
+          gap: 24,
+          marginBottom: hasBookmarks ? 32 : 0,
+        }}>
+          {projects.map((p) => (
+            <DesktopIcon
+              key={p.title}
+              title={p.title}
+              icon={p.icon}
+              color={p.color}
+              isNew={isNewSince(p.addedAt, p.updatedAt, lastVisitedAt)}
+              onClick={() => handleProjectClick(p)}
+            />
+          ))}
+        </div>
+
+        {/* Bookmarks */}
+        {hasBookmarks && (
+          <>
+            <SectionHeader label="Bookmarks" />
+            <div style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+              gap: 24,
+            }}>
+              {bookmarks.map((b) => (
+                <DesktopIcon
+                  key={b.title}
+                  title={b.title}
+                  icon={b.icon}
+                  color={b.color}
+                  isNew={isNewSince(b.addedAt, undefined, lastVisitedAt)}
+                  onClick={() => handleBookmarkClick(b)}
+                />
+              ))}
+            </div>
+          </>
+        )}
       </div>
 
       {/* Dock */}
       <Dock />
 
       {/* Window (if open) */}
-      {openProject && (
+      {openItem?.kind === 'project' && (
         <ProjectWindow
-          project={openProject}
-          onClose={() => { setOpenProject(null); playSoftClick(); }}
+          project={openItem.data}
+          onClose={() => { setOpenItem(null); playSoftClick(); }}
+        />
+      )}
+      {openItem?.kind === 'bookmark' && (
+        <BookmarkWindow
+          bookmark={openItem.data}
+          onClose={() => { setOpenItem(null); playSoftClick(); }}
         />
       )}
 
       {/* Back to tent button */}
-      {!openProject && (
+      {!openItem && (
         <button
           onClick={() => useSceneStore.getState().setLaptopFocused(false)}
           style={{
@@ -157,6 +220,40 @@ export default function LaptopScreenOverlay() {
           Back to tent <span style={{ opacity: 0.5, marginLeft: 6 }}>Esc</span>
         </button>
       )}
+    </div>
+  );
+}
+
+/* ─── Helpers ─────────────────────────────────────────────────── */
+
+/** Returns true if an item was added or updated after the visitor's last session. */
+function isNewSince(
+  addedAt: string | undefined,
+  updatedAt: string | undefined,
+  lastVisitedAt: string | null,
+): boolean {
+  // First-time visitors: nothing highlighted (everything is new)
+  if (!lastVisitedAt) return false;
+  const last = new Date(lastVisitedAt).getTime();
+  if (addedAt && new Date(addedAt).getTime() > last) return true;
+  if (updatedAt && new Date(updatedAt).getTime() > last) return true;
+  return false;
+}
+
+/* ─── Section Header ──────────────────────────────────────────── */
+
+function SectionHeader({ label }: { label: string }) {
+  return (
+    <div style={{
+      fontSize: 13,
+      fontWeight: 600,
+      textTransform: 'uppercase',
+      letterSpacing: 1.2,
+      color: 'rgba(255,255,255,0.35)',
+      marginBottom: 16,
+      textAlign: 'center',
+    }}>
+      {label}
     </div>
   );
 }
@@ -185,7 +282,15 @@ function MenuBar({ clock }: { clock: string }) {
 }
 
 /* ─── Desktop Icon ────────────────────────────────────────────── */
-function DesktopIcon({ project, onClick }: { project: Project; onClick: () => void }) {
+function DesktopIcon({
+  title, icon, color, isNew, onClick,
+}: {
+  title: string;
+  icon: string;
+  color?: string;
+  isNew: boolean;
+  onClick: () => void;
+}) {
   const [imgError, setImgError] = useState(false);
   const [hovered, setHovered] = useState(false);
 
@@ -195,6 +300,7 @@ function DesktopIcon({ project, onClick }: { project: Project; onClick: () => vo
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
+        position: 'relative',
         display: 'flex', flexDirection: 'column', alignItems: 'center',
         width: 120, padding: '12px 8px', gap: 8,
         background: hovered ? 'rgba(255,255,255,0.08)' : 'transparent',
@@ -203,16 +309,20 @@ function DesktopIcon({ project, onClick }: { project: Project; onClick: () => vo
       }}
     >
       {imgError ? (
-        <FallbackIcon title={project.title} color={project.color} />
+        <FallbackIcon title={title} color={color} />
       ) : (
         <img
-          src={asset(project.icon)}
-          alt={project.title}
+          src={asset(icon)}
+          alt={title}
           width={72} height={72}
           style={{ borderRadius: 14, objectFit: 'cover' }}
           onError={() => setImgError(true)}
         />
       )}
+
+      {/* "New" badge */}
+      {isNew && <NewBadge />}
+
       <span style={{
         fontSize: 13, color: '#fff', textAlign: 'center',
         textShadow: '0 1px 3px rgba(0,0,0,0.8)',
@@ -220,9 +330,36 @@ function DesktopIcon({ project, onClick }: { project: Project; onClick: () => vo
         overflow: 'hidden', textOverflow: 'ellipsis',
         display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
       } as React.CSSProperties}>
-        {project.title}
+        {title}
       </span>
     </button>
+  );
+}
+
+/* ─── New Badge ───────────────────────────────────────────────── */
+function NewBadge() {
+  return (
+    <span style={{
+      position: 'absolute', top: 6, right: 14,
+      background: '#ff6b6b',
+      color: '#fff',
+      fontSize: 9,
+      fontWeight: 700,
+      padding: '2px 5px',
+      borderRadius: 6,
+      lineHeight: 1,
+      letterSpacing: 0.5,
+      boxShadow: '0 0 8px rgba(255,107,107,0.6)',
+      animation: 'catosNewPulse 2s ease-in-out infinite',
+    }}>
+      NEW
+      <style>{`
+        @keyframes catosNewPulse {
+          0%, 100% { box-shadow: 0 0 8px rgba(255,107,107,0.6); }
+          50% { box-shadow: 0 0 14px rgba(255,107,107,0.9); }
+        }
+      `}</style>
+    </span>
   );
 }
 
@@ -294,10 +431,14 @@ function DockIcon({ label, emoji }: { label: string; emoji: string }) {
   );
 }
 
-/* ─── Project Window ──────────────────────────────────────────── */
-function ProjectWindow({ project, onClose }: { project: Project; onClose: () => void }) {
-  const [imgError, setImgError] = useState(false);
-
+/* ─── Shared Window Shell ─────────────────────────────────────── */
+function WindowShell({
+  title, onClose, children,
+}: {
+  title: string;
+  onClose: () => void;
+  children: React.ReactNode;
+}) {
   return (
     <div style={{
       position: 'absolute', inset: 0, zIndex: 20,
@@ -324,7 +465,6 @@ function ProjectWindow({ project, onClose }: { project: Project; onClose: () => 
           display: 'flex', alignItems: 'center', padding: '0 12px',
           borderBottom: '1px solid rgba(255,255,255,0.06)',
         }}>
-          {/* Traffic lights */}
           <div style={{ display: 'flex', gap: 6 }}>
             <button
               onClick={onClose}
@@ -344,80 +484,14 @@ function ProjectWindow({ project, onClose }: { project: Project; onClose: () => 
             <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#28c840' }} />
           </div>
           <span style={{ flex: 1, textAlign: 'center', fontSize: 13, opacity: 0.7 }}>
-            {project.title}
+            {title}
           </span>
           <div style={{ width: 52 }} />
         </div>
 
         {/* Content */}
         <div style={{ padding: '24px 28px', maxHeight: 'calc(80vh - 38px)', overflowY: 'auto' }}>
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16, marginBottom: 20 }}>
-            {imgError ? (
-              <FallbackIcon title={project.title} color={project.color} />
-            ) : (
-              <img
-                src={asset(project.icon)}
-                alt=""
-                width={64} height={64}
-                style={{ borderRadius: 12, objectFit: 'cover', flexShrink: 0 }}
-                onError={() => setImgError(true)}
-              />
-            )}
-            <div>
-              <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>{project.title}</h2>
-              <span style={{ fontSize: 13, opacity: 0.4 }}>{project.year}</span>
-            </div>
-          </div>
-
-          <div style={{ fontSize: 14, lineHeight: 1.6, opacity: 0.7, marginBottom: 24 }}>
-            {typeof project.description === 'string'
-              ? project.description.split('\n\n').map((para, i) => (
-                  <p key={i} style={{ margin: i === 0 ? 0 : '12px 0 0' }}>{para}</p>
-                ))
-              : project.description}
-          </div>
-
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-            <a
-              href={project.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                display: 'inline-flex', alignItems: 'center', gap: 6,
-                background: 'rgba(74,158,255,0.15)',
-                border: '1px solid rgba(74,158,255,0.3)',
-                color: '#4a9eff', padding: '8px 16px', borderRadius: 8,
-                textDecoration: 'none', fontSize: 13, fontWeight: 500,
-                transition: 'background 0.2s',
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(74,158,255,0.25)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(74,158,255,0.15)'; }}
-            >
-              Visit Project →
-            </a>
-            {project.github && (
-              <a
-                href={project.github}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 6,
-                  background: 'rgba(255,255,255,0.06)',
-                  border: '1px solid rgba(255,255,255,0.12)',
-                  color: '#e0e0e8', padding: '8px 16px', borderRadius: 8,
-                  textDecoration: 'none', fontSize: 13, fontWeight: 500,
-                  transition: 'background 0.2s',
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.12)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; }}
-              >
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                  <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
-                </svg>
-                Source
-              </a>
-            )}
-          </div>
+          {children}
         </div>
       </div>
 
@@ -428,5 +502,130 @@ function ProjectWindow({ project, onClose }: { project: Project; onClose: () => 
         }
       `}</style>
     </div>
+  );
+}
+
+/* ─── Project Window ──────────────────────────────────────────── */
+function ProjectWindow({ project, onClose }: { project: Project; onClose: () => void }) {
+  const [imgError, setImgError] = useState(false);
+
+  return (
+    <WindowShell title={project.title} onClose={onClose}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16, marginBottom: 20 }}>
+        {imgError ? (
+          <FallbackIcon title={project.title} color={project.color} />
+        ) : (
+          <img
+            src={asset(project.icon)}
+            alt=""
+            width={64} height={64}
+            style={{ borderRadius: 12, objectFit: 'cover', flexShrink: 0 }}
+            onError={() => setImgError(true)}
+          />
+        )}
+        <div>
+          <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>{project.title}</h2>
+          <span style={{ fontSize: 13, opacity: 0.4 }}>{project.year}</span>
+        </div>
+      </div>
+
+      <div style={{ fontSize: 14, lineHeight: 1.6, opacity: 0.7, marginBottom: 24 }}>
+        {typeof project.description === 'string'
+          ? project.description.split('\n\n').map((para, i) => (
+              <p key={i} style={{ margin: i === 0 ? 0 : '12px 0 0' }}>{para}</p>
+            ))
+          : project.description}
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+        <a
+          href={project.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            background: 'rgba(74,158,255,0.15)',
+            border: '1px solid rgba(74,158,255,0.3)',
+            color: '#4a9eff', padding: '8px 16px', borderRadius: 8,
+            textDecoration: 'none', fontSize: 13, fontWeight: 500,
+            transition: 'background 0.2s',
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(74,158,255,0.25)'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(74,158,255,0.15)'; }}
+        >
+          Visit Project →
+        </a>
+        {project.github && (
+          <a
+            href={project.github}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.12)',
+              color: '#e0e0e8', padding: '8px 16px', borderRadius: 8,
+              textDecoration: 'none', fontSize: 13, fontWeight: 500,
+              transition: 'background 0.2s',
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.12)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; }}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
+            </svg>
+            Source
+          </a>
+        )}
+      </div>
+    </WindowShell>
+  );
+}
+
+/* ─── Bookmark Window ─────────────────────────────────────────── */
+function BookmarkWindow({ bookmark, onClose }: { bookmark: Bookmark; onClose: () => void }) {
+  const [imgError, setImgError] = useState(false);
+
+  return (
+    <WindowShell title={bookmark.title} onClose={onClose}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16, marginBottom: 20 }}>
+        {imgError ? (
+          <FallbackIcon title={bookmark.title} color={bookmark.color} />
+        ) : (
+          <img
+            src={asset(bookmark.icon)}
+            alt=""
+            width={64} height={64}
+            style={{ borderRadius: 12, objectFit: 'cover', flexShrink: 0 }}
+            onError={() => setImgError(true)}
+          />
+        )}
+        <div>
+          <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>{bookmark.title}</h2>
+        </div>
+      </div>
+
+      <div style={{ fontSize: 14, lineHeight: 1.6, opacity: 0.7, marginBottom: 24 }}>
+        {bookmark.blurb}
+      </div>
+
+      <a
+        href={bookmark.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          display: 'inline-flex', alignItems: 'center', gap: 6,
+          background: 'rgba(74,158,255,0.15)',
+          border: '1px solid rgba(74,158,255,0.3)',
+          color: '#4a9eff', padding: '8px 16px', borderRadius: 8,
+          textDecoration: 'none', fontSize: 13, fontWeight: 500,
+          transition: 'background 0.2s',
+        }}
+        onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(74,158,255,0.25)'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(74,158,255,0.15)'; }}
+      >
+        Check it out →
+      </a>
+    </WindowShell>
   );
 }
