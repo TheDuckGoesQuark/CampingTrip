@@ -1,14 +1,13 @@
 import type { Bookmark } from '../types/project';
 
 export const bookmarks: Bookmark[] = [
-  // Add your favourite apps, sites, and tools here!
-  // Example:
-  // {
-  //   title: 'Linear',
-  //   url: 'https://linear.app',
-  //   blurb: 'The best project tracker I've ever used. Fast, beautiful, opinionated.',
-  //   icon: 'images/bookmarks/linear.png',
-  //   color: '#5E6AD2',
-  //   addedAt: '2026-03-01',
-  // },
+  {
+    title: 'myNoise',
+    url: 'https://mynoise.net/NoiseMachines/campingRainNoiseGenerator.php',
+    blurb:
+      "A curated sound generation site that's helped me get fixated on things since 2010. Linking straight to the rain on a tent sound, but there's a whole library from coffee shop to binaural beats.",
+    icon: 'images/bookmarks/mynoise.png',
+    color: '#e8762b',
+    addedAt: '2026-03-03',
+  },
 ];
