@@ -11,6 +11,7 @@ import SettingsMenu from '../overlays/SettingsMenu';
 import Vignette from '../effects/Vignette';
 import VirtualJoystick from '../VirtualJoystick';
 import { useSceneStore } from '../../store/sceneStore';
+import { isMobile } from '../../utils/deviceDetect';
 
 interface TentSceneProps {
   visible: boolean;
@@ -73,8 +74,9 @@ export default function TentScene({ visible }: TentSceneProps) {
     >
       <Canvas
         shadows
+        dpr={isMobile ? [1, 1.5] : [1, 2]}
         camera={{ position: [0, 2.8, 3.5], fov: 69, near: 0.1, far: 200 }}
-        gl={{ antialias: true, alpha: false }}
+        gl={{ antialias: !isMobile, alpha: false }}
         style={{ width: '100%', height: '100dvh', display: 'block', touchAction: 'manipulation' }}
         aria-label="Interactive 3D tent scene — use Tab to navigate objects, Enter to interact"
         role="application"

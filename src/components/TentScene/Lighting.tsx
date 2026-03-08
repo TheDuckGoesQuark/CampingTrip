@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useSceneStore } from '../../store/sceneStore';
+import { isMobile } from '../../utils/deviceDetect';
 import {
   useTimeStore,
   lerpKeyframes,
@@ -205,8 +206,8 @@ export default function Lighting({ debug = false }: LightingProps) {
         distance={14}
         decay={1.0}
         castShadow
-        shadow-mapSize-width={1024}
-        shadow-mapSize-height={1024}
+        shadow-mapSize-width={isMobile ? 512 : 1024}
+        shadow-mapSize-height={isMobile ? 512 : 1024}
       />
 
       {/* Warm fill from camera area */}
@@ -231,16 +232,18 @@ export default function Lighting({ debug = false }: LightingProps) {
         castShadow={false}
       />
 
-      {/* Dim rear fill */}
-      <pointLight
-        ref={rearRef}
-        position={[0, 2.0, 4.0]}
-        color="#ffaa77"
-        intensity={1.5}
-        distance={8}
-        decay={1.5}
-        castShadow={false}
-      />
+      {/* Dim rear fill — skip on mobile to reduce per-pixel light calculations */}
+      {!isMobile && (
+        <pointLight
+          ref={rearRef}
+          position={[0, 2.0, 4.0]}
+          color="#ffaa77"
+          intensity={1.5}
+          distance={8}
+          decay={1.5}
+          castShadow={false}
+        />
+      )}
 
       {/* Moonlight / sunlight through door */}
       <spotLight

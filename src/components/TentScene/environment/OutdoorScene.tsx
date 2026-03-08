@@ -6,6 +6,7 @@ import {
   lerpColorKeyframes,
   getNightFactor,
 } from '../../../store/timeStore';
+import { isMobile } from '../../../utils/deviceDetect';
 
 // ─── Sky gradient keyframes ──────────────────────────────────────
 // progress: 0.00 = 6 AM (dawn), 0.25 = noon, 0.50 = 6 PM, 0.75 = midnight
@@ -132,7 +133,7 @@ function Stars() {
 
 // ─── Drifting clouds (visible during day, fade at night) ─────────
 
-const CLOUD_DEFS = Array.from({ length: 14 }, () => ({
+const CLOUD_DEFS = Array.from({ length: isMobile ? 7 : 14 }, () => ({
   x: (Math.random() - 0.5) * 40,
   y: 6 + Math.random() * 8,
   z: -14 - Math.random() * 4,

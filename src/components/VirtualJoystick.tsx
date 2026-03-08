@@ -1,13 +1,12 @@
 import { useRef, useEffect, useCallback, useState } from 'react';
 import { mobileInput } from '../mobileInput';
+import { isMobile } from '../utils/deviceDetect';
 import { useSceneStore } from '../store/sceneStore';
 
 const SIZE = 110;        // outer ring diameter
 const KNOB = 40;         // inner knob diameter
 const MAX_R = (SIZE - KNOB) / 2; // max knob travel from center
 
-const isTouchDevice = () =>
-  typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches;
 
 export default function VirtualJoystick() {
   const [active, setActive] = useState(false);
@@ -20,7 +19,7 @@ export default function VirtualJoystick() {
 
   // Only render on touch devices
   const [isTouch, setIsTouch] = useState(false);
-  useEffect(() => { setIsTouch(isTouchDevice()); }, []);
+  useEffect(() => { setIsTouch(isMobile); }, []);
 
   const updateKnob = useCallback((clientX: number, clientY: number) => {
     const dx = clientX - centerRef.current.x;

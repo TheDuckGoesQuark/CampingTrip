@@ -19,8 +19,8 @@ describe('asset', () => {
   });
 
   it('strips leading slash from the path to avoid double slashes', () => {
-    const result = asset('/images/logo.png');
-    expect(result).toBe(`${BASE}images/logo.png`);
+    const result = asset('/images/logo.webp');
+    expect(result).toBe(`${BASE}images/logo.webp`);
     // Crucially, no double slash
     expect(result).not.toContain('//');
   });

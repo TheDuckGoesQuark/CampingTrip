@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import gsap from 'gsap';
 import { useSceneStore } from '../../store/sceneStore';
 import { mobileInput } from '../../mobileInput';
+import { isMobile } from '../../utils/deviceDetect';
 import type { FocusTarget } from '../../types/scene';
 
 const CAMERA_PRESETS: Record<FocusTarget, { pos: THREE.Vector3; target: THREE.Vector3 }> = {
@@ -47,8 +48,6 @@ const BREATHE_Y = 0.008;
 const SWAY_SPEED = 0.12;
 const SWAY_X = 0.004;
 
-const isTouchDevice = () =>
-  typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches;
 
 export default function CameraController() {
   const { camera, gl } = useThree();
@@ -117,11 +116,11 @@ export default function CameraController() {
         gsap.to(paralaxMul, { current: 1, duration: 0.6, ease: 'power2.in' });
       } else {
         // Mobile: fully zero out parallax so focus preset camera angles work correctly
-        const targetMul = isTouchDevice() ? 0 : 0.15;
+        const targetMul = isMobile ? 0 : 0.15;
         gsap.to(paralaxMul, { current: targetMul, duration: 0.4, ease: 'power2.out' });
 
         // Mobile: smoothly center the accumulated angle so the focus view faces forward
-        if (isTouchDevice()) {
+        if (isMobile) {
           gsap.to(angleRef.current, {
             x: 0, y: 0,
             duration: 0.8, ease: 'power2.inOut',
@@ -148,13 +147,13 @@ export default function CameraController() {
       if (focused === prev) return;
       prev = focused;
 
-      if (focused && isTouchDevice()) {
+      if (focused && isMobile) {
         // Save current angle and animate to center
         savedAngleRef.current.x = angleRef.current.x;
         savedAngleRef.current.y = angleRef.current.y;
         gsap.to(angleRef.current, { x: 0, y: 0, duration: 0.8, ease: 'power2.inOut' });
         gsap.to(velocityRef.current, { x: 0, y: 0, duration: 0.3 });
-      } else if (!focused && isTouchDevice()) {
+      } else if (!focused && isMobile) {
         // Restore saved angle
         gsap.to(angleRef.current, {
           x: savedAngleRef.current.x,
@@ -168,7 +167,7 @@ export default function CameraController() {
 
   // Input listeners — desktop: mouse; mobile: gyroscope only (touch replaced by joystick)
   useEffect(() => {
-    const isTouch = isTouchDevice();
+    const isTouch = isMobile;
 
     // ── Desktop: absolute mouse position ──
     const onMouseMove = (e: MouseEvent) => {
@@ -288,7 +287,7 @@ export default function CameraController() {
     const mul = paralaxMul.current;
 
     // Merge inputs
-    if (isTouchDevice()) {
+    if (isMobile) {
       // When touch drag is active, skip joystick velocity — drag writes angleRef directly
       const dragging = touchDragRef.current.active;
 
@@ -330,7 +329,7 @@ export default function CameraController() {
     const breatheOffset = Math.sin(t * BREATHE_SPEED * Math.PI * 2) * BREATHE_Y;
     const swayOffset = Math.sin(t * SWAY_SPEED * Math.PI * 2) * SWAY_X;
 
-    if (isTouchDevice()) {
+    if (isMobile) {
       // ── Mobile: angular rotation for wide FOV ──
       const yaw = ix * MOBILE_MAX_YAW * mul;
       const pitch = -iy * MOBILE_MAX_PITCH * mul;
