@@ -3,6 +3,7 @@ import { useGLTF } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { asset, DRACO_PATH } from '../../../utils/assetPath';
+import { isMobile } from '../../../utils/deviceDetect';
 
 // Credit: "Stylized Campfire" by Natalia Campos on Sketchfab (CC-BY)
 // https://sketchfab.com/3d-models/stylized-campfire-3b507b1eb4c142218a4b3baa043e3ed4
@@ -53,15 +54,17 @@ export default function Campfire() {
         castShadow={false}
       />
 
-      {/* Secondary wider glow — ground bounce, same offset */}
-      <pointLight
-        position={[1.0, 0.3, 5.5]}
-        color="#ffaa44"
-        intensity={2.5}
-        distance={18}
-        decay={1.0}
-        castShadow={false}
-      />
+      {/* Secondary wider glow — ground bounce, skip on mobile */}
+      {!isMobile && (
+        <pointLight
+          position={[1.0, 0.3, 5.5]}
+          color="#ffaa44"
+          intensity={2.5}
+          distance={18}
+          decay={1.0}
+          castShadow={false}
+        />
+      )}
     </group>
   );
 }

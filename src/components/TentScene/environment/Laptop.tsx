@@ -11,7 +11,7 @@ import { asset, DRACO_PATH } from '../../../utils/assetPath';
 // https://sketchfab.com/3d-models/laptop-7d870e900889481395b4a575b9fa8c3e
 
 useGLTF.preload(asset('models/laptop.glb'), DRACO_PATH);
-useTexture.preload(asset('images/logo.png'));
+useTexture.preload(asset('images/logo.webp'));
 
 // Resting transform (inside tent)
 const REST_POS: [number, number, number] = [-1.6, 0.67, -0.85];
@@ -29,7 +29,7 @@ interface Props {
 
 export default function Laptop({ screenOn }: Props) {
   const { scene } = useGLTF(asset('models/laptop.glb'), DRACO_PATH);
-  const logoTexture = useTexture(asset('images/logo.png'));
+  const logoTexture = useTexture(asset('images/logo.webp'));
   const groupRef = useRef<THREE.Group>(null);
   const logoMeshRef = useRef<THREE.Mesh>(null);
   const screenMeshes = useRef<THREE.Mesh[]>([]);

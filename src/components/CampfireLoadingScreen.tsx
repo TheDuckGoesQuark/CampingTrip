@@ -21,9 +21,11 @@ export default function CampfireLoadingScreen() {
   const [visible, setVisible] = useState(true);
   const [fadingOut, setFadingOut] = useState(false);
   const [frame, setFrame] = useState(0);
+  const [displayPct, setDisplayPct] = useState(0);
 
   const audioStarted = useRef(false);
   const mountTime = useRef(Date.now());
+  const displayRef = useRef(0);
 
   // Reset state when welcome is reset (settings → reset preferences)
   useEffect(() => {
@@ -34,6 +36,36 @@ export default function CampfireLoadingScreen() {
       mountTime.current = Date.now();
     }
   }, [hasCompletedWelcome]);
+
+  // Smooth progress animation — lerps displayPct toward real progress
+  useEffect(() => {
+    let raf: number;
+    let last = performance.now();
+    const tick = (now: number) => {
+      const dt = (now - last) / 1000;
+      last = now;
+      const target = progress;
+      const prev = displayRef.current;
+      // Advance at ~60%/s, or snap if within 1%
+      const next = Math.abs(target - prev) < 1
+        ? target
+        : prev + Math.min(target - prev, 60 * dt);
+      displayRef.current = next;
+      setDisplayPct(Math.round(next));
+      if (next < 100) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [progress]);
+
+  // Fast-load skip: if assets finish within 300ms, hide immediately (returning user with cache)
+  useEffect(() => {
+    if (progress < 100) return;
+    const elapsed = Date.now() - mountTime.current;
+    if (elapsed < 300 && hasCompletedWelcome) {
+      setVisible(false);
+    }
+  }, [progress, hasCompletedWelcome]);
 
   // Animate fire frames
   useEffect(() => {
@@ -88,9 +120,8 @@ export default function CampfireLoadingScreen() {
 
   if (!visible) return null;
 
-  const pct = Math.round(progress);
   const barWidth = 20;
-  const filled = Math.round((pct / 100) * barWidth);
+  const filled = Math.round((displayPct / 100) * barWidth);
   const bar = '\u2591'.repeat(filled) + '\u00B7'.repeat(barWidth - filled);
 
   return (
@@ -126,7 +157,7 @@ export default function CampfireLoadingScreen() {
       <div style={{ marginTop: '2rem', fontSize: '0.8rem', letterSpacing: '0.12em', textAlign: 'center' }}>
         <div style={{ opacity: 0.9 }}>setting up camp...</div>
         <div style={{ marginTop: '0.6rem', opacity: 0.5 }}>
-          [{bar}] {pct}%
+          [{bar}] {displayPct}%
         </div>
       </div>
     </div>

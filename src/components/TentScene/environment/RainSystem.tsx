@@ -3,8 +3,9 @@ import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useSessionStore } from '../../../store/sessionStore';
 import { useTimeStore, getNightFactor } from '../../../store/timeStore';
+import { isMobile } from '../../../utils/deviceDetect';
 
-const RAIN_COUNT = 600;
+const RAIN_COUNT = isMobile ? 200 : 600;
 const WIND_X = -0.8; // slight wind drift
 
 export default function RainSystem() {
