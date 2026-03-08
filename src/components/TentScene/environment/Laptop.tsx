@@ -141,7 +141,6 @@ export default function Laptop({ screenOn }: Props) {
       } else {
         mat.emissiveIntensity = 0;
       }
-      mat.needsUpdate = true;
     });
   }, [isLaptopHighlighted]);
 
@@ -167,7 +166,6 @@ export default function Laptop({ screenOn }: Props) {
         mat.emissive.set(0x000000);
         mat.emissiveIntensity = 0;
       }
-      mat.needsUpdate = true;
     });
   }, [screenOn]);
 
@@ -234,47 +232,46 @@ export default function Laptop({ screenOn }: Props) {
     <group ref={groupRef}>
       <primitive object={scene} />
 
-      {/* Logo icon on screen — stays visible during GSAP fly-in so it
-          moves with the screen; LaptopScreenOverlay covers it at ~650ms */}
-      {screenOn && (
-        <group
-          position={[
-            screenCenter.current.x,
-            screenCenter.current.y,
-            screenCenter.current.z + 2,
-          ]}
+      {/* Logo icon on screen — always mounted to avoid geometry/material
+          creation at toggle time; visibility toggled instead */}
+      <group
+        visible={screenOn}
+        position={[
+          screenCenter.current.x,
+          screenCenter.current.y,
+          screenCenter.current.z + 2,
+        ]}
+      >
+        <mesh
+          ref={logoMeshRef}
+          onClick={handleLogoClick}
+          onPointerEnter={(e: any) => {
+            e.stopPropagation();
+            setHovered('projects');
+            document.body.style.cursor = 'pointer';
+            if (logoMeshRef.current) logoMeshRef.current.scale.setScalar(1.15);
+          }}
+          onPointerLeave={(e: any) => {
+            e.stopPropagation();
+            setHovered(null);
+            document.body.style.cursor = 'auto';
+            if (logoMeshRef.current) logoMeshRef.current.scale.setScalar(1);
+          }}
         >
-          <mesh
-            ref={logoMeshRef}
-            onClick={handleLogoClick}
-            onPointerEnter={(e: any) => {
-              e.stopPropagation();
-              setHovered('projects');
-              document.body.style.cursor = 'pointer';
-              if (logoMeshRef.current) logoMeshRef.current.scale.setScalar(1.15);
-            }}
-            onPointerLeave={(e: any) => {
-              e.stopPropagation();
-              setHovered(null);
-              document.body.style.cursor = 'auto';
-              if (logoMeshRef.current) logoMeshRef.current.scale.setScalar(1);
-            }}
-          >
-            <planeGeometry args={[7, 7]} />
-            <meshBasicMaterial
-              map={logoTexture}
-              transparent
-              toneMapped={false}
-              side={THREE.DoubleSide}
-            />
-          </mesh>
+          <planeGeometry args={[7, 7]} />
+          <meshBasicMaterial
+            map={logoTexture}
+            transparent
+            toneMapped={false}
+            side={THREE.DoubleSide}
+          />
+        </mesh>
 
-          {/* "Projects" label — shown on hover or keyboard focus */}
-          {isLogoHighlighted && !laptopFocused && (
-            <SceneLabel text="Projects" position={[-5, 10, 10]} />
-          )}
-        </group>
-      )}
+        {/* "Projects" label — shown on hover or keyboard focus */}
+        {isLogoHighlighted && !laptopFocused && (
+          <SceneLabel text="Projects" position={[-5, 10, 10]} />
+        )}
+      </group>
     </group>
   );
 }
