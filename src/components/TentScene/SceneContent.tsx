@@ -115,17 +115,15 @@ export default function SceneContent({ debug = false }: Props) {
         <Laptop screenOn={laptopScreenOn} />
       </InteractiveObject>
 
-      {/* Laptop screen glow — illuminates tent when screen is on (not when focused) */}
-      {laptopScreenOn && !laptopFocused && (
-        <pointLight
-          position={[-1.3, 1.0, -0.5]}
-          color="#7799dd"
-          intensity={2.0}
-          distance={6}
-          decay={1.5}
-          castShadow={false}
-        />
-      )}
+      {/* Laptop screen glow — always mounted to avoid light-count shader recompiles */}
+      <pointLight
+        position={[-1.3, 1.0, -0.5]}
+        color="#7799dd"
+        intensity={laptopScreenOn && !laptopFocused ? 2.0 : 0}
+        distance={6}
+        decay={1.5}
+        castShadow={false}
+      />
 
       <InteractiveObject
         id="scarlett"
