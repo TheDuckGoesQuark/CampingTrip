@@ -5,12 +5,12 @@ import gsap from 'gsap';
 import { useSceneStore } from '../../../store/sceneStore';
 import { useInteractionStore } from '../../../store/interactionStore';
 import SceneLabel from '../SceneLabel';
-import { asset } from '../../../utils/assetPath';
+import { asset, DRACO_PATH } from '../../../utils/assetPath';
 
 // Credit: "Laptop" on Sketchfab (CC-BY)
 // https://sketchfab.com/3d-models/laptop-7d870e900889481395b4a575b9fa8c3e
 
-useGLTF.preload(asset('models/laptop.glb'), true);
+useGLTF.preload(asset('models/laptop.glb'), DRACO_PATH);
 useTexture.preload(asset('images/logo.png'));
 
 // Resting transform (inside tent)
@@ -28,7 +28,7 @@ interface Props {
 }
 
 export default function Laptop({ screenOn }: Props) {
-  const { scene } = useGLTF(asset('models/laptop.glb'), true);
+  const { scene } = useGLTF(asset('models/laptop.glb'), DRACO_PATH);
   const logoTexture = useTexture(asset('images/logo.png'));
   const groupRef = useRef<THREE.Group>(null);
   const logoMeshRef = useRef<THREE.Mesh>(null);

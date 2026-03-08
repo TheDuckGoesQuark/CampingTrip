@@ -1,15 +1,15 @@
 import { useEffect } from 'react';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
-import { asset } from '../../../utils/assetPath';
+import { asset, DRACO_PATH } from '../../../utils/assetPath';
 
 // Credit: "Acoustic Guitar" on Sketchfab (CC-BY)
 // Model placed inside tent, leaning to the left of the door
 
-useGLTF.preload(asset('models/acoustic_guitar.glb'), true);
+useGLTF.preload(asset('models/acoustic_guitar.glb'), DRACO_PATH);
 
 export default function Guitar() {
-  const { scene } = useGLTF(asset('models/acoustic_guitar.glb'), true);
+  const { scene } = useGLTF(asset('models/acoustic_guitar.glb'), DRACO_PATH);
 
   useEffect(() => {
     scene.traverse((child) => {
