@@ -1,15 +1,15 @@
 import { useEffect } from 'react';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
-import { asset } from '../../../utils/assetPath';
+import { asset, DRACO_PATH } from '../../../utils/assetPath';
 
 // Credit: "Shure SM57 Dynamic Microphone" on Sketchfab (CC-BY)
 // https://sketchfab.com/3d-models/shure-sm57-dynamic-microphone-ec2dc94e022547beadee622b1ff34a5d
 
-useGLTF.preload(asset('models/shure_sm57_dynamic_microphone.glb'), true);
+useGLTF.preload(asset('models/shure_sm57_dynamic_microphone.glb'), DRACO_PATH);
 
 export default function ShureMic() {
-  const { scene } = useGLTF(asset('models/shure_sm57_dynamic_microphone.glb'), true);
+  const { scene } = useGLTF(asset('models/shure_sm57_dynamic_microphone.glb'), DRACO_PATH);
 
   useEffect(() => {
     scene.traverse((child) => {

@@ -6,7 +6,7 @@ import { clone as skeletonClone } from 'three/examples/jsm/utils/SkeletonUtils.j
 import { useInteractionStore } from '../../../store/interactionStore';
 import SceneLabel from '../SceneLabel';
 import { playCatMeow } from '../../../audio/soundEffects';
-import { asset } from '../../../utils/assetPath';
+import { asset, DRACO_PATH } from '../../../utils/assetPath';
 import { applyHighlight, removeHighlight, type EmissiveCache } from '../../../utils/highlight';
 
 // Credit: "Cat Walk" animation (CC-BY)
@@ -20,10 +20,10 @@ const WALK_Z = -4.15;
 const WALK_Y = 0.15;
 const PAUSE_DURATION = 6;
 
-useGLTF.preload(asset('models/cat-walk.glb'), true);
+useGLTF.preload(asset('models/cat-walk.glb'), DRACO_PATH);
 
 export default function WalkingCat() {
-  const { scene, animations } = useGLTF(asset('models/cat-walk.glb'), true);
+  const { scene, animations } = useGLTF(asset('models/cat-walk.glb'), DRACO_PATH);
   const groupRef = useRef<THREE.Group>(null);
   const mixerRef = useRef<THREE.AnimationMixer | null>(null);
 

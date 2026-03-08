@@ -2,15 +2,15 @@ import { useEffect, useRef } from 'react';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { useInteractionStore } from '../../../store/interactionStore';
-import { asset } from '../../../utils/assetPath';
+import { asset, DRACO_PATH } from '../../../utils/assetPath';
 
 // Credit: "Focusrite Scarlett Solo Interface" on Sketchfab (CC-BY)
 // https://sketchfab.com/3d-models/focusrite-scarlett-solo-interface-f09111be4a5c48228c3b898965d62bba
 
-useGLTF.preload(asset('models/focusrite_scarlett_solo_interface.glb'), true);
+useGLTF.preload(asset('models/focusrite_scarlett_solo_interface.glb'), DRACO_PATH);
 
 export default function ScarlettSolo() {
-  const { scene } = useGLTF(asset('models/focusrite_scarlett_solo_interface.glb'), true);
+  const { scene } = useGLTF(asset('models/focusrite_scarlett_solo_interface.glb'), DRACO_PATH);
   const lightMeshes = useRef<
     { mat: THREE.MeshStandardMaterial; color: THREE.Color; intensity: number }[]
   >([]);

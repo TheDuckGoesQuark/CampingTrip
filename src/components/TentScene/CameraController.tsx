@@ -35,7 +35,7 @@ const JOYSTICK_INERTIA = 0.88;
 const JOYSTICK_COAST_DECAY = 0.92;
 
 // Touch drag: angle units per full-screen-width drag
-const DRAG_SENSITIVITY = 1.6;
+const DRAG_SENSITIVITY = 1.2;
 const DRAG_THRESHOLD = 10; // px before a touch is treated as a drag
 
 // Gyroscope gentle additive layer
@@ -226,8 +226,9 @@ export default function CameraController() {
         drag.startAngleX + (dx / window.innerWidth) * DRAG_SENSITIVITY,
       ));
       // Natural vertical drag: swipe down → scene slides down (look up)
+      // Vertical sensitivity is half of horizontal to reduce heavy feel
       angleRef.current.y = Math.max(-ANGLE_CLAMP, Math.min(ANGLE_CLAMP,
-        drag.startAngleY - (dy / window.innerHeight) * DRAG_SENSITIVITY * 0.45,
+        drag.startAngleY - (dy / window.innerHeight) * DRAG_SENSITIVITY * 0.5,
       ));
 
       // Track velocity for release inertia

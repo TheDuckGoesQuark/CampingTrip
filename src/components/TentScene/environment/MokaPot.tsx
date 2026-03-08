@@ -1,16 +1,16 @@
 import { useEffect } from 'react';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
-import { asset } from '../../../utils/assetPath';
+import { asset, DRACO_PATH } from '../../../utils/assetPath';
 import { fixDarkMetallics } from '../../../utils/materialFixes';
 
 // Credit: "Moka Pot" on Sketchfab (CC-BY)
 // https://sketchfab.com/3d-models/moka-pot-2ca52d750d95471a953fb2c9eb577da6
 
-useGLTF.preload(asset('models/moka_pot.glb'), true);
+useGLTF.preload(asset('models/moka_pot.glb'), DRACO_PATH);
 
 export default function MokaPot() {
-  const { scene } = useGLTF(asset('models/moka_pot.glb'), true);
+  const { scene } = useGLTF(asset('models/moka_pot.glb'), DRACO_PATH);
 
   useEffect(() => {
     scene.traverse((child) => {
