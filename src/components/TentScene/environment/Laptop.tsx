@@ -210,10 +210,11 @@ export default function Laptop({ screenOn }: Props) {
 
   const handleLogoClick = useCallback(
     (e: any) => {
+      if (!screenOn) return;
       e.stopPropagation();
       handleLogoActivate();
     },
-    [handleLogoActivate],
+    [screenOn, handleLogoActivate],
   );
 
   // Keyboard activation via accessibility overlay
@@ -246,6 +247,7 @@ export default function Laptop({ screenOn }: Props) {
           ref={logoMeshRef}
           onClick={handleLogoClick}
           onPointerEnter={(e: any) => {
+            if (!screenOn) return;
             e.stopPropagation();
             setHovered('projects');
             document.body.style.cursor = 'pointer';
