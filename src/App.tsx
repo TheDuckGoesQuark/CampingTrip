@@ -2,6 +2,7 @@ import { useEffect, useState, lazy, Suspense } from 'react';
 import { useSessionStore } from './store/sessionStore';
 import WelcomeScreen from './components/WelcomeScreen/WelcomeScreen';
 import CampfireLoadingScreen from './components/CampfireLoadingScreen';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Lazy-load the heavy 3D scene so the welcome screen renders instantly.
 // The dynamic import fires as soon as App mounts, so Three.js / R3F download
@@ -33,9 +34,11 @@ export default function App() {
       <CampfireLoadingScreen />
       {/* Defer TentScene until welcome completes so typing animation gets full CPU */}
       {hasCompletedWelcome && (
-        <Suspense fallback={null}>
-          <TentScene visible={hasCompletedWelcome} />
-        </Suspense>
+        <ErrorBoundary>
+          <Suspense fallback={null}>
+            <TentScene visible={hasCompletedWelcome} />
+          </Suspense>
+        </ErrorBoundary>
       )}
     </>
   );

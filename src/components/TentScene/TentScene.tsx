@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useState, useRef } from 'react';
+import { Suspense, useEffect, useState, useRef, useCallback } from 'react';
 import { Canvas } from '@react-three/fiber';
 import SceneContent from './SceneContent';
 import DebugControls from './DebugControls';
@@ -20,7 +20,18 @@ interface TentSceneProps {
 export default function TentScene({ visible }: TentSceneProps) {
   const [debug, setDebug] = useState(false);
   const [fadeIn, setFadeIn] = useState(true);
+  const [contextLost, setContextLost] = useState(false);
   const overlayRef = useRef<HTMLDivElement>(null);
+
+  // Detect WebGL context loss (common on mobile due to GPU memory pressure)
+  const onCreated = useCallback(({ gl }: { gl: { domElement: HTMLCanvasElement } }) => {
+    const canvas = gl.domElement;
+    canvas.addEventListener('webglcontextlost', (e) => {
+      e.preventDefault();
+      console.error('[TentScene] WebGL context lost');
+      setContextLost(true);
+    });
+  }, []);
 
   // Simple fade-in from black when scene becomes visible
   useEffect(() => {
@@ -80,6 +91,7 @@ export default function TentScene({ visible }: TentSceneProps) {
         style={{ width: '100%', height: '100dvh', display: 'block', touchAction: 'manipulation' }}
         aria-label="Interactive 3D tent scene — use Tab to navigate objects, Enter to interact"
         role="application"
+        onCreated={onCreated}
       >
         <color attach="background" args={['#0a0608']} />
         <Suspense fallback={null}>
@@ -100,6 +112,48 @@ export default function TentScene({ visible }: TentSceneProps) {
           pointerEvents: 'none',
         }}
       />
+
+      {/* WebGL context loss fallback */}
+      {contextLost && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: '#0a0612',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontFamily: 'Courier New, monospace',
+            color: '#9e8a6a',
+            zIndex: 30,
+            textAlign: 'center',
+            padding: '2rem',
+          }}
+        >
+          <div style={{ fontSize: '1rem', color: '#e8d5b0', marginBottom: '0.5rem' }}>
+            The campfire went out.
+          </div>
+          <div style={{ fontSize: '0.75rem', opacity: 0.5, marginBottom: '1.5rem' }}>
+            Your device ran low on graphics memory.
+          </div>
+          <button
+            onClick={() => window.location.reload()}
+            style={{
+              background: 'rgba(255, 179, 71, 0.15)',
+              border: '1px solid rgba(255, 179, 71, 0.3)',
+              color: '#ffb347',
+              padding: '10px 24px',
+              borderRadius: 8,
+              fontFamily: 'Courier New, monospace',
+              fontSize: '0.85rem',
+              cursor: 'pointer',
+            }}
+          >
+            Relight the fire
+          </button>
+        </div>
+      )}
 
       {debug && (
         <div style={{
