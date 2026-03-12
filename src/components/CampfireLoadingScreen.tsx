@@ -4,11 +4,34 @@ import { useSessionStore } from '../store/sessionStore';
 import { startCampfire, stopCampfire } from '../audio/campfireSynth';
 import { startRain } from '../audio/rainSynth';
 
-// Compact fire frames — 5 lines, ~16 chars wide. Recognisable on narrow screens.
-const FIRE_FRAMES = [
-  "     )  (\n    (  ,')\n   ( '  , )\n    ( ,' )\n      \\||/\n   ~~\u00B0~~~~\u00B0~~",
-  "    (  )\n    (', , )\n   (  , ' )\n    (', )\n      \\||/\n   ~~\u00B0~~~~\u00B0~~",
-  "      )(\n    ( ,  )\n   (' ,  ')\n    ( ,')\n      \\||/\n   ~~\u00B0~~~~\u00B0~~",
+// Fire grows with progress: embers → kindling → growing → full flame.
+// Every line is exactly 14 Braille chars; every frame is exactly 12 lines.
+// Uses Unicode Braille (U+2800–U+28FF) for high-res pixel-art feel.
+const FIRE_STAGES = [
+  // Stage 0 — Embers (0-24 %): faint glow above cold logs
+  [
+    "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⢀⡀⢀⠀⠀⠀⠀⠀⠀⠀⡀⠀⡀\n⠈⠹⢿⣯⡄⠀⠀⠀⠀⠀⢠⣿⡾⠁\n⠀⠀⠈⠛⢿⣆⠀⡀⢀⡠⠞⠋⠀⠀\n⠀⠀⠀⠀⠀⠀⠉⠀⠀⠀⠀⠀⠀⠀",
+    "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠹⣿⣿⡄⠀⠀⠀⠀⠀⢠⣿⡞⠁\n⠀⠀⠈⠛⢳⣇⠀⠀⠀⣠⠞⠋⠁⠀\n⠀⠀⠀⠀⠀⠀⠈⠀⠀⠀⠀⠀⠀⠀",
+    "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀\n⠀⠹⣿⣿⡄⠀⠀⠀⠀⠀⢨⣽⡞⠁\n⠀⠀⠐⠛⢻⣄⢀⠀⠀⣠⠏⠋⠀⠀\n⠀⠀⠀⠀⠀⠀⠉⠀⠀⠀⠀⠀⠀⠀",
+  ],
+  // Stage 1 — Kindling (25-49 %): a small flame catches
+  [
+    "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⢰⢀⣤⣔⣤⠀⠀⢠⣤⢴⣤⣄⣤⣤\n⢚⣿⣿⣿⠏⠁⠀⠘⠃⠸⣿⣿⣿⡯\n⢳⣿⣿⡯⠀⠀⠀⠀⠀⠀⢹⡿⡿⡁\n⠈⠹⣿⣿⡄⠀⠀⠀⠀⠀⢀⣵⡌⠉\n⠀⠀⠈⠙⣻⣤⠀⠀⠀⣤⠞⠛⠀⠀\n⠀⠀⠀⠀⠀⠀⠈⠀⠀⠀⠀⠀⠀⠀",
+    "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⢠⠀⣤⣔⡴⠆⠀⠀⡄⢤⣴⣤⣤⣤\n⢘⣿⣿⣿⡏⠀⠀⠀⠓⠙⣻⣿⣿⣿\n⢻⣿⣿⣿⠁⠀⠀⠀⠀⠀⢹⣿⡿⠉\n⠀⠹⣿⣟⡅⠀⠀⠀⠀⠀⢠⣽⡞⠁\n⠀⠀⠉⠚⢿⡤⠀⠀⠀⢢⠏⠛⠀⠀\n⠀⠀⠀⠀⠀⠀⠉⠀⠀⠀⠀⠀⠀⠀",
+    "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⢠⢤⣤⣤⣤⠆⠀⠀⣦⣦⣴⣶⣤⣤\n⠸⣾⣿⣿⡏⠀⠀⠐⠋⠸⢿⣿⣿⡫\n⠲⣿⣿⣿⠁⠀⠀⠀⠀⠀⢱⣿⡿⣁\n⠀⠫⣿⣿⡖⠀⠀⠀⠀⠀⠠⣿⡲⠀\n⠀⠀⠈⠛⠿⡄⠀⡀⠀⣄⠾⠋⠀⠀\n⠀⠀⠀⠀⠀⠀⠉⠁⠀⠀⠀⠀⠀⠀",
+  ],
+  // Stage 2 — Growing (50-74 %): flame widens, second tongue appears
+  [
+    "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⡀⢠⣶⡤⣤⣤⣤⡂⠀⠀\n⠀⠀⠀⢀⣳⣴⣿⡯⢸⣿⣿⣯⢀⠀\n⠀⠀⠀⣴⣿⣿⡿⠁⢺⣿⣿⢟⣽⡆\n⢰⣂⢾⣿⣿⠟⠀⠀⣾⢟⣿⣿⣿⣿\n⠸⣿⣿⣿⡏⠀⠀⠀⠃⠸⣿⣿⣿⡿\n⢹⣿⣿⣿⠁⠀⠀⠀⠀⠀⢹⣿⡯⡅\n⠀⠳⢿⣷⡀⠀⠀⠀⠀⠀⣤⣯⡞⠁\n⠀⠀⠈⠛⢭⣄⠀⠀⠀⣠⠞⠋⠀⠀\n⠀⠀⠀⠀⠀⠀⠉⠀⠀⠀⠀⠀⠀⠀",
+    "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⣀⣢⣤⡄⢤⣶⣤⡄⠀⠀\n⠀⠀⠀⠀⡻⣼⣿⠍⢸⣿⣿⣿⣆⠀\n⠀⠀⢀⣴⣿⣿⡿⠁⢸⣿⣿⡟⣬⡆\n⢐⣘⣳⣿⣟⠟⠂⠀⢻⠿⣿⣾⣾⣿\n⣾⢿⣿⣿⡇⠀⠀⠀⠃⠻⣿⣿⣿⡿\n⢁⣿⣿⣯⠁⠀⠀⠀⠀⠀⢹⡿⡷⡋\n⠀⠹⣿⣿⡤⠀⠀⠀⠀⠀⢠⣽⡞⠁\n⠀⠀⠈⠛⢻⣧⡀⠀⢀⣠⠞⠋⠀⠀\n⠀⠀⠀⠀⠀⠈⠉⠀⠀⠀⠀⠀⠀⠀",
+    "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⢀⡀⢠⣦⡄⣄⣤⣂⣄⠀⠀\n⠀⠀⠀⢀⣱⣼⣿⡍⣺⣿⣿⣿⠀⠀\n⠀⠀⠀⣰⣿⣿⡟⠁⢻⣿⣿⣛⣿⡇\n⣰⢀⣾⣿⣿⡟⠁⠀⣾⢿⣿⣿⣿⣿\n⢺⣿⣿⣿⡋⠀⠀⠀⠃⠸⣿⣿⣿⠿\n⠣⣿⣿⣿⠀⠀⠀⠀⠀⠀⢹⣿⡿⡀\n⠀⠸⣿⣿⣄⠀⠀⠀⠀⠀⢸⣿⡞⠁\n⠀⠀⠈⠛⢯⣄⠀⠀⠠⣰⠖⠋⠁⠀\n⠀⠀⠀⠀⠀⠀⠉⠀⠀⠀⠀⠀⠀⠀",
+  ],
+  // Stage 3 — Full flame (75-100 %): full campfire, two-pronged
+  [
+    "⠀⠀⠀⠀⠀⠀⣱⣇⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠈⣽⣦⡄⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠸⣿⣿⣶⣣⠀⠀⠀\n⠀⠀⠀⠠⡀⢨⣿⡿⢿⣿⣿⡆⠀⠀\n⠀⠀⠀⠀⣳⣼⣿⡏⢑⣿⣿⡿⢀⠀\n⠀⠀⠀⣲⣿⣿⡟⠁⢸⣿⣿⣟⣯⡎\n⠐⢀⣿⣿⣿⠟⠀⠨⣶⢿⣿⣿⣾⣿\n⢼⣿⣿⣿⡎⠀⠀⠐⠃⢺⣿⣿⣿⠿\n⣻⢿⣿⣿⠂⠀⠀⠀⠀⠀⢺⣿⡿⡁\n⠀⠹⣻⣿⡀⠀⠀⠀⠀⠀⢄⣿⡞⠁\n⠀⠀⠉⠛⢷⣄⡀⡀⠀⣠⠾⠋⠀⠀\n⠀⠀⠀⠀⠀⠀⠉⠀⠀⠀⠀⠀⠀⠀",
+    "⠀⠀⠀⠀⠀⠀⢳⣆⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⢘⣿⣵⣀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠾⣿⣿⣷⡧⠂⠀⠀\n⠀⠀⠀⠀⡄⢢⣿⡟⣿⣿⣿⡧⠀⠀\n⠀⠀⠀⠀⣲⣌⣿⠟⢺⣿⣿⣿⢁⠀\n⠀⠀⠀⣰⣿⣿⡛⠉⢸⣿⣿⣟⣼⡆\n⢐⢀⣾⣿⣟⠝⠁⠀⣿⣿⣿⣿⣿⣷\n⢰⣾⣿⣿⡍⠀⠀⠀⠋⠹⣿⣿⣿⡿\n⢻⣽⣿⣿⠄⠀⠀⠀⠀⠀⣻⣿⡿⣅\n⠀⠹⣿⣿⡄⠀⠀⠀⠀⠀⢰⣿⡞⠁\n⠀⠀⠈⠛⣿⡄⠀⠀⠀⣄⡞⠋⠀⠀\n⠀⠀⠀⠀⠀⠀⠉⠀⠀⠀⠀⠀⠀⠀",
+    "⠀⠀⠀⠀⠀⠀⢱⣖⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⢈⣻⣷⣂⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⢹⣿⣿⣿⣧⠀⠀⠀\n⠀⠀⠀⠠⡀⢤⣿⡝⣿⣿⣿⡇⡀⠀\n⠀⠀⠀⠀⣲⣾⣿⡍⢸⣿⣿⣿⢠⡀\n⠀⠀⠀⣰⣿⣿⣟⠉⢸⣿⣿⡝⣽⡇\n⢸⢈⣿⣿⣿⡗⠀⠈⡿⣿⣿⣿⣿⣞\n⢺⣿⣿⣿⣏⠀⠀⠈⠃⠺⣿⣿⣿⡿\n⢱⣼⣿⣿⠀⠀⠀⠀⠀⠀⢙⢿⡿⡁\n⠀⠰⡿⣿⡔⠀⠀⠀⠀⠀⢠⣾⡶⠁\n⠀⠀⠈⠙⢿⡤⢀⠀⠀⢠⠎⠋⠁⠀\n⠀⠀⠀⠀⠀⠀⠉⠀⠀⠀⠀⠀⠀⠀",
+  ],
 ];
 
 const MIN_DISPLAY_MS = 2000;
@@ -69,7 +92,7 @@ export default function CampfireLoadingScreen() {
 
   // Animate fire frames
   useEffect(() => {
-    const id = setInterval(() => setFrame((f) => (f + 1) % FIRE_FRAMES.length), 400);
+    const id = setInterval(() => setFrame((f) => f + 1), 400);
     return () => clearInterval(id);
   }, []);
 
@@ -120,6 +143,10 @@ export default function CampfireLoadingScreen() {
 
   if (!visible) return null;
 
+  const stageIdx = displayPct < 25 ? 0 : displayPct < 50 ? 1 : displayPct < 75 ? 2 : 3;
+  const stageFrames = FIRE_STAGES[stageIdx];
+  const fireArt = stageFrames[frame % stageFrames.length];
+
   const barWidth = 20;
   const filled = Math.max(0, Math.min(barWidth, Math.round((displayPct / 100) * barWidth)));
   const bar = '\u2591'.repeat(filled) + '\u00B7'.repeat(barWidth - filled);
@@ -146,12 +173,11 @@ export default function CampfireLoadingScreen() {
         style={{
           margin: 0,
           fontSize: 'clamp(0.75rem, 3.5vw, 1.2rem)',
-          lineHeight: 1.4,
+          lineHeight: 1.0,
           color: '#c4935a',
-          textAlign: 'center',
         }}
       >
-        {FIRE_FRAMES[frame]}
+        {fireArt}
       </pre>
 
       <div style={{ marginTop: '2rem', fontSize: '0.8rem', letterSpacing: '0.12em', textAlign: 'center' }}>
