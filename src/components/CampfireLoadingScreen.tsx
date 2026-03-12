@@ -4,11 +4,12 @@ import { useSessionStore } from '../store/sessionStore';
 import { startCampfire, stopCampfire } from '../audio/campfireSynth';
 import { startRain } from '../audio/rainSynth';
 
-// Compact fire frames — 5 lines, ~16 chars wide. Recognisable on narrow screens.
+// Compact fire frames — 6 lines, each padded to exactly 16 chars wide.
+// Fixed-width lines prevent text-align artefacts and keep the shape stable.
 const FIRE_FRAMES = [
-  "     )  (\n    (  ,')\n   ( '  , )\n    ( ,' )\n      \\||/\n   ~~\u00B0~~~~\u00B0~~",
-  "    (  )\n    (', , )\n   (  , ' )\n    (', )\n      \\||/\n   ~~\u00B0~~~~\u00B0~~",
-  "      )(\n    ( ,  )\n   (' ,  ')\n    ( ,')\n      \\||/\n   ~~\u00B0~~~~\u00B0~~",
+  "       )(       \n    (  ,'  )    \n   (' ,    ')   \n    (  ,' )     \n      \\||/      \n  ~~\u00B0~~~~~~\u00B0~~  ",
+  "     (  )       \n    (', , )     \n   (  , '  )    \n    (', )       \n      \\||/      \n  ~~\u00B0~~~~~~\u00B0~~  ",
+  "      )(        \n    ( ,   )     \n   ('  ,  ' )   \n    ( ,'  )     \n      \\||/      \n  ~~\u00B0~~~~~~\u00B0~~  ",
 ];
 
 const MIN_DISPLAY_MS = 2000;
@@ -148,7 +149,6 @@ export default function CampfireLoadingScreen() {
           fontSize: 'clamp(0.75rem, 3.5vw, 1.2rem)',
           lineHeight: 1.4,
           color: '#c4935a',
-          textAlign: 'center',
         }}
       >
         {FIRE_FRAMES[frame]}

@@ -39,11 +39,8 @@ export default class ErrorBoundary extends Component<Props, State> {
           zIndex: 100,
         }}
       >
-        <pre style={{ fontSize: 'clamp(0.6rem, 2.5vw, 1rem)', color: '#c4935a', marginBottom: '1.5rem' }}>
-{`    /\\
-   /  \\
-  / !! \\
- /______\\`}
+        <pre style={{ fontSize: 'clamp(0.6rem, 2.5vw, 1rem)', color: '#c4935a', marginBottom: '1.5rem', textAlign: 'left', display: 'inline-block' }}>
+          {'     /\\     \n    /  \\    \n   / !! \\   \n  /______\\  '}
         </pre>
         <div style={{ fontSize: '1rem', color: '#e8d5b0', marginBottom: '0.5rem' }}>
           Something went wrong loading the campsite.
