@@ -5,32 +5,33 @@ import { startCampfire, stopCampfire } from '../audio/campfireSynth';
 import { startRain } from '../audio/rainSynth';
 
 // Fire grows with progress: embers → kindling → growing → full flame.
-// Every line is exactly 16 chars; every frame is exactly 8 lines.
-// Two spiky prongs (right taller) give a matchstick / pixel-art feel.
+// Every line is exactly 20 chars; every frame is exactly 12 lines.
+// Block-shading chars (░▒▓█) give a pixel-art sprite feel.
+// Heat gradient: █▓ at tips → ▒░ at edges/base.
 const FIRE_STAGES = [
-  // Stage 0 — Embers (0-24 %): tiny sparks above cold logs
+  // Stage 0 — Embers (0-24 %): faint glow above cold logs
   [
-    "                \n                \n                \n                \n                \n      . .       \n      \\||/      \n  ~~\u00B0~~~~~~\u00B0~~  ",
-    "                \n                \n                \n                \n        '       \n      .  .      \n      \\||/      \n  ~~\u00B0~~~~~~\u00B0~~  ",
-    "                \n                \n                \n                \n       .        \n     .   '      \n      \\||/      \n  ~~\u00B0~~~~~~\u00B0~~  ",
+    "                    \n                    \n                    \n                    \n                    \n                    \n                    \n                    \n       ░░           \n      ░▒▒░          \n        \\||/        \n    ~~\u00B0~~~~~~\u00B0~~    ",
+    "                    \n                    \n                    \n                    \n                    \n                    \n                    \n        ░           \n       ░            \n      ░ ▒░          \n        \\||/        \n    ~~\u00B0~~~~~~\u00B0~~    ",
+    "                    \n                    \n                    \n                    \n                    \n                    \n                    \n       ░            \n        ░           \n      ░▒ ░          \n        \\||/        \n    ~~\u00B0~~~~~~\u00B0~~    ",
   ],
-  // Stage 1 — Kindling (25-49 %): a single spike catches
+  // Stage 1 — Kindling (25-49 %): a small flame catches
   [
-    "                \n                \n                \n                \n       |        \n      /|\\       \n      \\||/      \n  ~~\u00B0~~~~~~\u00B0~~  ",
-    "                \n                \n                \n                \n       |'       \n      /|/       \n      \\||/      \n  ~~\u00B0~~~~~~\u00B0~~  ",
-    "                \n                \n                \n                \n      .|        \n      /|\\       \n      \\||/      \n  ~~\u00B0~~~~~~\u00B0~~  ",
+    "                    \n                    \n                    \n                    \n                    \n                    \n        ▓░          \n       ░██░         \n       ▒█▒          \n       ░▒░          \n        \\||/        \n    ~~\u00B0~~~~~~\u00B0~~    ",
+    "                    \n                    \n                    \n                    \n                    \n                    \n        ░▓          \n       ░██░         \n       ▒█░          \n       ░▒░          \n        \\||/        \n    ~~\u00B0~~~~~~\u00B0~~    ",
+    "                    \n                    \n                    \n                    \n                    \n                    \n       ░▓░          \n        ██░         \n       ░█▒          \n       ░▒░          \n        \\||/        \n    ~~\u00B0~~~~~~\u00B0~~    ",
   ],
   // Stage 2 — Growing (50-74 %): flame widens, second tongue appears
   [
-    "                \n                \n        |       \n       /| .     \n      | |/      \n      \\|/       \n      \\||/      \n  ~~\u00B0~~~~~~\u00B0~~  ",
-    "                \n                \n       |        \n       /|\\.     \n      / |/      \n      \\|/       \n      \\||/      \n  ~~\u00B0~~~~~~\u00B0~~  ",
-    "                \n                \n        |       \n      ./| .     \n      | | \\     \n      \\| /      \n      \\||/      \n  ~~\u00B0~~~~~~\u00B0~~  ",
+    "                    \n                    \n                    \n         ▓█         \n        ▒██░        \n   ░░  ░███░        \n   ░▒  ▓██▒         \n    ░▒████░         \n      ░██░          \n       ░░           \n        \\||/        \n    ~~\u00B0~~~~~~\u00B0~~    ",
+    "                    \n                    \n                    \n         ░▓         \n        ░███        \n   ░░  ▒███░        \n    ░░ ░██▒         \n    ░▒████░         \n      ░██░          \n       ░░           \n        \\||/        \n    ~~\u00B0~~~~~~\u00B0~~    ",
+    "                    \n                    \n                    \n        ▓█░         \n        ▒██▒        \n   ░░  ░███░        \n   ░▒░ ▓██░         \n    ▒█████░         \n      ░██░          \n       ░░           \n        \\||/        \n    ~~\u00B0~~~~~~\u00B0~~    ",
   ],
-  // Stage 3 — Full flame (75-100 %): two pointed tongues, right taller
+  // Stage 3 — Full flame (75-100 %): two pronged sprite, right taller
   [
-    "         |      \n     |  /       \n     | / .      \n     |/  |      \n      \\ /       \n       \\/       \n      \\||/      \n  ~~\u00B0~~~~~~\u00B0~~  ",
-    "        |       \n     .  /|      \n     | /  .     \n     |/  |      \n      \\  /      \n       \\/       \n      \\||/      \n  ~~\u00B0~~~~~~\u00B0~~  ",
-    "         |      \n     |   |      \n     |  /'      \n     |/ .|      \n      \\  /      \n       \\/       \n      \\||/      \n  ~~\u00B0~~~~~~\u00B0~~  ",
+    "          ▓█        \n         ▒██▒       \n    ░▓  ▒███░       \n   ░██▒ ████░       \n   ▒███▓███▒        \n    ▓█████▒         \n     ▒███▒          \n      ░██░          \n       ░▒           \n       ░░           \n        \\||/        \n    ~~\u00B0~~~~~~\u00B0~~    ",
+    "         ▓█░        \n        ░███        \n    ░▒  ▓███▒       \n   ▒██░ ▒███░       \n   ░███▒████░       \n    ▒█████▒         \n     ▓████░         \n      ░██░          \n       ░▒           \n       ░░           \n        \\||/        \n    ~~\u00B0~~~~~~\u00B0~~    ",
+    "          █▓        \n         ▓██░       \n    ▒▓  ▒███▒       \n   ░██▒ ░███░       \n   ▒███▓███░        \n    ▓█████▒░        \n     ░███▒          \n      ░██░          \n       ▒░           \n       ░░           \n        \\||/        \n    ~~\u00B0~~~~~~\u00B0~~    ",
   ],
 ];
 
@@ -173,7 +174,7 @@ export default function CampfireLoadingScreen() {
         style={{
           margin: 0,
           fontSize: 'clamp(0.75rem, 3.5vw, 1.2rem)',
-          lineHeight: 1.4,
+          lineHeight: 1.2,
           color: '#c4935a',
         }}
       >
