@@ -121,7 +121,7 @@ export default function CampfireLoadingScreen() {
   if (!visible) return null;
 
   const barWidth = 20;
-  const filled = Math.round((displayPct / 100) * barWidth);
+  const filled = Math.max(0, Math.min(barWidth, Math.round((displayPct / 100) * barWidth)));
   const bar = '\u2591'.repeat(filled) + '\u00B7'.repeat(barWidth - filled);
 
   return (
