@@ -1,0 +1,32 @@
+[tool.poetry]
+name = "campsite"
+version = "0.1.0"
+description = "Backend for jordanscamp.site"
+authors = ["Jordan Mackie"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+django = "^5.2"
+djangorestframework = "^3.16"
+django-cors-headers = "^4.3"
+psycopg2-binary = "^2.9"
+dj-database-url = "^2.0"
+drf-spectacular = "^0.28"
+django-allauth = {extras = ["socialaccount"], version = "^65.15"}
+dj-rest-auth = {extras = ["with-social"], version = "^7.1"}
+python-decouple = "^3.8"
+requests = "^2.32"
+pyjwt = {extras = ["crypto"], version = "^2.10"}
+oauthlib = "^3.2"
+django-filter = "^25.2"
+celery = {extras = ["redis"], version = "^5.4"}
+Pillow = "^10.0"
+gunicorn = "^25.1"
+whitenoise = "^6.7"
+django-storages = {extras = ["s3"], version = "^1.14"}
+boto3 = "^1.42"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

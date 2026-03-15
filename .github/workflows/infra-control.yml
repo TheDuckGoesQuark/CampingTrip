@@ -1,0 +1,174 @@
+name: Infrastructure Control
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Action to perform"
+        required: true
+        type: choice
+        options:
+          - start
+          - stop
+          - status
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: eu-west-2
+
+jobs:
+  control:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Determine action
+        id: action
+        run: |
+          ACTION="${{ inputs.action || 'stop' }}"
+          echo "action=$ACTION" >> $GITHUB_OUTPUT
+          echo "Action: $ACTION"
+
+      - name: Find EC2 instance by tag
+        id: ec2
+        run: |
+          INSTANCE_ID=$(aws ec2 describe-instances \
+            --filters "Name=tag:Project,Values=jordanscamp" "Name=tag:Environment,Values=prod" \
+            --query "Reservations[0].Instances[0].InstanceId" \
+            --output text)
+
+          if [ "$INSTANCE_ID" = "None" ] || [ -z "$INSTANCE_ID" ]; then
+            echo "::error::No jordanscamp production instance found"
+            exit 1
+          fi
+
+          echo "instance_id=$INSTANCE_ID" >> $GITHUB_OUTPUT
+          echo "Found instance: $INSTANCE_ID"
+
+      - name: Get instance status
+        id: status
+        run: |
+          STATE=$(aws ec2 describe-instances \
+            --instance-ids "${{ steps.ec2.outputs.instance_id }}" \
+            --query "Reservations[0].Instances[0].State.Name" \
+            --output text)
+          echo "state=$STATE" >> $GITHUB_OUTPUT
+          echo "Current instance state: $STATE"
+
+      - name: Start instance
+        if: steps.action.outputs.action == 'start'
+        run: |
+          if [ "${{ steps.status.outputs.state }}" == "running" ]; then
+            echo "Instance is already running"
+            exit 0
+          fi
+
+          echo "Starting instance..."
+          aws ec2 start-instances --instance-ids "${{ steps.ec2.outputs.instance_id }}"
+
+          echo "Waiting for instance to be running..."
+          aws ec2 wait instance-running --instance-ids "${{ steps.ec2.outputs.instance_id }}"
+
+          echo "Waiting for SSM agent..."
+          for i in $(seq 1 30); do
+            STATUS=$(aws ssm describe-instance-information \
+              --filters "Key=InstanceIds,Values=${{ steps.ec2.outputs.instance_id }}" \
+              --query "InstanceInformationList[0].PingStatus" \
+              --output text 2>/dev/null || echo "None")
+            if [ "$STATUS" == "Online" ]; then
+              echo "SSM agent is online"
+              break
+            fi
+            echo "Waiting... ($i/30)"
+            sleep 10
+          done
+
+      - name: Deploy latest version on start
+        if: steps.action.outputs.action == 'start'
+        run: |
+          ECR_WEB_REPO="${{ vars.ECR_WEB_REPO }}"
+          S3_BUCKET="${{ vars.S3_DEPLOY_BUCKET }}"
+
+          COMMAND_ID=$(aws ssm send-command \
+            --instance-ids "${{ steps.ec2.outputs.instance_id }}" \
+            --document-name "AWS-RunShellScript" \
+            --parameters "commands=[
+              'set -e',
+              'cd /opt/jordanscamp',
+              'aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin $(echo $ECR_WEB_REPO | cut -d/ -f1)',
+              'export ECR_WEB_REPO=$ECR_WEB_REPO',
+              'export IMAGE_TAG=latest',
+              'docker compose -f docker-compose.prod.yml pull',
+              'docker compose -f docker-compose.prod.yml run --rm web python3 manage.py migrate --no-input',
+              'docker compose -f docker-compose.prod.yml up -d',
+              'if aws s3 ls s3://$S3_BUCKET/_deploy/webapp.tar.gz 2>/dev/null; then aws s3 cp s3://$S3_BUCKET/_deploy/webapp.tar.gz /tmp/webapp.tar.gz && rm -rf /opt/jordanscamp/webapp/* && tar xzf /tmp/webapp.tar.gz -C /opt/jordanscamp/webapp/ && rm /tmp/webapp.tar.gz && echo \"Web app updated from S3\"; else echo \"No webapp archive in S3, keeping existing\"; fi',
+              'systemctl restart caddy',
+              'sleep 5',
+              'curl -f http://localhost:8000/health/ || exit 1',
+              'docker image prune -f'
+            ]" \
+            --timeout-seconds 600 \
+            --query "Command.CommandId" \
+            --output text)
+
+          echo "Sent SSM command: $COMMAND_ID"
+
+          aws ssm wait command-executed \
+            --command-id "$COMMAND_ID" \
+            --instance-id "${{ steps.ec2.outputs.instance_id }}" \
+          || true
+
+          STATUS=$(aws ssm get-command-invocation \
+            --command-id "$COMMAND_ID" \
+            --instance-id "${{ steps.ec2.outputs.instance_id }}" \
+            --query "Status" --output text)
+
+          echo "SSM command status: $STATUS"
+
+          if [ "$STATUS" != "Success" ]; then
+            echo "::error::Start-up commands failed with status: $STATUS"
+            exit 1
+          fi
+
+          echo "Instance started and deployed latest version"
+
+      - name: Stop instance
+        if: steps.action.outputs.action == 'stop'
+        run: |
+          if [ "${{ steps.status.outputs.state }}" == "stopped" ]; then
+            echo "Instance is already stopped"
+            exit 0
+          fi
+
+          echo "Stopping instance..."
+          aws ec2 stop-instances --instance-ids "${{ steps.ec2.outputs.instance_id }}"
+          aws ec2 wait instance-stopped --instance-ids "${{ steps.ec2.outputs.instance_id }}"
+          echo "Instance stopped"
+
+      - name: Report status
+        if: steps.action.outputs.action == 'status'
+        run: |
+          INSTANCE=$(aws ec2 describe-instances \
+            --instance-ids "${{ steps.ec2.outputs.instance_id }}" \
+            --query "Reservations[0].Instances[0]" \
+            --output json)
+
+          STATE=$(echo "$INSTANCE" | jq -r '.State.Name')
+          TYPE=$(echo "$INSTANCE" | jq -r '.InstanceType')
+          AZ=$(echo "$INSTANCE" | jq -r '.Placement.AvailabilityZone')
+          LAUNCH=$(echo "$INSTANCE" | jq -r '.LaunchTime')
+
+          echo "## Instance Status" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| State | $STATE |" >> $GITHUB_STEP_SUMMARY
+          echo "| Type | $TYPE |" >> $GITHUB_STEP_SUMMARY
+          echo "| AZ | $AZ |" >> $GITHUB_STEP_SUMMARY
+          echo "| Last Launch | $LAUNCH |" >> $GITHUB_STEP_SUMMARY

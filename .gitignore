@@ -3,3 +3,13 @@ dist
 *.local
 .DS_Store
 .claude/
+
+# Terraform
+infra/.terraform/
+terraform.tfstate
+terraform.tfstate.backup
+*.tfvars
+
+# Temp/debug scripts
+inspect-*.mjs
+yarn.lock
