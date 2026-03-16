@@ -152,7 +152,8 @@ REDIS_URL=${redis_url}
 ENVEOF
 
 # Escape $ signs for Docker Compose .env parsing ($ → $$ = literal $)
-sed -i 's/\$/\$\$/g' "$APP_DIR/.env"
+# Use character class [$] to match literal $, not end-of-line
+sed -i 's/[$]/\$\$/g' "$APP_DIR/.env"
 
 chmod 600 "$APP_DIR/.env"
 
