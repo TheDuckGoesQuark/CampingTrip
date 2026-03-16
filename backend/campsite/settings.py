@@ -47,7 +47,7 @@ INSTALLED_APPS = [
     'corsheaders',
     # Apps
     'apps.core',
-    'apps.example_app',
+    'apps.workout',
 ]
 
 MIDDLEWARE = [

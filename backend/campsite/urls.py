@@ -24,11 +24,8 @@ urlpatterns = [
     # Core API (status, etc.)
     path('api/', include('apps.core.urls')),
 
-    # Example app (remove or rename when building a real app)
-    path('api/example/', include('apps.example_app.urls')),
-
-    # Future apps:
-    # path('api/appname/', include('apps.appname.urls')),
+    # Workout tracker
+    path('api/workout/', include('apps.workout.urls')),
 ]
 
 # Serve media files in development
