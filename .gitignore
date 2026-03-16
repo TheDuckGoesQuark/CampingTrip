@@ -12,4 +12,3 @@ terraform.tfstate.backup
 
 # Temp/debug scripts
 inspect-*.mjs
-yarn.lock

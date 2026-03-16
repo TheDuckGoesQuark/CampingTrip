@@ -67,6 +67,12 @@ ${domain_name} {
 ${api_domain} {
     reverse_proxy localhost:8000
 }
+
+${workout_domain} {
+    root * /opt/jordanscamp/workout
+    try_files {path} /index.html
+    file_server
+}
 CADDYEOF
 
 # Caddy systemd service (if not installed via package manager)
@@ -198,14 +204,23 @@ volumes:
   redis_data:
 COMPOSEEOF
 
-# --- Deploy static frontend from S3 ---
-mkdir -p "$APP_DIR/webapp"
+# --- Deploy static frontends from S3 ---
+mkdir -p "$APP_DIR/webapp" "$APP_DIR/workout"
+
 if aws s3 cp "s3://${s3_bucket}/_deploy/webapp.tar.gz" /tmp/webapp.tar.gz 2>/dev/null; then
   tar xzf /tmp/webapp.tar.gz -C "$APP_DIR/webapp/"
   rm /tmp/webapp.tar.gz
-  echo "Webapp deployed from S3"
+  echo "Webapp (campsite) deployed from S3"
 else
   echo "No webapp tarball in S3 yet — will be deployed by CI"
+fi
+
+if aws s3 cp "s3://${s3_bucket}/_deploy/workout.tar.gz" /tmp/workout.tar.gz 2>/dev/null; then
+  tar xzf /tmp/workout.tar.gz -C "$APP_DIR/workout/"
+  rm /tmp/workout.tar.gz
+  echo "Workout app deployed from S3"
+else
+  echo "No workout tarball in S3 yet — will be deployed by CI"
 fi
 
 # --- Pull images ---

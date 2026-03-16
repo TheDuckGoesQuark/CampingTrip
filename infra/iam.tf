@@ -221,3 +221,218 @@ resource "aws_iam_role_policy" "github_s3_deploy" {
     }]
   })
 }
+
+# GitHub Actions: Terraform state access (S3 backend + DynamoDB locks)
+resource "aws_iam_role_policy" "github_terraform_state" {
+  name = "terraform-state"
+  role = aws_iam_role.github_actions.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:DeleteObject",
+          "s3:ListBucket",
+        ]
+        Resource = [
+          "arn:aws:s3:::jordanscamp-terraform-state",
+          "arn:aws:s3:::jordanscamp-terraform-state/*",
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:GetItem",
+          "dynamodb:PutItem",
+          "dynamodb:DeleteItem",
+        ]
+        Resource = "arn:aws:dynamodb:${var.aws_region}:*:table/jordanscamp-terraform-locks"
+      }
+    ]
+  })
+}
+
+# GitHub Actions: Terraform resource management
+# Scoped to the services Terraform manages for this project
+resource "aws_iam_role_policy" "github_terraform_resources" {
+  name = "terraform-resources"
+  role = aws_iam_role.github_actions.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "EC2andVPC"
+        Effect = "Allow"
+        Action = [
+          "ec2:Describe*",
+          "ec2:CreateTags",
+          "ec2:*SecurityGroup*",
+          "ec2:*Subnet*",
+          "ec2:*Vpc*",
+          "ec2:*InternetGateway*",
+          "ec2:*RouteTable*",
+          "ec2:*Address*",
+          "ec2:*Instance*",
+          "ec2:*Volume*",
+          "ec2:*NetworkInterface*",
+          "ec2:ModifyInstanceAttribute",
+          "ec2:RunInstances",
+          "ec2:TerminateInstances",
+        ]
+        Resource = "*"
+      },
+      {
+        Sid    = "RDS"
+        Effect = "Allow"
+        Action = [
+          "rds:Describe*",
+          "rds:CreateDBInstance",
+          "rds:ModifyDBInstance",
+          "rds:DeleteDBInstance",
+          "rds:CreateDBSubnetGroup",
+          "rds:ModifyDBSubnetGroup",
+          "rds:DeleteDBSubnetGroup",
+          "rds:AddTagsToResource",
+          "rds:ListTagsForResource",
+        ]
+        Resource = "*"
+      },
+      {
+        Sid    = "Route53"
+        Effect = "Allow"
+        Action = [
+          "route53:GetHostedZone",
+          "route53:ListHostedZones",
+          "route53:ListResourceRecordSets",
+          "route53:ChangeResourceRecordSets",
+          "route53:GetChange",
+          "route53:CreateHostedZone",
+          "route53:ListTagsForResource",
+          "route53:ChangeTagsForResource",
+        ]
+        Resource = "*"
+      },
+      {
+        Sid    = "IAM"
+        Effect = "Allow"
+        Action = [
+          "iam:GetRole",
+          "iam:GetPolicy",
+          "iam:GetRolePolicy",
+          "iam:GetInstanceProfile",
+          "iam:GetOpenIDConnectProvider",
+          "iam:ListRolePolicies",
+          "iam:ListAttachedRolePolicies",
+          "iam:ListInstanceProfilesForRole",
+          "iam:CreateRole",
+          "iam:UpdateRole",
+          "iam:DeleteRole",
+          "iam:PutRolePolicy",
+          "iam:DeleteRolePolicy",
+          "iam:AttachRolePolicy",
+          "iam:DetachRolePolicy",
+          "iam:CreateInstanceProfile",
+          "iam:DeleteInstanceProfile",
+          "iam:AddRoleToInstanceProfile",
+          "iam:RemoveRoleFromInstanceProfile",
+          "iam:CreateOpenIDConnectProvider",
+          "iam:DeleteOpenIDConnectProvider",
+          "iam:UpdateOpenIDConnectProviderThumbprint",
+          "iam:TagRole",
+          "iam:PassRole",
+        ]
+        Resource = "*"
+      },
+      {
+        Sid    = "S3"
+        Effect = "Allow"
+        Action = [
+          "s3:CreateBucket",
+          "s3:DeleteBucket",
+          "s3:GetBucketPolicy",
+          "s3:PutBucketPolicy",
+          "s3:GetBucketAcl",
+          "s3:GetBucketVersioning",
+          "s3:PutBucketVersioning",
+          "s3:GetBucketLogging",
+          "s3:GetBucketTagging",
+          "s3:PutBucketTagging",
+          "s3:GetLifecycleConfiguration",
+          "s3:PutLifecycleConfiguration",
+          "s3:GetEncryptionConfiguration",
+          "s3:PutEncryptionConfiguration",
+          "s3:GetBucketPublicAccessBlock",
+          "s3:PutBucketPublicAccessBlock",
+          "s3:GetBucketObjectLockConfiguration",
+          "s3:GetBucketCORS",
+          "s3:GetBucketWebsite",
+          "s3:GetBucketRequestPayment",
+          "s3:GetAccelerateConfiguration",
+          "s3:GetReplicationConfiguration",
+          "s3:ListBucket",
+        ]
+        Resource = "*"
+      },
+      {
+        Sid    = "SecretsManager"
+        Effect = "Allow"
+        Action = [
+          "secretsmanager:CreateSecret",
+          "secretsmanager:GetSecretValue",
+          "secretsmanager:DescribeSecret",
+          "secretsmanager:PutSecretValue",
+          "secretsmanager:UpdateSecret",
+          "secretsmanager:DeleteSecret",
+          "secretsmanager:TagResource",
+          "secretsmanager:GetResourcePolicy",
+        ]
+        Resource = "*"
+      },
+      {
+        Sid    = "CloudWatch"
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:DeleteLogGroup",
+          "logs:DescribeLogGroups",
+          "logs:PutRetentionPolicy",
+          "logs:TagResource",
+          "logs:ListTagsForResource",
+          "logs:ListTagsLogGroup",
+        ]
+        Resource = "*"
+      },
+      {
+        Sid    = "ECRManagement"
+        Effect = "Allow"
+        Action = [
+          "ecr:CreateRepository",
+          "ecr:DeleteRepository",
+          "ecr:DescribeRepositories",
+          "ecr:GetRepositoryPolicy",
+          "ecr:SetRepositoryPolicy",
+          "ecr:DeleteRepositoryPolicy",
+          "ecr:PutLifecyclePolicy",
+          "ecr:GetLifecyclePolicy",
+          "ecr:ListTagsForResource",
+          "ecr:TagResource",
+        ]
+        Resource = "*"
+      },
+      {
+        Sid    = "SSMParameters"
+        Effect = "Allow"
+        Action = [
+          "ssm:GetParameter",
+          "ssm:GetParameters",
+        ]
+        Resource = "arn:aws:ssm:${var.aws_region}::parameter/aws/service/ami-amazon-linux-latest/*"
+      }
+    ]
+  })
+}

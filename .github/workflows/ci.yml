@@ -16,18 +16,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: npm
+          node-version: 22
+          cache: pnpm
 
-      - run: npm ci --legacy-peer-deps
-
-      - name: Run tests
-        run: npm test
+      - run: pnpm install --frozen-lockfile
 
       - name: Type check
-        run: npx tsc -b
+        run: pnpm -r exec tsc -b
+
+      - name: Run tests
+        run: pnpm -r test
 
       - name: Build
-        run: npm run build
+        run: pnpm -r build
