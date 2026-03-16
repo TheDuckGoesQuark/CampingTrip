@@ -4,6 +4,13 @@ dist
 .DS_Store
 .claude/
 
+# Python
+__pycache__/
+*.sqlite3
+
+# Lock files (pnpm only)
+yarn.lock
+
 # Terraform
 infra/.terraform/
 terraform.tfstate

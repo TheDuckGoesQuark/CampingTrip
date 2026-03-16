@@ -194,11 +194,11 @@ resource "aws_iam_role_policy" "github_ec2_control" {
           "aws:ResourceTag/Project" = "jordanscamp"
         }
       }
-    },
-    {
-      Effect   = "Allow"
-      Action   = "ec2:DescribeInstances"
-      Resource = "*"
+      },
+      {
+        Effect   = "Allow"
+        Action   = "ec2:DescribeInstances"
+        Resource = "*"
     }]
   })
 }
