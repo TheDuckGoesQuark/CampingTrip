@@ -8,6 +8,7 @@ on:
       - 'apps/**'
       - 'package.json'
       - 'pnpm-workspace.yaml'
+      - 'infra/Caddyfile'
       - '.github/workflows/deploy.yml'
 
 permissions:
@@ -116,6 +117,11 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     steps:
+      - uses: actions/checkout@v6
+        with:
+          sparse-checkout: infra/Caddyfile
+          sparse-checkout-cone-mode: false
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v6
         with:
@@ -134,13 +140,15 @@ jobs:
           name: workout
           path: workout
 
-      - name: Upload frontend artifacts to S3
+      - name: Upload deploy artifacts to S3
         run: |
           tar czf campsite.tar.gz -C campsite .
           aws s3 cp campsite.tar.gz s3://${{ vars.S3_DEPLOY_BUCKET }}/_deploy/webapp.tar.gz
 
           tar czf workout.tar.gz -C workout .
           aws s3 cp workout.tar.gz s3://${{ vars.S3_DEPLOY_BUCKET }}/_deploy/workout.tar.gz
+
+          aws s3 cp infra/Caddyfile s3://${{ vars.S3_DEPLOY_BUCKET }}/_deploy/Caddyfile
 
       - name: Find EC2 instance by tag
         id: ec2
@@ -187,6 +195,7 @@ jobs:
               'rm -rf /opt/jordanscamp/workout/*',
               'tar xzf /tmp/workout.tar.gz -C /opt/jordanscamp/workout/',
               'rm /tmp/workout.tar.gz',
+              'aws s3 cp s3://$S3_BUCKET/_deploy/Caddyfile /etc/caddy/Caddyfile',
               'systemctl restart caddy',
               'sleep 5',
               'curl -f http://localhost:8000/health/ || exit 1',

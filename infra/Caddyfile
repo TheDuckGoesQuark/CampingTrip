@@ -1,0 +1,15 @@
+jordanscamp.site {
+    root * /opt/jordanscamp/webapp
+    try_files {path} /index.html
+    file_server
+}
+
+api.jordanscamp.site {
+    reverse_proxy localhost:8000
+}
+
+workout.jordanscamp.site {
+    root * /opt/jordanscamp/workout
+    try_files {path} /index.html
+    file_server
+}
