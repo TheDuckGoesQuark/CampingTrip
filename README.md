@@ -1,23 +1,44 @@
-# Jordan's Campsite
+# Jordan's Camp
 
-A personal website built as a cosy 3D camping scene. You're sitting inside a tent on a rainy night — there's a lantern overhead, a cat strolling past, a campfire crackling outside, and a laptop with my projects. Built with React Three Fiber.
+A personal platform hosted at **[jordanscamp.site](https://jordanscamp.site)**, structured as a pnpm monorepo with multiple frontend apps and a shared Django backend.
 
-**[jordanscamp.site](https://jordanscamp.site)**
+## Apps
 
-## Running locally
+| App | URL | Description | Docs |
+|-----|-----|-------------|------|
+| **Campsite** | [jordanscamp.site](https://jordanscamp.site) | Interactive 3D camping scene — the homepage | [apps/campsite/README.md](apps/campsite/README.md) |
+| **Workout** | [workout.jordanscamp.site](https://workout.jordanscamp.site) | Workout tracker PWA with offline support | [apps/workout/README.md](apps/workout/README.md) |
+| **Backend** | [api.jordanscamp.site](https://api.jordanscamp.site) | Django REST API shared by all apps | [backend/README.md](backend/README.md) |
+
+See [docs/architecture.md](docs/architecture.md) for how everything fits together.
+
+## Getting started
 
 ```bash
-npm install
-npm run dev
+pnpm install          # install all workspace dependencies
+pnpm --filter campsite dev   # run campsite locally
+pnpm --filter workout dev    # run workout locally
+```
+
+```bash
+cd backend
+docker compose up     # run backend + postgres locally
+```
+
+## Workspace commands
+
+```bash
+pnpm -r build         # build all frontend apps
+pnpm -r test          # run all frontend tests
+pnpm -r exec tsc -b   # typecheck all apps
 ```
 
 ## Tech stack
 
-- React + TypeScript + Vite
-- React Three Fiber / drei — 3D scene
-- GSAP — animation timelines
-- Zustand — state management
-- Web Audio API — synthesised rain, campfire, and typing sounds
+- **Frontend**: React + TypeScript + Vite, managed as a pnpm workspace
+- **Backend**: Django 5 + Django REST Framework, with Poetry for dependency management
+- **Infrastructure**: Terraform on AWS (EC2, RDS, S3, ECR, Route53)
+- **CI/CD**: GitHub Actions — lint, test, build, deploy on push to main
 
 ## License
 
