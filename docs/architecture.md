@@ -90,6 +90,37 @@ Push to main
 1. CI runs typecheck, tests, and build for all apps
 2. Terraform plans are posted as PR comments (infra changes only)
 
+## Workout Tracker
+
+The workout app (`workout.jordanscamp.site`) is a PWA for tracking exercise progressions and daily workouts, designed for offline-first use at the gym.
+
+**Backend** (`backend/apps/workout/`):
+- 11 Django models: WorkoutUser, Exercise, Ladder, LadderNode, Criterion, UserNodeProgress, WeeklyPlan, PlanSlot, WorkoutSession, SessionExercise, ExerciseSet
+- DRF viewsets under `/api/workout/`
+- Google OAuth via django-allauth
+- Flexible data shapes via typed JSON (Criterion params, ExerciseSet values)
+
+**Frontend** (`apps/workout/`):
+- React 18 + Vite + vite-plugin-pwa (service worker, offline caching)
+- Mantine component library with Storybook design system
+- Redux Toolkit + RTK Query with OpenAPI codegen (`@rtk-query/codegen-openapi`)
+- redux-persist + IndexedDB for offline data persistence
+- @xyflow/react for tech tree ladder visualization
+
+**API codegen pipeline** (see `Makefile`):
+```
+make generate-api
+  1. manage.py spectacular → backend/schema.yml (OpenAPI)
+  2. Copy to apps/workout/openapi-schema.yml
+  3. @rtk-query/codegen-openapi → src/api/generated-api.ts (typed hooks)
+```
+
+Each frontend app filters the shared OpenAPI schema to only its own endpoints via `filterEndpoints`.
+
+See `docs/planning/design-decisions.md` for architecture rationale.
+
+---
+
 ## Adding a new app
 
 1. Create `apps/<name>/` with a standard Vite + React setup and a `package.json`

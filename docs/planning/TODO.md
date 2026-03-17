@@ -6,17 +6,65 @@ All planned and deferred work, organised by priority.
 
 ## Next Up
 
-### Workout tracker — data model & offline sync design
+### Workout tracker — core workout flow (Phase 2)
 
-Plan the workout tracker backend models (exercises, workouts, sets), DRF serializers/viewsets, and the frontend offline-first architecture (IndexedDB schema, sync queue, conflict resolution).
+- Weekly plan editor UI
+- Session generation from plan (auto-pick from ladder or use specific exercise)
+- Active workout UI (exercise list, set logging with typed data, rest timers)
+- Offline mutation queue + replay middleware
+- Batch sync endpoint (`POST /api/workout/sync/`)
+- End-to-end offline workflow: log a workout offline → come online → data syncs
 
-### Workout tracker — UI implementation
+### Workout tracker — ladders & progression (Phase 3)
 
-Build the actual workout logging UI: exercise library, workout logger, history view, dashboard. Mobile-first design for phone use.
+- Ladder CRUD UI (create/edit ladders and nodes)
+- Tech tree visualization with @xyflow/react (Civ 5 style)
+- Criterion evaluation (auto-detect when criteria met from session logs)
+- Advancement flow + notifications
+- Seed default ladders from Jordan's Notion data (management command + user signup signal)
+
+### Workout tracker — dashboard & polish (Phase 4)
+
+- Dashboard with progress stats (computed from session logs)
+- History view with filtering
+- Mobile UX polish (transitions, gestures)
+- Rest timer sounds/vibration
 
 ---
 
 ## Backlog
+
+### Workout tracker — Strava integration
+
+- Track runs via Strava API
+- Verify workouts / import activities
+- OAuth flow for Strava connection
+
+### Workout tracker — equipment & muscle group tracking
+
+- Add equipment and muscle group fields to Exercise model
+- Equipment varies a lot — needs flexible modelling
+- Equivalent exercises to consider across equipment
+
+### Workout tracker — data export/import
+
+- Export workout data (JSON/CSV)
+- Import data from other apps
+
+### Workout tracker — sharing ladders between users
+
+- Allow users to share/publish their ladder progressions
+- Browse and clone community ladders
+
+### Workout tracker — progressive overload suggestions
+
+- Auto-suggest weight/rep increases based on recent performance
+- Periodisation recommendations
+
+### Workout tracker — notification reminders
+
+- Push notifications for scheduled workouts
+- Rest day reminders
 
 ### Campsite — tent open/close mechanic
 
