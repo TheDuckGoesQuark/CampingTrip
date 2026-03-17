@@ -139,6 +139,8 @@ SECRETS=$(aws secretsmanager get-secret-value \
 
 SECRET_KEY=$(echo "$SECRETS" | jq -r '.SECRET_KEY')
 DATABASE_URL=$(echo "$SECRETS" | jq -r '.DATABASE_URL')
+GOOGLE_OAUTH_CLIENT_ID=$(echo "$SECRETS" | jq -r '.GOOGLE_OAUTH_CLIENT_ID // empty')
+GOOGLE_OAUTH_CLIENT_SECRET=$(echo "$SECRETS" | jq -r '.GOOGLE_OAUTH_CLIENT_SECRET // empty')
 
 # --- ECR login ---
 aws ecr get-login-password --region "${aws_region}" | \
@@ -155,6 +157,10 @@ DEBUG=0
 
 # Redis (local container)
 REDIS_URL=${redis_url}
+
+# Google OAuth
+GOOGLE_OAUTH_CLIENT_ID=$GOOGLE_OAUTH_CLIENT_ID
+GOOGLE_OAUTH_CLIENT_SECRET=$GOOGLE_OAUTH_CLIENT_SECRET
 ENVEOF
 
 # Escape $ signs for Docker Compose .env parsing ($ → $$ = literal $)
