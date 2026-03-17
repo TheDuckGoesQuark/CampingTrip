@@ -16,6 +16,7 @@
   "dependencies": {
     "@mantine/core": "^8.3.17",
     "@mantine/hooks": "^8.3.17",
+    "@react-oauth/google": "^0.13.4",
     "@reduxjs/toolkit": "^2.11.2",
     "@xyflow/react": "^12.10.1",
     "idb-keyval": "^6.2.2",

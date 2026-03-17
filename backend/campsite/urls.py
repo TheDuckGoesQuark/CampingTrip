@@ -3,11 +3,18 @@ URL configuration for campsite project.
 
 Root URL config — includes each app's URLs.
 """
+from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from apps.core.views import health_check
+from dj_rest_auth.registration.views import SocialLoginView
 from django.contrib import admin
 from django.urls import include, path
 from django.conf import settings
 from django.conf.urls.static import static
+
+
+class GoogleLogin(SocialLoginView):
+    adapter_class = GoogleOAuth2Adapter
+
 
 urlpatterns = [
     # Health check (no auth, used by deploy verification)
@@ -19,6 +26,7 @@ urlpatterns = [
     # Authentication
     path('api/auth/', include('dj_rest_auth.urls')),
     path('api/auth/registration/', include('dj_rest_auth.registration.urls')),
+    path('api/auth/google/', GoogleLogin.as_view(), name='google_login'),
     path('accounts/', include('allauth.urls')),
 
     # Core API (status, etc.)
