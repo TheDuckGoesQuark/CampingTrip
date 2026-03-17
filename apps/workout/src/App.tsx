@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { AppShell, Group, UnstyledButton, Text, Stack, Badge } from '@mantine/core';
+import { AppShell, Group, UnstyledButton, Text, Stack, Badge, ActionIcon } from '@mantine/core';
+import { useSelector, useDispatch } from 'react-redux';
 
 import { Dashboard } from './pages/Dashboard';
 import { LogWorkout } from './pages/LogWorkout';
@@ -8,7 +9,10 @@ import { Exercises } from './pages/Exercises';
 import { Ladders } from './pages/Ladders';
 import { LadderDetail } from './pages/LadderDetail';
 import { WeeklyPlan } from './pages/WeeklyPlan';
+import { Login } from './pages/Login';
 import { useOfflineSync } from './hooks/useOfflineSync';
+import { logout } from './store/authSlice';
+import type { RootState } from './store/store';
 
 const navItems = [
   { path: '/', label: 'Home', icon: '~' },
@@ -71,30 +75,59 @@ function SyncStatus() {
   );
 }
 
+function LogoutButton() {
+  const dispatch = useDispatch();
+  return (
+    <ActionIcon
+      variant="subtle"
+      color="dimmed"
+      size="sm"
+      onClick={() => dispatch(logout())}
+      title="Sign out"
+    >
+      <Text size="xs">x</Text>
+    </ActionIcon>
+  );
+}
+
+function AuthenticatedApp() {
+  return (
+    <AppShell
+      header={{ height: 36 }}
+      footer={{ height: 60 }}
+      padding="md"
+    >
+      <AppShell.Header>
+        <Group justify="space-between" h="100%" px="md">
+          <SyncStatus />
+          <LogoutButton />
+        </Group>
+      </AppShell.Header>
+      <AppShell.Main>
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/workout" element={<LogWorkout />} />
+          <Route path="/workout/:id" element={<LogWorkout />} />
+          <Route path="/plan" element={<WeeklyPlan />} />
+          <Route path="/ladders" element={<Ladders />} />
+          <Route path="/ladders/:id" element={<LadderDetail />} />
+          <Route path="/exercises" element={<Exercises />} />
+          <Route path="/history" element={<History />} />
+        </Routes>
+      </AppShell.Main>
+      <AppShell.Footer>
+        <BottomNav />
+      </AppShell.Footer>
+    </AppShell>
+  );
+}
+
 export function App() {
+  const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
+
   return (
     <BrowserRouter>
-      <AppShell
-        footer={{ height: 60 }}
-        padding="md"
-      >
-        <AppShell.Main>
-          <SyncStatus />
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/workout" element={<LogWorkout />} />
-            <Route path="/workout/:id" element={<LogWorkout />} />
-            <Route path="/plan" element={<WeeklyPlan />} />
-            <Route path="/ladders" element={<Ladders />} />
-            <Route path="/ladders/:id" element={<LadderDetail />} />
-            <Route path="/exercises" element={<Exercises />} />
-            <Route path="/history" element={<History />} />
-          </Routes>
-        </AppShell.Main>
-        <AppShell.Footer>
-          <BottomNav />
-        </AppShell.Footer>
-      </AppShell>
+      {isAuthenticated ? <AuthenticatedApp /> : <Login />}
     </BrowserRouter>
   );
 }
