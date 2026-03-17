@@ -103,6 +103,8 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build workout
+        env:
+          VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
         run: pnpm --filter workout build
 
       - name: Upload workout artifact
