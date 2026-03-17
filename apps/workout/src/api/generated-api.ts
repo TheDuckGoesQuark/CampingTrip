@@ -254,6 +254,15 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ["workout"],
       }),
+      workoutLadderNodesCheckProgressRetrieve: build.query<
+        WorkoutLadderNodesCheckProgressRetrieveApiResponse,
+        WorkoutLadderNodesCheckProgressRetrieveApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/api/workout/ladder-nodes/${queryArg.id}/check-progress/`,
+        }),
+        providesTags: ["workout"],
+      }),
       workoutLadderNodesCriteriaCreate: build.mutation<
         WorkoutLadderNodesCriteriaCreateApiResponse,
         WorkoutLadderNodesCriteriaCreateApiArg
@@ -326,6 +335,15 @@ const injectedRtkApi = api
           method: "DELETE",
         }),
         invalidatesTags: ["workout"],
+      }),
+      workoutLaddersProgressRetrieve: build.query<
+        WorkoutLaddersProgressRetrieveApiResponse,
+        WorkoutLaddersProgressRetrieveApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/api/workout/ladders/${queryArg.id}/progress/`,
+        }),
+        providesTags: ["workout"],
       }),
       workoutPlansList: build.query<
         WorkoutPlansListApiResponse,
@@ -513,6 +531,17 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ["workout"],
       }),
+      workoutSessionsCompleteCreate: build.mutation<
+        WorkoutSessionsCompleteCreateApiResponse,
+        WorkoutSessionsCompleteCreateApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/api/workout/sessions/${queryArg.id}/complete/`,
+          method: "POST",
+          body: queryArg.workoutSessionDetailRequest,
+        }),
+        invalidatesTags: ["workout"],
+      }),
       workoutSessionsGenerateCreate: build.mutation<
         WorkoutSessionsGenerateCreateApiResponse,
         WorkoutSessionsGenerateCreateApiArg
@@ -639,6 +668,11 @@ export type WorkoutLadderNodesDestroyApiResponse = unknown;
 export type WorkoutLadderNodesDestroyApiArg = {
   id: string;
 };
+export type WorkoutLadderNodesCheckProgressRetrieveApiResponse =
+  /** status 200  */ NodeProgressResponse;
+export type WorkoutLadderNodesCheckProgressRetrieveApiArg = {
+  id: string;
+};
 export type WorkoutLadderNodesCriteriaCreateApiResponse =
   /** status 200  */ LadderNodeRead;
 export type WorkoutLadderNodesCriteriaCreateApiArg = {
@@ -675,6 +709,11 @@ export type WorkoutLaddersPartialUpdateApiArg = {
 };
 export type WorkoutLaddersDestroyApiResponse = unknown;
 export type WorkoutLaddersDestroyApiArg = {
+  id: string;
+};
+export type WorkoutLaddersProgressRetrieveApiResponse =
+  /** status 200  */ LadderProgressResponse;
+export type WorkoutLaddersProgressRetrieveApiArg = {
   id: string;
 };
 export type WorkoutPlansListApiResponse =
@@ -772,6 +811,12 @@ export type WorkoutSessionsPartialUpdateApiArg = {
 export type WorkoutSessionsDestroyApiResponse = unknown;
 export type WorkoutSessionsDestroyApiArg = {
   id: string;
+};
+export type WorkoutSessionsCompleteCreateApiResponse =
+  /** status 200  */ CompleteSessionResponseRead;
+export type WorkoutSessionsCompleteCreateApiArg = {
+  id: string;
+  workoutSessionDetailRequest: WorkoutSessionDetailRequest;
 };
 export type WorkoutSessionsGenerateCreateApiResponse =
   /** status 201  */ WorkoutSessionDetailRead;
@@ -1024,6 +1069,13 @@ export type PatchedLadderNodeRequestWrite = {
   prerequisites?: number[];
   prerequisite_ids?: number[];
 };
+export type NodeProgressResponse = {
+  achieved: boolean;
+  criteria_met: {
+    [key: string]: any;
+  }[];
+  criteria_total: number;
+};
 export type LadderList = {
   description?: string;
 };
@@ -1063,6 +1115,11 @@ export type LadderDetailRequest = {
 };
 export type PatchedLadderDetailRequest = {
   description?: string;
+};
+export type LadderProgressResponse = {
+  nodes: {
+    [key: string]: any;
+  }[];
 };
 export type WeeklyPlanList = {
   name: string;
@@ -1236,6 +1293,18 @@ export type PatchedWorkoutSessionDetailRequest = {
   status?: StatusEnum;
   exercises?: SessionExerciseRequest[];
 };
+export type CompleteSessionResponse = {
+  session: WorkoutSessionDetail;
+  progression_updates: {
+    [key: string]: any;
+  }[];
+};
+export type CompleteSessionResponseRead = {
+  session: WorkoutSessionDetailRead;
+  progression_updates: {
+    [key: string]: any;
+  }[];
+};
 export type GenerateSessionRequestRequest = {
   date?: string;
 };
@@ -1264,6 +1333,7 @@ export const {
   useWorkoutLadderNodesUpdateMutation,
   useWorkoutLadderNodesPartialUpdateMutation,
   useWorkoutLadderNodesDestroyMutation,
+  useWorkoutLadderNodesCheckProgressRetrieveQuery,
   useWorkoutLadderNodesCriteriaCreateMutation,
   useWorkoutLaddersListQuery,
   useWorkoutLaddersCreateMutation,
@@ -1271,6 +1341,7 @@ export const {
   useWorkoutLaddersUpdateMutation,
   useWorkoutLaddersPartialUpdateMutation,
   useWorkoutLaddersDestroyMutation,
+  useWorkoutLaddersProgressRetrieveQuery,
   useWorkoutPlansListQuery,
   useWorkoutPlansCreateMutation,
   useWorkoutPlansRetrieveQuery,
@@ -1289,5 +1360,6 @@ export const {
   useWorkoutSessionsUpdateMutation,
   useWorkoutSessionsPartialUpdateMutation,
   useWorkoutSessionsDestroyMutation,
+  useWorkoutSessionsCompleteCreateMutation,
   useWorkoutSessionsGenerateCreateMutation,
 } = injectedRtkApi;

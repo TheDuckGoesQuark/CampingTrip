@@ -16,6 +16,7 @@ from .models import (
     WorkoutSession,
     WorkoutUser,
 )
+from .progression import check_node_progress, update_user_progress
 from .serializers import (
     CriterionSerializer,
     ExerciseSerializer,
@@ -60,6 +61,39 @@ class LadderViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(owner=get_workout_user(self.request))
 
+    @extend_schema(responses=inline_serializer(
+        name='LadderProgressResponse',
+        fields={
+            'nodes': drf_serializers.ListField(
+                child=drf_serializers.DictField()
+            ),
+        },
+    ))
+    @action(detail=True, methods=['get'])
+    def progress(self, request, pk=None):
+        """Get progression status for all nodes in a ladder."""
+        ladder = self.get_object()
+        workout_user = get_workout_user(request)
+        nodes = ladder.nodes.order_by('level').select_related('exercise')
+
+        results = []
+        for node in nodes:
+            node_progress = check_node_progress(node, workout_user)
+            user_progress = UserNodeProgress.objects.filter(
+                user=workout_user, ladder_node=node,
+            ).first()
+            results.append({
+                'node_id': node.id,
+                'exercise_name': node.exercise.name,
+                'level': node.level,
+                'achieved': user_progress.achieved if user_progress else False,
+                'achieved_at': user_progress.achieved_at if user_progress else None,
+                'criteria': node_progress['criteria_met'],
+                'criteria_total': node_progress['criteria_total'],
+            })
+
+        return Response({'nodes': results})
+
 
 class LadderNodeViewSet(viewsets.ModelViewSet):
     serializer_class = LadderNodeSerializer
@@ -76,6 +110,24 @@ class LadderNodeViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save(ladder_node=node)
         return Response(serializer.data, status=201)
+
+    @extend_schema(responses=inline_serializer(
+        name='NodeProgressResponse',
+        fields={
+            'achieved': drf_serializers.BooleanField(),
+            'criteria_met': drf_serializers.ListField(
+                child=drf_serializers.DictField()
+            ),
+            'criteria_total': drf_serializers.IntegerField(),
+        },
+    ))
+    @action(detail=True, methods=['get'], url_path='check-progress')
+    def check_progress(self, request, pk=None):
+        """Check progression status for a single node."""
+        node = self.get_object()
+        workout_user = get_workout_user(request)
+        progress = check_node_progress(node, workout_user)
+        return Response(progress)
 
 
 class UserNodeProgressViewSet(viewsets.ModelViewSet):
@@ -149,6 +201,43 @@ class WorkoutSessionViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=get_workout_user(self.request))
+
+    @extend_schema(responses=inline_serializer(
+        name='CompleteSessionResponse',
+        fields={
+            'session': WorkoutSessionDetailSerializer(),
+            'progression_updates': drf_serializers.ListField(
+                child=drf_serializers.DictField()
+            ),
+        },
+    ))
+    @action(detail=True, methods=['post'])
+    def complete(self, request, pk=None):
+        """Complete a session and evaluate ladder progression."""
+        session = self.get_object()
+        session.status = 'completed'
+        session.completed_at = datetime.datetime.now(tz=datetime.timezone.utc)
+        session.save()
+
+        workout_user = get_workout_user(request)
+        progression_updates = []
+        for se in session.exercises.filter(
+            ladder_node__isnull=False
+        ).select_related('ladder_node__exercise'):
+            progress = update_user_progress(se.ladder_node, workout_user)
+            if progress.achieved:
+                progression_updates.append({
+                    'node_id': se.ladder_node.id,
+                    'exercise_name': se.ladder_node.exercise.name,
+                    'achieved': True,
+                })
+
+        session = self.get_queryset().get(pk=session.pk)
+        serializer = WorkoutSessionDetailSerializer(session)
+        return Response({
+            'session': serializer.data,
+            'progression_updates': progression_updates,
+        })
 
     @extend_schema(
         request=inline_serializer(
