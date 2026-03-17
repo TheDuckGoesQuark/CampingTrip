@@ -387,6 +387,7 @@ resource "aws_iam_role_policy" "github_terraform_resources" {
           "secretsmanager:DescribeSecret",
           "secretsmanager:PutSecretValue",
           "secretsmanager:UpdateSecret",
+          "secretsmanager:UpdateSecretVersionStage",
           "secretsmanager:DeleteSecret",
           "secretsmanager:TagResource",
           "secretsmanager:GetResourcePolicy",
