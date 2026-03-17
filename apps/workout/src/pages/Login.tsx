@@ -21,7 +21,10 @@ export function Login() {
       const res = await fetch(`${API_URL}api/auth/google/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ access_token: response.credential }),
+        body: JSON.stringify({
+          access_token: response.credential,
+          id_token: response.credential,
+        }),
       });
 
       if (!res.ok) {
