@@ -8,6 +8,10 @@ dist
 __pycache__/
 *.sqlite3
 
+# Backend generated/secrets
+backend/.env
+backend/schema.yml
+
 # Lock files (pnpm only)
 yarn.lock
 

@@ -1,3 +1,10 @@
+import { Title, Text } from '@mantine/core';
+
 export function Exercises() {
-  return <h1>Exercises</h1>
+  return (
+    <>
+      <Title order={2}>Exercises</Title>
+      <Text c="dimmed" mt="sm">Your exercise library</Text>
+    </>
+  );
 }
