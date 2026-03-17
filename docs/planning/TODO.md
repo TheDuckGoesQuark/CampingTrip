@@ -12,16 +12,12 @@ All planned and deferred work, organised by priority.
 - End-to-end offline workflow testing: log a workout offline → come online → data syncs
 - Rest timer sounds/vibration (moved from Phase 4)
 
-### Workout tracker — ladders & progression (Phase 3 remaining)
-
-- Seed default ladders from Jordan's Notion data (management command + user signup signal)
-- Advancement notifications (toast/badge when a node is achieved)
-
 ### Workout tracker — dashboard & polish (Phase 4)
 
 - History view with date filtering and search
 - Mobile UX polish (transitions, gestures, haptics)
 - Session review page (detailed view of past workouts)
+- Advancement notifications (toast/badge when a node is achieved)
 
 ---
 

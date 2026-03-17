@@ -113,5 +113,32 @@ Frontend:
 - Criteria forms are type-specific: each criterion type has its own parameter inputs matching the JSON schema
 
 **Deferred**:
-- Seed default ladders from Notion data → Phase 3 remaining
-- Advancement notifications (toast/badge when achieved) → Phase 3 remaining
+- Advancement notifications (toast/badge when achieved) → Phase 4
+
+---
+
+## Workout tracker — default ladder seeding (Phase 3 completion)
+
+**Date**: 2026-03-17
+
+**What was done**:
+
+Backend:
+- Created `seed_default_ladders` management command that seeds all ladder/exercise/plan data from Jordan's Notion
+  - 5 ladders: Pull (7 nodes), Chin-up (4 nodes), Push (7 nodes), Row (3 nodes), Carry (5 nodes)
+  - 4 standalone exercises: Running, Yoga, Swimming, Parkrun 5k
+  - Default weekly plan matching Notion schedule (Mon-Sun with pull/push/run/swim/yoga slots)
+  - Each node has a criterion (min_reps_sets or min_duration) matching the Notion "Target" column
+  - Prerequisites are linear within each ladder (level 1 → 2 → 3 etc.)
+  - Uses a special `_workout_defaults` user to own canonical seed data
+  - Idempotent (skips if data exists), supports `--clear` flag for re-seeding
+- Extended `create_workout_user` signal to call `copy_defaults_to_user()` on new user creation
+  - Copies all exercises, ladders (with nodes, criteria, prerequisites), and weekly plan
+  - Each user gets independent copies they can freely edit/delete
+- 9 new tests (40 total): seed creates correct counts, weekly plan, idempotency, clear+reseed, linear prerequisites, copy to user, independence check, no-seed noop, signal integration
+
+**Key decisions**:
+- Seed data owned by a dedicated inactive user (`_workout_defaults`), not tied to any real account
+- Copy happens in the existing `post_save` signal — no separate signal needed
+- Carry ladder uses `min_duration` criterion (target is time-based: 4x30m, 4x20m) while all others use `min_reps_sets`
+- Weekly plan slots reference ladders where applicable (auto-pick current level) and standalone exercises for cardio/yoga
