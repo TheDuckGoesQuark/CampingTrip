@@ -263,3 +263,254 @@ class TestDashboardAPI:
         assert response.status_code == 200
         assert len(response.data['today_plan_exercises']) == 1
         assert response.data['today_plan_exercises'][0]['exercise_name'] == 'Bench Press'
+
+
+class TestCriterionEvaluation:
+    """Tests for the criterion evaluation engine in progression.py."""
+
+    def _make_completed_session(self, workout_user, exercise, sets_data):
+        """Helper: create a completed session with sets for a given exercise."""
+        session = WorkoutSession.objects.create(
+            user=workout_user, date='2026-03-17', status='completed'
+        )
+        se = SessionExercise.objects.create(
+            session=session, exercise=exercise, order=1
+        )
+        for i, data in enumerate(sets_data, start=1):
+            ExerciseSet.objects.create(
+                session_exercise=se,
+                set_number=i,
+                type=data.get('type', 'reps_weight'),
+                value=data['value'],
+                completed=True,
+            )
+        return session
+
+    def test_min_reps_sets_met(self, workout_user):
+        from apps.workout.progression import evaluate_criterion
+
+        ladder = Ladder.objects.create(owner=workout_user)
+        ex = Exercise.objects.create(owner=workout_user, name='Squat')
+        node = LadderNode.objects.create(ladder=ladder, exercise=ex, level=1)
+        criterion = Criterion.objects.create(
+            ladder_node=node, type='min_reps_sets',
+            params={'sets': 3, 'reps': 10},
+        )
+        # 3 sets of 10+ reps in one session
+        self._make_completed_session(workout_user, ex, [
+            {'value': {'reps': 10, 'weight': 60}},
+            {'value': {'reps': 12, 'weight': 60}},
+            {'value': {'reps': 10, 'weight': 60}},
+        ])
+        assert evaluate_criterion(criterion, workout_user) is True
+
+    def test_min_reps_sets_not_met(self, workout_user):
+        from apps.workout.progression import evaluate_criterion
+
+        ladder = Ladder.objects.create(owner=workout_user)
+        ex = Exercise.objects.create(owner=workout_user, name='Squat')
+        node = LadderNode.objects.create(ladder=ladder, exercise=ex, level=1)
+        criterion = Criterion.objects.create(
+            ladder_node=node, type='min_reps_sets',
+            params={'sets': 3, 'reps': 10},
+        )
+        # Only 2 qualifying sets
+        self._make_completed_session(workout_user, ex, [
+            {'value': {'reps': 10, 'weight': 60}},
+            {'value': {'reps': 8, 'weight': 60}},
+            {'value': {'reps': 10, 'weight': 60}},
+        ])
+        assert evaluate_criterion(criterion, workout_user) is False
+
+    def test_min_weight_met(self, workout_user):
+        from apps.workout.progression import evaluate_criterion
+
+        ladder = Ladder.objects.create(owner=workout_user)
+        ex = Exercise.objects.create(owner=workout_user, name='Bench Press')
+        node = LadderNode.objects.create(ladder=ladder, exercise=ex, level=1)
+        criterion = Criterion.objects.create(
+            ladder_node=node, type='min_weight',
+            params={'weight': 80},
+        )
+        self._make_completed_session(workout_user, ex, [
+            {'value': {'reps': 5, 'weight': 80}},
+        ])
+        assert evaluate_criterion(criterion, workout_user) is True
+
+    def test_sustained_sessions_met(self, workout_user):
+        from apps.workout.progression import evaluate_criterion
+
+        ladder = Ladder.objects.create(owner=workout_user)
+        ex = Exercise.objects.create(owner=workout_user, name='Pull-up')
+        node = LadderNode.objects.create(ladder=ladder, exercise=ex, level=1)
+        criterion = Criterion.objects.create(
+            ladder_node=node, type='sustained_sessions',
+            params={'sessions': 3, 'reps': 5},
+        )
+        # 3 separate completed sessions hitting 5+ reps
+        for date_str in ['2026-03-14', '2026-03-15', '2026-03-16']:
+            s = WorkoutSession.objects.create(
+                user=workout_user, date=date_str, status='completed'
+            )
+            se = SessionExercise.objects.create(session=s, exercise=ex, order=1)
+            ExerciseSet.objects.create(
+                session_exercise=se, set_number=1,
+                type='reps_only', value={'reps': 6}, completed=True,
+            )
+        assert evaluate_criterion(criterion, workout_user) is True
+
+    def test_sustained_sessions_not_met(self, workout_user):
+        from apps.workout.progression import evaluate_criterion
+
+        ladder = Ladder.objects.create(owner=workout_user)
+        ex = Exercise.objects.create(owner=workout_user, name='Pull-up')
+        node = LadderNode.objects.create(ladder=ladder, exercise=ex, level=1)
+        criterion = Criterion.objects.create(
+            ladder_node=node, type='sustained_sessions',
+            params={'sessions': 3, 'reps': 5},
+        )
+        # Only 2 sessions (not enough)
+        for date_str in ['2026-03-15', '2026-03-16']:
+            s = WorkoutSession.objects.create(
+                user=workout_user, date=date_str, status='completed'
+            )
+            se = SessionExercise.objects.create(session=s, exercise=ex, order=1)
+            ExerciseSet.objects.create(
+                session_exercise=se, set_number=1,
+                type='reps_only', value={'reps': 6}, completed=True,
+            )
+        assert evaluate_criterion(criterion, workout_user) is False
+
+    def test_min_duration_met(self, workout_user):
+        from apps.workout.progression import evaluate_criterion
+
+        ladder = Ladder.objects.create(owner=workout_user)
+        ex = Exercise.objects.create(owner=workout_user, name='Plank')
+        node = LadderNode.objects.create(ladder=ladder, exercise=ex, level=1)
+        criterion = Criterion.objects.create(
+            ladder_node=node, type='min_duration',
+            params={'seconds': 60},
+        )
+        self._make_completed_session(workout_user, ex, [
+            {'type': 'duration', 'value': {'seconds': 65}},
+        ])
+        assert evaluate_criterion(criterion, workout_user) is True
+
+    def test_check_node_progress_all_met(self, workout_user):
+        from apps.workout.progression import check_node_progress
+
+        ladder = Ladder.objects.create(owner=workout_user)
+        ex = Exercise.objects.create(owner=workout_user, name='Squat')
+        node = LadderNode.objects.create(ladder=ladder, exercise=ex, level=1)
+        Criterion.objects.create(
+            ladder_node=node, type='min_reps_sets',
+            params={'sets': 2, 'reps': 8},
+        )
+        self._make_completed_session(workout_user, ex, [
+            {'value': {'reps': 10, 'weight': 60}},
+            {'value': {'reps': 10, 'weight': 60}},
+        ])
+        result = check_node_progress(node, workout_user)
+        assert result['achieved'] is True
+        assert result['criteria_total'] == 1
+
+    def test_update_user_progress_marks_achieved(self, workout_user):
+        from apps.workout.progression import update_user_progress
+
+        ladder = Ladder.objects.create(owner=workout_user)
+        ex = Exercise.objects.create(owner=workout_user, name='Squat')
+        node = LadderNode.objects.create(ladder=ladder, exercise=ex, level=1)
+        Criterion.objects.create(
+            ladder_node=node, type='min_reps_sets',
+            params={'sets': 1, 'reps': 5},
+        )
+        self._make_completed_session(workout_user, ex, [
+            {'value': {'reps': 8, 'weight': 40}},
+        ])
+        progress = update_user_progress(node, workout_user)
+        assert progress.achieved is True
+        assert progress.achieved_at is not None
+
+    def test_incomplete_session_ignored(self, workout_user):
+        """Sets from in_progress sessions should not count."""
+        from apps.workout.progression import evaluate_criterion
+
+        ladder = Ladder.objects.create(owner=workout_user)
+        ex = Exercise.objects.create(owner=workout_user, name='Squat')
+        node = LadderNode.objects.create(ladder=ladder, exercise=ex, level=1)
+        criterion = Criterion.objects.create(
+            ladder_node=node, type='min_reps_sets',
+            params={'sets': 1, 'reps': 5},
+        )
+        # in_progress session — should NOT count
+        s = WorkoutSession.objects.create(
+            user=workout_user, date='2026-03-17', status='in_progress'
+        )
+        se = SessionExercise.objects.create(session=s, exercise=ex, order=1)
+        ExerciseSet.objects.create(
+            session_exercise=se, set_number=1,
+            type='reps_weight', value={'reps': 10, 'weight': 60}, completed=True,
+        )
+        assert evaluate_criterion(criterion, workout_user) is False
+
+
+class TestNodeProgressAPI:
+    def test_check_progress_endpoint(self, auth_client, workout_user):
+        ladder = Ladder.objects.create(owner=workout_user)
+        ex = Exercise.objects.create(owner=workout_user, name='Squat')
+        node = LadderNode.objects.create(ladder=ladder, exercise=ex, level=1)
+        Criterion.objects.create(
+            ladder_node=node, type='min_reps_sets',
+            params={'sets': 1, 'reps': 5},
+        )
+
+        response = auth_client.get(f'/api/workout/ladder-nodes/{node.id}/check-progress/')
+        assert response.status_code == 200
+        assert response.data['achieved'] is False
+        assert response.data['criteria_total'] == 1
+
+    def test_ladder_progress_endpoint(self, auth_client, workout_user):
+        ladder = Ladder.objects.create(owner=workout_user)
+        ex1 = Exercise.objects.create(owner=workout_user, name='Assisted Pull-up')
+        ex2 = Exercise.objects.create(owner=workout_user, name='Pull-up')
+        LadderNode.objects.create(ladder=ladder, exercise=ex1, level=1)
+        LadderNode.objects.create(ladder=ladder, exercise=ex2, level=2)
+
+        response = auth_client.get(f'/api/workout/ladders/{ladder.id}/progress/')
+        assert response.status_code == 200
+        assert len(response.data['nodes']) == 2
+        assert response.data['nodes'][0]['exercise_name'] == 'Assisted Pull-up'
+        assert response.data['nodes'][0]['achieved'] is False
+
+    def test_complete_session_evaluates_progression(self, auth_client, workout_user):
+        ladder = Ladder.objects.create(owner=workout_user)
+        ex = Exercise.objects.create(owner=workout_user, name='Squat')
+        node = LadderNode.objects.create(ladder=ladder, exercise=ex, level=1)
+        Criterion.objects.create(
+            ladder_node=node, type='min_reps_sets',
+            params={'sets': 1, 'reps': 5},
+        )
+
+        # Create a session with a set that meets the criterion
+        session = WorkoutSession.objects.create(
+            user=workout_user, date='2026-03-17', status='in_progress'
+        )
+        se = SessionExercise.objects.create(
+            session=session, exercise=ex, ladder_node=node, order=1
+        )
+        ExerciseSet.objects.create(
+            session_exercise=se, set_number=1,
+            type='reps_weight', value={'reps': 10, 'weight': 60}, completed=True,
+        )
+
+        response = auth_client.post(f'/api/workout/sessions/{session.id}/complete/')
+        assert response.status_code == 200
+        assert response.data['session']['status'] == 'completed'
+        # The criterion should be met now (session is completed)
+        assert len(response.data['progression_updates']) == 1
+        assert response.data['progression_updates'][0]['exercise_name'] == 'Squat'
+        assert response.data['progression_updates'][0]['achieved'] is True
+
+        # Verify the progress was persisted
+        progress = UserNodeProgress.objects.get(user=workout_user, ladder_node=node)
+        assert progress.achieved is True

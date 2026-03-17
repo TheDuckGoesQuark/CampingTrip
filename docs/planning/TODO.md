@@ -12,13 +12,10 @@ All planned and deferred work, organised by priority.
 - End-to-end offline workflow testing: log a workout offline → come online → data syncs
 - Rest timer sounds/vibration (moved from Phase 4)
 
-### Workout tracker — ladders & progression (Phase 3)
+### Workout tracker — ladders & progression (Phase 3 remaining)
 
-- Ladder CRUD UI (create/edit ladders and nodes)
-- Tech tree visualization with @xyflow/react (Civ 5 style)
-- Criterion evaluation (auto-detect when criteria met from session logs)
-- Advancement flow + notifications
 - Seed default ladders from Jordan's Notion data (management command + user signup signal)
+- Advancement notifications (toast/badge when a node is achieved)
 
 ### Workout tracker — dashboard & polish (Phase 4)
 

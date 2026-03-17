@@ -651,6 +651,27 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/workout/ladder-nodes/{id}/check-progress/:
+    get:
+      operationId: workout_ladder_nodes_check_progress_retrieve
+      description: Check progression status for a single node.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - workout
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NodeProgressResponse'
+          description: ''
   /api/workout/ladder-nodes/{id}/criteria/:
     post:
       operationId: workout_ladder_nodes_criteria_create
@@ -823,6 +844,27 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/workout/ladders/{id}/progress/:
+    get:
+      operationId: workout_ladders_progress_retrieve
+      description: Get progression status for all nodes in a ladder.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - workout
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LadderProgressResponse'
+          description: ''
   /api/workout/plans/:
     get:
       operationId: workout_plans_list
@@ -1249,6 +1291,39 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/workout/sessions/{id}/complete/:
+    post:
+      operationId: workout_sessions_complete_create
+      description: Complete a session and evaluate ladder progression.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - workout
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkoutSessionDetailRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/WorkoutSessionDetailRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/WorkoutSessionDetailRequest'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompleteSessionResponse'
+          description: ''
   /api/workout/sessions/generate/:
     post:
       operationId: workout_sessions_generate_create
@@ -1277,6 +1352,19 @@ paths:
           description: ''
 components:
   schemas:
+    CompleteSessionResponse:
+      type: object
+      properties:
+        session:
+          $ref: '#/components/schemas/WorkoutSessionDetail'
+        progression_updates:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+      required:
+      - progression_updates
+      - session
     Criterion:
       type: object
       properties:
@@ -1579,6 +1667,16 @@ components:
       required:
       - exercise_id
       - level
+    LadderProgressResponse:
+      type: object
+      properties:
+        nodes:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+      required:
+      - nodes
     LoginRequest:
       type: object
       properties:
@@ -1592,6 +1690,22 @@ components:
           minLength: 1
       required:
       - password
+    NodeProgressResponse:
+      type: object
+      properties:
+        achieved:
+          type: boolean
+        criteria_met:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+        criteria_total:
+          type: integer
+      required:
+      - achieved
+      - criteria_met
+      - criteria_total
     PaginatedExerciseList:
       type: object
       required:

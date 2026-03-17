@@ -6,6 +6,7 @@ import { LogWorkout } from './pages/LogWorkout';
 import { History } from './pages/History';
 import { Exercises } from './pages/Exercises';
 import { Ladders } from './pages/Ladders';
+import { LadderDetail } from './pages/LadderDetail';
 import { WeeklyPlan } from './pages/WeeklyPlan';
 import { useOfflineSync } from './hooks/useOfflineSync';
 
@@ -85,6 +86,7 @@ export function App() {
             <Route path="/workout/:id" element={<LogWorkout />} />
             <Route path="/plan" element={<WeeklyPlan />} />
             <Route path="/ladders" element={<Ladders />} />
+            <Route path="/ladders/:id" element={<LadderDetail />} />
             <Route path="/exercises" element={<Exercises />} />
             <Route path="/history" element={<History />} />
           </Routes>

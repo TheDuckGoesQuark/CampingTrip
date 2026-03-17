@@ -17,6 +17,7 @@ import {
 import {
   useWorkoutSessionsRetrieveQuery,
   useWorkoutSessionsPartialUpdateMutation,
+  useWorkoutSessionsCompleteCreateMutation,
   type ExerciseSetRequest,
   type SessionExerciseRequest,
   type ExerciseSetTypeEnum,
@@ -279,6 +280,7 @@ export function LogWorkout() {
     { skip: !id }
   );
   const [updateSession] = useWorkoutSessionsPartialUpdateMutation();
+  const [completeSession] = useWorkoutSessionsCompleteCreateMutation();
 
   const [exercises, setExercises] = useState<ExerciseState[]>([]);
   const [restTimer, setRestTimer] = useState<{ active: boolean; seconds: number }>({
@@ -376,11 +378,19 @@ export function LogWorkout() {
       })),
     }));
 
+    // Save current set data first
     await updateSession({
       id,
       patchedWorkoutSessionDetailRequest: {
-        status: 'completed',
-        completed_at: new Date().toISOString(),
+        exercises: exercisesPayload,
+      },
+    });
+
+    // Complete session and evaluate ladder progression
+    await completeSession({
+      id,
+      workoutSessionDetailRequest: {
+        date: session?.date ?? new Date().toISOString().slice(0, 10),
         exercises: exercisesPayload,
       },
     });
