@@ -17,7 +17,9 @@ resource "aws_secretsmanager_secret_version" "app" {
   secret_id = aws_secretsmanager_secret.app.id
 
   secret_string = jsonencode({
-    SECRET_KEY   = var.django_secret_key != "" ? var.django_secret_key : random_password.django_secret_key.result
-    DATABASE_URL = "postgresql://${aws_db_instance.main.username}:${random_password.db_password.result}@${aws_db_instance.main.endpoint}/${aws_db_instance.main.db_name}"
+    SECRET_KEY                 = var.django_secret_key != "" ? var.django_secret_key : random_password.django_secret_key.result
+    DATABASE_URL               = "postgresql://${aws_db_instance.main.username}:${random_password.db_password.result}@${aws_db_instance.main.endpoint}/${aws_db_instance.main.db_name}"
+    GOOGLE_OAUTH_CLIENT_ID     = var.google_oauth_client_id
+    GOOGLE_OAUTH_CLIENT_SECRET = var.google_oauth_client_secret
   })
 }
