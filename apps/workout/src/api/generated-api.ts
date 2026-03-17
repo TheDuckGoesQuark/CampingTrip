@@ -119,9 +119,9 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ["auth"],
       }),
-      workoutDashboardRetrieve: build.query<
-        WorkoutDashboardRetrieveApiResponse,
-        WorkoutDashboardRetrieveApiArg
+      workoutDashboardList: build.query<
+        WorkoutDashboardListApiResponse,
+        WorkoutDashboardListApiArg
       >({
         query: () => ({ url: `/api/workout/dashboard/` }),
         providesTags: ["workout"],
@@ -513,6 +513,17 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ["workout"],
       }),
+      workoutSessionsGenerateCreate: build.mutation<
+        WorkoutSessionsGenerateCreateApiResponse,
+        WorkoutSessionsGenerateCreateApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/api/workout/sessions/generate/`,
+          method: "POST",
+          body: queryArg.generateSessionRequestRequest,
+        }),
+        invalidatesTags: ["workout"],
+      }),
     }),
     overrideExisting: false,
   });
@@ -563,8 +574,9 @@ export type AuthUserPartialUpdateApiResponse =
 export type AuthUserPartialUpdateApiArg = {
   patchedUserDetailsRequest: PatchedUserDetailsRequest;
 };
-export type WorkoutDashboardRetrieveApiResponse = unknown;
-export type WorkoutDashboardRetrieveApiArg = void;
+export type WorkoutDashboardListApiResponse =
+  /** status 200  */ DashboardResponseRead[];
+export type WorkoutDashboardListApiArg = void;
 export type WorkoutExercisesListApiResponse =
   /** status 200  */ PaginatedExerciseListRead;
 export type WorkoutExercisesListApiArg = {
@@ -761,6 +773,11 @@ export type WorkoutSessionsDestroyApiResponse = unknown;
 export type WorkoutSessionsDestroyApiArg = {
   id: string;
 };
+export type WorkoutSessionsGenerateCreateApiResponse =
+  /** status 201  */ WorkoutSessionDetailRead;
+export type WorkoutSessionsGenerateCreateApiArg = {
+  generateSessionRequestRequest: GenerateSessionRequestRequest;
+};
 export type Token = {
   key: string;
 };
@@ -828,6 +845,84 @@ export type PatchedUserDetailsRequest = {
   username?: string;
   first_name?: string;
   last_name?: string;
+};
+export type StatusEnum = "planned" | "in_progress" | "completed" | "skipped";
+export type ExerciseSetTypeEnum =
+  | "reps_weight"
+  | "reps_only"
+  | "duration"
+  | "distance";
+export type ExerciseSet = {
+  set_number: number;
+  type: ExerciseSetTypeEnum;
+  /** Shape determined by type, e.g. {"reps": 10, "weight": 20} */
+  value: any;
+  completed?: boolean;
+  completed_at?: string | null;
+  rest_seconds?: number;
+};
+export type ExerciseSetRead = {
+  id?: number;
+  set_number: number;
+  type: ExerciseSetTypeEnum;
+  /** Shape determined by type, e.g. {"reps": 10, "weight": 20} */
+  value: any;
+  completed?: boolean;
+  completed_at?: string | null;
+  rest_seconds?: number;
+  updated_at?: string;
+};
+export type SessionExercise = {
+  exercise: number;
+  ladder_node?: number | null;
+  order: number;
+  sets: ExerciseSet[];
+};
+export type SessionExerciseRead = {
+  id?: number;
+  exercise: number;
+  exercise_name?: string;
+  ladder_node?: number | null;
+  order: number;
+  sets: ExerciseSetRead[];
+  updated_at?: string;
+};
+export type WorkoutSessionDetail = {
+  date: string;
+  started_at?: string | null;
+  completed_at?: string | null;
+  status?: StatusEnum;
+  exercises: SessionExercise[];
+};
+export type WorkoutSessionDetailRead = {
+  id?: number;
+  date: string;
+  started_at?: string | null;
+  completed_at?: string | null;
+  status?: StatusEnum;
+  exercises: SessionExerciseRead[];
+  created_at?: string;
+  updated_at?: string;
+};
+export type DashboardResponse = {
+  total_sessions: number;
+  completed_sessions: number;
+  total_ladders: number;
+  achieved_nodes: number;
+  today_session?: WorkoutSessionDetail | null;
+  today_plan_exercises?: {
+    [key: string]: any;
+  }[];
+};
+export type DashboardResponseRead = {
+  total_sessions: number;
+  completed_sessions: number;
+  total_ladders: number;
+  achieved_nodes: number;
+  today_session?: WorkoutSessionDetailRead | null;
+  today_plan_exercises?: {
+    [key: string]: any;
+  }[];
 };
 export type Exercise = {
   name: string;
@@ -1084,7 +1179,6 @@ export type PatchedUserNodeProgressRequestWrite = {
   achieved?: boolean;
   achieved_at?: string | null;
 };
-export type StatusEnum = "planned" | "in_progress" | "completed" | "skipped";
 export type WorkoutSessionList = {
   date: string;
   started_at?: string | null;
@@ -1112,63 +1206,6 @@ export type PaginatedWorkoutSessionListListRead = {
   next?: string | null;
   previous?: string | null;
   results: WorkoutSessionListRead[];
-};
-export type ExerciseSetTypeEnum =
-  | "reps_weight"
-  | "reps_only"
-  | "duration"
-  | "distance";
-export type ExerciseSet = {
-  set_number: number;
-  type: ExerciseSetTypeEnum;
-  /** Shape determined by type, e.g. {"reps": 10, "weight": 20} */
-  value: any;
-  completed?: boolean;
-  completed_at?: string | null;
-  rest_seconds?: number;
-};
-export type ExerciseSetRead = {
-  id?: number;
-  set_number: number;
-  type: ExerciseSetTypeEnum;
-  /** Shape determined by type, e.g. {"reps": 10, "weight": 20} */
-  value: any;
-  completed?: boolean;
-  completed_at?: string | null;
-  rest_seconds?: number;
-  updated_at?: string;
-};
-export type SessionExercise = {
-  exercise: number;
-  ladder_node?: number | null;
-  order: number;
-  sets: ExerciseSet[];
-};
-export type SessionExerciseRead = {
-  id?: number;
-  exercise: number;
-  exercise_name?: string;
-  ladder_node?: number | null;
-  order: number;
-  sets: ExerciseSetRead[];
-  updated_at?: string;
-};
-export type WorkoutSessionDetail = {
-  date: string;
-  started_at?: string | null;
-  completed_at?: string | null;
-  status?: StatusEnum;
-  exercises: SessionExercise[];
-};
-export type WorkoutSessionDetailRead = {
-  id?: number;
-  date: string;
-  started_at?: string | null;
-  completed_at?: string | null;
-  status?: StatusEnum;
-  exercises: SessionExerciseRead[];
-  created_at?: string;
-  updated_at?: string;
 };
 export type ExerciseSetRequest = {
   set_number: number;
@@ -1199,6 +1236,9 @@ export type PatchedWorkoutSessionDetailRequest = {
   status?: StatusEnum;
   exercises?: SessionExerciseRequest[];
 };
+export type GenerateSessionRequestRequest = {
+  date?: string;
+};
 export const {
   useAuthLoginCreateMutation,
   useAuthLogoutCreateMutation,
@@ -1211,7 +1251,7 @@ export const {
   useAuthUserRetrieveQuery,
   useAuthUserUpdateMutation,
   useAuthUserPartialUpdateMutation,
-  useWorkoutDashboardRetrieveQuery,
+  useWorkoutDashboardListQuery,
   useWorkoutExercisesListQuery,
   useWorkoutExercisesCreateMutation,
   useWorkoutExercisesRetrieveQuery,
@@ -1249,4 +1289,5 @@ export const {
   useWorkoutSessionsUpdateMutation,
   useWorkoutSessionsPartialUpdateMutation,
   useWorkoutSessionsDestroyMutation,
+  useWorkoutSessionsGenerateCreateMutation,
 } = injectedRtkApi;

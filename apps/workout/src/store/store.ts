@@ -14,6 +14,7 @@ import { set, get, del, createStore } from 'idb-keyval';
 
 import { baseApi } from '../api/base-api';
 import { authSlice } from './authSlice';
+import { offlineMiddleware } from './offlineMiddleware';
 
 // IndexedDB storage adapter for redux-persist
 const idbStore = createStore('workout-persist', 'keyval');
@@ -44,7 +45,7 @@ export const store = configureStore({
       serializableCheck: {
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
-    }).concat(baseApi.middleware),
+    }).concat(baseApi.middleware).concat(offlineMiddleware),
 });
 
 export const persistor = persistStore(store);

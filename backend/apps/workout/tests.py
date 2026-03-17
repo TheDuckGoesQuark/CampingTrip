@@ -164,6 +164,80 @@ class TestWorkoutSessionAPI:
         assert len(response.data['exercises'][0]['sets']) == 1
 
 
+class TestGenerateSessionAPI:
+    def test_generate_session_from_plan(self, auth_client, workout_user):
+        import datetime
+
+        # Set up: plan with exercises for today's day of week
+        plan = WeeklyPlan.objects.create(owner=workout_user, name='Test Plan', active=True)
+        ex1 = Exercise.objects.create(owner=workout_user, name='Bench Press')
+        ex2 = Exercise.objects.create(owner=workout_user, name='Squat')
+        today_dow = datetime.date.today().weekday()
+        PlanSlot.objects.create(
+            weekly_plan=plan, day_of_week=today_dow, order=1, exercise=ex1
+        )
+        PlanSlot.objects.create(
+            weekly_plan=plan, day_of_week=today_dow, order=2, exercise=ex2
+        )
+
+        response = auth_client.post('/api/workout/sessions/generate/', format='json')
+        assert response.status_code == 201
+        assert response.data['status'] == 'in_progress'
+        assert len(response.data['exercises']) == 2
+        names = [e['exercise_name'] for e in response.data['exercises']]
+        assert 'Bench Press' in names
+        assert 'Squat' in names
+
+    def test_generate_session_from_ladder(self, auth_client, workout_user):
+        import datetime
+
+        plan = WeeklyPlan.objects.create(owner=workout_user, name='Test Plan', active=True)
+        ladder = Ladder.objects.create(owner=workout_user)
+        ex1 = Exercise.objects.create(owner=workout_user, name='Assisted Pull-up')
+        ex2 = Exercise.objects.create(owner=workout_user, name='Pull-up')
+        node1 = LadderNode.objects.create(ladder=ladder, exercise=ex1, level=1)
+        LadderNode.objects.create(ladder=ladder, exercise=ex2, level=2)
+        today_dow = datetime.date.today().weekday()
+        PlanSlot.objects.create(
+            weekly_plan=plan, day_of_week=today_dow, order=1, ladder=ladder
+        )
+
+        # No progress yet — should pick first node (Assisted Pull-up)
+        response = auth_client.post('/api/workout/sessions/generate/', format='json')
+        assert response.status_code == 201
+        assert response.data['exercises'][0]['exercise_name'] == 'Assisted Pull-up'
+
+        # Mark first node as achieved — should pick Pull-up
+        UserNodeProgress.objects.create(
+            user=workout_user, ladder_node=node1, achieved=True
+        )
+        # Delete the previous session first
+        WorkoutSession.objects.all().delete()
+        response = auth_client.post('/api/workout/sessions/generate/', format='json')
+        assert response.status_code == 201
+        assert response.data['exercises'][0]['exercise_name'] == 'Pull-up'
+
+    def test_generate_session_no_plan(self, auth_client):
+        response = auth_client.post('/api/workout/sessions/generate/', format='json')
+        assert response.status_code == 400
+        assert 'No active weekly plan' in response.data['detail']
+
+    def test_generate_session_no_exercises_today(self, auth_client, workout_user):
+        import datetime
+
+        # Create plan with exercises only on a different day
+        plan = WeeklyPlan.objects.create(owner=workout_user, name='Test Plan', active=True)
+        ex = Exercise.objects.create(owner=workout_user, name='Bench Press')
+        other_day = (datetime.date.today().weekday() + 1) % 7
+        PlanSlot.objects.create(
+            weekly_plan=plan, day_of_week=other_day, order=1, exercise=ex
+        )
+
+        response = auth_client.post('/api/workout/sessions/generate/', format='json')
+        assert response.status_code == 400
+        assert 'No exercises planned' in response.data['detail']
+
+
 class TestDashboardAPI:
     def test_dashboard_returns_stats(self, auth_client):
         response = auth_client.get('/api/workout/dashboard/')
@@ -172,3 +246,20 @@ class TestDashboardAPI:
         assert 'completed_sessions' in response.data
         assert 'total_ladders' in response.data
         assert 'achieved_nodes' in response.data
+        assert 'today_session' in response.data
+        assert 'today_plan_exercises' in response.data
+
+    def test_dashboard_shows_today_plan(self, auth_client, workout_user):
+        import datetime
+
+        plan = WeeklyPlan.objects.create(owner=workout_user, name='Test Plan', active=True)
+        ex = Exercise.objects.create(owner=workout_user, name='Bench Press')
+        today_dow = datetime.date.today().weekday()
+        PlanSlot.objects.create(
+            weekly_plan=plan, day_of_week=today_dow, order=1, exercise=ex
+        )
+
+        response = auth_client.get('/api/workout/dashboard/')
+        assert response.status_code == 200
+        assert len(response.data['today_plan_exercises']) == 1
+        assert response.data['today_plan_exercises'][0]['exercise_name'] == 'Bench Press'
