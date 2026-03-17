@@ -6,14 +6,11 @@ All planned and deferred work, organised by priority.
 
 ## Next Up
 
-### Workout tracker — core workout flow (Phase 2)
+### Workout tracker — core workout flow (Phase 2 remaining)
 
-- Weekly plan editor UI
-- Session generation from plan (auto-pick from ladder or use specific exercise)
-- Active workout UI (exercise list, set logging with typed data, rest timers)
-- Offline mutation queue + replay middleware
-- Batch sync endpoint (`POST /api/workout/sync/`)
-- End-to-end offline workflow: log a workout offline → come online → data syncs
+- Batch sync endpoint (`POST /api/workout/sync/`) — dedicated endpoint for full state reconciliation on reconnect
+- End-to-end offline workflow testing: log a workout offline → come online → data syncs
+- Rest timer sounds/vibration (moved from Phase 4)
 
 ### Workout tracker — ladders & progression (Phase 3)
 
@@ -25,10 +22,9 @@ All planned and deferred work, organised by priority.
 
 ### Workout tracker — dashboard & polish (Phase 4)
 
-- Dashboard with progress stats (computed from session logs)
-- History view with filtering
-- Mobile UX polish (transitions, gestures)
-- Rest timer sounds/vibration
+- History view with date filtering and search
+- Mobile UX polish (transitions, gestures, haptics)
+- Session review page (detailed view of past workouts)
 
 ---
 

@@ -1,6 +1,8 @@
+import datetime
+
 from drf_spectacular.utils import extend_schema, inline_serializer
 from rest_framework import serializers as drf_serializers
-from rest_framework import viewsets
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -8,6 +10,7 @@ from .models import (
     Exercise,
     Ladder,
     LadderNode,
+    SessionExercise,
     UserNodeProgress,
     WeeklyPlan,
     WorkoutSession,
@@ -102,6 +105,33 @@ class WeeklyPlanViewSet(viewsets.ModelViewSet):
         serializer.save(owner=get_workout_user(self.request))
 
 
+def resolve_ladder_exercise(ladder, workout_user):
+    """Pick the current exercise from a ladder based on user's progress.
+
+    Returns the exercise from the highest achieved node + 1 level,
+    or the first node if no progress exists.
+    """
+    nodes = ladder.nodes.order_by('level')
+    if not nodes.exists():
+        return None, None
+
+    achieved_ids = set(
+        UserNodeProgress.objects.filter(
+            user=workout_user, achieved=True,
+            ladder_node__ladder=ladder,
+        ).values_list('ladder_node_id', flat=True)
+    )
+
+    # Find first unachieved node (current working level)
+    for node in nodes:
+        if node.id not in achieved_ids:
+            return node.exercise, node
+
+    # All achieved — use the highest node
+    last = nodes.last()
+    return last.exercise, last
+
+
 class WorkoutSessionViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return WorkoutSession.objects.filter(
@@ -120,6 +150,77 @@ class WorkoutSessionViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(user=get_workout_user(self.request))
 
+    @extend_schema(
+        request=inline_serializer(
+            name='GenerateSessionRequest',
+            fields={
+                'date': drf_serializers.DateField(required=False),
+            },
+        ),
+        responses={201: WorkoutSessionDetailSerializer},
+    )
+    @action(detail=False, methods=['post'])
+    def generate(self, request):
+        """Generate a workout session from the active weekly plan."""
+        workout_user = get_workout_user(request)
+        target_date = request.data.get('date')
+        if target_date:
+            target_date = datetime.date.fromisoformat(target_date)
+        else:
+            target_date = datetime.date.today()
+
+        plan = WeeklyPlan.objects.filter(
+            owner=workout_user, active=True
+        ).prefetch_related(
+            'slots__ladder__nodes__exercise',
+            'slots__exercise',
+        ).first()
+
+        if not plan:
+            return Response(
+                {'detail': 'No active weekly plan found.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        day_of_week = target_date.weekday()
+        slots = plan.slots.filter(day_of_week=day_of_week).order_by('order')
+
+        if not slots.exists():
+            return Response(
+                {'detail': f'No exercises planned for {target_date.strftime("%A")}.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        session = WorkoutSession.objects.create(
+            user=workout_user,
+            date=target_date,
+            status='in_progress',
+            started_at=datetime.datetime.now(tz=datetime.timezone.utc),
+        )
+
+        for i, slot in enumerate(slots):
+            if slot.ladder:
+                exercise, ladder_node = resolve_ladder_exercise(
+                    slot.ladder, workout_user
+                )
+                if not exercise:
+                    continue
+            else:
+                exercise = slot.exercise
+                ladder_node = None
+
+            SessionExercise.objects.create(
+                session=session,
+                exercise=exercise,
+                ladder_node=ladder_node,
+                order=i + 1,
+            )
+
+        # Re-fetch with prefetches for serialization
+        session = self.get_queryset().get(pk=session.pk)
+        serializer = WorkoutSessionDetailSerializer(session)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
 
 class DashboardView(viewsets.ViewSet):
     """Aggregated stats computed from session logs."""
@@ -131,10 +232,15 @@ class DashboardView(viewsets.ViewSet):
             'completed_sessions': drf_serializers.IntegerField(),
             'total_ladders': drf_serializers.IntegerField(),
             'achieved_nodes': drf_serializers.IntegerField(),
+            'today_session': WorkoutSessionDetailSerializer(required=False, allow_null=True),
+            'today_plan_exercises': drf_serializers.ListField(
+                child=drf_serializers.DictField(), required=False
+            ),
         },
     ))
     def list(self, request):
         workout_user = get_workout_user(request)
+        today = datetime.date.today()
         sessions = WorkoutSession.objects.filter(user=workout_user)
 
         total_sessions = sessions.count()
@@ -144,9 +250,49 @@ class DashboardView(viewsets.ViewSet):
             user=workout_user, achieved=True
         ).count()
 
+        # Today's active/in-progress session
+        today_session = sessions.filter(
+            date=today, status__in=['in_progress', 'planned']
+        ).prefetch_related(
+            'exercises__exercise', 'exercises__sets', 'exercises__ladder_node',
+        ).first()
+
+        today_session_data = None
+        if today_session:
+            today_session_data = WorkoutSessionDetailSerializer(today_session).data
+
+        # Today's planned exercises from active plan
+        today_plan_exercises = []
+        plan = WeeklyPlan.objects.filter(
+            owner=workout_user, active=True
+        ).prefetch_related('slots__ladder__nodes__exercise', 'slots__exercise').first()
+
+        if plan:
+            day_of_week = today.weekday()
+            for slot in plan.slots.filter(day_of_week=day_of_week).order_by('order'):
+                if slot.ladder:
+                    exercise, node = resolve_ladder_exercise(slot.ladder, workout_user)
+                    if exercise:
+                        today_plan_exercises.append({
+                            'exercise_name': exercise.name,
+                            'exercise_id': exercise.id,
+                            'ladder_name': slot.ladder.name,
+                            'ladder_node_id': node.id if node else None,
+                            'from_ladder': True,
+                        })
+                elif slot.exercise:
+                    today_plan_exercises.append({
+                        'exercise_name': slot.exercise.name,
+                        'exercise_id': slot.exercise.id,
+                        'from_ladder': False,
+                        'exercise_params': slot.exercise_params,
+                    })
+
         return Response({
             'total_sessions': total_sessions,
             'completed_sessions': completed_sessions,
             'total_ladders': total_ladders,
             'achieved_nodes': achieved_nodes,
+            'today_session': today_session_data,
+            'today_plan_exercises': today_plan_exercises,
         })

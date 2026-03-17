@@ -352,7 +352,7 @@ paths:
           description: No response body
   /api/workout/dashboard/:
     get:
-      operationId: workout_dashboard_retrieve
+      operationId: workout_dashboard_list
       description: Aggregated stats computed from session logs.
       tags:
       - workout
@@ -360,7 +360,13 @@ paths:
       - tokenAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DashboardResponse'
+          description: ''
   /api/workout/exercises/:
     get:
       operationId: workout_exercises_list
@@ -1243,6 +1249,32 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/workout/sessions/generate/:
+    post:
+      operationId: workout_sessions_generate_create
+      description: Generate a workout session from the active weekly plan.
+      tags:
+      - workout
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateSessionRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GenerateSessionRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GenerateSessionRequestRequest'
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkoutSessionDetail'
+          description: ''
 components:
   schemas:
     Criterion:
@@ -1288,6 +1320,31 @@ components:
         * `min_weight` - Minimum weight
         * `sustained_sessions` - Sustained over sessions
         * `min_duration` - Minimum duration
+    DashboardResponse:
+      type: object
+      properties:
+        total_sessions:
+          type: integer
+        completed_sessions:
+          type: integer
+        total_ladders:
+          type: integer
+        achieved_nodes:
+          type: integer
+        today_session:
+          allOf:
+          - $ref: '#/components/schemas/WorkoutSessionDetail'
+          nullable: true
+        today_plan_exercises:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+      required:
+      - achieved_nodes
+      - completed_sessions
+      - total_ladders
+      - total_sessions
     DayOfWeekEnum:
       enum:
       - 0
@@ -1407,6 +1464,12 @@ components:
         * `reps_only` - Reps Only
         * `duration` - Duration
         * `distance` - Distance
+    GenerateSessionRequestRequest:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
     LadderDetail:
       type: object
       properties:
