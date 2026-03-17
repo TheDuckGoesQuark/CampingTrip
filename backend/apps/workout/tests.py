@@ -1,4 +1,13 @@
 import pytest
+from django.core.management import call_command
+
+from apps.workout.management.commands.seed_default_ladders import (
+    LADDERS,
+    STANDALONE_EXERCISES,
+    WEEKLY_PLAN,
+    copy_defaults_to_user,
+    get_or_create_defaults_user,
+)
 from apps.workout.models import (
     Criterion,
     Exercise,
@@ -514,3 +523,114 @@ class TestNodeProgressAPI:
         # Verify the progress was persisted
         progress = UserNodeProgress.objects.get(user=workout_user, ladder_node=node)
         assert progress.achieved is True
+
+
+@pytest.mark.django_db(transaction=True)
+class TestSeedDefaultLadders:
+    def test_seed_creates_exercises_and_ladders(self):
+        call_command('seed_default_ladders')
+        defaults_user = get_or_create_defaults_user()
+
+        # Count total unique exercises from ladder data + standalone
+        ladder_exercises = {
+            name for nodes in LADDERS.values() for name, *_ in nodes
+        }
+        expected_exercises = len(ladder_exercises) + len(STANDALONE_EXERCISES)
+        assert Exercise.objects.filter(owner=defaults_user).count() == expected_exercises
+
+        assert Ladder.objects.filter(owner=defaults_user).count() == len(LADDERS)
+
+        # Each ladder node should have exactly one criterion
+        total_nodes = sum(len(nodes) for nodes in LADDERS.values())
+        assert LadderNode.objects.filter(ladder__owner=defaults_user).count() == total_nodes
+        assert Criterion.objects.filter(
+            ladder_node__ladder__owner=defaults_user
+        ).count() == total_nodes
+
+    def test_seed_creates_weekly_plan(self):
+        call_command('seed_default_ladders')
+        defaults_user = get_or_create_defaults_user()
+
+        plans = WeeklyPlan.objects.filter(owner=defaults_user)
+        assert plans.count() == 1
+        assert plans.first().name == WEEKLY_PLAN["name"]
+
+        slots = PlanSlot.objects.filter(weekly_plan=plans.first())
+        assert slots.count() == len(WEEKLY_PLAN["slots"])
+
+    def test_seed_is_idempotent(self):
+        call_command('seed_default_ladders')
+        call_command('seed_default_ladders')  # second call should be a no-op
+        defaults_user = get_or_create_defaults_user()
+        assert Ladder.objects.filter(owner=defaults_user).count() == len(LADDERS)
+
+    def test_seed_clear_and_reseed(self):
+        call_command('seed_default_ladders')
+        call_command('seed_default_ladders', clear=True)
+        defaults_user = get_or_create_defaults_user()
+        assert Ladder.objects.filter(owner=defaults_user).count() == len(LADDERS)
+
+    def test_ladder_prerequisites_are_linear(self):
+        call_command('seed_default_ladders')
+        defaults_user = get_or_create_defaults_user()
+
+        for ladder in Ladder.objects.filter(owner=defaults_user):
+            nodes = list(ladder.nodes.order_by('level'))
+            for i, node in enumerate(nodes):
+                if i == 0:
+                    assert node.prerequisites.count() == 0
+                else:
+                    assert node.prerequisites.count() == 1
+                    assert node.prerequisites.first() == nodes[i - 1]
+
+
+@pytest.mark.django_db
+class TestCopyDefaultsToUser:
+    def test_copy_creates_user_data(self, workout_user):
+        call_command('seed_default_ladders')
+        copy_defaults_to_user(workout_user)
+
+        ladder_exercises = {
+            name for nodes in LADDERS.values() for name, *_ in nodes
+        }
+        expected_exercises = len(ladder_exercises) + len(STANDALONE_EXERCISES)
+        assert Exercise.objects.filter(owner=workout_user).count() == expected_exercises
+        assert Ladder.objects.filter(owner=workout_user).count() == len(LADDERS)
+        assert WeeklyPlan.objects.filter(owner=workout_user).count() == 1
+
+    def test_copied_ladders_are_independent(self, workout_user):
+        """Editing a user's ladder should not affect the defaults."""
+        call_command('seed_default_ladders')
+        copy_defaults_to_user(workout_user)
+
+        defaults_user = get_or_create_defaults_user()
+        user_ladder = Ladder.objects.filter(owner=workout_user).first()
+        user_ladder.nodes.first().delete()
+
+        # Defaults should still have all nodes
+        total_nodes = sum(len(nodes) for nodes in LADDERS.values())
+        assert LadderNode.objects.filter(
+            ladder__owner=defaults_user
+        ).count() == total_nodes
+
+    def test_copy_without_seed_is_noop(self, workout_user):
+        """If seed data doesn't exist, copy should do nothing."""
+        copy_defaults_to_user(workout_user)
+        assert Exercise.objects.filter(owner=workout_user).count() == 0
+        assert Ladder.objects.filter(owner=workout_user).count() == 0
+
+
+@pytest.mark.django_db(transaction=True)
+class TestSignalCopiesDefaults:
+    def test_new_user_gets_default_ladders(self):
+        from apps.core.models import CampsiteUser
+
+        call_command('seed_default_ladders')
+
+        new_user = CampsiteUser.objects.create_user(
+            username='newbie', email='new@example.com', password='pass123'
+        )
+        workout_user = new_user.workout_profile
+
+        assert Ladder.objects.filter(owner=workout_user).count() == len(LADDERS)
+        assert WeeklyPlan.objects.filter(owner=workout_user).count() == 1
