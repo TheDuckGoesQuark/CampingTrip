@@ -11,6 +11,7 @@ import { LadderDetail } from './pages/LadderDetail';
 import { WeeklyPlan } from './pages/WeeklyPlan';
 import { Login } from './pages/Login';
 import { useOfflineSync } from './hooks/useOfflineSync';
+import { clearOfflineQueue } from './store/offlineMiddleware';
 import { logout } from './store/authSlice';
 import type { RootState } from './store/store';
 
@@ -82,7 +83,10 @@ function LogoutButton() {
       variant="subtle"
       color="dimmed"
       size="sm"
-      onClick={() => dispatch(logout())}
+      onClick={() => {
+        clearOfflineQueue();
+        dispatch(logout());
+      }}
       title="Sign out"
     >
       <Text size="xs">x</Text>

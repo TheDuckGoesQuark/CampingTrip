@@ -44,8 +44,14 @@ export const offlineMiddleware: Middleware = () => (next) => (action) => {
     const meta = (action as { meta?: { arg?: { endpointName?: string; originalArgs?: unknown }; baseQueryMeta?: unknown } }).meta;
     const error = (action as { payload?: { status?: string } }).payload;
 
-    // Only queue network failures (FETCH_ERROR), not validation errors
-    if (error?.status === 'FETCH_ERROR' && meta?.arg?.endpointName) {
+    // Only queue genuine offline failures — if the browser reports offline,
+    // the user is truly disconnected. CORS/auth errors also surface as
+    // FETCH_ERROR but should NOT be queued (they won't succeed on retry).
+    if (
+      error?.status === 'FETCH_ERROR' &&
+      meta?.arg?.endpointName &&
+      !navigator.onLine
+    ) {
       const mutation: QueuedMutation = {
         id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
         endpointName: meta.arg.endpointName,
@@ -99,4 +105,12 @@ export async function replayOfflineQueue(dispatch: (action: unknown) => unknown)
 export async function getOfflineQueueCount(): Promise<number> {
   const queue = await getQueue();
   return queue.length;
+}
+
+/**
+ * Clear the offline queue. Call on logout so stale mutations
+ * don't replay for a different user on next login.
+ */
+export async function clearOfflineQueue(): Promise<void> {
+  await saveQueue([]);
 }
