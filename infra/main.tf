@@ -21,7 +21,8 @@ provider "aws" {
 }
 
 locals {
-  name_prefix    = "jordanscamp-${var.environment}"
-  api_domain     = "api.${var.domain_name}"
-  workout_domain = "workout.${var.domain_name}"
+  name_prefix         = "jordanscamp-${var.environment}"
+  api_domain          = "api.${var.domain_name}"
+  workout_domain      = "workout.${var.domain_name}"
+  digitaltwins_domain = "digitaltwins.${var.domain_name}"
 }

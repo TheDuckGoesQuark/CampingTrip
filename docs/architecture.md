@@ -7,16 +7,18 @@ Jordan's Camp is a monorepo hosting multiple web apps under the `jordanscamp.sit
 ```
 Browser
   |
-  |-- jordanscamp.site          --> Campsite (static SPA)
-  |-- workout.jordanscamp.site  --> Workout Tracker (PWA)
-  |-- api.jordanscamp.site      --> Django REST API
+  |-- jordanscamp.site               --> Campsite (static SPA)
+  |-- workout.jordanscamp.site       --> Workout Tracker (PWA)
+  |-- digitaltwins.jordanscamp.site  --> Digital Twins (static SPA)
+  |-- api.jordanscamp.site           --> Django REST API
   |
   v
 Caddy (reverse proxy + auto TLS)
   |
-  |-- static files from /opt/jordanscamp/webapp/    (campsite)
-  |-- static files from /opt/jordanscamp/workout/   (workout)
-  |-- proxy to localhost:8000                       (Django via Gunicorn)
+  |-- static files from /opt/jordanscamp/webapp/        (campsite)
+  |-- static files from /opt/jordanscamp/workout/       (workout)
+  |-- static files from /opt/jordanscamp/digitaltwins/  (digital twins)
+  |-- proxy to localhost:8000                           (Django via Gunicorn)
 ```
 
 ## Repository structure
@@ -25,6 +27,7 @@ Caddy (reverse proxy + auto TLS)
 /
 ├── apps/
 │   ├── campsite/           # 3D camping scene homepage
+│   ├── digitaltwins/       # Scrollytelling blog with interactive visualizations
 │   └── workout/            # Workout tracker PWA
 ├── backend/
 │   ├── apps/

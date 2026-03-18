@@ -36,12 +36,13 @@ resource "aws_instance" "app" {
     ecr_web_repo   = aws_ecr_repository.web.repository_url
     secret_arn     = aws_secretsmanager_secret.app.arn
     s3_bucket      = aws_s3_bucket.deploy.id
-    api_domain     = local.api_domain
-    workout_domain = local.workout_domain
-    redis_url      = "redis://redis:6379/0"
-    domain_name    = var.domain_name
-    allowed_hosts  = "${local.api_domain},localhost"
-    cors_origins   = "https://${local.api_domain},https://${var.domain_name},https://${local.workout_domain}"
+    api_domain          = local.api_domain
+    workout_domain      = local.workout_domain
+    digitaltwins_domain = local.digitaltwins_domain
+    redis_url           = "redis://redis:6379/0"
+    domain_name         = var.domain_name
+    allowed_hosts       = "${local.api_domain},localhost"
+    cors_origins        = "https://${local.api_domain},https://${var.domain_name},https://${local.workout_domain},https://${local.digitaltwins_domain}"
   }))
 
   tags = {

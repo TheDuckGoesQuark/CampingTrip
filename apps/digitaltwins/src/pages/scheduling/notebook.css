@@ -1,0 +1,82 @@
+/* ── Notebook paper background ─────────────────────────────────── */
+
+.notebook-page {
+  width: 100%;
+  height: 100%;
+  background-color: #f5f0e4;
+  background-image:
+    /* Horizontal ruled lines */
+    repeating-linear-gradient(
+      to bottom,
+      transparent,
+      transparent 31px,
+      #c0d0e0 31px,
+      #c0d0e0 32px
+    );
+  /* Red margin line */
+  border-left: 2px solid #d4a0a0;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ── Pen ink colors ───────────────────────────────────────────── */
+
+.ink {
+  color: #2c3e6b;
+}
+
+.ink-light {
+  color: #8a9bba;
+}
+
+.ink-red {
+  color: #b84a3c;
+}
+
+/* ── Handwriting font ─────────────────────────────────────────── */
+
+.notebook-text {
+  font-family: 'Caveat', cursive;
+  color: #2c3e6b;
+}
+
+/* ── SVG layer (fills the notebook page) ──────────────────────── */
+
+.notebook-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* ── Queue left fade (implies infinite backlog) ───────────────── */
+
+.queue-fade {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 60px;
+  background: linear-gradient(to right, #f5f0e4, transparent);
+  z-index: 2;
+  pointer-events: none;
+  border-radius: 2px 0 0 2px;
+}
+
+/* ── Task card (DOM overlay for animation later) ──────────────── */
+
+.task-card {
+  font-family: 'Caveat', cursive;
+  font-size: 14px;
+  line-height: 1.2;
+  padding: 3px 8px;
+  border-radius: 2px;
+  white-space: nowrap;
+  pointer-events: auto;
+}
+
+.task-card-duration {
+  font-size: 12px;
+  opacity: 0.6;
+  margin-left: 4px;
+}

@@ -34,3 +34,12 @@ resource "aws_route53_record" "workout" {
   ttl     = 300
   records = [aws_eip.app.public_ip]
 }
+
+# digitaltwins.jordanscamp.site → EC2 Elastic IP (Digital Twins via Caddy)
+resource "aws_route53_record" "digitaltwins" {
+  zone_id = aws_route53_zone.main.zone_id
+  name    = local.digitaltwins_domain
+  type    = "A"
+  ttl     = 300
+  records = [aws_eip.app.public_ip]
+}

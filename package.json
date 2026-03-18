@@ -7,11 +7,14 @@
   "scripts": {
     "dev:campsite": "pnpm --filter campsite dev",
     "dev:workout": "pnpm --filter workout dev",
+    "dev:digitaltwins": "pnpm --filter digitaltwins dev",
     "build:campsite": "pnpm --filter campsite build",
     "build:workout": "pnpm --filter workout build",
+    "build:digitaltwins": "pnpm --filter digitaltwins build",
     "build": "pnpm -r build",
     "test": "pnpm -r test",
     "test:campsite": "pnpm --filter campsite test",
-    "test:workout": "pnpm --filter workout test"
+    "test:workout": "pnpm --filter workout test",
+    "test:digitaltwins": "pnpm --filter digitaltwins test"
   }
 }
