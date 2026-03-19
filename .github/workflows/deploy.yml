@@ -114,8 +114,35 @@ jobs:
           path: apps/workout/dist/
           retention-days: 1
 
+  build-digitaltwins:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build digitaltwins
+        run: pnpm --filter digitaltwins build
+
+      - name: Upload digitaltwins artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: digitaltwins
+          path: apps/digitaltwins/dist/
+          retention-days: 1
+
   deploy:
-    needs: [build-web-image, build-campsite, build-workout]
+    needs: [build-web-image, build-campsite, build-workout, build-digitaltwins]
     runs-on: ubuntu-latest
     environment: production
     steps:
@@ -142,6 +169,12 @@ jobs:
           name: workout
           path: workout
 
+      - name: Download digitaltwins artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: digitaltwins
+          path: digitaltwins
+
       - name: Upload deploy artifacts to S3
         run: |
           tar czf campsite.tar.gz -C campsite .
@@ -149,6 +182,9 @@ jobs:
 
           tar czf workout.tar.gz -C workout .
           aws s3 cp workout.tar.gz s3://${{ vars.S3_DEPLOY_BUCKET }}/_deploy/workout.tar.gz
+
+          tar czf digitaltwins.tar.gz -C digitaltwins .
+          aws s3 cp digitaltwins.tar.gz s3://${{ vars.S3_DEPLOY_BUCKET }}/_deploy/digitaltwins.tar.gz
 
           aws s3 cp infra/Caddyfile s3://${{ vars.S3_DEPLOY_BUCKET }}/_deploy/Caddyfile
 
@@ -197,6 +233,11 @@ jobs:
               'rm -rf /opt/jordanscamp/workout/*',
               'tar xzf /tmp/workout.tar.gz -C /opt/jordanscamp/workout/',
               'rm /tmp/workout.tar.gz',
+              'aws s3 cp s3://$S3_BUCKET/_deploy/digitaltwins.tar.gz /tmp/digitaltwins.tar.gz',
+              'mkdir -p /opt/jordanscamp/digitaltwins',
+              'rm -rf /opt/jordanscamp/digitaltwins/*',
+              'tar xzf /tmp/digitaltwins.tar.gz -C /opt/jordanscamp/digitaltwins/',
+              'rm /tmp/digitaltwins.tar.gz',
               'aws s3 cp s3://$S3_BUCKET/_deploy/Caddyfile /etc/caddy/Caddyfile',
               'systemctl restart caddy',
               'sleep 5',

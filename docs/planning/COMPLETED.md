@@ -4,6 +4,33 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## Digital Twins — project scaffolding & scrollytelling framework
+
+**Date**: 2026-03-18
+
+**What was done**:
+- Created `apps/digitaltwins/` as a new frontend-only app (Vite + React + Mantine + Framer Motion)
+- Set up app shell with BrowserRouter, Mantine dark theme, minimal header
+- Built scrollytelling framework: `useScrollyProgress` hook (Intersection Observer), `ScrollySection`, `ScrollyLayout` components
+- Wired up placeholder scheduling post with 7 narrative steps and sticky visualization slot
+- Home page with blog post index card
+- Added root workspace scripts (dev/build/test:digitaltwins)
+- Infrastructure: Route53 DNS record, Caddyfile server block, EC2 user_data template, deploy workflow (build + artifact + SSM extract)
+- Updated README with Digital Twins in the apps table
+
+**Key decisions**:
+- No external scrollytelling library — custom ~30-line hook using Intersection Observer with rootMargin midpoint trigger
+- No PWA, Redux, or backend API — frontend-only, simpler than workout app
+- Framer Motion for queue animations (to be built)
+- Scrollytelling layout: sticky viz fills viewport, narrative sections scroll over with semi-transparent dark cards
+
+**Deferred**:
+- Simulation engine (algorithms, task generator, playback) — to be built hands-on
+- Narrative content and wording — to be crafted manually
+- Interactive controls and metrics panel
+
+---
+
 ## Workout tracker — data model & offline sync design (Phase 1 foundation)
 
 **Date**: 2026-03-16

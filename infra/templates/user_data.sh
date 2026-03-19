@@ -73,6 +73,12 @@ ${workout_domain} {
     try_files {path} /index.html
     file_server
 }
+
+${digitaltwins_domain} {
+    root * /opt/jordanscamp/digitaltwins
+    try_files {path} /index.html
+    file_server
+}
 CADDYEOF
 
 # Caddy systemd service (if not installed via package manager)
@@ -211,7 +217,7 @@ volumes:
 COMPOSEEOF
 
 # --- Deploy static frontends from S3 ---
-mkdir -p "$APP_DIR/webapp" "$APP_DIR/workout"
+mkdir -p "$APP_DIR/webapp" "$APP_DIR/workout" "$APP_DIR/digitaltwins"
 
 if aws s3 cp "s3://${s3_bucket}/_deploy/webapp.tar.gz" /tmp/webapp.tar.gz 2>/dev/null; then
   tar xzf /tmp/webapp.tar.gz -C "$APP_DIR/webapp/"
@@ -227,6 +233,14 @@ if aws s3 cp "s3://${s3_bucket}/_deploy/workout.tar.gz" /tmp/workout.tar.gz 2>/d
   echo "Workout app deployed from S3"
 else
   echo "No workout tarball in S3 yet — will be deployed by CI"
+fi
+
+if aws s3 cp "s3://${s3_bucket}/_deploy/digitaltwins.tar.gz" /tmp/digitaltwins.tar.gz 2>/dev/null; then
+  tar xzf /tmp/digitaltwins.tar.gz -C "$APP_DIR/digitaltwins/"
+  rm /tmp/digitaltwins.tar.gz
+  echo "Digital Twins app deployed from S3"
+else
+  echo "No digitaltwins tarball in S3 yet — will be deployed by CI"
 fi
 
 # --- Pull images ---
