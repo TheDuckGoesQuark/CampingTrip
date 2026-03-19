@@ -343,6 +343,7 @@ resource "aws_iam_role_policy" "github_terraform_resources" {
           "iam:CreateOpenIDConnectProvider",
           "iam:DeleteOpenIDConnectProvider",
           "iam:UpdateOpenIDConnectProviderThumbprint",
+          "iam:TagOpenIDConnectProvider",
           "iam:TagRole",
           "iam:PassRole",
         ]
