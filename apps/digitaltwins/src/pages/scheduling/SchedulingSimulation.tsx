@@ -7,11 +7,7 @@ import './notebook.css';
 const INK = '#2c3e6b';
 const INK_LIGHT = '#8a9bba';
 
-interface Props {
-  activeStep: number;
-}
-
-export function SchedulingSimulation({ activeStep: _activeStep }: Props) {
+export function SchedulingSimulation() {
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative' }}>
       <Flex direction="column" h="100%" p="md" pt="xs">

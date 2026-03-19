@@ -15,8 +15,14 @@
     );
   /* Red margin line */
   border-left: 2px solid #d4a0a0;
-  overflow: hidden;
+  /* overflow: hidden breaks position:sticky on descendants */
   position: relative;
+}
+
+/* ── Card zone scrollbar hide ─────────────────────────────────── */
+
+[data-card-zone]::-webkit-scrollbar {
+  display: none;
 }
 
 /* ── Pen ink colors ───────────────────────────────────────────── */

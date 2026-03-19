@@ -1,71 +1,38 @@
-import { Box } from '@mantine/core';
-import { useRef, type ReactNode } from 'react';
-import { useScrollyProgress } from '../hooks/useScrollyProgress';
+import { Box, Stack, Text } from '@mantine/core';
+import type { ReactNode } from 'react';
 import '../pages/scheduling/notebook.css';
 
+const INK = '#2c3e6b';
+const INK_LIGHT = '#5a7299';
+
 interface ScrollyLayoutProps {
-  /** Title area rendered at the top */
-  renderTitle: () => ReactNode;
-  /** The sticky visualization — receives the active step index */
-  renderVisualization: (activeStep: number) => ReactNode;
-  /** The narrative sections (should be ScrollySection components) */
-  children: (activeStep: number) => ReactNode;
+  title: string;
+  subtitle: string;
+  children: ReactNode;
 }
 
-export function ScrollyLayout({
-  renderTitle,
-  renderVisualization,
-  children,
-}: ScrollyLayoutProps) {
-  const narrativeRef = useRef<HTMLDivElement>(null);
-  const activeStep = useScrollyProgress(narrativeRef);
-
+export function ScrollyLayout({ title, subtitle, children }: ScrollyLayoutProps) {
   return (
-    <Box style={{ position: 'relative' }}>
-      {/* Sticky page — stays in viewport while cards scroll */}
-      <Box
-        className="notebook-page"
-        style={{
-          position: 'sticky',
-          top: 48,
-          height: 'calc(100vh - 48px)',
-          zIndex: 0,
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden',
-        }}
-      >
-        {/* Title */}
-        {renderTitle()}
-
-        {/* Card zone — narrative cards appear here */}
-        <Box
-          style={{
-            height: '18vh',
-            minHeight: 100,
-            position: 'relative',
-            zIndex: 1,
-          }}
-        />
-
-        {/* Visualization fills remaining space */}
-        <Box style={{ flex: 1, minHeight: 0 }}>
-          {renderVisualization(activeStep)}
-        </Box>
+    <Stack
+      className="notebook-page"
+      gap={0}
+      style={{ height: 'calc(100vh - 48px)' }}
+    >
+      <Box ta="center" py="sm">
+        <Text
+          fw={700}
+          style={{ fontSize: 34, color: INK, fontFamily: "'Caveat', cursive" }}
+        >
+          {title}
+        </Text>
+        <Text
+          style={{ fontSize: 15, color: INK_LIGHT, fontFamily: "'Caveat', cursive" }}
+        >
+          {subtitle}
+        </Text>
       </Box>
 
-      {/* Scrollable narrative layer — positioned over the card zone */}
-      <Box
-        ref={narrativeRef}
-        style={{
-          position: 'relative',
-          zIndex: 1,
-          marginTop: 'calc(-100vh + 48px)',
-          pointerEvents: 'none',
-        }}
-      >
-        <Box style={{ pointerEvents: 'auto' }}>{children(activeStep)}</Box>
-      </Box>
-    </Box>
+      <Box style={{ flex: 1, minHeight: 0 }}>{children}</Box>
+    </Stack>
   );
 }
