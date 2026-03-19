@@ -8,7 +8,7 @@ const INK_LIGHT = '#5a7299';
 interface ScrollyLayoutProps {
   title: string;
   subtitle: string;
-  visualization: ReactNode;
+  visualization: (scrollProgress: number) => ReactNode;
   children: ReactNode;
 }
 
@@ -87,7 +87,7 @@ export function ScrollyLayout({
         </Box>
 
         <Box style={{ flex: 1, minHeight: 0, position: 'relative' }}>
-          {visualization}
+          {visualization(scrollProgress)}
 
           {/* Card overlay — absolutely positioned over the viz */}
           <div
@@ -95,17 +95,16 @@ export function ScrollyLayout({
             style={{
               position: 'absolute',
               inset: 0,
-              zIndex: 1,
+              zIndex: 10,
               pointerEvents: 'none',
               overflow: 'hidden',
             }}
           >
             {cards.map((card, i) => {
               const offset = i - scrollProgress;
-              // Travel distance derived from container height
-              const translateY = offset * h * 0.6;
-              // Fully visible at offset=0, invisible at |offset|>=1
-              const opacity = Math.max(0, 1 - Math.abs(offset));
+              const translateY = offset * h * 1.2;
+              // Fade in from below, but stay fully opaque when leaving upward
+              const opacity = offset > 0 ? Math.max(0, 1 - offset) : 1;
 
               return (
                 <div
@@ -119,6 +118,7 @@ export function ScrollyLayout({
                     pointerEvents: opacity > 0.3 ? 'auto' : 'none',
                     width: '90%',
                     maxWidth: 500,
+                    zIndex: 3,
                   }}
                 >
                   {card}
@@ -135,7 +135,7 @@ export function ScrollyLayout({
         style={{
           position: 'relative',
           marginTop: 'calc(-100vh + 48px)',
-          height: `${Math.max(2, cardCount) * 100}vh`,
+          height: `${Math.max(2, cardCount) * 200}vh`,
           pointerEvents: 'none',
         }}
       />

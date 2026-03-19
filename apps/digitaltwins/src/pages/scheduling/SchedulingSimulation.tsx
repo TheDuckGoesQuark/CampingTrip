@@ -1,26 +1,84 @@
 import { Box, Flex, Stack, Text } from '@mantine/core';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { RoughBox } from './RoughBox';
 import { RoughArrow } from './RoughArrow';
 import { PROJECTS } from './demo-data';
+import { interpolateScene } from './scene';
+import { STEPS } from './steps';
 import './notebook.css';
 
 const INK = '#2c3e6b';
 const INK_LIGHT = '#8a9bba';
 
-const STRATEGIES = {
-  selector: [
-    { label: 'S\u2081', name: 'Round Robin' },
-    { label: 'S\u2082', name: 'Priority' },
-    { label: 'S\u2083', name: 'Shortest Q' },
-  ],
-  executor: [
-    { label: 'E\u2081', name: 'Run to finish' },
-    { label: 'E\u2082', name: 'Time-boxed' },
-    { label: 'E\u2083', name: 'Preemptive' },
-  ],
-};
+// ── Spotlight overlay with SVG cutout mask ──────────────────────
 
-function MachineBox({ strategies }: { strategies: { label: string; name: string }[] }) {
+interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+function SpotlightOverlay({
+  intensity,
+  cutouts,
+}: {
+  intensity: number;
+  cutouts: Rect[];
+}) {
+  if (intensity <= 0.01) return null;
+
+  return (
+    <svg
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        zIndex: 2,
+        pointerEvents: 'none',
+      }}
+    >
+      <defs>
+        <filter id="spotlight-blur">
+          <feGaussianBlur stdDeviation="12" />
+        </filter>
+        <mask id="spotlight-mask">
+          {/* White = show overlay (dark). Black = hide overlay (transparent hole). */}
+          <rect width="100%" height="100%" fill="white" />
+          <g filter="url(#spotlight-blur)">
+            {cutouts.map((c, i) => (
+              <rect
+                key={i}
+                x={c.x - 16}
+                y={c.y - 16}
+                width={c.w + 32}
+                height={c.h + 32}
+                rx={12}
+                fill="black"
+              />
+            ))}
+          </g>
+        </mask>
+      </defs>
+      <rect
+        width="100%"
+        height="100%"
+        fill={`rgba(10, 6, 18, ${intensity * 0.45})`}
+        mask="url(#spotlight-mask)"
+      />
+    </svg>
+  );
+}
+
+// ── Machine box ─────────────────────────────────────────────────
+
+function MachineBox({
+  strategies,
+}: {
+  strategies: { label: string; name: string }[];
+}) {
   return (
     <RoughBox stroke={INK} style={{ width: '100%', padding: 8 }}>
       <Stack gap={6}>
@@ -45,12 +103,95 @@ function MachineBox({ strategies }: { strategies: { label: string; name: string 
   );
 }
 
-export function SchedulingSimulation() {
+// ── Helpers ─────────────────────────────────────────────────────
+
+const STRATEGIES = {
+  selector: [
+    { label: 'S\u2081', name: 'Round Robin' },
+    { label: 'S\u2082', name: 'Priority' },
+    { label: 'S\u2083', name: 'Shortest Q' },
+  ],
+  executor: [
+    { label: 'E\u2081', name: 'Run to finish' },
+    { label: 'E\u2082', name: 'Time-boxed' },
+    { label: 'E\u2083', name: 'Preemptive' },
+  ],
+};
+
+function dimStyle(level: number): React.CSSProperties {
+  if (level <= 0) return {};
+  return { opacity: 1 - level * 0.6 };
+}
+
+/** Measure a group of elements and return a bounding box covering all of them. */
+function boundingBox(elements: (HTMLElement | null)[]): Rect | null {
+  const rects = elements.filter(Boolean).map((el) => el!.getBoundingClientRect());
+  if (rects.length === 0) return null;
+  const x = Math.min(...rects.map((r) => r.x));
+  const y = Math.min(...rects.map((r) => r.y));
+  const right = Math.max(...rects.map((r) => r.right));
+  const bottom = Math.max(...rects.map((r) => r.bottom));
+  return { x, y, w: right - x, h: bottom - y };
+}
+
+// ── Main component ──────────────────────────────────────────────
+
+interface Props {
+  scrollProgress: number;
+}
+
+export function SchedulingSimulation({ scrollProgress }: Props) {
+  const scene = useMemo(() => interpolateScene(STEPS, scrollProgress), [scrollProgress]);
+  const maxHighlight = Math.max(0, ...Object.values(scene.highlights));
+
+  // Refs for spotlight cutout measurement
+  const selectorHeaderRef = useRef<HTMLDivElement>(null);
+  const selectorBoxRef = useRef<HTMLDivElement>(null);
+  const selectorFooterRef = useRef<HTMLDivElement>(null);
+  const executorHeaderRef = useRef<HTMLDivElement>(null);
+  const executorBoxRef = useRef<HTMLDivElement>(null);
+  const executorFooterRef = useRef<HTMLDivElement>(null);
+
+  const [cutouts, setCutouts] = useState<Rect[]>([]);
+  const gridRef = useRef<HTMLDivElement>(null);
+
+  // Measure cutout positions whenever highlights change or layout resizes
+  useEffect(() => {
+    function measure() {
+      const rects: Rect[] = [];
+
+      if ((scene.highlights['selector'] ?? 0) > 0.01) {
+        const box = boundingBox([selectorHeaderRef.current, selectorBoxRef.current, selectorFooterRef.current]);
+        if (box) rects.push(box);
+      }
+      if ((scene.highlights['executor'] ?? 0) > 0.01) {
+        const box = boundingBox([executorHeaderRef.current, executorBoxRef.current, executorFooterRef.current]);
+        if (box) rects.push(box);
+      }
+
+      setCutouts(rects);
+    }
+
+    measure();
+
+    // Remeasure on resize
+    const grid = gridRef.current;
+    if (!grid) return;
+    const observer = new ResizeObserver(measure);
+    observer.observe(grid);
+    return () => observer.disconnect();
+  }, [scene.highlights]);
+
   return (
-    <div style={{ width: '100%', height: '100%', padding: 'var(--mantine-spacing-md)' }}>
+    <div style={{ width: '100%', height: '100%', padding: 'var(--mantine-spacing-md)', position: 'relative' }}>
+      {/* SVG spotlight overlay with cutout holes */}
+      <SpotlightOverlay intensity={maxHighlight} cutouts={cutouts} />
+
       <div
+        ref={gridRef}
         style={{
           display: 'grid',
+          position: 'relative',
           gridTemplateColumns: '1fr auto minmax(60px, 190px) auto minmax(60px, 190px) auto 60px',
           gridTemplateRows: 'auto auto auto',
           maxWidth: 1100,
@@ -67,25 +208,18 @@ export function SchedulingSimulation() {
         >
           Projects
         </Text>
-        {/* empty arrow columns */}
         <div style={{ gridColumn: 2, gridRow: 1 }} />
-        <Text
-          className="notebook-text"
-          fw={600}
-          ta="center"
-          style={{ fontSize: 22, gridColumn: 3, gridRow: 1, alignSelf: 'end' }}
-        >
-          Selector
-        </Text>
+        <div ref={selectorHeaderRef} style={{ gridColumn: 3, gridRow: 1, alignSelf: 'end' }}>
+          <Text className="notebook-text" fw={600} ta="center" style={{ fontSize: 22 }}>
+            Selector
+          </Text>
+        </div>
         <div style={{ gridColumn: 4, gridRow: 1 }} />
-        <Text
-          className="notebook-text"
-          fw={600}
-          ta="center"
-          style={{ fontSize: 22, gridColumn: 5, gridRow: 1, alignSelf: 'end' }}
-        >
-          Executor
-        </Text>
+        <div ref={executorHeaderRef} style={{ gridColumn: 5, gridRow: 1, alignSelf: 'end' }}>
+          <Text className="notebook-text" fw={600} ta="center" style={{ fontSize: 22 }}>
+            Executor
+          </Text>
+        </div>
         <div style={{ gridColumn: 6, gridRow: 1 }} />
         <Text
           className="notebook-text"
@@ -96,13 +230,21 @@ export function SchedulingSimulation() {
           Done
         </Text>
 
-        {/* ── Row 2: Content (vertically centred to tallest item) ── */}
+        {/* ── Row 2: Content ── */}
 
-        {/* Projects */}
+        {/* Projects (dimmable) */}
         <Stack
           gap={14}
           justify="center"
-          style={{ gridColumn: 1, gridRow: 2, alignSelf: 'center', maxWidth: 420 }}
+          data-anchor="projects"
+          style={{
+            gridColumn: 1,
+            gridRow: 2,
+            alignSelf: 'center',
+            maxWidth: 420,
+            transition: 'opacity 150ms ease-out',
+            ...dimStyle(scene.dims['projects'] ?? 0),
+          }}
         >
           {PROJECTS.map((project) => (
             <Flex key={project.id} align="center" gap={6}>
@@ -113,7 +255,7 @@ export function SchedulingSimulation() {
               >
                 {project.label}
               </Text>
-              <Box flex={1} style={{ position: 'relative' }}>
+              <Box flex={1} style={{ position: 'relative' }} data-anchor={`queue-${project.id}`}>
                 <RoughBox
                   openLeft
                   stroke={project.color}
@@ -162,7 +304,7 @@ export function SchedulingSimulation() {
         </div>
 
         {/* Selector */}
-        <div style={{ gridColumn: 3, gridRow: 2, alignSelf: 'center', maxWidth: 190 }}>
+        <div ref={selectorBoxRef} data-anchor="selector" style={{ gridColumn: 3, gridRow: 2, alignSelf: 'center', maxWidth: 190 }}>
           <MachineBox strategies={STRATEGIES.selector} />
         </div>
 
@@ -172,7 +314,7 @@ export function SchedulingSimulation() {
         </div>
 
         {/* Executor */}
-        <div style={{ gridColumn: 5, gridRow: 2, alignSelf: 'center', maxWidth: 190 }}>
+        <div ref={executorBoxRef} data-anchor="executor" style={{ gridColumn: 5, gridRow: 2, alignSelf: 'center', maxWidth: 190 }}>
           <MachineBox strategies={STRATEGIES.executor} />
         </div>
 
@@ -182,7 +324,7 @@ export function SchedulingSimulation() {
         </div>
 
         {/* Done */}
-        <div style={{ gridColumn: 7, gridRow: 2, alignSelf: 'center', textAlign: 'center', minWidth: 50 }}>
+        <div data-anchor="done" style={{ gridColumn: 7, gridRow: 2, alignSelf: 'center', textAlign: 'center', minWidth: 50 }}>
           <Text className="notebook-text" fw={700} style={{ fontSize: 40, color: '#2d6a4f' }}>
             &#x2713;
           </Text>
@@ -191,23 +333,17 @@ export function SchedulingSimulation() {
         {/* ── Row 3: Footers ── */}
         <div style={{ gridColumn: 1, gridRow: 3 }} />
         <div style={{ gridColumn: 2, gridRow: 3 }} />
-        <Text
-          className="notebook-text"
-          c={INK_LIGHT}
-          ta="center"
-          style={{ fontSize: 15, gridColumn: 3, gridRow: 3, alignSelf: 'start' }}
-        >
-          &ldquo;Which queue?&rdquo;
-        </Text>
+        <div ref={selectorFooterRef} style={{ gridColumn: 3, gridRow: 3, alignSelf: 'start' }}>
+          <Text className="notebook-text" c={INK_LIGHT} ta="center" style={{ fontSize: 15 }}>
+            &ldquo;Which queue?&rdquo;
+          </Text>
+        </div>
         <div style={{ gridColumn: 4, gridRow: 3 }} />
-        <Text
-          className="notebook-text"
-          c={INK_LIGHT}
-          ta="center"
-          style={{ fontSize: 15, gridColumn: 5, gridRow: 3, alignSelf: 'start' }}
-        >
-          &ldquo;How long?&rdquo;
-        </Text>
+        <div ref={executorFooterRef} style={{ gridColumn: 5, gridRow: 3, alignSelf: 'start' }}>
+          <Text className="notebook-text" c={INK_LIGHT} ta="center" style={{ fontSize: 15 }}>
+            &ldquo;How long?&rdquo;
+          </Text>
+        </div>
       </div>
     </div>
   );

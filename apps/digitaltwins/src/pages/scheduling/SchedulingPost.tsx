@@ -11,7 +11,7 @@ export function SchedulingPost() {
     <ScrollyLayout
       title="Task Scheduling"
       subtitle="How do you decide what to do next?"
-      visualization={<SchedulingSimulation />}
+      visualization={(progress) => <SchedulingSimulation scrollProgress={progress} />}
     >
       <ScrollySection>
         <Title order={2} mb="sm" style={{ color: INK }}>
