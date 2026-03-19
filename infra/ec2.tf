@@ -32,10 +32,10 @@ resource "aws_instance" "app" {
   }
 
   user_data = base64encode(templatefile("${path.module}/templates/user_data.sh", {
-    aws_region     = var.aws_region
-    ecr_web_repo   = aws_ecr_repository.web.repository_url
-    secret_arn     = aws_secretsmanager_secret.app.arn
-    s3_bucket      = aws_s3_bucket.deploy.id
+    aws_region          = var.aws_region
+    ecr_web_repo        = aws_ecr_repository.web.repository_url
+    secret_arn          = aws_secretsmanager_secret.app.arn
+    s3_bucket           = aws_s3_bucket.deploy.id
     api_domain          = local.api_domain
     workout_domain      = local.workout_domain
     digitaltwins_domain = local.digitaltwins_domain
