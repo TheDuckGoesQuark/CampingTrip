@@ -118,6 +118,61 @@ export function SchedulingPost() {
           progress, but momentum is lost, context switching has a cost.
         </Text>
       </ScrollySection>
+
+      {/* 8 — Interruptions */}
+      <ScrollySection>
+        <Title order={3} mb="sm" style={{ color: INK }}>
+          Interruptions
+        </Title>
+        <Text style={{ color: INK_LIGHT }} size="lg">
+          You&apos;re in the middle of writing the next chapter of your book,
+          and your phone rings. Your friend is in a crisis, they need your help.
+          You can&apos;t tell them &ldquo;wait until your slot in my
+          schedule&rdquo;. So you close your laptop and coach them through it.
+        </Text>
+      </ScrollySection>
+
+      {/* 9 — Back to it */}
+      <ScrollySection>
+        <Title order={3} mb="sm" style={{ color: INK }}>
+          Back to it
+        </Title>
+        <Text style={{ color: INK_LIGHT }} size="lg">
+          Breakup avoided. They won&apos;t be packing up and running away to
+          New Zealand after all. Well done. So you run your selector, and pick
+          up what you were doing again. Repeat ad nauseum. But always with a
+          nagging feeling that you could be handling things better.
+        </Text>
+      </ScrollySection>
+
+      {/* 10 — Optimise Everything */}
+      <ScrollySection>
+        <Title order={3} mb="sm" style={{ color: INK }}>
+          Optimise Everything
+        </Title>
+        <Text style={{ color: INK_LIGHT }} size="lg">
+          Your energy day to day fluctuates. Life is full of surprises.
+          Sometimes you can do it all in a day, sometimes you can barely brush
+          your teeth. So what is the best approach to keeping on top of things?
+          Or is a combination needed? Today&apos;s digital twin &mdash; both of
+          these approaches, simulated.
+        </Text>
+      </ScrollySection>
+      {/* 11 — Simulator takeover (last child = full-viewport card) */}
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          backgroundColor: '#f5f0e4',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Title order={2} ta="center" style={{ color: INK, fontFamily: "'Caveat', cursive", fontSize: 34 }}>
+          Try it yourself
+        </Title>
+      </div>
     </ScrollyLayout>
   );
 }

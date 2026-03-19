@@ -28,4 +28,16 @@ export const STEPS: SceneState[] = [
 
   // 7: "Time-boxing" — spotlight E2 within the executor
   { tasks: {}, highlights: { executor: 1, e2: 1 }, dims: { projects: 0.4, selector: 0.5 } },
+
+  // 8: "Interruptions" — exclamation on executor, dramatic
+  { tasks: {}, highlights: { executor: 1, interruption: 1 }, dims: { projects: 0.4, selector: 0.5 } },
+
+  // 9: "Back to it" — return to full pipeline view
+  { tasks: {}, highlights: {}, dims: {} },
+
+  // 10: "Optimise Everything" — everything normal
+  { tasks: {}, highlights: {}, dims: {} },
+
+  // 11: Simulator takeover — scene hidden behind full-viewport card
+  { tasks: {}, highlights: {}, dims: {} },
 ];

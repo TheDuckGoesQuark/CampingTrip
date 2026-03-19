@@ -2,6 +2,7 @@ import { Box, Flex, Stack, Text } from '@mantine/core';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { RoughBox } from './RoughBox';
 import { RoughArrow } from './RoughArrow';
+import { RoughExclamation } from './RoughExclamation';
 import { PROJECTS } from './demo-data';
 import { interpolateScene } from './scene';
 import { STEPS } from './steps';
@@ -346,8 +347,12 @@ export function SchedulingSimulation({ scrollProgress }: Props) {
         </div>
 
         {/* Executor */}
-        <div ref={executorBoxRef} data-anchor="executor" style={{ gridColumn: 5, gridRow: 2, alignSelf: 'center', maxWidth: 190, transition: 'opacity 150ms ease-out', ...dimStyle(scene.dims['executor'] ?? 0) }}>
+        <div ref={executorBoxRef} data-anchor="executor" style={{ gridColumn: 5, gridRow: 2, alignSelf: 'center', maxWidth: 190, transition: 'opacity 150ms ease-out', position: 'relative', ...dimStyle(scene.dims['executor'] ?? 0) }}>
           <MachineBox strategies={STRATEGIES.executor} sceneHighlights={scene.highlights} />
+          {/* Interruption exclamation */}
+          <div style={{ position: 'absolute', top: -20, right: -12, zIndex: 3 }}>
+            <RoughExclamation opacity={scene.highlights['interruption'] ?? 0} />
+          </div>
         </div>
 
         {/* Arrow: Executor → Done */}

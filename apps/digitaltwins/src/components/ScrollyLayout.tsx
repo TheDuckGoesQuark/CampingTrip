@@ -20,6 +20,9 @@ interface ScrollyLayoutProps {
  * position maps to a progress value (0..cardCount-1), which drives each
  * card's translateY and opacity — all derived from the overlay container's
  * measured height, no magic viewport fractions.
+ *
+ * The last child is treated as a "takeover" card — it fills the entire
+ * viewport and slides up over the visualization.
  */
 export function ScrollyLayout({
   title,
@@ -101,7 +104,34 @@ export function ScrollyLayout({
             }}
           >
             {cards.map((card, i) => {
+              const isLast = i === cardCount - 1;
               const offset = i - scrollProgress;
+
+              if (isLast) {
+                // Takeover card: full viewport, slides up from below, stays put once reached
+                const translateY = Math.max(0, offset * h * 1.2);
+                const opacity = offset > 0 ? Math.max(0, 1 - offset) : 1;
+
+                return (
+                  <div
+                    key={i}
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: '100%',
+                      transform: `translateY(${translateY}px)`,
+                      opacity,
+                      pointerEvents: opacity > 0.3 ? 'auto' : 'none',
+                      zIndex: 4,
+                    }}
+                  >
+                    {card}
+                  </div>
+                );
+              }
+
               const translateY = offset * h * 1.2;
               // Fade in from below, but stay fully opaque when leaving upward
               const opacity = offset > 0 ? Math.max(0, 1 - offset) : 1;
