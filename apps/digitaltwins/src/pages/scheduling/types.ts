@@ -20,15 +20,11 @@ export interface Project {
 
 export type SelectorAlgorithm =
   | 'round-robin'
-  | 'priority-weighted'
-  | 'shortest-queue'
-  | 'random';
+  | 'priority-weighted';
 
 export type ExecutorPolicy =
   | 'run-to-completion'
-  | 'time-boxed'
-  | 'preemptive-priority'
-  | 'deadline-driven';
+  | 'time-boxed';
 
 export interface SimulationConfig {
   selector: SelectorAlgorithm;

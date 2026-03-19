@@ -13,6 +13,7 @@ export function SchedulingPost() {
       subtitle="How do you decide what to do next?"
       visualization={(progress) => <SchedulingSimulation scrollProgress={progress} />}
     >
+      {/* 0 — Intro */}
       <ScrollySection>
         <Title order={2} mb="sm" style={{ color: INK }}>
           You have a pile of tasks...
@@ -24,17 +25,99 @@ export function SchedulingPost() {
         </Text>
       </ScrollySection>
 
+      {/* 1 — The tension */}
       <ScrollySection>
         <Title order={3} mb="sm" style={{ color: INK }}>
-          Two machines, two decisions
+          You can&apos;t do everything
         </Title>
         <Text style={{ color: INK_LIGHT }} size="lg">
-          Every scheduling system has two parts. The <b>Selector</b> picks which
-          queue to pull from next. The <b>Executor</b> decides how long you
-          spend on that task before moving on.
+          You only have so much time. You want to make sure urgent matters are
+          taken care of, but if you always put off the less pressing things,
+          they&apos;ll never get done no matter how valuable they might be long
+          term. If you prioritise work over health, you might get a promotion
+          but you&apos;ll start to feel terrible. If you focus a little too much
+          on your peace, you&apos;ll get fined for not paying your taxes.
         </Text>
       </ScrollySection>
 
+      {/* 2 — Introduce the selector */}
+      <ScrollySection>
+        <Title order={3} mb="sm" style={{ color: INK }}>
+          Choosing what&apos;s next
+        </Title>
+        <Text style={{ color: INK_LIGHT }} size="lg">
+          There&apos;s two parts to this. First, you have to select from all
+          your TODO lists which thing to tackle first. Assuming you already have
+          a sense of what&apos;s high priority from those areas, you look at the
+          next thing in each list. Which one do you select?
+        </Text>
+      </ScrollySection>
+
+      {/* 3 — Round Robin */}
+      <ScrollySection>
+        <Title order={3} mb="sm" style={{ color: INK }}>
+          Round Robin
+        </Title>
+        <Text style={{ color: INK_LIGHT }} size="lg">
+          You could pick one thing from work first, then one thing from your
+          life admin list next, one thing for your personal growth next, and go
+          round in circles so that everything makes a little bit of progress
+          every day. That&apos;s the round robin approach.
+        </Text>
+      </ScrollySection>
+
+      {/* 4 — Priority */}
+      <ScrollySection>
+        <Title order={3} mb="sm" style={{ color: INK }}>
+          Priority
+        </Title>
+        <Text style={{ color: INK_LIGHT }} size="lg">
+          You could shortlist the highest priority from every list at this time
+          and pit them against each other. You have an urgent report from work
+          due tomorrow, but you haven&apos;t been to the gym in a while.
+          What&apos;s more important to you? Pick that one.
+        </Text>
+      </ScrollySection>
+
+      {/* 5 — Introduce the executor */}
+      <ScrollySection>
+        <Title order={3} mb="sm" style={{ color: INK }}>
+          How long do you give it?
+        </Title>
+        <Text style={{ color: INK_LIGHT }} size="lg">
+          There&apos;s only so much time in the day, so how long should you give
+          to each task you pick up? Some tasks are bigger than others, no matter
+          how good your estimations might be. So how do we tackle this
+          variation?
+        </Text>
+      </ScrollySection>
+
+      {/* 6 — Run to finish */}
+      <ScrollySection>
+        <Title order={3} mb="sm" style={{ color: INK }}>
+          Run to completion
+        </Title>
+        <Text style={{ color: INK_LIGHT }} size="lg">
+          You can pick something up, and keep going until it&apos;s done. Large
+          tasks will cause your todo lists to accumulate, but you&apos;re
+          guaranteed to get that big project done. Phew. But then you come back
+          to your todo list and it&apos;s <i>grown</i>.
+        </Text>
+      </ScrollySection>
+
+      {/* 7 — Time-boxed */}
+      <ScrollySection>
+        <Title order={3} mb="sm" style={{ color: INK }}>
+          Time-boxing
+        </Title>
+        <Text style={{ color: INK_LIGHT }} size="lg">
+          So you protect yourself next time. &ldquo;I&apos;ll spend two hours on
+          this, and move on.&rdquo; If the job isn&apos;t done, you put it back
+          half complete. You&apos;ll get to it next time. Return to your
+          selector and see what to move on to. Every list gets a chance to make
+          progress, but momentum is lost, context switching has a cost.
+        </Text>
+      </ScrollySection>
     </ScrollyLayout>
   );
 }

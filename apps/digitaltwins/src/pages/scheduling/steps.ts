@@ -5,24 +5,27 @@ import type { SceneState } from './scene';
  * Index matches the card index in SchedulingPost.
  */
 export const STEPS: SceneState[] = [
-  // Step 0: "You have a pile of tasks..."
-  // Everything normal — projects visible, machines present but not emphasised
-  {
-    tasks: {},
-    highlights: {},
-    dims: {},
-  },
+  // 0: "You have a pile of tasks..." — everything normal
+  { tasks: {}, highlights: {}, dims: {} },
 
-  // Step 1: "Two machines, two decisions"
-  // Dim the project queues, highlight the selector and executor machines
-  {
-    tasks: {},
-    highlights: {
-      selector: 1,
-      executor: 1,
-    },
-    dims: {
-      projects: 0.6,
-    },
-  },
+  // 1: "You can't do everything" — highlight the projects, they're the focus
+  { tasks: {}, highlights: { projects: 1 }, dims: { selector: 0.5, executor: 0.5 } },
+
+  // 2: "Choosing what's next" — highlight the selector machine
+  { tasks: {}, highlights: { selector: 1 }, dims: { projects: 0.4, executor: 0.5 } },
+
+  // 3: "Round Robin" — spotlight S1 within the selector
+  { tasks: {}, highlights: { selector: 1, s1: 1 }, dims: { projects: 0.4, executor: 0.5 } },
+
+  // 4: "Priority" — spotlight S2 within the selector
+  { tasks: {}, highlights: { selector: 1, s2: 1 }, dims: { projects: 0.4, executor: 0.5 } },
+
+  // 5: "How long do you give it?" — highlight the executor machine
+  { tasks: {}, highlights: { executor: 1 }, dims: { projects: 0.4, selector: 0.5 } },
+
+  // 6: "Run to completion" — spotlight E1 within the executor
+  { tasks: {}, highlights: { executor: 1, e1: 1 }, dims: { projects: 0.4, selector: 0.5 } },
+
+  // 7: "Time-boxing" — spotlight E2 within the executor
+  { tasks: {}, highlights: { executor: 1, e2: 1 }, dims: { projects: 0.4, selector: 0.5 } },
 ];

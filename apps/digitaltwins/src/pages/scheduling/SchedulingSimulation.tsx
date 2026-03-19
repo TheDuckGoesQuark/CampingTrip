@@ -19,12 +19,16 @@ interface Rect {
   h: number;
 }
 
+interface Cutout extends Rect {
+  intensity: number;
+}
+
 function SpotlightOverlay({
   intensity,
   cutouts,
 }: {
   intensity: number;
-  cutouts: Rect[];
+  cutouts: Cutout[];
 }) {
   if (intensity <= 0.01) return null;
 
@@ -41,8 +45,8 @@ function SpotlightOverlay({
       }}
     >
       <defs>
-        <filter id="spotlight-blur">
-          <feGaussianBlur stdDeviation="12" />
+        <filter id="spotlight-blur" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="28" />
         </filter>
         <mask id="spotlight-mask">
           {/* White = show overlay (dark). Black = hide overlay (transparent hole). */}
@@ -51,12 +55,13 @@ function SpotlightOverlay({
             {cutouts.map((c, i) => (
               <rect
                 key={i}
-                x={c.x - 16}
-                y={c.y - 16}
-                width={c.w + 32}
-                height={c.h + 32}
-                rx={12}
+                x={c.x - 40}
+                y={c.y - 40}
+                width={c.w + 80}
+                height={c.h + 80}
+                rx={24}
                 fill="black"
+                fillOpacity={c.intensity}
               />
             ))}
           </g>
@@ -76,28 +81,45 @@ function SpotlightOverlay({
 
 function MachineBox({
   strategies,
+  sceneHighlights,
 }: {
-  strategies: { label: string; name: string }[];
+  strategies: { key: string; label: string; name: string }[];
+  sceneHighlights: Record<string, number>;
 }) {
+  // If any individual strategy is highlighted, dim the others proportionally
+  const maxIndividual = Math.max(0, ...strategies.map((s) => sceneHighlights[s.key] ?? 0));
+
   return (
     <RoughBox stroke={INK} style={{ width: '100%', padding: 8 }}>
       <Stack gap={6}>
-        {strategies.map((s) => (
-          <RoughBox
-            key={s.label}
-            stroke={INK_LIGHT}
-            strokeWidth={1}
-            roughness={0.9}
-            style={{ padding: '4px 8px' }}
-          >
-            <Text className="notebook-text" ta="center" fw={600} style={{ fontSize: 22 }}>
-              {s.label}
-            </Text>
-            <Text className="notebook-text" ta="center" c={INK_LIGHT} style={{ fontSize: 12 }}>
-              {s.name}
-            </Text>
-          </RoughBox>
-        ))}
+        {strategies.map((s) => {
+          const myHighlight = sceneHighlights[s.key] ?? 0;
+          // Strong dim on non-highlighted siblings, scale up the highlighted one
+          const dimAmount = maxIndividual > 0.01 ? Math.max(0, maxIndividual - myHighlight) * 0.8 : 0;
+          const scale = 1 + myHighlight * 0.06;
+
+          return (
+            <RoughBox
+              key={s.key}
+              stroke={myHighlight > 0.5 ? INK : INK_LIGHT}
+              strokeWidth={myHighlight > 0.5 ? 1.8 : 1}
+              roughness={0.9}
+              style={{
+                padding: '4px 8px',
+                opacity: 1 - dimAmount,
+                transform: `scale(${scale})`,
+                transition: 'opacity 150ms ease-out, transform 150ms ease-out',
+              }}
+            >
+              <Text className="notebook-text" ta="center" fw={600} style={{ fontSize: 22 }}>
+                {s.label}
+              </Text>
+              <Text className="notebook-text" ta="center" fw={600} style={{ fontSize: 12 }}>
+                {s.name}
+              </Text>
+            </RoughBox>
+          );
+        })}
       </Stack>
     </RoughBox>
   );
@@ -107,14 +129,12 @@ function MachineBox({
 
 const STRATEGIES = {
   selector: [
-    { label: 'S\u2081', name: 'Round Robin' },
-    { label: 'S\u2082', name: 'Priority' },
-    { label: 'S\u2083', name: 'Shortest Q' },
+    { key: 's1', label: 'S\u2081', name: 'Round Robin' },
+    { key: 's2', label: 'S\u2082', name: 'Priority' },
   ],
   executor: [
-    { label: 'E\u2081', name: 'Run to finish' },
-    { label: 'E\u2082', name: 'Time-boxed' },
-    { label: 'E\u2083', name: 'Preemptive' },
+    { key: 'e1', label: 'E\u2081', name: 'Run to finish' },
+    { key: 'e2', label: 'E\u2082', name: 'Time-boxed' },
   ],
 };
 
@@ -142,9 +162,13 @@ interface Props {
 
 export function SchedulingSimulation({ scrollProgress }: Props) {
   const scene = useMemo(() => interpolateScene(STEPS, scrollProgress), [scrollProgress]);
-  const maxHighlight = Math.max(0, ...Object.values(scene.highlights));
+
+  // Use sum of spotlight highlights (clamped to 1) so the overlay stays dark during crossfades
+  const spotlightKeys = ['projects', 'selector', 'executor'] as const;
+  const spotlightIntensity = Math.min(1, spotlightKeys.reduce((sum, key) => sum + (scene.highlights[key] ?? 0), 0));
 
   // Refs for spotlight cutout measurement
+  const projectsRef = useRef<HTMLDivElement>(null);
   const selectorHeaderRef = useRef<HTMLDivElement>(null);
   const selectorBoxRef = useRef<HTMLDivElement>(null);
   const selectorFooterRef = useRef<HTMLDivElement>(null);
@@ -152,21 +176,28 @@ export function SchedulingSimulation({ scrollProgress }: Props) {
   const executorBoxRef = useRef<HTMLDivElement>(null);
   const executorFooterRef = useRef<HTMLDivElement>(null);
 
-  const [cutouts, setCutouts] = useState<Rect[]>([]);
+  const [cutouts, setCutouts] = useState<Cutout[]>([]);
   const gridRef = useRef<HTMLDivElement>(null);
 
   // Measure cutout positions whenever highlights change or layout resizes
   useEffect(() => {
     function measure() {
-      const rects: Rect[] = [];
+      const rects: Cutout[] = [];
+      const projectsHL = scene.highlights['projects'] ?? 0;
+      const selectorHL = scene.highlights['selector'] ?? 0;
+      const executorHL = scene.highlights['executor'] ?? 0;
 
-      if ((scene.highlights['selector'] ?? 0) > 0.01) {
-        const box = boundingBox([selectorHeaderRef.current, selectorBoxRef.current, selectorFooterRef.current]);
-        if (box) rects.push(box);
+      if (projectsHL > 0.01 && projectsRef.current) {
+        const r = projectsRef.current.getBoundingClientRect();
+        rects.push({ x: r.x, y: r.y, w: r.width, h: r.height, intensity: projectsHL });
       }
-      if ((scene.highlights['executor'] ?? 0) > 0.01) {
+      if (selectorHL > 0.01) {
+        const box = boundingBox([selectorHeaderRef.current, selectorBoxRef.current, selectorFooterRef.current]);
+        if (box) rects.push({ ...box, intensity: selectorHL });
+      }
+      if (executorHL > 0.01) {
         const box = boundingBox([executorHeaderRef.current, executorBoxRef.current, executorFooterRef.current]);
-        if (box) rects.push(box);
+        if (box) rects.push({ ...box, intensity: executorHL });
       }
 
       setCutouts(rects);
@@ -185,7 +216,7 @@ export function SchedulingSimulation({ scrollProgress }: Props) {
   return (
     <div style={{ width: '100%', height: '100%', padding: 'var(--mantine-spacing-md)', position: 'relative' }}>
       {/* SVG spotlight overlay with cutout holes */}
-      <SpotlightOverlay intensity={maxHighlight} cutouts={cutouts} />
+      <SpotlightOverlay intensity={spotlightIntensity} cutouts={cutouts} />
 
       <div
         ref={gridRef}
@@ -232,8 +263,9 @@ export function SchedulingSimulation({ scrollProgress }: Props) {
 
         {/* ── Row 2: Content ── */}
 
-        {/* Projects (dimmable) */}
+        {/* Projects */}
         <Stack
+          ref={projectsRef}
           gap={14}
           justify="center"
           data-anchor="projects"
@@ -304,8 +336,8 @@ export function SchedulingSimulation({ scrollProgress }: Props) {
         </div>
 
         {/* Selector */}
-        <div ref={selectorBoxRef} data-anchor="selector" style={{ gridColumn: 3, gridRow: 2, alignSelf: 'center', maxWidth: 190 }}>
-          <MachineBox strategies={STRATEGIES.selector} />
+        <div ref={selectorBoxRef} data-anchor="selector" style={{ gridColumn: 3, gridRow: 2, alignSelf: 'center', maxWidth: 190, transition: 'opacity 150ms ease-out', ...dimStyle(scene.dims['selector'] ?? 0) }}>
+          <MachineBox strategies={STRATEGIES.selector} sceneHighlights={scene.highlights} />
         </div>
 
         {/* Arrow: Selector → Executor */}
@@ -314,8 +346,8 @@ export function SchedulingSimulation({ scrollProgress }: Props) {
         </div>
 
         {/* Executor */}
-        <div ref={executorBoxRef} data-anchor="executor" style={{ gridColumn: 5, gridRow: 2, alignSelf: 'center', maxWidth: 190 }}>
-          <MachineBox strategies={STRATEGIES.executor} />
+        <div ref={executorBoxRef} data-anchor="executor" style={{ gridColumn: 5, gridRow: 2, alignSelf: 'center', maxWidth: 190, transition: 'opacity 150ms ease-out', ...dimStyle(scene.dims['executor'] ?? 0) }}>
+          <MachineBox strategies={STRATEGIES.executor} sceneHighlights={scene.highlights} />
         </div>
 
         {/* Arrow: Executor → Done */}
