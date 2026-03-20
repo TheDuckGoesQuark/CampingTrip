@@ -318,6 +318,7 @@ function WorkoutProgressBar({
   let completedSteps = warmupsDone;
   for (let i = 0; i < exerciseStates.length; i++) {
     const ex = exerciseStates[i];
+    if (!ex) continue;
     if (i < currentExerciseIndex) {
       completedSteps += ex.sets.length;
     } else if (i === currentExerciseIndex) {
@@ -331,13 +332,13 @@ function WorkoutProgressBar({
   let nextLabel = '';
   if (phase === 'warmup') {
     if (exerciseStates.length > 0) {
-      nextLabel = `Next: ${exerciseStates[0].exercise_name}`;
+      nextLabel = `Next: ${exerciseStates[0]!.exercise_name}`;
     }
   } else if (phase === 'exercise' || phase === 'rest') {
     const currentEx = exerciseStates[currentExerciseIndex];
     const allSetsDone = currentEx && currentSetIndex >= currentEx.sets.length;
     if (allSetsDone && currentExerciseIndex < exerciseStates.length - 1) {
-      nextLabel = `Next: ${exerciseStates[currentExerciseIndex + 1].exercise_name}`;
+      nextLabel = `Next: ${exerciseStates[currentExerciseIndex + 1]!.exercise_name}`;
     } else if (!allSetsDone && currentEx) {
       const workingSetsLeft = currentEx.sets.filter((s, i) => i >= currentSetIndex && !s.is_warmup_set).length;
       if (workingSetsLeft > 0) {

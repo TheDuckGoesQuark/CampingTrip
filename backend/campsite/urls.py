@@ -17,11 +17,6 @@ class GoogleLogin(SocialLoginView):
 
 
 urlpatterns = [
-    # Dev-only login bypass (DEBUG only)
-    *(
-        [path('api/auth/dev-login/', include('apps.core.dev_auth_urls'))]
-        if settings.DEBUG else []
-    ),
 
     # Health check (no auth, used by deploy verification)
     path('health/', health_check, name='health_check'),
@@ -45,3 +40,4 @@ urlpatterns = [
 # Serve media files in development
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += [path('api/auth/dev-login/', include('apps.core.dev_auth_urls'))]
