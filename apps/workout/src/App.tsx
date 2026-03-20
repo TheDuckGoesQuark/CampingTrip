@@ -10,6 +10,7 @@ import { Ladders } from './pages/Ladders';
 import { LadderDetail } from './pages/LadderDetail';
 import { WeeklyPlan } from './pages/WeeklyPlan';
 import { Login } from './pages/Login';
+import { GuidedWorkout } from './pages/GuidedWorkout';
 import { useOfflineSync } from './hooks/useOfflineSync';
 import { clearOfflineQueue } from './store/offlineMiddleware';
 import { logout } from './store/authSlice';
@@ -112,6 +113,7 @@ function AuthenticatedApp() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/workout" element={<LogWorkout />} />
           <Route path="/workout/:id" element={<LogWorkout />} />
+          <Route path="/workout/:id/guided" element={<GuidedWorkout />} />
           <Route path="/plan" element={<WeeklyPlan />} />
           <Route path="/ladders" element={<Ladders />} />
           <Route path="/ladders/:id" element={<LadderDetail />} />

@@ -10,7 +10,6 @@ All planned and deferred work, organised by priority.
 
 - Batch sync endpoint (`POST /api/workout/sync/`) — dedicated endpoint for full state reconciliation on reconnect
 - End-to-end offline workflow testing: log a workout offline → come online → data syncs
-- Rest timer sounds/vibration (moved from Phase 4)
 
 ### Workout tracker — dashboard & polish (Phase 4)
 
@@ -18,6 +17,8 @@ All planned and deferred work, organised by priority.
 - Mobile UX polish (transitions, gestures, haptics)
 - Session review page (detailed view of past workouts)
 - Advancement notifications (toast/badge when a node is achieved)
+- Exercise demo videos/images in guided workout warm-up and exercise screens
+- Dashboard charts: show date range selector, handle duplicate dates better (group by session not just date)
 
 ---
 
@@ -29,9 +30,8 @@ All planned and deferred work, organised by priority.
 - Verify workouts / import activities
 - OAuth flow for Strava connection
 
-### Workout tracker — equipment & muscle group tracking
+### Workout tracker — equipment tracking
 
-- Add equipment and muscle group fields to Exercise model
 - Equipment varies a lot — needs flexible modelling
 - Equivalent exercises to consider across equipment
 
@@ -81,4 +81,5 @@ All planned and deferred work, organised by priority.
 
 ## Future
 
-(Nothing yet)
+- Full onboarding flow for initial working weight estimates (currently set per-node on ladder detail page)
+- Warm-up set rep/weight curve customisation per user

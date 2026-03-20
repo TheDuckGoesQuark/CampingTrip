@@ -33,7 +33,7 @@ const rootReducer = combineReducers({
 const persistConfig = {
   key: 'workout-root',
   storage: idbStorage,
-  whitelist: ['auth', baseApi.reducerPath],
+  whitelist: ['auth'],
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Title,
@@ -8,32 +9,87 @@ import {
   Button,
   Badge,
   Loader,
-  SimpleGrid,
+  Select,
 } from '@mantine/core';
+import { BarChart, LineChart } from '@mantine/charts';
+import { useState } from 'react';
 import {
   useWorkoutDashboardListQuery,
+  useWorkoutDashboardChartsRetrieveQuery,
   useWorkoutSessionsGenerateCreateMutation,
   type DashboardResponseRead,
 } from '../api/generated-api';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
-function StatCard({ label, value }: { label: string; value: number }) {
-  return (
-    <Card withBorder p="sm">
-      <Text size="xl" fw={700}>{value}</Text>
-      <Text size="xs" c="dimmed">{label}</Text>
-    </Card>
-  );
+// Chart color palette
+const COLORS = ['orange', 'cyan', 'grape', 'teal', 'pink', 'indigo', 'yellow', 'lime'];
+
+interface VolumePoint {
+  date: string;
+  volume: number;
+}
+
+interface WeightPoint {
+  date: string;
+  weight: number;
+}
+
+interface ExerciseWeightSeries {
+  exercise: string;
+  data: WeightPoint[];
 }
 
 export function Dashboard() {
-  // The codegen types this as an array but the backend returns a single object
   const { data: rawData, isLoading } = useWorkoutDashboardListQuery();
   const data = rawData as unknown as DashboardResponseRead | undefined;
+  const { data: chartData } = useWorkoutDashboardChartsRetrieveQuery();
   const [generateSession, { isLoading: isGenerating }] =
     useWorkoutSessionsGenerateCreateMutation();
   const navigate = useNavigate();
+
+  const volumeData = (chartData?.volume_per_session ?? []) as VolumePoint[];
+  const weightSeries = (chartData?.weight_per_exercise ?? []) as ExerciseWeightSeries[];
+
+  // For weight chart: allow selecting which exercise to view, or show all
+  const exerciseNames = useMemo(() => weightSeries.map((s) => s.exercise), [weightSeries]);
+  const [selectedExercise, setSelectedExercise] = useState<string | null>(null);
+
+  // Transform weight data for LineChart: merge all exercises into [{date, Ex1, Ex2, ...}]
+  const weightChartData = useMemo(() => {
+    const series = selectedExercise
+      ? weightSeries.filter((s) => s.exercise === selectedExercise)
+      : weightSeries;
+
+    // Collect all dates across all exercises
+    const dateMap = new Map<string, Record<string, number>>();
+    for (const s of series) {
+      for (const point of s.data) {
+        if (!dateMap.has(point.date)) {
+          dateMap.set(point.date, { date: 0 }); // placeholder
+        }
+        dateMap.get(point.date)![s.exercise] = point.weight;
+      }
+    }
+
+    // Sort by date and format
+    return Array.from(dateMap.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([date, values]) => ({
+        date: formatDate(date),
+        ...values,
+      }));
+  }, [weightSeries, selectedExercise]);
+
+  const weightChartSeries = useMemo(() => {
+    const series = selectedExercise
+      ? weightSeries.filter((s) => s.exercise === selectedExercise)
+      : weightSeries;
+    return series.map((s, i) => ({
+      name: s.exercise,
+      color: COLORS[i % COLORS.length],
+    }));
+  }, [weightSeries, selectedExercise]);
 
   if (isLoading) return <Loader />;
 
@@ -42,19 +98,23 @@ export function Dashboard() {
 
   const handleStartWorkout = async () => {
     if (data?.today_session) {
-      navigate(`/workout/${data.today_session.id}`);
+      navigate(`/workout/${data.today_session.id}/guided`);
     } else {
       try {
         const result = await generateSession({
           generateSessionRequestRequest: {},
         }).unwrap();
-        navigate(`/workout/${result.id}`);
+        navigate(`/workout/${result.id}/guided`);
       } catch {
-        // If no plan or no exercises today, navigate to workout page anyway
         navigate('/workout');
       }
     }
   };
+
+  const formattedVolume = volumeData.map((v) => ({
+    date: formatDate(v.date),
+    Volume: v.volume,
+  }));
 
   return (
     <Stack>
@@ -111,13 +171,68 @@ export function Dashboard() {
         </Button>
       </Card>
 
-      {/* Stats */}
-      <SimpleGrid cols={2}>
-        <StatCard label="Total Sessions" value={data?.total_sessions ?? 0} />
-        <StatCard label="Completed" value={data?.completed_sessions ?? 0} />
-        <StatCard label="Ladders" value={data?.total_ladders ?? 0} />
-        <StatCard label="Achievements" value={data?.achieved_nodes ?? 0} />
-      </SimpleGrid>
+      {/* Volume per session chart */}
+      {formattedVolume.length > 1 && (
+        <Card withBorder p="md">
+          <Text fw={600} mb="sm">Session Volume</Text>
+          <Text size="xs" c="dimmed" mb="md">Total weight moved per session (reps x kg)</Text>
+          <BarChart
+            h={200}
+            data={formattedVolume}
+            dataKey="date"
+            series={[{ name: 'Volume', color: 'orange' }]}
+            tickLine="y"
+            gridAxis="y"
+          />
+        </Card>
+      )}
+
+      {/* Weight progression per exercise */}
+      {weightChartSeries.length > 0 && weightChartData.length > 0 && (
+        <Card withBorder p="md">
+          <Group justify="space-between" mb="sm">
+            <div>
+              <Text fw={600}>Weight Progression</Text>
+              <Text size="xs" c="dimmed">Max working weight per session (kg)</Text>
+            </div>
+            {exerciseNames.length > 1 && (
+              <Select
+                size="xs"
+                placeholder="All exercises"
+                clearable
+                value={selectedExercise}
+                onChange={setSelectedExercise}
+                data={exerciseNames}
+                w={180}
+              />
+            )}
+          </Group>
+          <LineChart
+            h={200}
+            data={weightChartData}
+            dataKey="date"
+            series={weightChartSeries}
+            curveType="monotone"
+            connectNulls
+            tickLine="y"
+            gridAxis="y"
+          />
+        </Card>
+      )}
+
+      {/* Fallback if no chart data yet */}
+      {formattedVolume.length <= 1 && weightChartSeries.length === 0 && (
+        <Card withBorder p="md">
+          <Text c="dimmed" ta="center" size="sm">
+            Complete a few workouts to see your progress charts here
+          </Text>
+        </Card>
+      )}
     </Stack>
   );
+}
+
+function formatDate(iso: string): string {
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
 }

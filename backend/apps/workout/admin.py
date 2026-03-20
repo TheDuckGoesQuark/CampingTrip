@@ -6,9 +6,11 @@ from .models import (
     ExerciseSet,
     Ladder,
     LadderNode,
+    MuscleGroup,
     PlanSlot,
     SessionExercise,
     UserNodeProgress,
+    WarmUpExercise,
     WeeklyPlan,
     WorkoutSession,
     WorkoutUser,
@@ -21,11 +23,25 @@ class WorkoutUserAdmin(admin.ModelAdmin):
     raw_id_fields = ['user']
 
 
+@admin.register(MuscleGroup)
+class MuscleGroupAdmin(admin.ModelAdmin):
+    list_display = ['name']
+    search_fields = ['name']
+
+
 @admin.register(Exercise)
 class ExerciseAdmin(admin.ModelAdmin):
     list_display = ['name', 'owner', 'created_at']
     search_fields = ['name']
     raw_id_fields = ['owner']
+    filter_horizontal = ['muscle_groups']
+
+
+@admin.register(WarmUpExercise)
+class WarmUpExerciseAdmin(admin.ModelAdmin):
+    list_display = ['name', 'duration_seconds']
+    search_fields = ['name']
+    filter_horizontal = ['muscle_groups']
 
 
 @admin.register(Ladder)
@@ -94,7 +110,8 @@ class ExerciseSetInline(admin.TabularInline):
 
 @admin.register(SessionExercise)
 class SessionExerciseAdmin(admin.ModelAdmin):
-    list_display = ['exercise', 'session', 'order']
+    list_display = ['exercise', 'session', 'order', 'is_warmup']
+    list_filter = ['is_warmup']
     raw_id_fields = ['session', 'exercise', 'ladder_node']
     inlines = [ExerciseSetInline]
 

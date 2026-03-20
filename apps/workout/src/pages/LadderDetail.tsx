@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Title,
@@ -31,6 +31,9 @@ import {
   useWorkoutLadderNodesDestroyMutation,
   useWorkoutLadderNodesCriteriaCreateMutation,
   useWorkoutExercisesListQuery,
+  useWorkoutProgressListQuery,
+  useWorkoutProgressCreateMutation,
+  useWorkoutProgressPartialUpdateMutation,
   type LadderNodeRead,
   type CriterionTypeEnum,
 } from '../api/generated-api';
@@ -122,9 +125,12 @@ export function LadderDetail() {
     { skip: !id }
   );
   const { data: exercisesData } = useWorkoutExercisesListQuery({});
+  const { data: progressList } = useWorkoutProgressListQuery({});
   const [createNode] = useWorkoutLadderNodesCreateMutation();
   const [deleteNode] = useWorkoutLadderNodesDestroyMutation();
   const [createCriterion] = useWorkoutLadderNodesCriteriaCreateMutation();
+  const [createProgress] = useWorkoutProgressCreateMutation();
+  const [updateProgress] = useWorkoutProgressPartialUpdateMutation();
 
   const [addingNode, setAddingNode] = useState(false);
   const [nodeExerciseId, setNodeExerciseId] = useState<string | null>(null);
@@ -134,6 +140,37 @@ export function LadderDetail() {
   const [addingCriterion, setAddingCriterion] = useState<number | null>(null);
   const [criterionType, setCriterionType] = useState<string | null>(null);
   const [criterionParams, setCriterionParams] = useState<Record<string, number>>({});
+
+  // Map node ID → UserNodeProgress record (for working weight)
+  const progressRecordMap = useMemo(() => {
+    const map = new Map<number, { id: number; working_weight: string | null }>();
+    if (progressList?.results) {
+      for (const p of progressList.results) {
+        if (p.ladder_node != null && p.id != null) {
+          map.set(p.ladder_node, { id: p.id, working_weight: p.working_weight ?? null });
+        }
+      }
+    }
+    return map;
+  }, [progressList]);
+
+  const handleSaveWeight = useCallback(async (nodeId: number, weight: number | '') => {
+    const weightStr = weight === '' ? null : String(weight);
+    const existing = progressRecordMap.get(nodeId);
+    if (existing) {
+      await updateProgress({
+        id: String(existing.id),
+        patchedUserNodeProgressRequest: { working_weight: weightStr },
+      });
+    } else {
+      await createProgress({
+        userNodeProgressRequest: {
+          ladder_node_id: nodeId,
+          working_weight: weightStr,
+        },
+      });
+    }
+  }, [progressRecordMap, updateProgress, createProgress]);
 
   const progressMap = useMemo(() => {
     const map = new Map<number, NodeProgressInfo>();
@@ -454,6 +491,23 @@ export function LadderDetail() {
                         )}
                       </div>
                       <Group gap="xs">
+                        <NumberInput
+                          size="xs"
+                          placeholder="kg"
+                          label="Working wt"
+                          w={90}
+                          decimalScale={1}
+                          min={0}
+                          value={
+                            progressRecordMap.get(node.id!)?.working_weight
+                              ? Number(progressRecordMap.get(node.id!)!.working_weight)
+                              : ''
+                          }
+                          onBlur={(e) => {
+                            const val = e.currentTarget.value;
+                            handleSaveWeight(node.id!, val ? Number(val) : '');
+                          }}
+                        />
                         <Button
                           size="xs"
                           variant="light"

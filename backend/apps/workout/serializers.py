@@ -58,6 +58,7 @@ class LadderNodeSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'exercise', 'exercise_id', 'level',
             'prerequisites', 'prerequisite_ids', 'criteria',
+            'warmup_sets_count', 'warmup_start_pct',
             'created_at', 'updated_at',
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
@@ -90,7 +91,7 @@ class UserNodeProgressSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserNodeProgress
-        fields = ['id', 'ladder_node', 'ladder_node_id', 'achieved', 'achieved_at', 'updated_at']
+        fields = ['id', 'ladder_node', 'ladder_node_id', 'achieved', 'achieved_at', 'working_weight', 'updated_at']
         read_only_fields = ['id', 'ladder_node', 'updated_at']
 
 
@@ -152,7 +153,7 @@ class ExerciseSetSerializer(serializers.ModelSerializer):
     class Meta:
         model = ExerciseSet
         fields = [
-            'id', 'set_number', 'type', 'value',
+            'id', 'set_number', 'is_warmup_set', 'type', 'value',
             'completed', 'completed_at', 'rest_seconds', 'updated_at',
         ]
         read_only_fields = ['id', 'updated_at']
@@ -166,9 +167,10 @@ class SessionExerciseSerializer(serializers.ModelSerializer):
         model = SessionExercise
         fields = [
             'id', 'exercise', 'exercise_name', 'ladder_node',
-            'order', 'sets', 'updated_at',
+            'order', 'is_warmup', 'warmup_duration_seconds',
+            'sets', 'updated_at',
         ]
-        read_only_fields = ['id', 'updated_at']
+        read_only_fields = ['id', 'is_warmup', 'warmup_duration_seconds', 'updated_at']
 
 
 class WorkoutSessionListSerializer(serializers.ModelSerializer):
@@ -215,14 +217,43 @@ class WorkoutSessionDetailSerializer(serializers.ModelSerializer):
         instance.save()
 
         if exercises_data is not None:
-            instance.exercises.all().delete()
+            # Build a lookup of existing exercises by (exercise_id, order)
+            existing_map = {}
+            for se in instance.exercises.all():
+                existing_map[(se.exercise_id, se.order)] = se
+
+            seen_ids = set()
             for exercise_data in exercises_data:
                 sets_data = exercise_data.pop('sets', [])
-                session_exercise = SessionExercise.objects.create(
-                    session=instance, **exercise_data
-                )
-                for set_data in sets_data:
-                    ExerciseSet.objects.create(
-                        session_exercise=session_exercise, **set_data
+                # exercise field is deserialized to a model instance by DRF
+                ex = exercise_data.get('exercise')
+                ex_id = ex.pk if hasattr(ex, 'pk') else ex
+                key = (ex_id, exercise_data.get('order'))
+                existing_se = existing_map.get(key)
+
+                if existing_se:
+                    # Update existing exercise — preserves is_warmup, warmup_duration_seconds
+                    for attr, value in exercise_data.items():
+                        if attr not in ('is_warmup', 'warmup_duration_seconds'):
+                            setattr(existing_se, attr, value)
+                    existing_se.save()
+                    # Replace sets
+                    existing_se.sets.all().delete()
+                    for set_data in sets_data:
+                        ExerciseSet.objects.create(
+                            session_exercise=existing_se, **set_data
+                        )
+                    seen_ids.add(existing_se.id)
+                else:
+                    session_exercise = SessionExercise.objects.create(
+                        session=instance, **exercise_data
                     )
+                    for set_data in sets_data:
+                        ExerciseSet.objects.create(
+                            session_exercise=session_exercise, **set_data
+                        )
+                    seen_ids.add(session_exercise.id)
+
+            # Remove exercises no longer in payload
+            instance.exercises.exclude(id__in=seen_ids).delete()
         return instance

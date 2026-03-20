@@ -1,10 +1,10 @@
-import { Stack, Title, Text, Card, Alert } from '@mantine/core';
+import { Stack, Title, Text, Card, Alert, Button } from '@mantine/core';
 import { GoogleLogin as GoogleLoginButton, CredentialResponse } from '@react-oauth/google';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { setCredentials } from '../store/authSlice';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8002/';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8003/';
 
 export function Login() {
   const dispatch = useDispatch();
@@ -64,6 +64,29 @@ export function Login() {
             size="large"
             width="280"
           />
+          {import.meta.env.DEV && (
+            <Button
+              variant="light"
+              color="gray"
+              fullWidth
+              onClick={async () => {
+                setError(null);
+                try {
+                  const res = await fetch(`${API_URL}api/auth/dev-login/`);
+                  if (!res.ok) {
+                    setError('Dev login failed');
+                    return;
+                  }
+                  const data = await res.json();
+                  dispatch(setCredentials({ token: data.key, user: data.user }));
+                } catch {
+                  setError('Network error — could not reach the server');
+                }
+              }}
+            >
+              Dev Login
+            </Button>
+          )}
         </Stack>
       </Card>
     </Stack>

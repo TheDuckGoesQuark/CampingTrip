@@ -18,12 +18,13 @@ def evaluate_criterion(criterion: Criterion, workout_user: WorkoutUser) -> bool:
     node = criterion.ladder_node
     exercise = node.exercise
 
-    # Get all completed sets for this exercise from completed sessions
+    # Get all completed working sets (exclude warm-up sets) from completed sessions
     sets = ExerciseSet.objects.filter(
         session_exercise__exercise=exercise,
         session_exercise__session__user=workout_user,
         session_exercise__session__status='completed',
         completed=True,
+        is_warmup_set=False,
     ).select_related('session_exercise__session')
 
     if criterion.type == CriterionType.MIN_REPS_SETS:

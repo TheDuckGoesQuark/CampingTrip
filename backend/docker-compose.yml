@@ -36,14 +36,14 @@ services:
       - static_volume:/home/app/static
       - media_volume:/home/app/media
     ports:
-      - "8002:8000"
+      - "8003:8000"
     environment:
       - DEBUG=1
       - SECRET_KEY=django-insecure-simple-key-for-development-only
       - DATABASE_URL=postgresql://postgres:postgres_password@db:5432/campsite
       - REDIS_URL=redis://redis:6379/0
       - ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0
-      - CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173
+      - CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173,http://localhost:5174,http://localhost:5175
     command: >
       sh -c "python manage.py migrate --noinput && python manage.py runserver 0.0.0.0:8000"
     depends_on:

@@ -4,6 +4,53 @@ info:
   version: 1.0.0
   description: API for jordanscamp.site
 paths:
+  /api/auth/google/:
+    post:
+      operationId: auth_google_create
+      description: |-
+        class used for social authentications
+        example usage for facebook with access_token
+        -------------
+        from allauth.socialaccount.providers.facebook.views import FacebookOAuth2Adapter
+
+        class FacebookLogin(SocialLoginView):
+            adapter_class = FacebookOAuth2Adapter
+        -------------
+
+        example usage for facebook with code
+
+        -------------
+        from allauth.socialaccount.providers.facebook.views import FacebookOAuth2Adapter
+        from allauth.socialaccount.providers.oauth2.client import OAuth2Client
+
+        class FacebookLogin(SocialLoginView):
+            adapter_class = FacebookOAuth2Adapter
+            client_class = OAuth2Client
+            callback_url = 'localhost:8000'
+        -------------
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SocialLoginRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SocialLoginRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SocialLoginRequest'
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SocialLogin'
+          description: ''
   /api/auth/login/:
     post:
       operationId: auth_login_create
@@ -366,6 +413,21 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/DashboardResponse'
+          description: ''
+  /api/workout/dashboard/charts/:
+    get:
+      operationId: workout_dashboard_charts_retrieve
+      description: Time-series data for dashboard charts.
+      tags:
+      - workout
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChartDataResponse'
           description: ''
   /api/workout/exercises/:
     get:
@@ -1352,6 +1414,22 @@ paths:
           description: ''
 components:
   schemas:
+    ChartDataResponse:
+      type: object
+      properties:
+        volume_per_session:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+        weight_per_exercise:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+      required:
+      - volume_per_session
+      - weight_per_exercise
     CompleteSessionResponse:
       type: object
       properties:
@@ -1493,6 +1571,8 @@ components:
           type: integer
           maximum: 2147483647
           minimum: 0
+        is_warmup_set:
+          type: boolean
         type:
           $ref: '#/components/schemas/ExerciseSetTypeEnum'
         value:
@@ -1522,6 +1602,8 @@ components:
           type: integer
           maximum: 2147483647
           minimum: 0
+        is_warmup_set:
+          type: boolean
         type:
           $ref: '#/components/schemas/ExerciseSetTypeEnum'
         value:
@@ -1633,6 +1715,16 @@ components:
           items:
             $ref: '#/components/schemas/Criterion'
           readOnly: true
+        warmup_sets_count:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Number of warm-up sets before working sets (0 = none)
+        warmup_start_pct:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Starting weight percentage for warm-up sets (e.g. 20 = 20%)
         created_at:
           type: string
           format: date-time
@@ -1664,6 +1756,16 @@ components:
             type: integer
             writeOnly: true
           writeOnly: true
+        warmup_sets_count:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Number of warm-up sets before working sets (0 = none)
+        warmup_start_pct:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Starting weight percentage for warm-up sets (e.g. 20 = 20%)
       required:
       - exercise_id
       - level
@@ -1926,6 +2028,16 @@ components:
             type: integer
             writeOnly: true
           writeOnly: true
+        warmup_sets_count:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Number of warm-up sets before working sets (0 = none)
+        warmup_start_pct:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Starting weight percentage for warm-up sets (e.g. 20 = 20%)
     PatchedUserDetailsRequest:
       type: object
       description: User model w/o password
@@ -1955,6 +2067,13 @@ components:
           type: string
           format: date-time
           nullable: true
+        working_weight:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,5}(?:\.\d{0,1})?$
+          nullable: true
+          description: Current working weight in kg. Set during onboarding, updated
+            after sessions.
     PatchedWeeklyPlanDetailRequest:
       type: object
       properties:
@@ -2102,6 +2221,13 @@ components:
           type: integer
           maximum: 2147483647
           minimum: 0
+        is_warmup:
+          type: boolean
+          readOnly: true
+        warmup_duration_seconds:
+          type: integer
+          readOnly: true
+          nullable: true
         sets:
           type: array
           items:
@@ -2134,6 +2260,24 @@ components:
       - exercise
       - order
       - sets
+    SocialLogin:
+      type: object
+      properties:
+        access_token:
+          type: string
+        code:
+          type: string
+        id_token:
+          type: string
+    SocialLoginRequest:
+      type: object
+      properties:
+        access_token:
+          type: string
+        code:
+          type: string
+        id_token:
+          type: string
     StatusEnum:
       enum:
       - planned
@@ -2215,6 +2359,13 @@ components:
           type: string
           format: date-time
           nullable: true
+        working_weight:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,5}(?:\.\d{0,1})?$
+          nullable: true
+          description: Current working weight in kg. Set during onboarding, updated
+            after sessions.
         updated_at:
           type: string
           format: date-time
@@ -2231,6 +2382,13 @@ components:
           type: string
           format: date-time
           nullable: true
+        working_weight:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,5}(?:\.\d{0,1})?$
+          nullable: true
+          description: Current working weight in kg. Set during onboarding, updated
+            after sessions.
       required:
       - ladder_node_id
     VerifyEmailRequest:

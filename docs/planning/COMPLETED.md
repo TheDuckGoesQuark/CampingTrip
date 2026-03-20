@@ -4,6 +4,127 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## Workout tracker — guided workout UX: progress bar, postpone, dashboard charts
+
+**Date**: 2026-03-20
+
+**What was done**:
+
+Frontend — Guided Workout (`GuidedWorkout.tsx`):
+- **Progress bar**: workout-spanning progress indicator at top of guided flow showing percentage complete, current exercise label, and "Next: {exercise}" preview. Tracks warm-ups done + sets completed across all exercises.
+- **Postpone button**: "Postpone — someone's using this" button on exercise screen. Swaps current exercise with the next one in the queue (not move-to-end). Only shown when there's a next exercise available. Resets set index on swap.
+
+Frontend — Dashboard (`Dashboard.tsx`):
+- Replaced boring stat cards with two progress charts using `@mantine/charts` (Recharts wrapper)
+- **Session Volume bar chart**: orange bars showing total weight moved per session (reps x kg)
+- **Weight Progression line chart**: multi-series line chart with per-exercise color coding, exercise selector dropdown, monotone curves
+- `formatDate` helper for readable date labels (e.g. "20 Mar")
+- Fallback message when no chart data yet
+
+Backend — Dashboard charts endpoint (`views.py`):
+- Added `GET /api/workout/dashboard/charts/` action on `DashboardView`
+- `volume_per_session`: sum of (reps * weight) for completed working sets per session
+- `weight_per_exercise`: max working weight per exercise per completed session
+- OpenAPI schema regenerated, RTK Query hooks regenerated (`useWorkoutDashboardChartsRetrieveQuery`)
+
+Infrastructure:
+- Added `@mantine/charts` and `recharts@2` dependencies
+- Imported `@mantine/charts/styles.css` in `main.tsx`
+- Fixed stale RTK Query cache bug: removed `baseApi.reducerPath` from redux-persist whitelist (API cache was persisted in IndexedDB, causing new endpoints to get stuck in pending state)
+
+**Key decisions**:
+- Postpone swaps with next exercise (not move-to-end) — simpler, predictable behavior per user preference
+- Charts use `@mantine/charts` (Mantine's Recharts wrapper) for consistency with design system
+- API cache no longer persisted in IndexedDB — it refetches on mount anyway, and stale persisted state was causing new query endpoints to break
+- Volume chart uses bar chart (good for comparing days), weight progression uses line chart (good for seeing trends/plateaus)
+
+**Deferred**:
+- Dashboard date range filtering → Phase 4
+- Better handling of multiple sessions on the same date → Phase 4
+
+---
+
+## Workout tracker — guided workout flow with tailored warm-ups
+
+**Date**: 2026-03-20
+
+**What was done**:
+
+Backend:
+- Added `MuscleGroup` model (9 groups: lats, biceps, chest, triceps, shoulders, forearms, core, legs, general)
+- Added `WarmUpExercise` model with M2M to `MuscleGroup` and `duration_seconds` field
+- Added `muscle_groups` M2M field to `Exercise` model
+- Added `is_warmup` and `warmup_duration_seconds` fields to `SessionExercise`
+- Created `warmups.py` — warm-up selection algorithm: collects muscle groups from today's exercises, queries `WarmUpExercise` records targeting those groups, annotates by coverage count, returns up to 5
+- Updated session `generate` action to call `select_warmups()` and insert warm-up `SessionExercise` records before main exercises
+- Updated `complete` action to filter `is_warmup=False` for progression evaluation
+- Seeded 12 warm-up exercises (Arm Circles, Shoulder Dislocates, Dead Hang, Scapular Pull-ups, Cat-Cow Stretch, Inchworms, Downward Dog, Wrist Circles, Push-up Plus, Leg Swings, Hip Circles, Light Jogging) with muscle group mappings
+- Assigned muscle groups to all existing seeded exercises
+- Updated `copy_defaults_to_user()` to copy muscle group assignments
+
+Frontend:
+- **Audio module** (`audio/audioContext.ts`, `audio/sounds.ts`) — Web Audio API singleton with 4 sound functions: `playCountdownBeep` (880Hz), `playGoSound` (880→1320Hz ascending), `playTimerWarning` (660Hz gentle), `playCompleteSound` (two-tone chime)
+- **Timer hook** (`hooks/useTimer.ts`) — countdown timer with audio integration, plays warning beep in last 5 seconds, returns `{ remaining, isActive, progress, start, pause, skip }`
+- **GuidedWorkout page** (`pages/GuidedWorkout.tsx`) — full-screen overlay at `/workout/:id/guided` with state machine via `useReducer`:
+  - **Countdown phase**: 3, 2, 1, GO! with audio beeps
+  - **Warm-up phase**: exercise name + RingProgress timer, auto-transitions between warm-ups, skip button
+  - **Exercise phase**: set-by-set logging with typed inputs (reps/weight, reps only, duration, distance), type selector, "Log Set" saves via PATCH
+  - **Rest phase**: RingProgress countdown with "Skip Rest" button, shows next exercise name
+  - **Complete phase**: summary with completion chime
+- Dashboard `handleStartWorkout` now navigates to `/workout/:id/guided`
+- "Exit to Log View" button on guided flow navigates to `/workout/:id` (unguided LogWorkout)
+- Both modes available: guided interactive mode for live workouts, log mode for editing data after the fact
+
+**Key decisions**:
+- Muscle groups modelled as separate model (not enum) for extensibility
+- Warm-up selection uses annotation/ordering rather than manual scoring — leverages Django ORM for efficient coverage-based ranking
+- Guided workout uses `useReducer` for phase transitions + `useState` for exercise/set indices — reducer handles phase logic, local state handles mutable exercise data
+- Audio uses Web Audio API oscillators (no audio files) for small bundle size and instant playback
+- GuidedWorkout is a fixed-position overlay (zIndex 1000) that covers the AppShell, rather than a separate route layout
+
+**Deferred**:
+- Exercise demo videos/images in guided workout screens → Phase 4
+- Warm-up duration customisation per user → Future
+
+---
+
+## Workout tracker — prefilled sets, warm-up sets within exercises, working weight onboarding
+
+**Date**: 2026-03-20
+
+**What was done**:
+
+Backend:
+- Added `warmup_sets_count` and `warmup_start_pct` fields to `LadderNode` — configures how many warm-up sets before working sets and the starting weight percentage
+- Added `working_weight` (DecimalField) to `UserNodeProgress` — tracks the user's current working weight for weighted exercises
+- Added `is_warmup_set` (BooleanField) to `ExerciseSet` — distinguishes warm-up sets from working sets
+- Created `set_generation.py` — generates prefilled ExerciseSet records during session generation:
+  - Extracts target reps/sets from ladder criteria
+  - Generates warm-up sets with exponential weight curve (`start_pct * (end_pct/start_pct)^(i/(n-1))`) and descending rep curve (~1.8x working reps down to working reps)
+  - Rounds weights to nearest 2.5kg with 2.5kg minimum
+  - Generates working sets with prefilled reps and working weight
+- Updated session `generate` action to call `generate_sets_for_exercise()` for each main exercise
+- Updated `complete` action to track max weight from completed working sets and update `UserNodeProgress.working_weight`
+- Updated progression engine to exclude warm-up sets (`is_warmup_set=False` filter)
+- Fixed session update serializer to preserve `is_warmup` and `warmup_duration_seconds` on PATCH — matches existing exercises by (exercise_id, order) key instead of deleting and recreating
+- Seed data: weighted exercises (Weighted Pull-ups, Weighted Chin-ups, Weighted Dips, Weighted Rows) get 2-3 warm-up sets; bodyweight exercises get 0
+
+Frontend:
+- GuidedWorkout: warm-up sets show "Warm-up Set N" badge (gray) instead of working set counter; type selector hidden for warm-up sets; `is_warmup_set` propagated in all save/complete payloads
+- Ladder detail page: added NumberInput for "Working wt" (kg) on each node card, saves on blur via create/patch UserNodeProgress
+
+**Key decisions**:
+- Warm-up set configuration lives on LadderNode (not a separate model) — simple, per-exercise control
+- Exponential weight curve (not linear) gives more time at lighter weights, matching standard gym warm-up practice
+- Working weight is set during onboarding on ladder detail page, then auto-updated from max logged weight after session completion
+- Session update serializer matches exercises by (exercise_id, order) composite key to preserve server-generated read-only fields
+
+**Deferred**:
+- Full onboarding flow for initial working weight → Future
+- Warm-up set reps curve customisation → Future
+
+---
+
 ## Digital Twins — interactive scheduling simulator
 
 **Date**: 2026-03-19

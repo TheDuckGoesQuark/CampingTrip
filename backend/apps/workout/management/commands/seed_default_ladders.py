@@ -1,5 +1,5 @@
 """
-Seed default ladders, exercises, and weekly plan from Jordan's Notion data.
+Seed default ladders, exercises, warm-ups, and weekly plan from Jordan's Notion data.
 
 Creates a "defaults" user who owns the canonical ladder/exercise data.
 The signal in signals.py copies these to each new user on signup.
@@ -18,7 +18,9 @@ from apps.workout.models import (
     Exercise,
     Ladder,
     LadderNode,
+    MuscleGroup,
     PlanSlot,
+    WarmUpExercise,
     WeeklyPlan,
     WorkoutUser,
 )
@@ -30,41 +32,43 @@ DEFAULTS_USERNAME = "_workout_defaults"
 # Levels go from 1 (easiest) upward. Each node's prerequisite is the previous level.
 
 LADDERS = {
+    # Each node: (exercise_name, level, criterion_type, criterion_params, warmup_sets_count)
+    # warmup_sets_count: 0 for bodyweight, 2-3 for weighted exercises
     "Pull Ladder": [
-        ("Jumping Pull-ups", 1, "min_reps_sets", {"sets": 4, "reps": 10}),
-        ("Band-Assisted Pull-ups", 2, "min_reps_sets", {"sets": 4, "reps": 10}),
-        ("Pull-ups", 3, "min_reps_sets", {"sets": 4, "reps": 10}),
-        ("Weighted Pull-ups (5kg)", 4, "min_reps_sets", {"sets": 4, "reps": 8}),
-        ("Weighted Pull-ups (10kg)", 5, "min_reps_sets", {"sets": 4, "reps": 8}),
-        ("Archer Pull-ups", 6, "min_reps_sets", {"sets": 4, "reps": 6}),
-        ("One-Arm Negatives", 7, "min_reps_sets", {"sets": 4, "reps": 4}),
+        ("Jumping Pull-ups", 1, "min_reps_sets", {"sets": 4, "reps": 10}, 0),
+        ("Band-Assisted Pull-ups", 2, "min_reps_sets", {"sets": 4, "reps": 10}, 0),
+        ("Pull-ups", 3, "min_reps_sets", {"sets": 4, "reps": 10}, 0),
+        ("Weighted Pull-ups (5kg)", 4, "min_reps_sets", {"sets": 4, "reps": 8}, 3),
+        ("Weighted Pull-ups (10kg)", 5, "min_reps_sets", {"sets": 4, "reps": 8}, 3),
+        ("Archer Pull-ups", 6, "min_reps_sets", {"sets": 4, "reps": 6}, 0),
+        ("One-Arm Negatives", 7, "min_reps_sets", {"sets": 4, "reps": 4}, 0),
     ],
     "Chin-up Ladder": [
-        ("Chin-ups", 1, "min_reps_sets", {"sets": 4, "reps": 10}),
-        ("Weighted Chin-ups (5kg)", 2, "min_reps_sets", {"sets": 4, "reps": 8}),
-        ("Weighted Chin-ups (10kg)", 3, "min_reps_sets", {"sets": 4, "reps": 8}),
-        ("Close-Grip Weighted", 4, "min_reps_sets", {"sets": 4, "reps": 8}),
+        ("Chin-ups", 1, "min_reps_sets", {"sets": 4, "reps": 10}, 0),
+        ("Weighted Chin-ups (5kg)", 2, "min_reps_sets", {"sets": 4, "reps": 8}, 3),
+        ("Weighted Chin-ups (10kg)", 3, "min_reps_sets", {"sets": 4, "reps": 8}, 3),
+        ("Close-Grip Weighted", 4, "min_reps_sets", {"sets": 4, "reps": 8}, 3),
     ],
     "Push Ladder": [
-        ("Push-ups", 1, "min_reps_sets", {"sets": 4, "reps": 15}),
-        ("Close-Grip Push-ups", 2, "min_reps_sets", {"sets": 4, "reps": 12}),
-        ("Archer Push-ups", 3, "min_reps_sets", {"sets": 4, "reps": 8}),
-        ("Pike Push-ups", 4, "min_reps_sets", {"sets": 4, "reps": 10}),
-        ("Bar Dips", 5, "min_reps_sets", {"sets": 4, "reps": 12}),
-        ("Weighted Dips (5kg)", 6, "min_reps_sets", {"sets": 4, "reps": 8}),
-        ("Pseudo-Planche Push-ups", 7, "min_reps_sets", {"sets": 4, "reps": 6}),
+        ("Push-ups", 1, "min_reps_sets", {"sets": 4, "reps": 15}, 0),
+        ("Close-Grip Push-ups", 2, "min_reps_sets", {"sets": 4, "reps": 12}, 0),
+        ("Archer Push-ups", 3, "min_reps_sets", {"sets": 4, "reps": 8}, 0),
+        ("Pike Push-ups", 4, "min_reps_sets", {"sets": 4, "reps": 10}, 0),
+        ("Bar Dips", 5, "min_reps_sets", {"sets": 4, "reps": 12}, 0),
+        ("Weighted Dips (5kg)", 6, "min_reps_sets", {"sets": 4, "reps": 8}, 3),
+        ("Pseudo-Planche Push-ups", 7, "min_reps_sets", {"sets": 4, "reps": 6}, 0),
     ],
     "Row Ladder": [
-        ("Australian Rows", 1, "min_reps_sets", {"sets": 4, "reps": 10}),
-        ("Feet-Elevated Rows", 2, "min_reps_sets", {"sets": 4, "reps": 10}),
-        ("Weighted Rows (backpack)", 3, "min_reps_sets", {"sets": 4, "reps": 8}),
+        ("Australian Rows", 1, "min_reps_sets", {"sets": 4, "reps": 10}, 0),
+        ("Feet-Elevated Rows", 2, "min_reps_sets", {"sets": 4, "reps": 10}, 0),
+        ("Weighted Rows (backpack)", 3, "min_reps_sets", {"sets": 4, "reps": 8}, 2),
     ],
     "Carry Ladder": [
-        ("Farmer Carry (bodyweight pack)", 1, "min_duration", {"seconds": 1800}),
-        ("Farmer Carry (heavy)", 2, "min_duration", {"seconds": 1800}),
-        ("Zercher Carry (light)", 3, "min_duration", {"seconds": 1200}),
-        ("Zercher Carry (heavy)", 4, "min_duration", {"seconds": 1200}),
-        ("Zercher Carry + incline", 5, "min_duration", {"seconds": 1200}),
+        ("Farmer Carry (bodyweight pack)", 1, "min_duration", {"seconds": 1800}, 0),
+        ("Farmer Carry (heavy)", 2, "min_duration", {"seconds": 1800}, 0),
+        ("Zercher Carry (light)", 3, "min_duration", {"seconds": 1200}, 0),
+        ("Zercher Carry (heavy)", 4, "min_duration", {"seconds": 1200}, 0),
+        ("Zercher Carry + incline", 5, "min_duration", {"seconds": 1200}, 0),
     ],
 }
 
@@ -74,6 +78,66 @@ STANDALONE_EXERCISES = [
     "Yoga",
     "Swimming",
     "Parkrun 5k",
+]
+
+# --- Muscle group assignments ---
+# exercise name -> list of muscle group names
+
+EXERCISE_MUSCLE_GROUPS = {
+    # Pull ladder
+    "Jumping Pull-ups": ["lats", "biceps"],
+    "Band-Assisted Pull-ups": ["lats", "biceps"],
+    "Pull-ups": ["lats", "biceps"],
+    "Weighted Pull-ups (5kg)": ["lats", "biceps"],
+    "Weighted Pull-ups (10kg)": ["lats", "biceps"],
+    "Archer Pull-ups": ["lats", "biceps"],
+    "One-Arm Negatives": ["lats", "biceps"],
+    # Chin-up ladder
+    "Chin-ups": ["biceps", "lats"],
+    "Weighted Chin-ups (5kg)": ["biceps", "lats"],
+    "Weighted Chin-ups (10kg)": ["biceps", "lats"],
+    "Close-Grip Weighted": ["biceps", "lats"],
+    # Push ladder
+    "Push-ups": ["chest", "triceps"],
+    "Close-Grip Push-ups": ["triceps", "chest"],
+    "Archer Push-ups": ["chest", "triceps"],
+    "Pike Push-ups": ["shoulders", "triceps"],
+    "Bar Dips": ["chest", "triceps", "shoulders"],
+    "Weighted Dips (5kg)": ["chest", "triceps", "shoulders"],
+    "Pseudo-Planche Push-ups": ["shoulders", "chest", "triceps"],
+    # Row ladder
+    "Australian Rows": ["lats", "biceps"],
+    "Feet-Elevated Rows": ["lats", "biceps"],
+    "Weighted Rows (backpack)": ["lats", "biceps"],
+    # Carry ladder
+    "Farmer Carry (bodyweight pack)": ["forearms", "core"],
+    "Farmer Carry (heavy)": ["forearms", "core"],
+    "Zercher Carry (light)": ["forearms", "core", "biceps"],
+    "Zercher Carry (heavy)": ["forearms", "core", "biceps"],
+    "Zercher Carry + incline": ["forearms", "core", "biceps", "legs"],
+    # Standalone
+    "Running": ["legs"],
+    "Swimming": ["full_body"],
+    "Yoga": ["full_body"],
+    "Parkrun 5k": ["legs"],
+}
+
+# --- Warm-up exercises (global, not per-user) ---
+# (name, description, duration_seconds, [muscle_groups])
+
+WARMUP_EXERCISES = [
+    ("Arm Circles", "Forward and backward arm circles", 30, ["shoulders"]),
+    ("Shoulder Dislocates", "Band or stick overhead pass-throughs", 30, ["shoulders", "chest"]),
+    ("Scapular Pull-ups", "Dead hang, retract and depress scapulae", 30, ["lats"]),
+    ("Dead Hang", "Passive hang from bar, relax shoulders", 30, ["lats", "forearms"]),
+    ("Cat-Cow Stretch", "Alternate between cat and cow positions", 30, ["core"]),
+    ("Inchworms", "Walk hands out to plank, walk feet to hands", 30, ["core", "chest", "shoulders"]),
+    ("Downward Dog", "Hold downward-facing dog position", 30, ["shoulders", "lats"]),
+    ("Wrist Circles", "Rotate wrists in both directions", 20, ["forearms"]),
+    ("Push-up Plus", "Push-up position, protract and retract scapulae", 30, ["chest", "shoulders"]),
+    ("Leg Swings", "Forward/back and side-to-side leg swings", 30, ["legs"]),
+    ("Hip Circles", "Standing hip rotations, both directions", 30, ["legs", "core"]),
+    ("Light Jogging", "Easy jog in place", 45, ["legs"]),
 ]
 
 # Weekly plan from Notion
@@ -125,9 +189,26 @@ def clear_defaults(workout_user):
     workout_user.ladders.all().delete()
     workout_user.exercises.all().delete()
     workout_user.weekly_plans.all().delete()
+    WarmUpExercise.objects.all().delete()
+    MuscleGroup.objects.all().delete()
 
 
-def seed_ladders(workout_user):
+def seed_muscle_groups():
+    """Create muscle group records. Returns name->MuscleGroup dict."""
+    all_groups = set()
+    for groups in EXERCISE_MUSCLE_GROUPS.values():
+        all_groups.update(groups)
+    for _, _, _, groups in WARMUP_EXERCISES:
+        all_groups.update(groups)
+
+    mg_cache = {}
+    for name in sorted(all_groups):
+        mg, _ = MuscleGroup.objects.get_or_create(name=name)
+        mg_cache[name] = mg
+    return mg_cache
+
+
+def seed_ladders(workout_user, mg_cache):
     """Create exercises, ladders, nodes, and criteria from Notion data."""
     exercise_cache = {}
     ladder_cache = {}
@@ -137,18 +218,22 @@ def seed_ladders(workout_user):
         ladder_cache[ladder_name] = ladder
         prev_node = None
 
-        for exercise_name, level, crit_type, crit_params in nodes:
+        for exercise_name, level, crit_type, crit_params, warmup_sets in nodes:
             # Get or create the exercise
             if exercise_name not in exercise_cache:
                 exercise = Exercise.objects.create(
                     owner=workout_user, name=exercise_name
                 )
+                # Assign muscle groups
+                for mg_name in EXERCISE_MUSCLE_GROUPS.get(exercise_name, []):
+                    exercise.muscle_groups.add(mg_cache[mg_name])
                 exercise_cache[exercise_name] = exercise
 
             node = LadderNode.objects.create(
                 ladder=ladder,
                 exercise=exercise_cache[exercise_name],
                 level=level,
+                warmup_sets_count=warmup_sets,
             )
             if prev_node:
                 node.prerequisites.add(prev_node)
@@ -164,9 +249,33 @@ def seed_ladders(workout_user):
     for name in STANDALONE_EXERCISES:
         if name not in exercise_cache:
             exercise = Exercise.objects.create(owner=workout_user, name=name)
+            for mg_name in EXERCISE_MUSCLE_GROUPS.get(name, []):
+                exercise.muscle_groups.add(mg_cache[mg_name])
             exercise_cache[name] = exercise
 
+    # Create warm-up movements as regular exercises (for SessionExercise linking)
+    for wu_name, wu_desc, _, _ in WARMUP_EXERCISES:
+        if wu_name not in exercise_cache:
+            exercise = Exercise.objects.create(
+                owner=workout_user, name=wu_name, description=wu_desc,
+            )
+            # Warm-up exercises don't need muscle groups on the Exercise record;
+            # the WarmUpExercise model handles that mapping.
+            exercise_cache[wu_name] = exercise
+
     return exercise_cache, ladder_cache
+
+
+def seed_warmups(mg_cache):
+    """Create global WarmUpExercise records with muscle group mappings."""
+    for name, description, duration, groups in WARMUP_EXERCISES:
+        wu = WarmUpExercise.objects.create(
+            name=name,
+            description=description,
+            duration_seconds=duration,
+        )
+        for mg_name in groups:
+            wu.muscle_groups.add(mg_cache[mg_name])
 
 
 def seed_weekly_plan(workout_user, exercise_cache, ladder_cache):
@@ -203,13 +312,14 @@ def copy_defaults_to_user(workout_user):
     exercise_map = {}  # defaults exercise id -> new exercise
     ladder_map = {}  # defaults ladder id -> new ladder
 
-    # Copy exercises
-    for exercise in defaults_user.exercises.all():
+    # Copy exercises (including warm-up exercises)
+    for exercise in defaults_user.exercises.prefetch_related('muscle_groups'):
         new_exercise = Exercise.objects.create(
             owner=workout_user,
             name=exercise.name,
             description=exercise.description,
         )
+        new_exercise.muscle_groups.set(exercise.muscle_groups.all())
         exercise_map[exercise.id] = new_exercise
 
     # Copy ladders with nodes and criteria
@@ -228,6 +338,8 @@ def copy_defaults_to_user(workout_user):
                 ladder=new_ladder,
                 exercise=exercise_map[node.exercise_id],
                 level=node.level,
+                warmup_sets_count=node.warmup_sets_count,
+                warmup_start_pct=node.warmup_start_pct,
             )
             node_map[node.id] = new_node
 
@@ -263,7 +375,7 @@ def copy_defaults_to_user(workout_user):
 
 
 class Command(BaseCommand):
-    help = "Seed default ladders, exercises, and weekly plan from Jordan's Notion data"
+    help = "Seed default ladders, exercises, warm-ups, and weekly plan"
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -286,7 +398,9 @@ class Command(BaseCommand):
             )
             return
 
-        exercise_cache, ladder_cache = seed_ladders(workout_user)
+        mg_cache = seed_muscle_groups()
+        exercise_cache, ladder_cache = seed_ladders(workout_user, mg_cache)
+        seed_warmups(mg_cache)
         seed_weekly_plan(workout_user, exercise_cache, ladder_cache)
 
         total_exercises = Exercise.objects.filter(owner=workout_user).count()
@@ -295,8 +409,11 @@ class Command(BaseCommand):
         total_criteria = Criterion.objects.filter(
             ladder_node__ladder__owner=workout_user
         ).count()
+        total_warmups = WarmUpExercise.objects.count()
+        total_mgs = MuscleGroup.objects.count()
 
         self.stdout.write(self.style.SUCCESS(
             f"Seeded: {total_exercises} exercises, {total_ladders} ladders, "
-            f"{total_nodes} nodes, {total_criteria} criteria, 1 weekly plan"
+            f"{total_nodes} nodes, {total_criteria} criteria, "
+            f"{total_warmups} warm-ups, {total_mgs} muscle groups, 1 weekly plan"
         ))

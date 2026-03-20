@@ -5,6 +5,7 @@ import { PersistGate } from 'redux-persist/integration/react';
 import { MantineProvider } from '@mantine/core';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import '@mantine/core/styles.css';
+import '@mantine/charts/styles.css';
 
 import { store, persistor } from './store/store';
 import { theme } from './design-system';

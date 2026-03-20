@@ -6,6 +6,17 @@ const injectedRtkApi = api
   })
   .injectEndpoints({
     endpoints: (build) => ({
+      authGoogleCreate: build.mutation<
+        AuthGoogleCreateApiResponse,
+        AuthGoogleCreateApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/api/auth/google/`,
+          method: "POST",
+          body: queryArg.socialLoginRequest,
+        }),
+        invalidatesTags: ["auth"],
+      }),
       authLoginCreate: build.mutation<
         AuthLoginCreateApiResponse,
         AuthLoginCreateApiArg
@@ -124,6 +135,13 @@ const injectedRtkApi = api
         WorkoutDashboardListApiArg
       >({
         query: () => ({ url: `/api/workout/dashboard/` }),
+        providesTags: ["workout"],
+      }),
+      workoutDashboardChartsRetrieve: build.query<
+        WorkoutDashboardChartsRetrieveApiResponse,
+        WorkoutDashboardChartsRetrieveApiArg
+      >({
+        query: () => ({ url: `/api/workout/dashboard/charts/` }),
         providesTags: ["workout"],
       }),
       workoutExercisesList: build.query<
@@ -557,6 +575,10 @@ const injectedRtkApi = api
     overrideExisting: false,
   });
 export { injectedRtkApi as enhancedApi };
+export type AuthGoogleCreateApiResponse = /** status 200  */ SocialLogin;
+export type AuthGoogleCreateApiArg = {
+  socialLoginRequest: SocialLoginRequest;
+};
 export type AuthLoginCreateApiResponse = /** status 200  */ Token;
 export type AuthLoginCreateApiArg = {
   loginRequest: LoginRequest;
@@ -606,6 +628,9 @@ export type AuthUserPartialUpdateApiArg = {
 export type WorkoutDashboardListApiResponse =
   /** status 200  */ DashboardResponseRead[];
 export type WorkoutDashboardListApiArg = void;
+export type WorkoutDashboardChartsRetrieveApiResponse =
+  /** status 200  */ ChartDataResponse;
+export type WorkoutDashboardChartsRetrieveApiArg = void;
 export type WorkoutExercisesListApiResponse =
   /** status 200  */ PaginatedExerciseListRead;
 export type WorkoutExercisesListApiArg = {
@@ -823,6 +848,16 @@ export type WorkoutSessionsGenerateCreateApiResponse =
 export type WorkoutSessionsGenerateCreateApiArg = {
   generateSessionRequestRequest: GenerateSessionRequestRequest;
 };
+export type SocialLogin = {
+  access_token?: string;
+  code?: string;
+  id_token?: string;
+};
+export type SocialLoginRequest = {
+  access_token?: string;
+  code?: string;
+  id_token?: string;
+};
 export type Token = {
   key: string;
 };
@@ -899,6 +934,7 @@ export type ExerciseSetTypeEnum =
   | "distance";
 export type ExerciseSet = {
   set_number: number;
+  is_warmup_set?: boolean;
   type: ExerciseSetTypeEnum;
   /** Shape determined by type, e.g. {"reps": 10, "weight": 20} */
   value: any;
@@ -909,6 +945,7 @@ export type ExerciseSet = {
 export type ExerciseSetRead = {
   id?: number;
   set_number: number;
+  is_warmup_set?: boolean;
   type: ExerciseSetTypeEnum;
   /** Shape determined by type, e.g. {"reps": 10, "weight": 20} */
   value: any;
@@ -929,6 +966,8 @@ export type SessionExerciseRead = {
   exercise_name?: string;
   ladder_node?: number | null;
   order: number;
+  is_warmup?: boolean;
+  warmup_duration_seconds?: number | null;
   sets: ExerciseSetRead[];
   updated_at?: string;
 };
@@ -969,6 +1008,14 @@ export type DashboardResponseRead = {
     [key: string]: any;
   }[];
 };
+export type ChartDataResponse = {
+  volume_per_session: {
+    [key: string]: any;
+  }[];
+  weight_per_exercise: {
+    [key: string]: any;
+  }[];
+};
 export type Exercise = {
   name: string;
   description?: string;
@@ -1004,6 +1051,10 @@ export type LadderNode = {
   /** Tier in the tree (for display ordering) */
   level: number;
   prerequisites?: number[];
+  /** Number of warm-up sets before working sets (0 = none) */
+  warmup_sets_count?: number;
+  /** Starting weight percentage for warm-up sets (e.g. 20 = 20%) */
+  warmup_start_pct?: number;
 };
 export type CriterionTypeEnum =
   | "min_reps_sets"
@@ -1030,6 +1081,10 @@ export type LadderNodeRead = {
   level: number;
   prerequisites?: number[];
   criteria?: CriterionRead[];
+  /** Number of warm-up sets before working sets (0 = none) */
+  warmup_sets_count?: number;
+  /** Starting weight percentage for warm-up sets (e.g. 20 = 20%) */
+  warmup_start_pct?: number;
   created_at?: string;
   updated_at?: string;
 };
@@ -1049,6 +1104,10 @@ export type LadderNodeRequest = {
   /** Tier in the tree (for display ordering) */
   level: number;
   prerequisites?: number[];
+  /** Number of warm-up sets before working sets (0 = none) */
+  warmup_sets_count?: number;
+  /** Starting weight percentage for warm-up sets (e.g. 20 = 20%) */
+  warmup_start_pct?: number;
 };
 export type LadderNodeRequestWrite = {
   exercise_id: number;
@@ -1056,11 +1115,19 @@ export type LadderNodeRequestWrite = {
   level: number;
   prerequisites?: number[];
   prerequisite_ids?: number[];
+  /** Number of warm-up sets before working sets (0 = none) */
+  warmup_sets_count?: number;
+  /** Starting weight percentage for warm-up sets (e.g. 20 = 20%) */
+  warmup_start_pct?: number;
 };
 export type PatchedLadderNodeRequest = {
   /** Tier in the tree (for display ordering) */
   level?: number;
   prerequisites?: number[];
+  /** Number of warm-up sets before working sets (0 = none) */
+  warmup_sets_count?: number;
+  /** Starting weight percentage for warm-up sets (e.g. 20 = 20%) */
+  warmup_start_pct?: number;
 };
 export type PatchedLadderNodeRequestWrite = {
   exercise_id?: number;
@@ -1068,6 +1135,10 @@ export type PatchedLadderNodeRequestWrite = {
   level?: number;
   prerequisites?: number[];
   prerequisite_ids?: number[];
+  /** Number of warm-up sets before working sets (0 = none) */
+  warmup_sets_count?: number;
+  /** Starting weight percentage for warm-up sets (e.g. 20 = 20%) */
+  warmup_start_pct?: number;
 };
 export type NodeProgressResponse = {
   achieved: boolean;
@@ -1198,12 +1269,16 @@ export type PatchedWeeklyPlanDetailRequest = {
 export type UserNodeProgress = {
   achieved?: boolean;
   achieved_at?: string | null;
+  /** Current working weight in kg. Set during onboarding, updated after sessions. */
+  working_weight?: string | null;
 };
 export type UserNodeProgressRead = {
   id?: number;
   ladder_node?: number;
   achieved?: boolean;
   achieved_at?: string | null;
+  /** Current working weight in kg. Set during onboarding, updated after sessions. */
+  working_weight?: string | null;
   updated_at?: string;
 };
 export type PaginatedUserNodeProgressList = {
@@ -1221,20 +1296,28 @@ export type PaginatedUserNodeProgressListRead = {
 export type UserNodeProgressRequest = {
   achieved?: boolean;
   achieved_at?: string | null;
+  /** Current working weight in kg. Set during onboarding, updated after sessions. */
+  working_weight?: string | null;
 };
 export type UserNodeProgressRequestWrite = {
   ladder_node_id: number;
   achieved?: boolean;
   achieved_at?: string | null;
+  /** Current working weight in kg. Set during onboarding, updated after sessions. */
+  working_weight?: string | null;
 };
 export type PatchedUserNodeProgressRequest = {
   achieved?: boolean;
   achieved_at?: string | null;
+  /** Current working weight in kg. Set during onboarding, updated after sessions. */
+  working_weight?: string | null;
 };
 export type PatchedUserNodeProgressRequestWrite = {
   ladder_node_id?: number;
   achieved?: boolean;
   achieved_at?: string | null;
+  /** Current working weight in kg. Set during onboarding, updated after sessions. */
+  working_weight?: string | null;
 };
 export type WorkoutSessionList = {
   date: string;
@@ -1266,6 +1349,7 @@ export type PaginatedWorkoutSessionListListRead = {
 };
 export type ExerciseSetRequest = {
   set_number: number;
+  is_warmup_set?: boolean;
   type: ExerciseSetTypeEnum;
   /** Shape determined by type, e.g. {"reps": 10, "weight": 20} */
   value: any;
@@ -1309,6 +1393,7 @@ export type GenerateSessionRequestRequest = {
   date?: string;
 };
 export const {
+  useAuthGoogleCreateMutation,
   useAuthLoginCreateMutation,
   useAuthLogoutCreateMutation,
   useAuthPasswordChangeCreateMutation,
@@ -1321,6 +1406,7 @@ export const {
   useAuthUserUpdateMutation,
   useAuthUserPartialUpdateMutation,
   useWorkoutDashboardListQuery,
+  useWorkoutDashboardChartsRetrieveQuery,
   useWorkoutExercisesListQuery,
   useWorkoutExercisesCreateMutation,
   useWorkoutExercisesRetrieveQuery,

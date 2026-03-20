@@ -20,6 +20,19 @@ class WorkoutUser(models.Model):
         db_table = 'workout_user'
 
 
+class MuscleGroup(models.Model):
+    """Movement category for matching exercises to warm-ups."""
+
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        db_table = 'workout_muscle_group'
+        ordering = ['name']
+
+
 class Exercise(models.Model):
     """A movement/exercise. Minimal — just name and description."""
 
@@ -28,6 +41,9 @@ class Exercise(models.Model):
     )
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
+    muscle_groups = models.ManyToManyField(
+        MuscleGroup, blank=True, related_name='exercises',
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -36,6 +52,27 @@ class Exercise(models.Model):
 
     class Meta:
         db_table = 'workout_exercise'
+        ordering = ['name']
+
+
+class WarmUpExercise(models.Model):
+    """
+    Global warm-up template. Timer-based, mapped to muscle groups.
+    Used during session generation to select tailored warm-ups.
+    """
+
+    name = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    duration_seconds = models.PositiveIntegerField(default=30)
+    muscle_groups = models.ManyToManyField(
+        MuscleGroup, related_name='warmup_exercises',
+    )
+
+    def __str__(self):
+        return f"{self.name} ({self.duration_seconds}s)"
+
+    class Meta:
+        db_table = 'workout_warmup_exercise'
         ordering = ['name']
 
 
@@ -78,6 +115,14 @@ class LadderNode(models.Model):
     )
     prerequisites = models.ManyToManyField(
         'self', symmetrical=False, blank=True, related_name='unlocks'
+    )
+    warmup_sets_count = models.PositiveIntegerField(
+        default=0,
+        help_text='Number of warm-up sets before working sets (0 = none)',
+    )
+    warmup_start_pct = models.PositiveIntegerField(
+        default=20,
+        help_text='Starting weight percentage for warm-up sets (e.g. 20 = 20%)',
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -132,6 +177,10 @@ class UserNodeProgress(models.Model):
     )
     achieved = models.BooleanField(default=False)
     achieved_at = models.DateTimeField(null=True, blank=True)
+    working_weight = models.DecimalField(
+        max_digits=6, decimal_places=1, null=True, blank=True,
+        help_text='Current working weight in kg. Set during onboarding, updated after sessions.',
+    )
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
@@ -253,6 +302,8 @@ class SessionExercise(models.Model):
         related_name='session_exercises',
     )
     order = models.PositiveIntegerField()
+    is_warmup = models.BooleanField(default=False)
+    warmup_duration_seconds = models.PositiveIntegerField(null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
@@ -280,6 +331,7 @@ class ExerciseSet(models.Model):
         SessionExercise, on_delete=models.CASCADE, related_name='sets'
     )
     set_number = models.PositiveIntegerField()
+    is_warmup_set = models.BooleanField(default=False)
     type = models.CharField(max_length=30, choices=ExerciseSetType.choices)
     value = models.JSONField(
         help_text='Shape determined by type, e.g. {"reps": 10, "weight": 20}',
