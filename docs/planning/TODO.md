@@ -69,15 +69,13 @@ All planned and deferred work, organised by priority.
 - Sound changes when tent opens (rain gets louder, campfire crackle fades in)
 - Visual transition effect when opening tent (light spill, blur fade)
 
-### Digital Twins — scheduling algorithms visualization
+### Digital Twins — scheduling simulator polish & storytelling
 
-- Build simulation engine: FIFO, SJF, Priority, Round Robin, EDF algorithms
-- Task generator with configurable distribution, interruption rates, duration variance
-- Queue visualization with animated task flow (Framer Motion)
-- Interactive controls: algorithm selector, levers for all simulation parameters
-- Metrics panel: avg wait time, turnaround, throughput, stress level
-- Write scrollytelling narrative content for each algorithm section
-- Playback hook: play/pause/scrub through simulation timeline
+- Scrollytelling narrative content for the algorithm explanation cards
+- Phase 1 scroll-driven animation engine (keyframe interpolation, anchor system, task tokens) — see plan file
+- Easing curves for smoother scroll interpolation (Phase 2 in plan)
+- Wait time chart (avg wait time per project over time)
+- Per-project throughput breakdown chart
 
 ---
 

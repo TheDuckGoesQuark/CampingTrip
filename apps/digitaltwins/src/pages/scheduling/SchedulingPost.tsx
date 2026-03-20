@@ -2,6 +2,7 @@ import { Text, Title } from '@mantine/core';
 import { ScrollyLayout } from '../../components/ScrollyLayout';
 import { ScrollySection } from '../../components/ScrollySection';
 import { SchedulingSimulation } from './SchedulingSimulation';
+import { SimulatorPanel } from './simulator/SimulatorPanel';
 
 const INK = '#2c3e6b';
 const INK_LIGHT = '#5a7299';
@@ -159,19 +160,8 @@ export function SchedulingPost() {
         </Text>
       </ScrollySection>
       {/* 11 — Simulator takeover (last child = full-viewport card) */}
-      <div
-        style={{
-          width: '100%',
-          height: '100%',
-          backgroundColor: '#f5f0e4',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <Title order={2} ta="center" style={{ color: INK, fontFamily: "'Caveat', cursive", fontSize: 34 }}>
-          Try it yourself
-        </Title>
+      <div style={{ width: '100%', height: '100%', backgroundColor: '#f5f0e4' }}>
+        <SimulatorPanel />
       </div>
     </ScrollyLayout>
   );

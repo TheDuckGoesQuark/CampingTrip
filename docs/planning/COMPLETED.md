@@ -4,6 +4,59 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## Digital Twins — interactive scheduling simulator
+
+**Date**: 2026-03-19
+
+**What was done**:
+
+Simulation engine (`simulation.ts`):
+- Pure headless tick-based simulation: 1 tick = 1 minute, 1440 ticks/day
+- Task generation with per-queue configurable distributions (size 1-180min, priority 1-5) using Box-Muller transform
+- Selector algorithms: round-robin and priority-based
+- Executor policies: run-to-completion and time-boxed with configurable cycle length + per-project allocation
+- Interruption system: configurable frequency (0-24/day) and cost distribution, cooldown lockout
+- Context switching cost: configurable warmup ticks before productive work begins
+- Efficiency parameter: ticks of real time per tick of work (1-4×)
+- Progress tracking on tasks: preempted tasks retain progress when returned to queue
+- Rich metrics snapshot per tick: queue depths, executor state, throughput, context switching, interruption status, oldest task age per queue
+- `resampleQueues()` with z-score rescaling: proportionally adjusts task properties when distributions change, preserving relative positions
+
+React visual layer:
+- `SimulatorPanel.tsx` — full pipeline visualization: queues → allocation bar → selector → executor → done area
+- `TaskChip` — sized by duration (44-120px), star ratings for priority, progress fill (left-to-right color fill as work completes)
+- `ExecutorDisplay` — 4 states: working (chip filling up), context switching (orange warmup), interrupted (red countdown), idle
+- `DoneArea` — stacked bar showing proportion by project, recently completed chips with glow animation
+- `QueueRow` — queue box with overflow count, inline DistributionEditor controls for task size and priority
+- `DistributionEditor` — interactive canvas bell curve, drag horizontal=mean, vertical=spread
+- `AllocationBar` — vertical stacked bar with draggable segment boundaries for time-boxed allocation
+- `useSimulation` hook — play/pause/step/reset/speed, refs for stable interval callbacks, live rescaling on distribution changes
+- 7 preset configurations: Balanced day, Open office chaos, Deep work, Structured time-boxing, Fire-fighting day, One big project, Slow & steady
+
+MetricsPanel — 6 canvas charts with axes, gridlines, legends:
+- Queue depth per project
+- Backlog vs completed (combined)
+- Throughput rate (rolling 30-min average, tasks/hr)
+- Executor utilisation (rolling % working, interrupted, switching)
+- Actual vs target allocation (solid = actual, dashed = target per project)
+- Oldest task age per queue
+
+**Key decisions**:
+- Pure JS simulation engine with no React dependency — can run headless for batch experiments
+- Z-score rescaling instead of random resampling: changing a distribution slider proportionally rescales existing tasks rather than re-rolling random values
+- Progress stored on SimTask (not just ExecutorSlot) so preempted tasks show partial fill in queues
+- Canvas-based charts with niceStep axis algorithm, rolling averages for smooth throughput/utilisation curves
+- CSS border task chips instead of rough.js SVG (rough.js unreliable at small sizes)
+- Grid layout with conditional columns (allocation bar only in time-boxed mode)
+- Metrics panel scrollable independently with minHeight per chart
+
+**Deferred**:
+- Scroll-driven animation engine for storytelling (Phase 1 in plan file)
+- Wait time and per-project throughput breakdown charts
+- Scrollytelling narrative content
+
+---
+
 ## Digital Twins — project scaffolding & scrollytelling framework
 
 **Date**: 2026-03-18
