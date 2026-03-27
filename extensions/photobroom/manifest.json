@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "PhotoBroom",
+  "version": "0.1.0",
+  "description": "Bridge between PhotoBroom and Google Photos — scrapes and automates cleanup",
+  "permissions": ["scripting", "tabs"],
+  "host_permissions": ["https://photos.google.com/*"],
+  "background": {
+    "service_worker": "service-worker.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://photos.google.com/*"],
+      "js": ["content-script.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "externally_connectable": {
+    "matches": [
+      "https://photobroom.jordanscamp.site/*",
+      "http://localhost:*/*",
+      "http://127.0.0.1:*/*"
+    ]
+  },
+  "icons": {
+    "16": "icons/icon-16.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  }
+}

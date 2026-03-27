@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AppShell, Anchor, Group, Title } from '@mantine/core';
 import { Home } from './pages/Home';
+import { Sweep } from './pages/Sweep';
+import { Review } from './pages/Review';
 
 export function App() {
   return (
@@ -29,6 +31,8 @@ export function App() {
         <AppShell.Main>
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/sweep" element={<Sweep />} />
+            <Route path="/sweep/review" element={<Review />} />
           </Routes>
         </AppShell.Main>
       </AppShell>
