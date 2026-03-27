@@ -4,6 +4,7 @@ from django.core.management import call_command
 from apps.workout.management.commands.seed_default_ladders import (
     LADDERS,
     STANDALONE_EXERCISES,
+    WARMUP_EXERCISES,
     WEEKLY_PLAN,
     copy_defaults_to_user,
     get_or_create_defaults_user,
@@ -531,11 +532,13 @@ class TestSeedDefaultLadders:
         call_command('seed_default_ladders')
         defaults_user = get_or_create_defaults_user()
 
-        # Count total unique exercises from ladder data + standalone
+        # Count total unique exercises from ladder data + standalone + warm-ups
         ladder_exercises = {
             name for nodes in LADDERS.values() for name, *_ in nodes
         }
-        expected_exercises = len(ladder_exercises) + len(STANDALONE_EXERCISES)
+        expected_exercises = (
+            len(ladder_exercises) + len(STANDALONE_EXERCISES) + len(WARMUP_EXERCISES)
+        )
         assert Exercise.objects.filter(owner=defaults_user).count() == expected_exercises
 
         assert Ladder.objects.filter(owner=defaults_user).count() == len(LADDERS)
@@ -593,7 +596,9 @@ class TestCopyDefaultsToUser:
         ladder_exercises = {
             name for nodes in LADDERS.values() for name, *_ in nodes
         }
-        expected_exercises = len(ladder_exercises) + len(STANDALONE_EXERCISES)
+        expected_exercises = (
+            len(ladder_exercises) + len(STANDALONE_EXERCISES) + len(WARMUP_EXERCISES)
+        )
         assert Exercise.objects.filter(owner=workout_user).count() == expected_exercises
         assert Ladder.objects.filter(owner=workout_user).count() == len(LADDERS)
         assert WeeklyPlan.objects.filter(owner=workout_user).count() == 1
