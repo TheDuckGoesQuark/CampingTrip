@@ -1,0 +1,36 @@
+{
+  "name": "photobroom",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "test": "vitest run --passWithNoTests",
+    "test:watch": "vitest",
+    "generate-api": "rtk-query-codegen-openapi src/api/rtk-query-codegen.config.js"
+  },
+  "dependencies": {
+    "@mantine/core": "^8.3.17",
+    "@mantine/hooks": "^8.3.17",
+    "@reduxjs/toolkit": "^2.11.2",
+    "idb-keyval": "^6.2.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-redux": "^9.2.0",
+    "react-router-dom": "^7.5.0",
+    "redux-persist": "^6.0.0"
+  },
+  "devDependencies": {
+    "@rtk-query/codegen-openapi": "^2.2.0",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "postcss": "^8.5.8",
+    "postcss-preset-mantine": "^1.18.0",
+    "typescript": "~5.6.2",
+    "vite": "^6.0.5",
+    "vitest": "^4.0.18"
+  }
+}

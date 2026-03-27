@@ -79,6 +79,12 @@ ${digitaltwins_domain} {
     try_files {path} /index.html
     file_server
 }
+
+${photobroom_domain} {
+    root * /opt/jordanscamp/photobroom
+    try_files {path} /index.html
+    file_server
+}
 CADDYEOF
 
 # Caddy systemd service (if not installed via package manager)
@@ -217,7 +223,7 @@ volumes:
 COMPOSEEOF
 
 # --- Deploy static frontends from S3 ---
-mkdir -p "$APP_DIR/webapp" "$APP_DIR/workout" "$APP_DIR/digitaltwins"
+mkdir -p "$APP_DIR/webapp" "$APP_DIR/workout" "$APP_DIR/digitaltwins" "$APP_DIR/photobroom"
 
 if aws s3 cp "s3://${s3_bucket}/_deploy/webapp.tar.gz" /tmp/webapp.tar.gz 2>/dev/null; then
   tar xzf /tmp/webapp.tar.gz -C "$APP_DIR/webapp/"
@@ -241,6 +247,14 @@ if aws s3 cp "s3://${s3_bucket}/_deploy/digitaltwins.tar.gz" /tmp/digitaltwins.t
   echo "Digital Twins app deployed from S3"
 else
   echo "No digitaltwins tarball in S3 yet — will be deployed by CI"
+fi
+
+if aws s3 cp "s3://${s3_bucket}/_deploy/photobroom.tar.gz" /tmp/photobroom.tar.gz 2>/dev/null; then
+  tar xzf /tmp/photobroom.tar.gz -C "$APP_DIR/photobroom/"
+  rm /tmp/photobroom.tar.gz
+  echo "PhotoBroom app deployed from S3"
+else
+  echo "No photobroom tarball in S3 yet — will be deployed by CI"
 fi
 
 # --- Pull images ---

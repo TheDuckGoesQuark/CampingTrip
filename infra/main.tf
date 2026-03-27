@@ -25,4 +25,5 @@ locals {
   api_domain          = "api.${var.domain_name}"
   workout_domain      = "workout.${var.domain_name}"
   digitaltwins_domain = "digitaltwins.${var.domain_name}"
+  photobroom_domain   = "photobroom.${var.domain_name}"
 }

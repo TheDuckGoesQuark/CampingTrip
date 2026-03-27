@@ -35,6 +35,9 @@ urlpatterns = [
 
     # Workout tracker
     path('api/workout/', include('apps.workout.urls')),
+
+    # PhotoBroom
+    path('api/photobroom/', include('apps.photobroom.urls')),
 ]
 
 # Serve media files in development

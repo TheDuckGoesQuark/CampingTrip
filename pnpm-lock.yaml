@@ -127,6 +127,64 @@ importers:
         specifier: ^4.0.18
         version: 4.1.0(jsdom@28.1.0)(vite@6.4.1(sugarss@5.0.1(postcss@8.5.8))(terser@5.46.1))
 
+  apps/photobroom:
+    dependencies:
+      '@mantine/core':
+        specifier: ^8.3.17
+        version: 8.3.17(@mantine/hooks@8.3.17(react@18.3.1))(@types/react@18.3.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@mantine/hooks':
+        specifier: ^8.3.17
+        version: 8.3.17(react@18.3.1)
+      '@reduxjs/toolkit':
+        specifier: ^2.11.2
+        version: 2.11.2(react-redux@9.2.0(@types/react@18.3.28)(react@18.3.1)(redux@5.0.1))(react@18.3.1)
+      idb-keyval:
+        specifier: ^6.2.2
+        version: 6.2.2
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.3.1
+        version: 18.3.1(react@18.3.1)
+      react-redux:
+        specifier: ^9.2.0
+        version: 9.2.0(@types/react@18.3.28)(react@18.3.1)(redux@5.0.1)
+      react-router-dom:
+        specifier: ^7.5.0
+        version: 7.13.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      redux-persist:
+        specifier: ^6.0.0
+        version: 6.0.0(react@18.3.1)(redux@5.0.1)
+    devDependencies:
+      '@rtk-query/codegen-openapi':
+        specifier: ^2.2.0
+        version: 2.2.0(@oazapfts/runtime@1.2.0)(openapi-types@12.1.3)
+      '@types/react':
+        specifier: ^18.3.12
+        version: 18.3.28
+      '@types/react-dom':
+        specifier: ^18.3.1
+        version: 18.3.7(@types/react@18.3.28)
+      '@vitejs/plugin-react':
+        specifier: ^4.3.4
+        version: 4.7.0(vite@6.4.1(sugarss@5.0.1(postcss@8.5.8))(terser@5.46.1))
+      postcss:
+        specifier: ^8.5.8
+        version: 8.5.8
+      postcss-preset-mantine:
+        specifier: ^1.18.0
+        version: 1.18.0(postcss@8.5.8)
+      typescript:
+        specifier: ~5.6.2
+        version: 5.6.3
+      vite:
+        specifier: ^6.0.5
+        version: 6.4.1(sugarss@5.0.1(postcss@8.5.8))(terser@5.46.1)
+      vitest:
+        specifier: ^4.0.18
+        version: 4.1.0(jsdom@28.1.0)(vite@6.4.1(sugarss@5.0.1(postcss@8.5.8))(terser@5.46.1))
+
   apps/workout:
     dependencies:
       '@mantine/charts':
