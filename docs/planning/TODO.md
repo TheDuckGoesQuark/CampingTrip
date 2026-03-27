@@ -77,13 +77,17 @@ All planned and deferred work, organised by priority.
 - Wait time chart (avg wait time per project over time)
 - Per-project throughput breakdown chart
 
-### PhotoBroom — initial features
+### PhotoBroom — polish & robustness
 
-- Define domain models (albums, photos, tags, etc.)
-- Photo upload and storage (S3)
-- Album/tag management UI
-- Browse and search photos
-- Bulk operations (tag, move, delete)
+- Keyboard shortcuts for swipe (arrow keys, Enter to confirm)
+- Undo stack animation (card slides back in)
+- Loading skeleton while extension scrapes
+- Error recovery: retry individual photo deletions that fail
+- Persist extension ID in user settings (avoid hardcoding)
+- Batch deletion progress: show which photo is being processed
+- Handle thumbnail URL expiry gracefully (placeholder + re-fetch option)
+- Test with real Google Photos account to validate DOM selectors
+- Code-split framer-motion chunk (currently 500KB+ bundle)
 
 ---
 

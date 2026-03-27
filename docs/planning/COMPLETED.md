@@ -4,6 +4,42 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## PhotoBroom — Chrome extension + swipe UI for Google Photos cleanup
+
+**Date**: 2026-03-27
+
+**What was done**:
+
+Chrome Extension (`extensions/photobroom/`):
+- Manifest V3 extension with `externally_connectable` for web app communication
+- Service worker routes messages (ping, fetchPhotos, deletePhotos) between web app and content script
+- Content script on `photos.google.com`: scrapes search results grid (virtual scrolling via incremental scroll + MutationObserver-style collection), extracts photo IDs from `/photo/ID` links, thumbnail URLs, and aria-labels
+- Delete automation: navigates to individual photo, finds trash button by `aria-label`, simulates click + confirmation
+- Placeholder icons, full README with architecture diagram and install guide
+
+Frontend (`apps/photobroom/`):
+- **Home page**: Extension status detection via ping, date input defaulting to today, fetch trigger
+- **Sweep page**: Tinder-style swipe UI with `framer-motion` drag gestures. SwipeCard component with drag-to-decide (right=keep, left=trash, up=skip), rotation transform, and overlay indicators (KEEP/TRASH/SKIP labels that fade in based on drag distance). SwipeDeck manages card stack with AnimatePresence, progress bar, undo, and button fallbacks.
+- **Review page**: Grid grouped by decision (trash/keep/skip), tap to flip decisions, sticky confirm button, deletion progress bar, completion screen with stats
+- `useExtension` hook: wraps `chrome.runtime.sendMessage` with typed promises, auto-detects extension on mount
+- `sweepSlice`: Redux state for the full flow (photos, decisions, currentIndex, delete progress). 18 unit tests covering all actions, undo, flip, delete flow, reset, and all selectors.
+
+**Key decisions**:
+- Chrome extension approach (not Google Photos API) because the API no longer supports reading user libraries or deleting photos (locked down March 2025)
+- `externally_connectable` for web app ↔ extension communication (officially supported, clean API)
+- Simulate clicks via `aria-label` selectors rather than replicating internal `batchexecute` RPC (Google's internal API uses protobuf with method hashes that change every 1-2 weeks)
+- `framer-motion` for swipe gestures (already in monorepo via digitaltwins)
+- Redux slice (not RTK Query) for sweep state — extension messages are imperative, not REST/cache-based
+- No backend needed for MVP — all logic is client-side + extension
+
+**Deferred**:
+- Keyboard shortcuts for swiping
+- Real Google Photos testing (DOM selectors need validation)
+- Bundle size optimization (framer-motion chunk >500KB)
+- Persist extension ID in settings instead of env var
+
+---
+
 ## PhotoBroom — project scaffolding & multi-site wiring
 
 **Date**: 2026-03-27

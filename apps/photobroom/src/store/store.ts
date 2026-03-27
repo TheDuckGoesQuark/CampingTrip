@@ -14,6 +14,7 @@ import { set, get, del, createStore } from 'idb-keyval';
 
 import { baseApi } from '../api/base-api';
 import { authSlice } from './authSlice';
+import { sweepSlice } from './sweepSlice';
 
 // IndexedDB storage adapter for redux-persist
 const idbStore = createStore('photobroom-persist', 'keyval');
@@ -27,6 +28,7 @@ const idbStorage = {
 const rootReducer = combineReducers({
   [baseApi.reducerPath]: baseApi.reducer,
   auth: authSlice.reducer,
+  sweep: sweepSlice.reducer,
 });
 
 const persistConfig = {
