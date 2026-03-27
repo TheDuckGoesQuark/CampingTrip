@@ -11,10 +11,13 @@
     "build:campsite": "pnpm --filter campsite build",
     "build:workout": "pnpm --filter workout build",
     "build:digitaltwins": "pnpm --filter digitaltwins build",
+    "dev:photobroom": "pnpm --filter photobroom dev",
+    "build:photobroom": "pnpm --filter photobroom build",
     "build": "pnpm -r build",
     "test": "pnpm -r test",
     "test:campsite": "pnpm --filter campsite test",
     "test:workout": "pnpm --filter workout test",
-    "test:digitaltwins": "pnpm --filter digitaltwins test"
+    "test:digitaltwins": "pnpm --filter digitaltwins test",
+    "test:photobroom": "pnpm --filter photobroom test"
   }
 }

@@ -9,6 +9,7 @@ A personal platform hosted at **[jordanscamp.site](https://jordanscamp.site)**, 
 | **Campsite** | [jordanscamp.site](https://jordanscamp.site) | Interactive 3D camping scene — the homepage | [apps/campsite/README.md](apps/campsite/README.md) |
 | **Workout** | [workout.jordanscamp.site](https://workout.jordanscamp.site) | Workout tracker PWA with offline support | [apps/workout/README.md](apps/workout/README.md) |
 | **Digital Twins** | [digitaltwins.jordanscamp.site](https://digitaltwins.jordanscamp.site) | Scrollytelling blog with interactive cause-and-effect visualizations | — |
+| **PhotoBroom** | [photobroom.jordanscamp.site](https://photobroom.jordanscamp.site) | Photo organisation tool | — |
 | **Backend** | [api.jordanscamp.site](https://api.jordanscamp.site) | Django REST API shared by all apps | [backend/README.md](backend/README.md) |
 
 See [docs/architecture.md](docs/architecture.md) for how everything fits together.
@@ -20,6 +21,7 @@ pnpm install               # install all workspace dependencies
 pnpm --filter campsite dev      # run campsite locally
 pnpm --filter workout dev       # run workout locally
 pnpm --filter digitaltwins dev  # run digital twins locally
+pnpm --filter photobroom dev    # run photobroom locally
 ```
 
 ```bash

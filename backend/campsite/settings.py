@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     # Apps
     'apps.core',
     'apps.workout',
+    'apps.photobroom',
 ]
 
 MIDDLEWARE = [

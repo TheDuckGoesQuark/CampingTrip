@@ -4,6 +4,47 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## PhotoBroom — project scaffolding & multi-site wiring
+
+**Date**: 2026-03-27
+
+**What was done**:
+
+Infrastructure:
+- Added `photobroom.jordanscamp.site` subdomain: Route53 A record, Caddyfile site block, EC2 templatefile vars + CORS origins, user_data.sh (mkdir, S3 deploy, Caddyfile template)
+
+Backend:
+- Created `backend/apps/photobroom/` Django app (empty models, serializers, views, URLs, admin, migrations)
+- Registered in `INSTALLED_APPS` and wired URLs at `/api/photobroom/`
+
+Frontend:
+- Created `apps/photobroom/` — React + Vite + TypeScript + Mantine (dark theme, orange accent)
+- RTK Query setup with codegen config (filtering `/api/photobroom/` + `/api/auth/`)
+- Redux store with auth slice + redux-persist (IndexedDB)
+- AppShell with header, placeholder Home page, BrowserRouter
+- Root workspace scripts: dev/build/test:photobroom
+
+CI/CD:
+- Added `build-photobroom` job in deploy.yml (parallel frontend build)
+- Wired artifact download, S3 upload, and SSM extract in deploy job
+
+Claude Code:
+- Created `.claude/skills/new-site.md` — reusable skill documenting the full multi-site scaffold process (infra, backend, frontend, CI/CD, API codegen pattern)
+
+**Key decisions**:
+- Followed workout app pattern for API-backed setup (RTK Query + codegen + auth slice + IDB persist)
+- Followed digitaltwins pattern for app shell (Mantine AppShell + simple header + BrowserRouter)
+- No offline middleware yet (can be added when needed, unlike workout which needed it from day one)
+- No Google OAuth provider wrapper (can be added later if needed)
+- Skill file created first, then used as the guide for scaffolding
+
+**Deferred**:
+- Domain models, serializers, views (no features yet — just the skeleton)
+- Photo upload/storage implementation
+- OpenAPI schema generation (no endpoints to document yet)
+
+---
+
 ## Workout tracker — guided workout UX: progress bar, postpone, dashboard charts
 
 **Date**: 2026-03-20

@@ -77,6 +77,14 @@ All planned and deferred work, organised by priority.
 - Wait time chart (avg wait time per project over time)
 - Per-project throughput breakdown chart
 
+### PhotoBroom — initial features
+
+- Define domain models (albums, photos, tags, etc.)
+- Photo upload and storage (S3)
+- Album/tag management UI
+- Browse and search photos
+- Bulk operations (tag, move, delete)
+
 ---
 
 ## Future

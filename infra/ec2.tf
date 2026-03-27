@@ -39,10 +39,11 @@ resource "aws_instance" "app" {
     api_domain          = local.api_domain
     workout_domain      = local.workout_domain
     digitaltwins_domain = local.digitaltwins_domain
+    photobroom_domain   = local.photobroom_domain
     redis_url           = "redis://redis:6379/0"
     domain_name         = var.domain_name
     allowed_hosts       = "${local.api_domain},localhost"
-    cors_origins        = "https://${local.api_domain},https://${var.domain_name},https://${local.workout_domain},https://${local.digitaltwins_domain}"
+    cors_origins        = "https://${local.api_domain},https://${var.domain_name},https://${local.workout_domain},https://${local.digitaltwins_domain},https://${local.photobroom_domain}"
   }))
 
   tags = {
