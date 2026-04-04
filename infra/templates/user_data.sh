@@ -139,20 +139,94 @@ CWEOF
 /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
   -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/etc/config.json -s || true
 
+# --- Dynamic DNS: update Route53 with current public IP ---
+# Create the update script
+cat > /usr/local/bin/update-dns.sh <<'DNSSCRIPT'
+#!/bin/bash
+set -euo pipefail
+
+ZONE_ID="PLACEHOLDER_ZONE_ID"
+DOMAINS="PLACEHOLDER_DOMAINS"
+REGION="PLACEHOLDER_REGION"
+
+# Wait for public IP to be assigned (IMDSv2)
+for i in $(seq 1 30); do
+  TOKEN=$(curl -sf -X PUT "http://169.254.169.254/latest/api/token" \
+    -H "X-aws-ec2-metadata-token-ttl-seconds: 21600") || true
+  PUBLIC_IP=$(curl -sf -H "X-aws-ec2-metadata-token: $TOKEN" \
+    http://169.254.169.254/latest/meta-data/public-ipv4) && break
+  sleep 2
+done
+
+if [ -z "$${PUBLIC_IP:-}" ]; then
+  echo "ERROR: Could not determine public IP after 60s"
+  exit 1
+fi
+
+echo "Public IP: $PUBLIC_IP"
+
+# Build Route53 change batch
+CHANGES=""
+for DOMAIN in $DOMAINS; do
+  CHANGES="$${CHANGES}{\"Action\":\"UPSERT\",\"ResourceRecordSet\":{\"Name\":\"$DOMAIN\",\"Type\":\"A\",\"TTL\":60,\"ResourceRecords\":[{\"Value\":\"$PUBLIC_IP\"}]}},"
+done
+CHANGES="$${CHANGES%,}"
+
+aws route53 change-resource-record-sets \
+  --region "$REGION" \
+  --hosted-zone-id "$ZONE_ID" \
+  --change-batch "{\"Changes\":[$CHANGES]}"
+
+echo "DNS updated: all domains → $PUBLIC_IP"
+DNSSCRIPT
+
+# Inject actual values into the script
+sed -i "s|PLACEHOLDER_ZONE_ID|${route53_zone_id}|" /usr/local/bin/update-dns.sh
+sed -i "s|PLACEHOLDER_DOMAINS|${domain_name} ${api_domain} ${workout_domain} ${digitaltwins_domain} ${photobroom_domain}|" /usr/local/bin/update-dns.sh
+sed -i "s|PLACEHOLDER_REGION|${aws_region}|" /usr/local/bin/update-dns.sh
+chmod +x /usr/local/bin/update-dns.sh
+
+# Create systemd service to run DNS update on every boot
+cat > /etc/systemd/system/update-dns.service <<'DNSSVCEOF'
+[Unit]
+Description=Update Route53 DNS with current public IP
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/update-dns.sh
+RemainAfterExit=true
+
+[Install]
+WantedBy=multi-user.target
+DNSSVCEOF
+
+systemctl daemon-reload
+systemctl enable update-dns.service
+
+# Run DNS update now
+/usr/local/bin/update-dns.sh || echo "WARNING: DNS update failed (will retry on next boot)"
+
 # --- Application directory ---
 APP_DIR="/opt/jordanscamp"
 mkdir -p "$APP_DIR"
 
-# --- Pull secrets from Secrets Manager ---
-SECRETS=$(aws secretsmanager get-secret-value \
+# --- Pull secrets from SSM Parameter Store ---
+SECRETS=$(aws ssm get-parameter \
   --region "${aws_region}" \
-  --secret-id "${secret_arn}" \
-  --query SecretString --output text)
+  --name "${ssm_parameter_name}" \
+  --with-decryption \
+  --query Parameter.Value --output text)
 
 SECRET_KEY=$(echo "$SECRETS" | jq -r '.SECRET_KEY')
-DATABASE_URL=$(echo "$SECRETS" | jq -r '.DATABASE_URL')
 GOOGLE_OAUTH_CLIENT_ID=$(echo "$SECRETS" | jq -r '.GOOGLE_OAUTH_CLIENT_ID // empty')
 GOOGLE_OAUTH_CLIENT_SECRET=$(echo "$SECRETS" | jq -r '.GOOGLE_OAUTH_CLIENT_SECRET // empty')
+
+# --- Generate local database password ---
+DB_PASSWORD=$(head -c 32 /dev/urandom | base64 | tr -d '/+=' | head -c 32)
+echo -n "$DB_PASSWORD" > "$APP_DIR/.db_password"
+chmod 600 "$APP_DIR/.db_password"
 
 # --- ECR login ---
 aws ecr get-login-password --region "${aws_region}" | \
@@ -162,7 +236,7 @@ aws ecr get-login-password --region "${aws_region}" | \
 cat > "$APP_DIR/.env" <<ENVEOF
 # Django
 SECRET_KEY=$SECRET_KEY
-DATABASE_URL=$DATABASE_URL
+DATABASE_URL=postgresql://campsite:$DB_PASSWORD@db:5432/campsite
 ALLOWED_HOSTS=${allowed_hosts}
 CORS_ALLOWED_ORIGINS=${cors_origins}
 DEBUG=0
@@ -184,6 +258,28 @@ chmod 600 "$APP_DIR/.env"
 # --- Write docker-compose.prod.yml ---
 cat > "$APP_DIR/docker-compose.prod.yml" <<COMPOSEEOF
 services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: campsite
+      POSTGRES_USER: campsite
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    secrets:
+      - db_password
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U campsite"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
   redis:
     image: redis:7-alpine
     restart: unless-stopped
@@ -212,13 +308,20 @@ services:
     depends_on:
       redis:
         condition: service_healthy
+      db:
+        condition: service_healthy
     logging:
       driver: json-file
       options:
         max-size: "10m"
         max-file: "3"
 
+secrets:
+  db_password:
+    file: /opt/jordanscamp/.db_password
+
 volumes:
+  postgres_data:
   redis_data:
 COMPOSEEOF
 
@@ -271,5 +374,34 @@ docker compose -f docker-compose.prod.yml up -d
 
 # Start Caddy (needs services running first)
 systemctl start caddy
+
+# --- Daily PostgreSQL backup to S3 ---
+cat > /etc/cron.daily/pg-backup <<'CRONEOF'
+#!/bin/bash
+set -euo pipefail
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+BACKUP_FILE="/tmp/campsite_$TIMESTAMP.sql.gz"
+
+docker compose -f /opt/jordanscamp/docker-compose.prod.yml exec -T db \
+  pg_dump -U campsite campsite | gzip > "$BACKUP_FILE"
+
+aws s3 cp "$BACKUP_FILE" \
+  "s3://jordanscamp-prod-deploy/_backups/campsite_$TIMESTAMP.sql.gz"
+
+rm -f "$BACKUP_FILE"
+
+# Clean up old backups from S3 (keep last 7 days)
+CUTOFF=$(date -d '7 days ago' +%Y%m%d 2>/dev/null || date -v-7d +%Y%m%d)
+aws s3 ls s3://jordanscamp-prod-deploy/_backups/ | while read -r line; do
+  FILE=$(echo "$line" | awk '{print $4}')
+  FILE_DATE=$(echo "$FILE" | grep -oP '\d{8}' | head -1)
+  if [ -n "$FILE_DATE" ] && [ "$FILE_DATE" -lt "$CUTOFF" ]; then
+    aws s3 rm "s3://jordanscamp-prod-deploy/_backups/$FILE"
+  fi
+done
+
+echo "Backup completed: campsite_$TIMESTAMP.sql.gz"
+CRONEOF
+chmod +x /etc/cron.daily/pg-backup
 
 echo "=== User data script completed at $(date) ==="

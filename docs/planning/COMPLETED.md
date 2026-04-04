@@ -4,6 +4,53 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## AWS cost optimization — eliminate RDS, EIP, Secrets Manager; shrink EBS
+
+**Date**: 2026-04-04
+
+**What was done**:
+
+Infrastructure cost reduction from ~$26.79/month to ~$7.89/month (71% savings):
+
+1. **Eliminated RDS** (saves ~$15.43/month): Removed `db.t4g.micro` RDS PostgreSQL instance. PostgreSQL 16 now runs as a Docker container on EC2 alongside Django/Redis/Caddy. Added daily `pg_dump` cron job backing up to S3, with 7-day retention.
+
+2. **Released Elastic IP** (saves ~$1.52/month): Removed EIP ($3.65/month regardless of instance state). EC2 now uses auto-assigned public IP. Added a `systemd` service (`update-dns.service`) that updates all 5 Route53 A records on every boot via IMDSv2 + AWS CLI. TTL reduced to 60s for faster propagation. The infra-control workflow also triggers DNS update on instance start.
+
+3. **Shrunk EBS from 30GB to 15GB** (saves ~$1.39/month): Actual usage is well under 10GB (OS + Docker images + DB). 15GB provides comfortable headroom. Note: this forces EC2 instance replacement since EBS cannot shrink in-place.
+
+4. **Migrated Secrets Manager to SSM Parameter Store** (saves ~$0.40/month): Single secret moved to SSM SecureString parameter (free for standard params). DATABASE_URL no longer stored in secrets since DB is now local Docker-to-Docker.
+
+5. **Reduced ECR image retention from 10 to 5**: Minor storage savings (~$0.15/month).
+
+Files changed:
+- `infra/rds.tf` — deleted
+- `infra/secrets.tf` — deleted (replaced by `infra/ssm.tf`)
+- `infra/ssm.tf` — created (SSM Parameter Store for app secrets)
+- `infra/ec2.tf` — EBS 30→15GB, removed EIP + EIP association, added route53_zone_id + ssm_parameter_name template vars
+- `infra/vpc.tf` — removed data_a and data_b subnets (only needed for RDS subnet group)
+- `infra/security_groups.tf` — removed RDS security group
+- `infra/route53.tf` — removed all 5 A records (managed dynamically by EC2 boot)
+- `infra/iam.tf` — removed Secrets Manager + RDS policies, added SSM + Route53 policies for EC2
+- `infra/outputs.tf` — removed elastic_ip, rds_endpoint, secrets_arn; added route53_zone_id, ssm_parameter_name
+- `infra/ecr.tf` — image retention 10→5
+- `infra/variables.tf` — removed db_instance_class and db_allocated_storage
+- `infra/templates/user_data.sh` — SSM instead of Secrets Manager, Docker Postgres in compose, dynamic DNS systemd service, pg_dump backup cron
+- `backend/docker-compose.prod.yml` — added postgres:16-alpine service with health check + volume
+- `.github/workflows/infra-control.yml` — added DNS update to SSM start commands
+
+**Key decisions**:
+- Docker Postgres over RDS: acceptable trade-off for a personal project. Managed backups replaced by cron pg_dump to S3. DB now stops when EC2 stops (zero cost during downtime).
+- Dynamic DNS over Elastic IP: small DNS propagation delay (60s TTL) is acceptable. Saves $1.52/month in idle EIP charges.
+- IMDSv2 for metadata retrieval (security best practice over IMDSv1)
+- DB password generated on first boot and written to disk, not stored in SSM (avoids circular dependency)
+
+**Deferred**:
+- Data migration from existing RDS (must pg_dump before terraform apply)
+- RDS deletion protection must be disabled before destroy (`deletion_protection = false`)
+- Monitoring memory usage on t4g.micro with Postgres + Redis + Django + Caddy (upgrade to t4g.small if needed)
+
+---
+
 ## PhotoBroom — project scaffolding & multi-site wiring
 
 **Date**: 2026-03-27

@@ -101,6 +101,7 @@ jobs:
             --document-name "AWS-RunShellScript" \
             --parameters "commands=[
               'set -e',
+              '/usr/local/bin/update-dns.sh',
               'cd /opt/jordanscamp',
               'aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin $(echo $ECR_WEB_REPO | cut -d/ -f1)',
               'export ECR_WEB_REPO=$ECR_WEB_REPO',

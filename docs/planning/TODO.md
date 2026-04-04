@@ -6,6 +6,14 @@ All planned and deferred work, organised by priority.
 
 ## Next Up
 
+### AWS cost optimization — pre-apply checklist
+
+- Back up existing RDS database via `pg_dump` before running `terraform apply`
+- Disable RDS deletion protection first (`deletion_protection = false` in a separate apply)
+- Run `terraform apply` (EC2 will be replaced due to EBS size change — ensure DB dump is in S3)
+- Restore data into new Docker Postgres after instance boots
+- Monitor t4g.micro memory usage (`docker stats`) — upgrade to t4g.small if OOM issues
+
 ### Workout tracker — core workout flow (Phase 2 remaining)
 
 - Batch sync endpoint (`POST /api/workout/sync/`) — dedicated endpoint for full state reconciliation on reconnect

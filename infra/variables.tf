@@ -22,18 +22,6 @@ variable "ec2_instance_type" {
   default     = "t4g.micro"
 }
 
-variable "db_instance_class" {
-  description = "RDS instance class"
-  type        = string
-  default     = "db.t4g.micro"
-}
-
-variable "db_allocated_storage" {
-  description = "RDS storage in GB"
-  type        = number
-  default     = 20
-}
-
 variable "my_ip" {
   description = "Your IP address for SSH access (CIDR notation, e.g. 1.2.3.4/32)"
   type        = string

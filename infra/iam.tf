@@ -69,17 +69,41 @@ resource "aws_iam_role_policy" "ec2_s3" {
   })
 }
 
-# Secrets Manager read
-resource "aws_iam_role_policy" "ec2_secrets" {
-  name = "secrets-read"
+# SSM Parameter Store read (app secrets)
+resource "aws_iam_role_policy" "ec2_ssm_params" {
+  name = "ssm-params-read"
   role = aws_iam_role.ec2.id
 
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
-      Effect   = "Allow"
-      Action   = "secretsmanager:GetSecretValue"
-      Resource = aws_secretsmanager_secret.app.arn
+      Effect = "Allow"
+      Action = [
+        "ssm:GetParameter",
+        "ssm:GetParameters",
+      ]
+      Resource = aws_ssm_parameter.app_secrets.arn
+    }]
+  })
+}
+
+# Route53 DNS update (dynamic DNS on boot)
+resource "aws_iam_role_policy" "ec2_route53" {
+  name = "route53-dns-update"
+  role = aws_iam_role.ec2.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Action = [
+        "route53:ChangeResourceRecordSets",
+        "route53:GetChange",
+      ]
+      Resource = [
+        aws_route53_zone.main.arn,
+        "arn:aws:route53:::change/*",
+      ]
     }]
   })
 }
@@ -287,22 +311,6 @@ resource "aws_iam_role_policy" "github_terraform_resources" {
         Resource = "*"
       },
       {
-        Sid    = "RDS"
-        Effect = "Allow"
-        Action = [
-          "rds:Describe*",
-          "rds:CreateDBInstance",
-          "rds:ModifyDBInstance",
-          "rds:DeleteDBInstance",
-          "rds:CreateDBSubnetGroup",
-          "rds:ModifyDBSubnetGroup",
-          "rds:DeleteDBSubnetGroup",
-          "rds:AddTagsToResource",
-          "rds:ListTagsForResource",
-        ]
-        Resource = "*"
-      },
-      {
         Sid    = "Route53"
         Effect = "Allow"
         Action = [
@@ -380,18 +388,15 @@ resource "aws_iam_role_policy" "github_terraform_resources" {
         Resource = "*"
       },
       {
-        Sid    = "SecretsManager"
+        Sid    = "SSMAppSecrets"
         Effect = "Allow"
         Action = [
-          "secretsmanager:CreateSecret",
-          "secretsmanager:GetSecretValue",
-          "secretsmanager:DescribeSecret",
-          "secretsmanager:PutSecretValue",
-          "secretsmanager:UpdateSecret",
-          "secretsmanager:UpdateSecretVersionStage",
-          "secretsmanager:DeleteSecret",
-          "secretsmanager:TagResource",
-          "secretsmanager:GetResourcePolicy",
+          "ssm:GetParameter",
+          "ssm:PutParameter",
+          "ssm:DeleteParameter",
+          "ssm:DescribeParameters",
+          "ssm:AddTagsToResource",
+          "ssm:ListTagsForResource",
         ]
         Resource = "*"
       },
@@ -427,7 +432,7 @@ resource "aws_iam_role_policy" "github_terraform_resources" {
         Resource = "*"
       },
       {
-        Sid    = "SSMParameters"
+        Sid    = "SSMParametersAMI"
         Effect = "Allow"
         Action = [
           "ssm:GetParameter",
