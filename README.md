@@ -1,32 +1,24 @@
 # Jordan's Camp
 
-A personal platform hosted at **[jordanscamp.site](https://jordanscamp.site)**, structured as a pnpm monorepo with multiple frontend apps and a shared Django backend.
+A personal platform hosted at **[jordanscamp.site](https://jordanscamp.site)**, structured as a pnpm monorepo of static frontend apps. There is currently no backend — the apps are static SPAs served by Caddy on a single EC2 instance. See [Adding a backend later](#adding-a-backend-later) for the on-ramp when one is needed.
 
 ## Apps
 
 | App | URL | Description | Docs |
 |-----|-----|-------------|------|
 | **Campsite** | [jordanscamp.site](https://jordanscamp.site) | Interactive 3D camping scene — the homepage | [apps/campsite/README.md](apps/campsite/README.md) |
-| **Workout** | [workout.jordanscamp.site](https://workout.jordanscamp.site) | Workout tracker PWA with offline support | [apps/workout/README.md](apps/workout/README.md) |
 | **Digital Twins** | [digitaltwins.jordanscamp.site](https://digitaltwins.jordanscamp.site) | Scrollytelling blog with interactive cause-and-effect visualizations | — |
-| **PhotoBroom** | [photobroom.jordanscamp.site](https://photobroom.jordanscamp.site) | Photo organisation tool | — |
-| **Backend** | [api.jordanscamp.site](https://api.jordanscamp.site) | Django REST API shared by all apps | [backend/README.md](backend/README.md) |
+| **PhotoBroom** | [photobroom.jordanscamp.site](https://photobroom.jordanscamp.site) | Photo organisation tool (stub, to be built) | — |
 
 See [docs/architecture.md](docs/architecture.md) for how everything fits together.
 
 ## Getting started
 
 ```bash
-pnpm install               # install all workspace dependencies
+pnpm install                    # install all workspace dependencies
 pnpm --filter campsite dev      # run campsite locally
-pnpm --filter workout dev       # run workout locally
 pnpm --filter digitaltwins dev  # run digital twins locally
 pnpm --filter photobroom dev    # run photobroom locally
-```
-
-```bash
-cd backend
-docker compose up     # run backend + postgres locally
 ```
 
 ## Workspace commands
@@ -40,9 +32,22 @@ pnpm -r exec tsc -b   # typecheck all apps
 ## Tech stack
 
 - **Frontend**: React + TypeScript + Vite, managed as a pnpm workspace
-- **Backend**: Django 5 + Django REST Framework, with Poetry for dependency management
-- **Infrastructure**: Terraform on AWS (EC2, RDS, S3, ECR, Route53)
+- **Hosting**: Caddy (auto-TLS static file server) on a single EC2 instance
+- **Infrastructure**: Terraform on AWS (EC2, S3, Route53)
 - **CI/CD**: GitHub Actions — lint, test, build, deploy on push to main
+
+## Adding a backend later
+
+The apps are static today, but the box is kept backend-ready (Docker + Compose are
+installed by the EC2 bootstrap). To add a DB-backed backend in any language:
+
+1. Write a `docker-compose.yml` in `/opt/jordanscamp` with your service container and a
+   co-located `postgres` container using a named volume. A co-located Postgres costs nothing
+   extra — it shares the EC2 you already pay for, so there's no always-on database bill.
+2. Add a `reverse_proxy` block for an `api` subdomain to `infra/Caddyfile` (and the EC2
+   bootstrap Caddyfile in `infra/templates/user_data.sh`).
+3. Add a Route53 A record for the `api` subdomain in `infra/route53.tf` pointing to the EIP.
+4. Wire build/deploy into `.github/workflows/deploy.yml`.
 
 ## License
 

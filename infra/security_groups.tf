@@ -51,25 +51,3 @@ resource "aws_security_group" "ec2" {
     create_before_destroy = true
   }
 }
-
-# --- RDS ---
-
-resource "aws_security_group" "rds" {
-  name_prefix = "${local.name_prefix}-rds-"
-  description = "PostgreSQL - from EC2 only"
-  vpc_id      = aws_vpc.main.id
-
-  ingress {
-    from_port       = 5432
-    to_port         = 5432
-    protocol        = "tcp"
-    security_groups = [aws_security_group.ec2.id]
-    description     = "PostgreSQL from EC2"
-  }
-
-  tags = { Name = "${local.name_prefix}-rds-sg" }
-
-  lifecycle {
-    create_before_destroy = true
-  }
-}

@@ -6,54 +6,11 @@ All planned and deferred work, organised by priority.
 
 ## Next Up
 
-### Workout tracker — core workout flow (Phase 2 remaining)
-
-- Batch sync endpoint (`POST /api/workout/sync/`) — dedicated endpoint for full state reconciliation on reconnect
-- End-to-end offline workflow testing: log a workout offline → come online → data syncs
-
-### Workout tracker — dashboard & polish (Phase 4)
-
-- History view with date filtering and search
-- Mobile UX polish (transitions, gestures, haptics)
-- Session review page (detailed view of past workouts)
-- Advancement notifications (toast/badge when a node is achieved)
-- Exercise demo videos/images in guided workout warm-up and exercise screens
-- Dashboard charts: show date range selector, handle duplicate dates better (group by session not just date)
+_(nothing queued)_
 
 ---
 
 ## Backlog
-
-### Workout tracker — Strava integration
-
-- Track runs via Strava API
-- Verify workouts / import activities
-- OAuth flow for Strava connection
-
-### Workout tracker — equipment tracking
-
-- Equipment varies a lot — needs flexible modelling
-- Equivalent exercises to consider across equipment
-
-### Workout tracker — data export/import
-
-- Export workout data (JSON/CSV)
-- Import data from other apps
-
-### Workout tracker — sharing ladders between users
-
-- Allow users to share/publish their ladder progressions
-- Browse and clone community ladders
-
-### Workout tracker — progressive overload suggestions
-
-- Auto-suggest weight/rep increases based on recent performance
-- Periodisation recommendations
-
-### Workout tracker — notification reminders
-
-- Push notifications for scheduled workouts
-- Rest day reminders
 
 ### Campsite — tent open/close mechanic
 
@@ -84,10 +41,10 @@ All planned and deferred work, organised by priority.
 - Album/tag management UI
 - Browse and search photos
 - Bulk operations (tag, move, delete)
+- Stand up a backend when needed — see "Adding a backend later" in `docs/architecture.md` (containerised service + co-located Postgres on the existing EC2 box)
 
 ---
 
 ## Future
 
-- Full onboarding flow for initial working weight estimates (currently set per-node on ladder detail page)
-- Warm-up set rep/weight curve customisation per user
+_(nothing queued)_

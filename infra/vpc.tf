@@ -1,5 +1,5 @@
 # -----------------------------------------------------------------------------
-# VPC — 1 public subnet (EC2), 2 data subnets in different AZs (RDS requirement)
+# VPC — 1 public subnet (EC2)
 # -----------------------------------------------------------------------------
 
 data "aws_availability_zones" "available" {
@@ -23,24 +23,6 @@ resource "aws_subnet" "public" {
   map_public_ip_on_launch = true
 
   tags = { Name = "${local.name_prefix}-public-1" }
-}
-
-# --- Data subnets (RDS needs 2 AZs for subnet group) ---
-
-resource "aws_subnet" "data_a" {
-  vpc_id            = aws_vpc.main.id
-  cidr_block        = "10.0.21.0/24"
-  availability_zone = data.aws_availability_zones.available.names[0]
-
-  tags = { Name = "${local.name_prefix}-data-a" }
-}
-
-resource "aws_subnet" "data_b" {
-  vpc_id            = aws_vpc.main.id
-  cidr_block        = "10.0.22.0/24"
-  availability_zone = data.aws_availability_zones.available.names[1]
-
-  tags = { Name = "${local.name_prefix}-data-b" }
 }
 
 # --- Internet Gateway ---
