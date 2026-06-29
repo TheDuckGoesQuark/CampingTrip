@@ -4,6 +4,33 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## PhotoBroom — in-page overlay for sweeping Google Photos into the bin
+
+**Date**: 2026-06-29
+
+**What was done**:
+
+Rebuilt PhotoBroom into a single in-page **overlay** on `photos.google.com` with **multi-select bulk delete**, replacing an earlier (closed-PR) two-tab design that paired a hosted web app with an extension bridge and deleted photos one at a time.
+
+- **Overlay** (`apps/photobroom/src/overlay/`): React + framer-motion bundled to a single IIFE content script (`vite.overlay.config.ts` → `extensions/photobroom/overlay.js`), mounted in a shadow root so its styles are isolated from Google's page. Desktop keyboard-driven review (← bin / → keep / ↑ skip / ⌫ undo) over a near-fullscreen photo, with a prominent **Stop** that aborts any in-progress scan/select/delete. Reuses the existing `sweepSlice` state machine.
+- **Page model** (`gphotos.ts`): all Google-Photos-specific selectors live in one documented `SELECTORS` block; reads the grid directly (native thumbnails), scrolls the real inner container (fixes "only the first date section loaded"), associates each cell's checkbox by its shared `aria-label`, then drives Google's native multi-select + bulk "Move to bin" + confirm. `inspectPage()` health check included.
+- **Tests**: `gphotos.test.ts` imports the real module and asserts the selector contract against fixtures mirroring observed markup (caught a real cross-cell checkbox bug).
+- **Landing page**: replaced the obsolete web-app flow with a Mantine install/usage/how-it-works page for `photobroom.jordanscamp.site`; removed orphaned `pages/`, `components/`, `hooks/`, `store/store.ts`, `api/`.
+- Added PhotoBroom to the campsite projects list.
+
+**Key decisions**:
+- **In-page overlay, not iframe or two tabs.** Embedding Google Photos in an iframe is blocked by frame-ancestors headers and would log out under third-party-cookie partitioning; an overlay is first-party on the page, so login, native thumbnails, and same-origin DOM access all just work.
+- **Drive Google's own multi-select** rather than per-photo navigation — one confirmation, much faster, stays on the results page.
+- **Centralised selectors + contract tests** so a Google DOM change is a single-spot fix, caught early.
+- **Not for the Chrome Web Store** — automating Google's UI breaches their ToS; it's a personal, load-unpacked tool. "Move to bin" is reversible for 60 days, keeping the blast radius small.
+
+**Deferred**:
+- Report which photos failed to bin (e.g. shared/partner items) instead of skipping silently.
+- Surface the `inspectPage()` health check in the UI as a "layout may have changed" warning.
+- Shrink/code-split the ~290KB overlay bundle.
+
+---
+
 ## Cost cleanup — remove workout app & tear down the orphaned backend/RDS
 
 **Date**: 2026-05-28

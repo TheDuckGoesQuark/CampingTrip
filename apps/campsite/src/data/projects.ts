@@ -21,4 +21,15 @@ export const projects: Project[] = [
     color: '#1a1a1a',
     addedAt: '2026-02-01',
   },
+  {
+    title: 'PhotoBroom',
+    url: 'https://photobroom.jordanscamp.site/',
+    github: 'https://github.com/TheDuckGoesQuark/CampingTrip',
+    description:
+      'Google Photos quietly took away the ability to bulk-delete photos from a search, and their API can\'t delete at all — which drove me up the wall every time I wanted to clear out a day\'s worth of near-identical shots. So PhotoBroom is my answer: a Chrome extension that overlays a fast, keyboard-driven review right on top of Google Photos. Search a date, flick through with the arrow keys — keep, skip, or bin — then send the whole pile to the bin in one go.\n\nIt drives Google\'s own interface (the only way that\'s actually possible), runs entirely in your browser, and nothing\'s gone for good since the bin holds onto things for 60 days. A small, stubborn little tool born purely out of being annoyed at not being able to do a basic thing.',
+    year: 2026,
+    icon: 'images/projects/photobroom.png',
+    color: '#ffb347',
+    addedAt: '2026-06-29',
+  },
 ];

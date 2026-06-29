@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "PhotoBroom",
+  "version": "0.2.0",
+  "description": "Sweep through Google Photos search results and bin the ones you don't want.",
+  "host_permissions": ["https://photos.google.com/*"],
+  "content_scripts": [
+    {
+      "matches": ["https://photos.google.com/*"],
+      "js": ["overlay.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

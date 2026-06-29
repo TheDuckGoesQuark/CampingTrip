@@ -34,14 +34,12 @@ _(nothing queued)_
 - Wait time chart (avg wait time per project over time)
 - Per-project throughput breakdown chart
 
-### PhotoBroom — initial features
+### PhotoBroom — polish & robustness
 
-- Define domain models (albums, photos, tags, etc.)
-- Photo upload and storage (S3)
-- Album/tag management UI
-- Browse and search photos
-- Bulk operations (tag, move, delete)
-- Stand up a backend when needed — see "Adding a backend later" in `docs/architecture.md` (containerised service + co-located Postgres on the existing EC2 box)
+- Error recovery: report which photos failed to bin (e.g. shared/partner items Google won't delete) rather than silently skipping
+- Surface the `inspectPage()` health check in the UI as a "Google's layout may have changed" warning when selectors stop matching
+- Loading skeleton / nicer progress while scanning very large result sets
+- Code-split / shrink the overlay bundle (currently ~290KB)
 
 ---
 
