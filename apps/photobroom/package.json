@@ -9,8 +9,7 @@
     "build:overlay": "vite build --config vite.overlay.config.ts",
     "preview": "vite preview",
     "test": "vitest run --passWithNoTests",
-    "test:watch": "vitest",
-    "generate-api": "rtk-query-codegen-openapi src/api/rtk-query-codegen.config.js"
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@mantine/core": "^8.3.17",
