@@ -4,39 +4,56 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
-## PhotoBroom — Chrome extension + swipe UI for Google Photos cleanup
+## PhotoBroom — in-page overlay for sweeping Google Photos into the bin
 
-**Date**: 2026-03-27
+**Date**: 2026-06-29
 
 **What was done**:
 
-Chrome Extension (`extensions/photobroom/`):
-- Manifest V3 extension with `externally_connectable` for web app communication
-- Service worker routes messages (ping, fetchPhotos, deletePhotos) between web app and content script
-- Content script on `photos.google.com`: scrapes search results grid (virtual scrolling via incremental scroll + MutationObserver-style collection), extracts photo IDs from `/photo/ID` links, thumbnail URLs, and aria-labels
-- Delete automation: navigates to individual photo, finds trash button by `aria-label`, simulates click + confirmation
-- Placeholder icons, full README with architecture diagram and install guide
+Rebuilt PhotoBroom into a single in-page **overlay** on `photos.google.com` with **multi-select bulk delete**, replacing an earlier (closed-PR) two-tab design that paired a hosted web app with an extension bridge and deleted photos one at a time.
 
-Frontend (`apps/photobroom/`):
-- **Home page**: Extension status detection via ping, date input defaulting to today, fetch trigger
-- **Sweep page**: Tinder-style swipe UI with `framer-motion` drag gestures. SwipeCard component with drag-to-decide (right=keep, left=trash, up=skip), rotation transform, and overlay indicators (KEEP/TRASH/SKIP labels that fade in based on drag distance). SwipeDeck manages card stack with AnimatePresence, progress bar, undo, and button fallbacks.
-- **Review page**: Grid grouped by decision (trash/keep/skip), tap to flip decisions, sticky confirm button, deletion progress bar, completion screen with stats
-- `useExtension` hook: wraps `chrome.runtime.sendMessage` with typed promises, auto-detects extension on mount
-- `sweepSlice`: Redux state for the full flow (photos, decisions, currentIndex, delete progress). 18 unit tests covering all actions, undo, flip, delete flow, reset, and all selectors.
+- **Overlay** (`apps/photobroom/src/overlay/`): React + framer-motion bundled to a single IIFE content script (`vite.overlay.config.ts` → `extensions/photobroom/overlay.js`), mounted in a shadow root so its styles are isolated from Google's page. Desktop keyboard-driven review (← bin / → keep / ↑ skip / ⌫ undo) over a near-fullscreen photo, with a prominent **Stop** that aborts any in-progress scan/select/delete. Reuses the existing `sweepSlice` state machine.
+- **Page model** (`gphotos.ts`): all Google-Photos-specific selectors live in one documented `SELECTORS` block; reads the grid directly (native thumbnails), scrolls the real inner container (fixes "only the first date section loaded"), associates each cell's checkbox by its shared `aria-label`, then drives Google's native multi-select + bulk "Move to bin" + confirm. `inspectPage()` health check included.
+- **Tests**: `gphotos.test.ts` imports the real module and asserts the selector contract against fixtures mirroring observed markup (caught a real cross-cell checkbox bug).
+- **Landing page**: replaced the obsolete web-app flow with a Mantine install/usage/how-it-works page for `photobroom.jordanscamp.site`; removed orphaned `pages/`, `components/`, `hooks/`, `store/store.ts`, `api/`.
+- Added PhotoBroom to the campsite projects list.
 
 **Key decisions**:
-- Chrome extension approach (not Google Photos API) because the API no longer supports reading user libraries or deleting photos (locked down March 2025)
-- `externally_connectable` for web app ↔ extension communication (officially supported, clean API)
-- Simulate clicks via `aria-label` selectors rather than replicating internal `batchexecute` RPC (Google's internal API uses protobuf with method hashes that change every 1-2 weeks)
-- `framer-motion` for swipe gestures (already in monorepo via digitaltwins)
-- Redux slice (not RTK Query) for sweep state — extension messages are imperative, not REST/cache-based
-- No backend needed for MVP — all logic is client-side + extension
+- **In-page overlay, not iframe or two tabs.** Embedding Google Photos in an iframe is blocked by frame-ancestors headers and would log out under third-party-cookie partitioning; an overlay is first-party on the page, so login, native thumbnails, and same-origin DOM access all just work.
+- **Drive Google's own multi-select** rather than per-photo navigation — one confirmation, much faster, stays on the results page.
+- **Centralised selectors + contract tests** so a Google DOM change is a single-spot fix, caught early.
+- **Not for the Chrome Web Store** — automating Google's UI breaches their ToS; it's a personal, load-unpacked tool. "Move to bin" is reversible for 60 days, keeping the blast radius small.
 
 **Deferred**:
-- Keyboard shortcuts for swiping
-- Real Google Photos testing (DOM selectors need validation)
-- Bundle size optimization (framer-motion chunk >500KB)
-- Persist extension ID in settings instead of env var
+- Report which photos failed to bin (e.g. shared/partner items) instead of skipping silently.
+- Surface the `inspectPage()` health check in the UI as a "layout may have changed" warning.
+- Shrink/code-split the ~290KB overlay bundle.
+
+---
+
+## Cost cleanup — remove workout app & tear down the orphaned backend/RDS
+
+**Date**: 2026-05-28
+
+**What was done**:
+
+- Removed the workout app entirely (`apps/workout/`, root workspace scripts, CI build/deploy steps, Caddy site, Route53 record). Decision: not moving forward with it — a spreadsheet is sufficient.
+- Verified `campsite` and `digitaltwins` are pure static SPAs (no API calls, no auth). The Django backend's only consumer was the workout app, so after removal the entire backend stack was orphaned.
+- Deleted the Django backend (`backend/`) outright — clean slate; a future backend will be built fresh, likely in a more type-safe language.
+- Terraform teardown of orphaned, cost-bearing resources: RDS PostgreSQL (`rds.tf`), ECR (`ecr.tf`), Secrets Manager (`secrets.tf`), the RDS security group, the two RDS-only data subnets, the `web` CloudWatch log group, and the `api`/`workout` Route53 records. Trimmed the EC2/GitHub-Actions IAM policies (ECR + Secrets) and DB-related variables/outputs.
+- Simplified `infra/templates/user_data.sh`, `infra/Caddyfile`, `deploy.yml`, `ci.yml`, and `infra-control.yml` to a static-only flow (Caddy serves three static sites; no Docker containers, migrations, or `:8000` health check). Docker + Compose remain installed on EC2 so a backend can be added later as a drop-in compose file.
+
+**Key decisions**:
+
+- **Cheapest DB is no DB.** The owner asked whether DynamoDB or a serverless DB would be cheaper than always-on RDS. Since nothing uses the database after the workout app is gone, the cost win is simply removing RDS — no migration needed. DynamoDB was also a poor fit for the relational Django/ORM/auth code that existed.
+- **Keep EC2, not full serverless.** The owner values a simple on-ramp for a future DB-backed backend (and wants to experiment with type-safe languages). Keeping the EC2 box + Docker makes that trivial and keeps a future co-located Postgres free, rather than moving to S3/CloudFront + Lambda/DynamoDB.
+- **Kept `photobroom`** as a deployed static stub to be built later.
+- **No DB backups** configured (there is no DB).
+
+**Deferred / follow-up**:
+
+- Operational teardown of live AWS resources must follow the ordering notes (flip RDS `deletion_protection`/`skip_final_snapshot` before destroy; set ECR `force_delete` before removing the repo; the running EC2 box is updated via the deploy workflow, not by the `user_data` edit).
+- When PhotoBroom needs a backend, follow "Adding a backend later" in `docs/architecture.md`.
 
 ---
 

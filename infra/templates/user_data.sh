@@ -2,15 +2,20 @@
 set -euo pipefail
 
 # -----------------------------------------------------------------------------
-# EC2 User Data — Bootstrap Docker, Caddy, and web services
+# EC2 User Data — Bootstrap Caddy to serve the static frontends
 # Template variables are injected by Terraform templatefile()
+#
+# There is no backend/database any more: campsite, digitaltwins and the
+# photobroom stub are static SPAs served directly by Caddy. Docker + Compose
+# are still installed so a future backend can be added as a drop-in compose
+# file (service container + co-located Postgres) without re-bootstrapping.
 # -----------------------------------------------------------------------------
 
 LOG="/var/log/user-data.log"
 exec > >(tee -a "$LOG") 2>&1
 echo "=== User data script started at $(date) ==="
 
-# --- Swap (prevents OOM during Docker pulls on t4g.micro) ---
+# --- Swap (headroom for any future container builds on t4g.micro) ---
 if [ ! -f /swapfile ]; then
   dd if=/dev/zero of=/swapfile bs=1M count=1024
   chmod 600 /swapfile
@@ -29,7 +34,7 @@ systemctl restart systemd-journald
 dnf update -y
 dnf install -y docker jq unzip
 
-# --- Docker ---
+# --- Docker (kept ready for a future backend; no containers run by default) ---
 systemctl enable docker
 systemctl start docker
 usermod -aG docker ec2-user
@@ -60,16 +65,6 @@ fi
 cat > /etc/caddy/Caddyfile <<'CADDYEOF'
 ${domain_name} {
     root * /opt/jordanscamp/webapp
-    try_files {path} /index.html
-    file_server
-}
-
-${api_domain} {
-    reverse_proxy localhost:8000
-}
-
-${workout_domain} {
-    root * /opt/jordanscamp/workout
     try_files {path} /index.html
     file_server
 }
@@ -143,89 +138,10 @@ CWEOF
 APP_DIR="/opt/jordanscamp"
 mkdir -p "$APP_DIR"
 
-# --- Pull secrets from Secrets Manager ---
-SECRETS=$(aws secretsmanager get-secret-value \
-  --region "${aws_region}" \
-  --secret-id "${secret_arn}" \
-  --query SecretString --output text)
-
-SECRET_KEY=$(echo "$SECRETS" | jq -r '.SECRET_KEY')
-DATABASE_URL=$(echo "$SECRETS" | jq -r '.DATABASE_URL')
-GOOGLE_OAUTH_CLIENT_ID=$(echo "$SECRETS" | jq -r '.GOOGLE_OAUTH_CLIENT_ID // empty')
-GOOGLE_OAUTH_CLIENT_SECRET=$(echo "$SECRETS" | jq -r '.GOOGLE_OAUTH_CLIENT_SECRET // empty')
-
-# --- ECR login ---
-aws ecr get-login-password --region "${aws_region}" | \
-  docker login --username AWS --password-stdin "$(echo '${ecr_web_repo}' | cut -d/ -f1)"
-
-# --- Write .env file ---
-cat > "$APP_DIR/.env" <<ENVEOF
-# Django
-SECRET_KEY=$SECRET_KEY
-DATABASE_URL=$DATABASE_URL
-ALLOWED_HOSTS=${allowed_hosts}
-CORS_ALLOWED_ORIGINS=${cors_origins}
-DEBUG=0
-
-# Redis (local container)
-REDIS_URL=${redis_url}
-
-# Google OAuth
-GOOGLE_OAUTH_CLIENT_ID=$GOOGLE_OAUTH_CLIENT_ID
-GOOGLE_OAUTH_CLIENT_SECRET=$GOOGLE_OAUTH_CLIENT_SECRET
-ENVEOF
-
-# Escape $ signs for Docker Compose .env parsing ($ → $$ = literal $)
-# Use character class [$] to match literal $, not end-of-line
-sed -i 's/[$]/\$\$/g' "$APP_DIR/.env"
-
-chmod 600 "$APP_DIR/.env"
-
-# --- Write docker-compose.prod.yml ---
-cat > "$APP_DIR/docker-compose.prod.yml" <<COMPOSEEOF
-services:
-  redis:
-    image: redis:7-alpine
-    restart: unless-stopped
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "3"
-
-  web:
-    image: ${ecr_web_repo}:latest
-    restart: unless-stopped
-    ports:
-      - "8000:8000"
-    env_file:
-      - .env
-    depends_on:
-      redis:
-        condition: service_healthy
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "3"
-
-volumes:
-  redis_data:
-COMPOSEEOF
-
 # --- Deploy static frontends from S3 ---
-mkdir -p "$APP_DIR/webapp" "$APP_DIR/workout" "$APP_DIR/digitaltwins" "$APP_DIR/photobroom"
+mkdir -p "$APP_DIR/webapp" "$APP_DIR/digitaltwins" "$APP_DIR/photobroom"
 
-if aws s3 cp "s3://${s3_bucket}/_deploy/webapp.tar.gz" /tmp/webapp.tar.gz 2>/dev/null; then
+if aws s3 cp "s3://${s3_bucket}/_deploy/webapp.tar.gz" /tmp/webapp.tar.gz --region "${aws_region}" 2>/dev/null; then
   tar xzf /tmp/webapp.tar.gz -C "$APP_DIR/webapp/"
   rm /tmp/webapp.tar.gz
   echo "Webapp (campsite) deployed from S3"
@@ -233,15 +149,7 @@ else
   echo "No webapp tarball in S3 yet — will be deployed by CI"
 fi
 
-if aws s3 cp "s3://${s3_bucket}/_deploy/workout.tar.gz" /tmp/workout.tar.gz 2>/dev/null; then
-  tar xzf /tmp/workout.tar.gz -C "$APP_DIR/workout/"
-  rm /tmp/workout.tar.gz
-  echo "Workout app deployed from S3"
-else
-  echo "No workout tarball in S3 yet — will be deployed by CI"
-fi
-
-if aws s3 cp "s3://${s3_bucket}/_deploy/digitaltwins.tar.gz" /tmp/digitaltwins.tar.gz 2>/dev/null; then
+if aws s3 cp "s3://${s3_bucket}/_deploy/digitaltwins.tar.gz" /tmp/digitaltwins.tar.gz --region "${aws_region}" 2>/dev/null; then
   tar xzf /tmp/digitaltwins.tar.gz -C "$APP_DIR/digitaltwins/"
   rm /tmp/digitaltwins.tar.gz
   echo "Digital Twins app deployed from S3"
@@ -249,7 +157,7 @@ else
   echo "No digitaltwins tarball in S3 yet — will be deployed by CI"
 fi
 
-if aws s3 cp "s3://${s3_bucket}/_deploy/photobroom.tar.gz" /tmp/photobroom.tar.gz 2>/dev/null; then
+if aws s3 cp "s3://${s3_bucket}/_deploy/photobroom.tar.gz" /tmp/photobroom.tar.gz --region "${aws_region}" 2>/dev/null; then
   tar xzf /tmp/photobroom.tar.gz -C "$APP_DIR/photobroom/"
   rm /tmp/photobroom.tar.gz
   echo "PhotoBroom app deployed from S3"
@@ -257,19 +165,7 @@ else
   echo "No photobroom tarball in S3 yet — will be deployed by CI"
 fi
 
-# --- Pull images ---
-docker pull "${ecr_web_repo}:latest"
-
-# --- Start services ---
-cd "$APP_DIR"
-
-# Run migrations
-docker compose -f docker-compose.prod.yml run --rm web python3 manage.py migrate --no-input
-
-# Start all services
-docker compose -f docker-compose.prod.yml up -d
-
-# Start Caddy (needs services running first)
+# --- Start Caddy ---
 systemctl start caddy
 
 echo "=== User data script completed at $(date) ==="
