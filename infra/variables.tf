@@ -22,18 +22,6 @@ variable "ec2_instance_type" {
   default     = "t4g.micro"
 }
 
-variable "db_instance_class" {
-  description = "RDS instance class"
-  type        = string
-  default     = "db.t4g.micro"
-}
-
-variable "db_allocated_storage" {
-  description = "RDS storage in GB"
-  type        = number
-  default     = 20
-}
-
 variable "my_ip" {
   description = "Your IP address for SSH access (CIDR notation, e.g. 1.2.3.4/32)"
   type        = string
@@ -52,22 +40,3 @@ variable "github_repo" {
   default     = "CampingTrip"
 }
 
-variable "django_secret_key" {
-  description = "Django SECRET_KEY (auto-generated if empty)"
-  type        = string
-  sensitive   = true
-  default     = ""
-}
-
-variable "google_oauth_client_id" {
-  description = "Google OAuth client ID"
-  type        = string
-  default     = ""
-}
-
-variable "google_oauth_client_secret" {
-  description = "Google OAuth client secret"
-  type        = string
-  sensitive   = true
-  default     = ""
-}

@@ -93,7 +93,6 @@ jobs:
       - name: Deploy latest version on start
         if: steps.action.outputs.action == 'start'
         run: |
-          ECR_WEB_REPO="${{ vars.ECR_WEB_REPO }}"
           S3_BUCKET="${{ vars.S3_DEPLOY_BUCKET }}"
 
           COMMAND_ID=$(aws ssm send-command \
@@ -102,20 +101,13 @@ jobs:
             --parameters "commands=[
               'set -e',
               'cd /opt/jordanscamp',
-              'aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin $(echo $ECR_WEB_REPO | cut -d/ -f1)',
-              'export ECR_WEB_REPO=$ECR_WEB_REPO',
-              'export IMAGE_TAG=latest',
-              'docker compose -f docker-compose.prod.yml pull',
-              'docker compose -f docker-compose.prod.yml run --rm web python3 manage.py migrate --no-input',
-              'docker compose -f docker-compose.prod.yml up -d',
-              'if aws s3 ls s3://$S3_BUCKET/_deploy/webapp.tar.gz 2>/dev/null; then aws s3 cp s3://$S3_BUCKET/_deploy/webapp.tar.gz /tmp/webapp.tar.gz && rm -rf /opt/jordanscamp/webapp/* && tar xzf /tmp/webapp.tar.gz -C /opt/jordanscamp/webapp/ && rm /tmp/webapp.tar.gz && echo \"Campsite app updated from S3\"; else echo \"No webapp archive in S3, keeping existing\"; fi',
-              'mkdir -p /opt/jordanscamp/workout',
-              'if aws s3 ls s3://$S3_BUCKET/_deploy/workout.tar.gz 2>/dev/null; then aws s3 cp s3://$S3_BUCKET/_deploy/workout.tar.gz /tmp/workout.tar.gz && rm -rf /opt/jordanscamp/workout/* && tar xzf /tmp/workout.tar.gz -C /opt/jordanscamp/workout/ && rm /tmp/workout.tar.gz && echo \"Workout app updated from S3\"; else echo \"No workout archive in S3, keeping existing\"; fi',
+              'if aws s3 ls s3://$S3_BUCKET/_deploy/webapp.tar.gz 2>/dev/null; then aws s3 cp s3://$S3_BUCKET/_deploy/webapp.tar.gz /tmp/webapp.tar.gz && mkdir -p /opt/jordanscamp/webapp && rm -rf /opt/jordanscamp/webapp/* && tar xzf /tmp/webapp.tar.gz -C /opt/jordanscamp/webapp/ && rm /tmp/webapp.tar.gz && echo \"Campsite app updated from S3\"; else echo \"No webapp archive in S3, keeping existing\"; fi',
+              'if aws s3 ls s3://$S3_BUCKET/_deploy/digitaltwins.tar.gz 2>/dev/null; then aws s3 cp s3://$S3_BUCKET/_deploy/digitaltwins.tar.gz /tmp/digitaltwins.tar.gz && mkdir -p /opt/jordanscamp/digitaltwins && rm -rf /opt/jordanscamp/digitaltwins/* && tar xzf /tmp/digitaltwins.tar.gz -C /opt/jordanscamp/digitaltwins/ && rm /tmp/digitaltwins.tar.gz && echo \"Digital Twins app updated from S3\"; else echo \"No digitaltwins archive in S3, keeping existing\"; fi',
+              'if aws s3 ls s3://$S3_BUCKET/_deploy/photobroom.tar.gz 2>/dev/null; then aws s3 cp s3://$S3_BUCKET/_deploy/photobroom.tar.gz /tmp/photobroom.tar.gz && mkdir -p /opt/jordanscamp/photobroom && rm -rf /opt/jordanscamp/photobroom/* && tar xzf /tmp/photobroom.tar.gz -C /opt/jordanscamp/photobroom/ && rm /tmp/photobroom.tar.gz && echo \"PhotoBroom app updated from S3\"; else echo \"No photobroom archive in S3, keeping existing\"; fi',
               'if aws s3 ls s3://$S3_BUCKET/_deploy/Caddyfile 2>/dev/null; then aws s3 cp s3://$S3_BUCKET/_deploy/Caddyfile /etc/caddy/Caddyfile && echo \"Caddyfile updated from S3\"; else echo \"No Caddyfile in S3, keeping existing\"; fi',
               'systemctl restart caddy',
-              'sleep 5',
-              'curl -f http://localhost:8000/health/ || exit 1',
-              'docker image prune -f'
+              'sleep 3',
+              'systemctl is-active --quiet caddy || exit 1'
             ]" \
             --timeout-seconds 600 \
             --query "Command.CommandId" \

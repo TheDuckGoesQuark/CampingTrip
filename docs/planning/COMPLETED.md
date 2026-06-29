@@ -4,6 +4,32 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## Cost cleanup — remove workout app & tear down the orphaned backend/RDS
+
+**Date**: 2026-05-28
+
+**What was done**:
+
+- Removed the workout app entirely (`apps/workout/`, root workspace scripts, CI build/deploy steps, Caddy site, Route53 record). Decision: not moving forward with it — a spreadsheet is sufficient.
+- Verified `campsite` and `digitaltwins` are pure static SPAs (no API calls, no auth). The Django backend's only consumer was the workout app, so after removal the entire backend stack was orphaned.
+- Deleted the Django backend (`backend/`) outright — clean slate; a future backend will be built fresh, likely in a more type-safe language.
+- Terraform teardown of orphaned, cost-bearing resources: RDS PostgreSQL (`rds.tf`), ECR (`ecr.tf`), Secrets Manager (`secrets.tf`), the RDS security group, the two RDS-only data subnets, the `web` CloudWatch log group, and the `api`/`workout` Route53 records. Trimmed the EC2/GitHub-Actions IAM policies (ECR + Secrets) and DB-related variables/outputs.
+- Simplified `infra/templates/user_data.sh`, `infra/Caddyfile`, `deploy.yml`, `ci.yml`, and `infra-control.yml` to a static-only flow (Caddy serves three static sites; no Docker containers, migrations, or `:8000` health check). Docker + Compose remain installed on EC2 so a backend can be added later as a drop-in compose file.
+
+**Key decisions**:
+
+- **Cheapest DB is no DB.** The owner asked whether DynamoDB or a serverless DB would be cheaper than always-on RDS. Since nothing uses the database after the workout app is gone, the cost win is simply removing RDS — no migration needed. DynamoDB was also a poor fit for the relational Django/ORM/auth code that existed.
+- **Keep EC2, not full serverless.** The owner values a simple on-ramp for a future DB-backed backend (and wants to experiment with type-safe languages). Keeping the EC2 box + Docker makes that trivial and keeps a future co-located Postgres free, rather than moving to S3/CloudFront + Lambda/DynamoDB.
+- **Kept `photobroom`** as a deployed static stub to be built later.
+- **No DB backups** configured (there is no DB).
+
+**Deferred / follow-up**:
+
+- Operational teardown of live AWS resources must follow the ordering notes (flip RDS `deletion_protection`/`skip_final_snapshot` before destroy; set ECR `force_delete` before removing the repo; the running EC2 box is updated via the deploy workflow, not by the `user_data` edit).
+- When PhotoBroom needs a backend, follow "Adding a backend later" in `docs/architecture.md`.
+
+---
+
 ## PhotoBroom — project scaffolding & multi-site wiring
 
 **Date**: 2026-03-27

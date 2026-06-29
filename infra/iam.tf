@@ -22,32 +22,6 @@ resource "aws_iam_instance_profile" "ec2" {
   role = aws_iam_role.ec2.name
 }
 
-# ECR pull (for docker login + pull)
-resource "aws_iam_role_policy" "ec2_ecr" {
-  name = "ecr-pull"
-  role = aws_iam_role.ec2.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect   = "Allow"
-        Action   = "ecr:GetAuthorizationToken"
-        Resource = "*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "ecr:BatchGetImage",
-          "ecr:GetDownloadUrlForLayer",
-          "ecr:BatchCheckLayerAvailability",
-        ]
-        Resource = [aws_ecr_repository.web.arn]
-      }
-    ]
-  })
-}
-
 # S3 deploy bucket read
 resource "aws_iam_role_policy" "ec2_s3" {
   name = "s3-deploy-read"
@@ -65,21 +39,6 @@ resource "aws_iam_role_policy" "ec2_s3" {
         aws_s3_bucket.deploy.arn,
         "${aws_s3_bucket.deploy.arn}/*",
       ]
-    }]
-  })
-}
-
-# Secrets Manager read
-resource "aws_iam_role_policy" "ec2_secrets" {
-  name = "secrets-read"
-  role = aws_iam_role.ec2.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect   = "Allow"
-      Action   = "secretsmanager:GetSecretValue"
-      Resource = aws_secretsmanager_secret.app.arn
     }]
   })
 }
@@ -122,36 +81,6 @@ resource "aws_iam_role" "github_actions" {
         }
       }
     }]
-  })
-}
-
-# GitHub Actions: push to ECR
-resource "aws_iam_role_policy" "github_ecr" {
-  name = "ecr-push"
-  role = aws_iam_role.github_actions.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect   = "Allow"
-        Action   = "ecr:GetAuthorizationToken"
-        Resource = "*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "ecr:BatchGetImage",
-          "ecr:GetDownloadUrlForLayer",
-          "ecr:BatchCheckLayerAvailability",
-          "ecr:PutImage",
-          "ecr:InitiateLayerUpload",
-          "ecr:UploadLayerPart",
-          "ecr:CompleteLayerUpload",
-        ]
-        Resource = [aws_ecr_repository.web.arn]
-      }
-    ]
   })
 }
 
