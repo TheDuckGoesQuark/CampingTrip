@@ -23,7 +23,6 @@ interface ScrapedPhoto {
 }
 
 function collectVisiblePhotos(photos: Map<string, ScrapedPhoto>) {
-  // Strategy 1: links to /photo/ID
   const links = document.querySelectorAll('a[href*="/photo/"]');
   for (const link of links) {
     const href = link.getAttribute('href') || '';
@@ -33,40 +32,36 @@ function collectVisiblePhotos(photos: Map<string, ScrapedPhoto>) {
     const id = match[1]!;
     if (photos.has(id)) continue;
 
-    const img = link.querySelector('img');
-    const thumbnailUrl = img?.getAttribute('src') || '';
+    const thumbnailUrl = upscaleThumbnail(extractThumbnailUrl(link));
+    if (!thumbnailUrl) continue;
 
     const ariaLabel =
       link.getAttribute('aria-label') ||
-      img?.getAttribute('aria-label') ||
       link.closest('[aria-label]')?.getAttribute('aria-label') ||
       '';
 
-    if (thumbnailUrl) {
-      photos.set(id, { id, thumbnailUrl, ariaLabel });
-    }
+    photos.set(id, { id, thumbnailUrl, ariaLabel });
   }
+}
 
-  // Strategy 2: CDN images with parent link
-  if (photos.size === 0) {
-    const imgs = document.querySelectorAll(
-      'img[src*="lh3.googleusercontent.com"]'
-    );
-    for (const img of imgs) {
-      const parentLink = img.closest('a[href*="/photo/"]');
-      if (parentLink) {
-        const href = parentLink.getAttribute('href') || '';
-        const match = href.match(/\/photo\/([A-Za-z0-9_-]+)/);
-        if (match && !photos.has(match[1]!)) {
-          photos.set(match[1]!, {
-            id: match[1]!,
-            thumbnailUrl: img.getAttribute('src') || '',
-            ariaLabel: img.getAttribute('aria-label') || '',
-          });
-        }
-      }
-    }
-  }
+function extractThumbnailUrl(link: Element): string {
+  const bgEl = link.querySelector('[data-latest-bg]');
+  const attr = bgEl?.getAttribute('data-latest-bg');
+  if (attr) return attr;
+
+  const styled = link.querySelector('[style*="background-image"]');
+  const styleStr =
+    styled?.getAttribute('style') || bgEl?.getAttribute('style') || '';
+  const m = styleStr.match(/background-image\s*:\s*url\(["']?([^"')]+)["']?\)/i);
+  if (m) return m[1]!;
+
+  const img = link.querySelector('img');
+  return img?.getAttribute('src') || '';
+}
+
+function upscaleThumbnail(url: string): string {
+  if (!url) return '';
+  return url.replace(/=w\d+-h\d+/, '=w640-h640');
 }
 
 function findButtonByAriaLabel(pattern: RegExp): Element | null {
@@ -110,11 +105,11 @@ describe('content script — photo scraping', () => {
   it('extracts photo ID, thumbnail URL, and aria-label from standard grid', () => {
     document.body.innerHTML = `
       <div class="yDSiEe">
-        <a href="/photo/AF1QipNabc123_def" aria-label="Photo - Mar 27, 2024">
-          <img src="https://lh3.googleusercontent.com/abc123=w256-h256" />
+        <a href="/photo/AF1QipNabc123_def" aria-label="Photo – Portrait – 29 Jun 2024, 05:23:03">
+          <div data-latest-bg="https://photos.fife.usercontent.google.com/pw/abc123=w81-h177-no?authuser=0"></div>
         </a>
-        <a href="/photo/AF1QipNxyz789_ghi" aria-label="Photo - Mar 27, 2023">
-          <img src="https://lh3.googleusercontent.com/xyz789=w256-h256" />
+        <a href="/photo/AF1QipNxyz789_ghi" aria-label="Photo – Portrait – 29 Jun 2023, 14:40:53">
+          <div data-latest-bg="https://photos.fife.usercontent.google.com/pw/xyz789=w82-h177-no?authuser=0"></div>
         </a>
       </div>
     `;
@@ -126,18 +121,20 @@ describe('content script — photo scraping', () => {
 
     const first = photos.get('AF1QipNabc123_def');
     expect(first).toBeDefined();
-    expect(first!.thumbnailUrl).toContain('lh3.googleusercontent.com');
-    expect(first!.ariaLabel).toBe('Photo - Mar 27, 2024');
+    expect(first!.thumbnailUrl).toContain('photos.fife.usercontent.google.com');
+    expect(first!.ariaLabel).toBe('Photo – Portrait – 29 Jun 2024, 05:23:03');
 
     const second = photos.get('AF1QipNxyz789_ghi');
     expect(second).toBeDefined();
-    expect(second!.ariaLabel).toBe('Photo - Mar 27, 2023');
+    expect(second!.ariaLabel).toBe('Photo – Portrait – 29 Jun 2023, 14:40:53');
   });
 
-  it('extracts aria-label from img element when link has none', () => {
+  it('extracts the photo ID from a relative search-scoped href', () => {
+    // Real grid hrefs are relative and search-scoped, e.g.
+    // ./search/<token>/top/photo/<id>
     document.body.innerHTML = `
-      <a href="/photo/photo123">
-        <img src="https://lh3.googleusercontent.com/thumb1" aria-label="Screenshot from 2022" />
+      <a href="./search/CgdKdW5lIDI5/top/photo/AF1QipNC8RPNeIKzEWvKOYR" aria-label="Photo – 29 Jun">
+        <div data-latest-bg="https://photos.fife.usercontent.google.com/pw/thumb=w81-h177-no"></div>
       </a>
     `;
 
@@ -145,14 +142,59 @@ describe('content script — photo scraping', () => {
     collectVisiblePhotos(photos);
 
     expect(photos.size).toBe(1);
-    expect(photos.get('photo123')!.ariaLabel).toBe('Screenshot from 2022');
+    expect(photos.has('AF1QipNC8RPNeIKzEWvKOYR')).toBe(true);
+  });
+
+  it('upscales the grid thumbnail size directive for the swipe UI', () => {
+    document.body.innerHTML = `
+      <a href="/photo/sized" aria-label="Photo">
+        <div data-latest-bg="https://photos.fife.usercontent.google.com/pw/thumb=w81-h177-no?authuser=0"></div>
+      </a>
+    `;
+
+    const photos = new Map<string, ScrapedPhoto>();
+    collectVisiblePhotos(photos);
+
+    const thumb = photos.get('sized')!.thumbnailUrl;
+    expect(thumb).toContain('=w640-h640');
+    expect(thumb).not.toContain('=w81-h177');
+    // trailing flags and query string are preserved
+    expect(thumb).toContain('-no?authuser=0');
+  });
+
+  it('reads the thumbnail from computed background-image when the attr is absent', () => {
+    document.body.innerHTML = `
+      <a href="/photo/bgstyle" aria-label="Photo">
+        <div style="background-image: url(&quot;https://photos.fife.usercontent.google.com/pw/styled=w100-h100-no&quot;)"></div>
+      </a>
+    `;
+
+    const photos = new Map<string, ScrapedPhoto>();
+    collectVisiblePhotos(photos);
+
+    expect(photos.size).toBe(1);
+    expect(photos.get('bgstyle')!.thumbnailUrl).toContain('styled');
+  });
+
+  it('falls back to <img> src when no background-image is present', () => {
+    document.body.innerHTML = `
+      <a href="/photo/imgcell" aria-label="Photo">
+        <img src="https://lh3.googleusercontent.com/legacy=w200-h200" />
+      </a>
+    `;
+
+    const photos = new Map<string, ScrapedPhoto>();
+    collectVisiblePhotos(photos);
+
+    expect(photos.size).toBe(1);
+    expect(photos.get('imgcell')!.thumbnailUrl).toContain('legacy');
   });
 
   it('extracts aria-label from ancestor element as fallback', () => {
     document.body.innerHTML = `
       <div aria-label="Photos from March 27">
         <a href="/photo/photo456">
-          <img src="https://lh3.googleusercontent.com/thumb2" />
+          <div data-latest-bg="https://photos.fife.usercontent.google.com/pw/thumb2=w81-h177-no"></div>
         </a>
       </div>
     `;
@@ -167,10 +209,10 @@ describe('content script — photo scraping', () => {
   it('deduplicates photos by ID', () => {
     document.body.innerHTML = `
       <a href="/photo/same_id" aria-label="Photo A">
-        <img src="https://lh3.googleusercontent.com/a" />
+        <div data-latest-bg="https://photos.fife.usercontent.google.com/pw/a=w81-h177-no"></div>
       </a>
       <a href="/photo/same_id" aria-label="Photo A duplicate">
-        <img src="https://lh3.googleusercontent.com/b" />
+        <div data-latest-bg="https://photos.fife.usercontent.google.com/pw/b=w81-h177-no"></div>
       </a>
     `;
 
@@ -179,12 +221,12 @@ describe('content script — photo scraping', () => {
 
     expect(photos.size).toBe(1);
     // First occurrence wins
-    expect(photos.get('same_id')!.thumbnailUrl).toContain('/a');
+    expect(photos.get('same_id')!.thumbnailUrl).toContain('/a=');
   });
 
-  it('skips links without an img (no thumbnail)', () => {
+  it('skips cells with no thumbnail (background not yet loaded)', () => {
     document.body.innerHTML = `
-      <a href="/photo/no_img" aria-label="Something">
+      <a href="/photo/no_thumb" aria-label="Something">
         <div class="placeholder"></div>
       </a>
     `;
@@ -195,39 +237,10 @@ describe('content script — photo scraping', () => {
     expect(photos.size).toBe(0);
   });
 
-  it('falls back to Strategy 2 when Strategy 1 finds nothing', () => {
-    // Strategy 2: img with CDN src, parent link with /photo/ href
-    // but no direct a[href*="/photo/"] at top level
-    document.body.innerHTML = `
-      <div>
-        <a href="/photo/fallback_id">
-          <div>
-            <img src="https://lh3.googleusercontent.com/fallback_thumb" aria-label="Fallback photo" />
-          </div>
-        </a>
-      </div>
-    `;
-
-    // Strategy 1 WILL find this — let's test a case where links exist
-    // but they don't match the pattern. Actually, strategy 1 would find
-    // the <a> above. Let me test a real fallback scenario.
-    // Strategy 2 only runs when strategy 1 produces 0 results.
-    // Since strategy 1 queries a[href*="/photo/"], it would match the above.
-    // The fallback is really for deeply-nested images. Let me verify strategy 1
-    // handles deep nesting correctly:
-
-    const photos = new Map<string, ScrapedPhoto>();
-    collectVisiblePhotos(photos);
-
-    // Strategy 1 should find this even with nesting
-    expect(photos.size).toBe(1);
-    expect(photos.get('fallback_id')!.thumbnailUrl).toContain('fallback_thumb');
-  });
-
   it('handles Google Photos-style long IDs with hyphens and underscores', () => {
     document.body.innerHTML = `
       <a href="/photo/AF1QipN-x_Y7z-abc_123DEF456" aria-label="Photo">
-        <img src="https://lh3.googleusercontent.com/long_id" />
+        <div data-latest-bg="https://photos.fife.usercontent.google.com/pw/long=w81-h177-no"></div>
       </a>
     `;
 
@@ -241,10 +254,10 @@ describe('content script — photo scraping', () => {
   it('ignores links to non-photo paths', () => {
     document.body.innerHTML = `
       <a href="/album/abc123">
-        <img src="https://lh3.googleusercontent.com/album_thumb" />
+        <div data-latest-bg="https://photos.fife.usercontent.google.com/pw/album=w81-h177-no"></div>
       </a>
       <a href="/sharing/abc456">
-        <img src="https://lh3.googleusercontent.com/share_thumb" />
+        <div data-latest-bg="https://photos.fife.usercontent.google.com/pw/share=w81-h177-no"></div>
       </a>
     `;
 
@@ -397,46 +410,28 @@ describe('content script — realistic Google Photos HTML', () => {
   });
 
   it('scrapes a realistic Google Photos search result grid', () => {
-    // Simulate the kind of HTML Google Photos renders for search results
-    // Class names are obfuscated — we don't rely on them
+    // Mirrors the real DOM observed on photos.google.com/search/<date>:
+    // <a class="p137Zd" href="./search/<token>/top/photo/<id>" aria-label="…">
+    //   <div class="RY3tic" data-latest-bg="<thumb url>" style="background-image:…">
+    // Class names are obfuscated — we rely only on href, data-latest-bg, aria-label.
     document.body.innerHTML = `
       <div class="yDSiEe" role="list">
-        <div class="aKpAob">
-          <div class="iGLMcd">March 27, 2024</div>
-        </div>
-        <div class="FeedLh" role="listitem">
-          <a href="/photo/AF1QipNAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-             aria-label="Photo - Mar 27, 2024"
-             class="QjSxEe">
-            <div class="DlHGSb">
-              <img src="https://lh3.googleusercontent.com/pw/AM-JKL_photo1=w356-h200-n-k-rw-no"
-                   class="YQ0jkd" loading="lazy" />
-            </div>
-          </a>
-        </div>
-        <div class="FeedLh" role="listitem">
-          <a href="/photo/AF1QipNBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"
-             aria-label="Photo - Mar 27, 2023"
-             class="QjSxEe">
-            <div class="DlHGSb">
-              <img src="https://lh3.googleusercontent.com/pw/AM-JKL_photo2=w356-h200-n-k-rw-no"
-                   class="YQ0jkd" loading="lazy" />
-            </div>
-          </a>
-        </div>
-        <div class="aKpAob">
-          <div class="iGLMcd">March 27, 2022</div>
-        </div>
-        <div class="FeedLh" role="listitem">
-          <a href="/photo/AF1QipNCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
-             aria-label="Photo taken at Edinburgh Castle - Mar 27, 2022"
-             class="QjSxEe">
-            <div class="DlHGSb">
-              <img src="https://lh3.googleusercontent.com/pw/AM-JKL_photo3=w356-h200-n-k-rw-no"
-                   class="YQ0jkd" loading="lazy" />
-            </div>
-          </a>
-        </div>
+        <a class="p137Zd" tabindex="0"
+           aria-label="Photo – Portrait – 27 Mar 2024, 05:23:03"
+           href="./search/CgdNYXJjaCAyNw/top/photo/AF1QipNAAAAAAAAAAAAAAAAAAAAAAAAAAAA">
+          <div class="RY3tic" style="opacity: 1; background-image: url(&quot;x&quot;)"
+               data-latest-bg="https://photos.fife.usercontent.google.com/pw/photo1=w81-h177-no?authuser=0"></div>
+        </a>
+        <a class="p137Zd" tabindex="0"
+           aria-label="Photo – Portrait – 27 Mar 2023, 14:40:53"
+           href="./search/CgdNYXJjaCAyNw/top/photo/AF1QipNBBBBBBBBBBBBBBBBBBBBBBBBBBBBB">
+          <div class="RY3tic" data-latest-bg="https://photos.fife.usercontent.google.com/pw/photo2=w82-h177-no?authuser=0"></div>
+        </a>
+        <a class="p137Zd" tabindex="0"
+           aria-label="Photo taken at Edinburgh Castle – 27 Mar 2022, 20:14:21"
+           href="./search/CgdNYXJjaCAyNw/top/photo/AF1QipNCCCCCCCCCCCCCCCCCCCCCCCCCCCCC">
+          <div class="RY3tic" data-latest-bg="https://photos.fife.usercontent.google.com/pw/photo3=w108-h192-no?authuser=0"></div>
+        </a>
       </div>
     `;
 
@@ -448,44 +443,39 @@ describe('content script — realistic Google Photos HTML', () => {
     const photo1 = photos.get('AF1QipNAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
     expect(photo1).toBeDefined();
     expect(photo1!.thumbnailUrl).toContain('photo1');
-    expect(photo1!.ariaLabel).toBe('Photo - Mar 27, 2024');
+    expect(photo1!.thumbnailUrl).toContain('=w640-h640');
+    expect(photo1!.ariaLabel).toBe('Photo – Portrait – 27 Mar 2024, 05:23:03');
 
     const photo2 = photos.get('AF1QipNBBBBBBBBBBBBBBBBBBBBBBBBBBBBB');
     expect(photo2).toBeDefined();
-    expect(photo2!.ariaLabel).toBe('Photo - Mar 27, 2023');
+    expect(photo2!.ariaLabel).toContain('27 Mar 2023');
 
     const photo3 = photos.get('AF1QipNCCCCCCCCCCCCCCCCCCCCCCCCCCCCC');
     expect(photo3).toBeDefined();
     expect(photo3!.ariaLabel).toContain('Edinburgh Castle');
   });
 
-  it('finds delete button in realistic Google Photos lightbox toolbar', () => {
+  it('finds the trash button in a realistic en-GB lightbox toolbar', () => {
+    // Real toolbar observed on photos.google.com (en-GB): the trash control is
+    // a <button aria-label="Move to bin"> — NOT "Delete"/"Move to trash". The
+    // sidebar "Bin" is an <a role="tab">, so it must not be matched.
     document.body.innerHTML = `
-      <div class="WiOBge">
-        <div class="p961c" role="toolbar">
-          <button class="VfPpkd-Bz112c-LgbsSe yHy1rc eT1oJ"
-                  aria-label="Share">
-            <span class="VfPpkd-vQzf8d">share</span>
-          </button>
-          <button class="VfPpkd-Bz112c-LgbsSe yHy1rc eT1oJ"
-                  aria-label="Edit">
-            <span class="VfPpkd-vQzf8d">edit</span>
-          </button>
-          <button class="VfPpkd-Bz112c-LgbsSe yHy1rc eT1oJ"
-                  aria-label="Delete">
-            <span class="VfPpkd-vQzf8d">delete</span>
-          </button>
-          <button class="VfPpkd-Bz112c-LgbsSe yHy1rc eT1oJ"
-                  aria-label="More options">
-            <span class="VfPpkd-vQzf8d">more_vert</span>
-          </button>
-        </div>
+      <a role="tab" aria-label="Bin">bin</a>
+      <div role="toolbar">
+        <button aria-label="Share"><span>share</span></button>
+        <button aria-label="Edit"><span>edit</span></button>
+        <button aria-label="Open info"><span>info</span></button>
+        <button aria-label="Favourite"><span>star</span></button>
+        <button aria-label="Move to bin"><span>delete</span></button>
+        <button aria-label="More options"><span>more_vert</span></button>
       </div>
     `;
 
-    const deleteBtn = findButtonByAriaLabel(/delete|move to trash|remove/i);
+    const deleteBtn = findButtonByAriaLabel(/move to (bin|trash)|delete|remove/i);
     expect(deleteBtn).not.toBeNull();
-    expect(deleteBtn!.getAttribute('aria-label')).toBe('Delete');
+    expect(deleteBtn!.getAttribute('aria-label')).toBe('Move to bin');
+    // The sidebar "Bin" tab is an <a role="tab">, so it is not a candidate.
+    expect(deleteBtn!.tagName.toLowerCase()).toBe('button');
   });
 
   it('finds confirmation dialog button in realistic trash dialog', () => {

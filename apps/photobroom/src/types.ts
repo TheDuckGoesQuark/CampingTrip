@@ -2,7 +2,11 @@
 export interface ScrapedPhoto {
   /** Google Photos media item ID (from URL /photo/ID). */
   id: string;
-  /** Thumbnail URL from lh3.googleusercontent.com. Expires after ~60 min. */
+  /**
+   * Thumbnail as a data: URL. The extension fetches the bytes from Google's
+   * usercontent host (which sets Cross-Origin-Resource-Policy) and inlines
+   * them so the web app can render them cross-site.
+   */
   thumbnailUrl: string;
   /** aria-label text from the DOM — typically contains date and description. */
   ariaLabel: string;
