@@ -1,0 +1,27 @@
+{
+  "name": "@jordanscamp/theme",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Shared design language (tokens + Mantine theme) for jordanscamp apps.",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./tokens": {
+      "types": "./src/tokens.ts",
+      "default": "./src/tokens.ts"
+    }
+  },
+  "peerDependencies": {
+    "@mantine/core": "^8.0.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@mantine/core": { "optional": true },
+    "react": { "optional": true },
+    "react-dom": { "optional": true }
+  }
+}

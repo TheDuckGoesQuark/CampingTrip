@@ -80,6 +80,9 @@ importers:
 
   apps/digitaltwins:
     dependencies:
+      '@jordanscamp/theme':
+        specifier: workspace:*
+        version: link:../../packages/theme
       '@mantine/core':
         specifier: ^8.3.17
         version: 8.3.17(@mantine/hooks@8.3.17(react@18.3.1))(@types/react@18.3.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -202,6 +205,18 @@ importers:
       vitest:
         specifier: ^4.0.18
         version: 4.1.0(jsdom@28.1.0)(vite@6.4.1(sugarss@5.0.1(postcss@8.5.8)))
+
+  packages/theme:
+    dependencies:
+      '@mantine/core':
+        specifier: ^8.0.0
+        version: 8.3.17(@mantine/hooks@8.3.17(react@18.3.1))(@types/react@18.3.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react:
+        specifier: ^18.0.0
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.0.0
+        version: 18.3.1(react@18.3.1)
 
 packages:
 
