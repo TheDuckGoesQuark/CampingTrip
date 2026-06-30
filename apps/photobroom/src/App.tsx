@@ -1,13 +1,16 @@
+import { useState } from 'react';
 import {
   Anchor,
   Badge,
   Box,
+  Button,
   Card,
   Code,
   Container,
   Divider,
   Group,
   List,
+  SimpleGrid,
   Stack,
   Text,
   ThemeIcon,
@@ -16,6 +19,67 @@ import {
 
 const REPO = 'https://github.com/TheDuckGoesQuark/CampingTrip';
 const EXT_DIR = 'extensions/photobroom';
+const COFFEE_URL = 'https://buymeacoffee.com/jordanmackie';
+
+/** A screenshot slot that shows a graceful placeholder until the image exists. */
+function Shot({ src, caption }: { src: string; caption: string }) {
+  const [ok, setOk] = useState(true);
+  return (
+    <Card withBorder bg="dark.7" radius="md" padding={0} style={{ overflow: 'hidden' }}>
+      <Box
+        style={{
+          aspectRatio: '16 / 10',
+          background: 'var(--mantine-color-dark-8)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        {ok ? (
+          <img
+            src={src}
+            alt={caption}
+            onError={() => setOk(false)}
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+        ) : (
+          <Text
+            size="sm"
+            c="dimmed"
+            ta="center"
+            style={{
+              border: '1px dashed var(--mantine-color-dark-4)',
+              borderRadius: 8,
+              padding: '32px 24px',
+            }}
+          >
+            Screenshot coming soon
+          </Text>
+        )}
+      </Box>
+      <Text size="sm" c="dimmed" p="sm">
+        {caption}
+      </Text>
+    </Card>
+  );
+}
+
+function CoffeeButton(props: { size?: string }) {
+  return (
+    <Button
+      component="a"
+      href={COFFEE_URL}
+      target="_blank"
+      rel="noopener noreferrer"
+      color="yellow"
+      variant="filled"
+      radius="md"
+      size={props.size}
+    >
+      ☕ Buy me a coffee
+    </Button>
+  );
+}
 
 function Step({ n, children }: { n: number; children: React.ReactNode }) {
   return (
@@ -56,12 +120,13 @@ export function App() {
           <Group h={52} justify="space-between">
             <Text fw={700}>🧹 PhotoBroom</Text>
             <Group gap="lg">
-              <Anchor href={REPO} target="_blank" size="sm" c="dimmed">
+              <Anchor href={REPO} target="_blank" size="sm" c="dimmed" visibleFrom="xs">
                 Source
               </Anchor>
-              <Anchor href="https://jordanscamp.site" target="_blank" size="sm" c="dimmed">
+              <Anchor href="https://jordanscamp.site" target="_blank" size="sm" c="dimmed" visibleFrom="sm">
                 jordanscamp.site
               </Anchor>
+              <CoffeeButton size="xs" />
             </Group>
           </Group>
         </Container>
@@ -84,6 +149,16 @@ export function App() {
               is recoverable for 60 days.
             </Text>
           </Stack>
+
+          {/* Gallery */}
+          <Section title="See it in action">
+            <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+              <Shot src="images/screenshots/sweep.jpg" caption="1. Search a date, then hit “Sweep this search”." />
+              <Shot src="images/screenshots/review.jpg" caption="2. Review each photo with the arrow keys — bin, skip, or keep." />
+              <Shot src="images/screenshots/confirm.jpg" caption="3. Check the tally, then move the binned ones in one go." />
+              <Shot src="images/screenshots/done.jpg" caption="4. Done — and re-reviewed photos are remembered next time." />
+            </SimpleGrid>
+          </Section>
 
           {/* Why */}
           <Section title="Why a browser extension?">
@@ -213,6 +288,18 @@ export function App() {
               the unofficial, use-at-your-own-risk helper that it is.
             </Text>
           </Section>
+
+          <Card withBorder bg="dark.7" radius="md" padding="lg">
+            <Group justify="space-between" wrap="wrap" gap="md">
+              <Box>
+                <Text fw={600}>Found this useful?</Text>
+                <Text size="sm" c="dimmed">
+                  PhotoBroom is free and ad-free. A coffee keeps the tinkering going.
+                </Text>
+              </Box>
+              <CoffeeButton />
+            </Group>
+          </Card>
 
           <Divider color="dark.5" />
           <Group justify="space-between">
