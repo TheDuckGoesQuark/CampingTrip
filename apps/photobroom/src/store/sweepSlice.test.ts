@@ -4,10 +4,8 @@ import {
   sweepSlice,
   sweepActions,
   selectCurrentPhoto,
-  selectNextPhoto,
   selectIsComplete,
   selectTrashIds,
-  selectKeepIds,
   selectStats,
 } from './sweepSlice';
 import type { ScrapedPhoto } from '../types';
@@ -15,7 +13,9 @@ import type { ScrapedPhoto } from '../types';
 function createStore(preloaded?: Partial<ReturnType<typeof sweepSlice.getInitialState>>) {
   return configureStore({
     reducer: { sweep: sweepSlice.reducer },
-    preloadedState: preloaded ? { sweep: { ...sweepSlice.getInitialState(), ...preloaded } } : undefined,
+    preloadedState: preloaded
+      ? { sweep: { ...sweepSlice.getInitialState(), ...preloaded } }
+      : undefined,
   });
 }
 
@@ -26,36 +26,21 @@ const mockPhotos: ScrapedPhoto[] = [
 ];
 
 describe('sweepSlice', () => {
-  describe('fetchStart / fetchSuccess / fetchError', () => {
-    it('sets loading state and clears previous data', () => {
+  describe('fetchStart / fetchSuccess', () => {
+    it('clears previous data on start', () => {
       const store = createStore({ photos: mockPhotos, currentIndex: 2 });
-      store.dispatch(sweepActions.fetchStart('March 27'));
-
+      store.dispatch(sweepActions.fetchStart());
       const state = store.getState().sweep;
-      expect(state.loading).toBe(true);
-      expect(state.searchDate).toBe('March 27');
       expect(state.photos).toHaveLength(0);
+      expect(state.decisions).toEqual({});
       expect(state.currentIndex).toBe(0);
     });
 
     it('stores photos on success', () => {
       const store = createStore();
-      store.dispatch(sweepActions.fetchStart('March 27'));
+      store.dispatch(sweepActions.fetchStart());
       store.dispatch(sweepActions.fetchSuccess(mockPhotos));
-
-      const state = store.getState().sweep;
-      expect(state.loading).toBe(false);
-      expect(state.photos).toHaveLength(3);
-    });
-
-    it('stores error on failure', () => {
-      const store = createStore();
-      store.dispatch(sweepActions.fetchStart('March 27'));
-      store.dispatch(sweepActions.fetchError('Extension unreachable'));
-
-      const state = store.getState().sweep;
-      expect(state.loading).toBe(false);
-      expect(state.error).toBe('Extension unreachable');
+      expect(store.getState().sweep.photos).toHaveLength(3);
     });
   });
 
@@ -63,7 +48,6 @@ describe('sweepSlice', () => {
     it('records a decision and advances the index', () => {
       const store = createStore({ photos: mockPhotos });
       store.dispatch(sweepActions.decide({ id: 'a', decision: 'keep' }));
-
       const state = store.getState().sweep;
       expect(state.decisions['a']).toBe('keep');
       expect(state.currentIndex).toBe(1);
@@ -72,28 +56,24 @@ describe('sweepSlice', () => {
     it('does not advance past the end', () => {
       const store = createStore({ photos: mockPhotos, currentIndex: 2 });
       store.dispatch(sweepActions.decide({ id: 'c', decision: 'trash' }));
-
       expect(store.getState().sweep.currentIndex).toBe(3);
-
-      // Already at the end — deciding again shouldn't crash
       store.dispatch(sweepActions.decide({ id: 'x', decision: 'keep' }));
       expect(store.getState().sweep.currentIndex).toBe(3);
     });
   });
 
   describe('undo', () => {
-    it('goes back one card and removes the decision', () => {
+    it('goes back one card and removes that decision only', () => {
       const store = createStore({ photos: mockPhotos });
       store.dispatch(sweepActions.decide({ id: 'a', decision: 'trash' }));
       store.dispatch(sweepActions.decide({ id: 'b', decision: 'keep' }));
-
       expect(store.getState().sweep.currentIndex).toBe(2);
 
       store.dispatch(sweepActions.undo());
       const state = store.getState().sweep;
       expect(state.currentIndex).toBe(1);
       expect(state.decisions['b']).toBeUndefined();
-      expect(state.decisions['a']).toBe('trash'); // still there
+      expect(state.decisions['a']).toBe('trash');
     });
 
     it('does nothing at index 0', () => {
@@ -103,68 +83,9 @@ describe('sweepSlice', () => {
     });
   });
 
-  describe('flipDecision', () => {
-    it('flips trash to keep', () => {
-      const store = createStore({
-        photos: mockPhotos,
-        decisions: { a: 'trash' },
-      });
-      store.dispatch(sweepActions.flipDecision('a'));
-      expect(store.getState().sweep.decisions['a']).toBe('keep');
-    });
-
-    it('flips keep to trash', () => {
-      const store = createStore({
-        photos: mockPhotos,
-        decisions: { a: 'keep' },
-      });
-      store.dispatch(sweepActions.flipDecision('a'));
-      expect(store.getState().sweep.decisions['a']).toBe('trash');
-    });
-
-    it('does not flip skip', () => {
-      const store = createStore({
-        photos: mockPhotos,
-        decisions: { a: 'skip' },
-      });
-      store.dispatch(sweepActions.flipDecision('a'));
-      expect(store.getState().sweep.decisions['a']).toBe('skip');
-    });
-  });
-
-  describe('delete flow', () => {
-    it('tracks progress through deletion', () => {
-      const store = createStore({
-        photos: mockPhotos,
-        decisions: { a: 'trash', b: 'trash', c: 'keep' },
-      });
-
-      store.dispatch(sweepActions.deleteStart());
-      let state = store.getState().sweep;
-      expect(state.deleting).toBe(true);
-      expect(state.deleteProgress).toEqual({ done: 0, total: 2 });
-
-      store.dispatch(sweepActions.deleteProgress({ id: 'a', success: true }));
-      state = store.getState().sweep;
-      expect(state.deleteProgress.done).toBe(1);
-      expect(state.deleteResults).toHaveLength(1);
-
-      store.dispatch(sweepActions.deleteProgress({ id: 'b', success: false, error: 'Button not found' }));
-      store.dispatch(sweepActions.deleteComplete());
-      state = store.getState().sweep;
-      expect(state.deleting).toBe(false);
-      expect(state.deleteResults).toHaveLength(2);
-    });
-  });
-
   describe('reset', () => {
     it('returns to initial state', () => {
-      const store = createStore({
-        photos: mockPhotos,
-        decisions: { a: 'keep' },
-        currentIndex: 2,
-        searchDate: 'March 27',
-      });
+      const store = createStore({ photos: mockPhotos, decisions: { a: 'keep' }, currentIndex: 2 });
       store.dispatch(sweepActions.reset());
       const state = store.getState().sweep;
       expect(state.photos).toHaveLength(0);
@@ -174,52 +95,39 @@ describe('sweepSlice', () => {
   });
 
   describe('selectors', () => {
+    const withState = (over: Partial<ReturnType<typeof sweepSlice.getInitialState>>) => ({
+      sweep: { ...sweepSlice.getInitialState(), ...over },
+    });
+
     it('selectCurrentPhoto returns the photo at currentIndex', () => {
-      const state = { sweep: { ...sweepSlice.getInitialState(), photos: mockPhotos, currentIndex: 1 } };
-      expect(selectCurrentPhoto(state)?.id).toBe('b');
+      expect(selectCurrentPhoto(withState({ photos: mockPhotos, currentIndex: 1 }))?.id).toBe('b');
     });
 
-    it('selectNextPhoto returns the next photo', () => {
-      const state = { sweep: { ...sweepSlice.getInitialState(), photos: mockPhotos, currentIndex: 1 } };
-      expect(selectNextPhoto(state)?.id).toBe('c');
-    });
-
-    it('selectIsComplete when all photos are swiped', () => {
-      const state = { sweep: { ...sweepSlice.getInitialState(), photos: mockPhotos, currentIndex: 3 } };
-      expect(selectIsComplete(state)).toBe(true);
+    it('selectIsComplete is true when all photos are reviewed', () => {
+      expect(selectIsComplete(withState({ photos: mockPhotos, currentIndex: 3 }))).toBe(true);
     });
 
     it('selectIsComplete is false when photos remain', () => {
-      const state = { sweep: { ...sweepSlice.getInitialState(), photos: mockPhotos, currentIndex: 1 } };
-      expect(selectIsComplete(state)).toBe(false);
+      expect(selectIsComplete(withState({ photos: mockPhotos, currentIndex: 1 }))).toBe(false);
     });
 
-    it('selectTrashIds and selectKeepIds', () => {
-      const state = {
-        sweep: {
-          ...sweepSlice.getInitialState(),
-          photos: mockPhotos,
-          decisions: { a: 'trash' as const, b: 'keep' as const, c: 'trash' as const },
-        },
-      };
+    it('selectTrashIds returns only trashed ids in order', () => {
+      const state = withState({
+        photos: mockPhotos,
+        decisions: { a: 'trash', b: 'keep', c: 'trash' },
+      });
       expect(selectTrashIds(state)).toEqual(['a', 'c']);
-      expect(selectKeepIds(state)).toEqual(['b']);
     });
 
     it('selectStats computes counts', () => {
-      const state = {
-        sweep: {
-          ...sweepSlice.getInitialState(),
+      const stats = selectStats(
+        withState({
           photos: mockPhotos,
-          decisions: { a: 'trash' as const, b: 'keep' as const },
+          decisions: { a: 'trash', b: 'keep' },
           currentIndex: 2,
-        },
-      };
-      const stats = selectStats(state);
-      expect(stats.total).toBe(3);
-      expect(stats.kept).toBe(1);
-      expect(stats.trashed).toBe(1);
-      expect(stats.remaining).toBe(1);
+        })
+      );
+      expect(stats).toMatchObject({ total: 3, kept: 1, trashed: 1, skipped: 0, remaining: 1 });
     });
   });
 });

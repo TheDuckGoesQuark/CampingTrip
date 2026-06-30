@@ -1,42 +1,15 @@
-/** A photo scraped from Google Photos by the extension. */
+/** A photo read from the Google Photos grid by the overlay. */
 export interface ScrapedPhoto {
-  /** Google Photos media item ID (from URL /photo/ID). */
+  /** Google Photos media item ID (from the cell's /photo/ID link). */
   id: string;
   /**
-   * Thumbnail as a data: URL. The extension fetches the bytes from Google's
-   * usercontent host (which sets Cross-Origin-Resource-Policy) and inlines
-   * them so the web app can render them cross-site.
+   * Thumbnail URL — Google's usercontent URL straight from the grid (the
+   * overlay runs on photos.google.com, so it loads it directly; no inlining).
    */
   thumbnailUrl: string;
-  /** aria-label text from the DOM — typically contains date and description. */
+  /** aria-label text from the DOM — typically contains the date/description. */
   ariaLabel: string;
 }
 
 /** User's decision for a photo during the sweep. */
 export type Decision = 'keep' | 'trash' | 'skip';
-
-/** Result of a single photo deletion attempt. */
-export interface DeleteResult {
-  id: string;
-  success: boolean;
-  error?: string;
-}
-
-/** Extension ping response. */
-export interface PingResponse {
-  ok: boolean;
-  version: string;
-}
-
-/** Extension fetch response. */
-export interface FetchPhotosResponse {
-  photos?: ScrapedPhoto[];
-  error?: string;
-}
-
-/** Extension delete response. */
-export interface DeletePhotosResponse {
-  deleted: boolean;
-  results: DeleteResult[];
-  error?: string;
-}

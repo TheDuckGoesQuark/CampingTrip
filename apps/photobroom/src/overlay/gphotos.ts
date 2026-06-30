@@ -45,6 +45,26 @@ export const SELECTORS = {
   dialogActionAttr: 'data-mdc-dialog-action',
 } as const;
 
+/**
+ * Timing/limits — the other Google-fragile knobs (alongside SELECTORS). If
+ * Google's render latency or virtualisation changes, tune these in one place.
+ */
+const TIMING = {
+  /** Give up scrolling after this many passes with no new progress. */
+  maxIdlePasses: 6,
+  /** Hard cap on photos collected in one sweep (very large searches). */
+  maxPhotos: 1000,
+  collectStepDelay: 700,
+  selectStepDelay: 500,
+  settleAfterScrollTop: 300,
+  /** Poll budget for the bulk "Move to bin" button (tries × delayMs). */
+  binButton: { tries: 15, delay: 200 },
+  /** Poll budget for the confirm pop-up button. */
+  confirmButton: { tries: 24, delay: 150 },
+  /** Let the bin animation/toast settle after confirming. */
+  afterConfirm: 800,
+} as const;
+
 // ---------------------------------------------------------------------------
 // Abort plumbing
 // ---------------------------------------------------------------------------
@@ -218,6 +238,57 @@ function findScrollContainer(): HTMLElement {
   return (document.scrollingElement as HTMLElement) || document.documentElement;
 }
 
+/** Poll `produce` until it yields a truthy value, up to `tries` times. */
+async function waitFor<T>(
+  produce: () => T | null | undefined,
+  { tries, delay }: { tries: number; delay: number },
+  signal: AbortSignal
+): Promise<T | null> {
+  for (let i = 0; i < tries; i++) {
+    throwIfAborted(signal);
+    const value = produce();
+    if (value) return value;
+    await sleep(delay, signal);
+  }
+  return null;
+}
+
+/**
+ * Drive the virtualised grid: run `onPass` at the current position and after
+ * each downward scroll, until onPass reports `done`, no progress is made for
+ * `maxIdlePasses`, or abort. Centralises the scroll/idle bookkeeping that both
+ * collecting and selecting share.
+ */
+async function scanGrid(
+  onPass: () => { done: boolean; progressed: boolean },
+  stepDelay: number,
+  signal: AbortSignal,
+  startAtTop = false
+): Promise<void> {
+  const container = findScrollContainer();
+  if (startAtTop) {
+    container.scrollTo({ top: 0 });
+    await sleep(TIMING.settleAfterScrollTop, signal);
+  }
+
+  let { done } = onPass();
+  let idle = 0;
+  let lastScrollTop = -1;
+  while (!done && idle < TIMING.maxIdlePasses) {
+    throwIfAborted(signal);
+    const before = container.scrollTop;
+    container.scrollBy(0, Math.max(400, container.clientHeight * 0.85));
+    await sleep(stepDelay, signal);
+
+    const pass = onPass();
+    done = pass.done;
+    const moved = container.scrollTop !== before && container.scrollTop !== lastScrollTop;
+    lastScrollTop = container.scrollTop;
+    idle = !pass.progressed && !moved ? idle + 1 : 0;
+  }
+  container.scrollTo({ top: 0 });
+}
+
 // ---------------------------------------------------------------------------
 // Semantic operations (the overlay's whole API surface)
 // ---------------------------------------------------------------------------
@@ -227,42 +298,24 @@ export interface CollectProgress {
 }
 
 /**
- * Scroll the results grid to the bottom, collecting every photo as virtualised
- * rows render. Stops on no-new-photos, the safety cap, or abort.
+ * Scroll the results grid, collecting every photo as virtualised rows render.
+ * Stops on no-new-photos, the safety cap, or abort.
  */
 export async function collectAllPhotos(
   onProgress: (p: CollectProgress) => void,
   signal: AbortSignal
 ): Promise<ScrapedPhoto[]> {
   const photos = new Map<string, ScrapedPhoto>();
-  const merge = () => {
-    for (const p of readGrid()) if (!photos.has(p.id)) photos.set(p.id, p);
-  };
-  const container = findScrollContainer();
-  const MAX_IDLE = 6;
-  const MAX_PHOTOS = 1000;
-  const STEP_DELAY = 700;
-
-  merge();
-  onProgress({ count: photos.size });
-
-  let idle = 0;
-  let lastScrollTop = -1;
-  while (idle < MAX_IDLE && photos.size < MAX_PHOTOS) {
-    throwIfAborted(signal);
-    const prev = photos.size;
-    container.scrollBy(0, Math.max(400, container.clientHeight * 0.85));
-    await sleep(STEP_DELAY, signal);
-    merge();
-    onProgress({ count: photos.size });
-
-    const noGrowth = photos.size === prev;
-    const noScroll = container.scrollTop === lastScrollTop;
-    lastScrollTop = container.scrollTop;
-    idle = noGrowth && noScroll ? idle + 1 : 0;
-  }
-
-  container.scrollTo({ top: 0 });
+  await scanGrid(
+    () => {
+      const prev = photos.size;
+      for (const p of readGrid()) if (!photos.has(p.id)) photos.set(p.id, p);
+      onProgress({ count: photos.size });
+      return { done: photos.size >= TIMING.maxPhotos, progressed: photos.size > prev };
+    },
+    TIMING.collectStepDelay,
+    signal
+  );
   return [...photos.values()];
 }
 
@@ -272,12 +325,11 @@ export interface SelectProgress {
 }
 
 /**
- * Select the given photo ids using Google's native checkboxes, scrolling so
- * virtualised cells render. Counts a photo only once its checkbox actually
- * reports aria-checked="true", so a click that doesn't register is NOT counted
- * (we'd rather bin fewer than the wrong set). Each cell is clicked at most once,
- * which also guarantees termination if a click never takes. Returns the number
- * of photos confirmed selected — may be < ids.length if some couldn't be ticked.
+ * Select the given photo ids using Google's native checkboxes. Counts a photo
+ * only once its checkbox actually reports aria-checked="true", so a click that
+ * doesn't register is NOT counted (we'd rather bin fewer than the wrong set).
+ * Each cell is clicked at most once, which also guarantees termination if a
+ * click never takes. Returns the number confirmed selected — may be < ids.length.
  */
 export async function selectPhotos(
   ids: string[],
@@ -287,53 +339,40 @@ export async function selectPhotos(
   const target = new Set(ids);
   const confirmed = new Set<string>();
   const clicked = new Set<string>();
-  const container = findScrollContainer();
-  const MAX_IDLE = 6;
-  const STEP_DELAY = 500;
+  const report = () => onProgress({ selected: confirmed.size, target: target.size });
 
-  container.scrollTo({ top: 0 });
-  await sleep(300, signal);
+  await scanGrid(
+    () => {
+      let progressed = false;
+      for (const a of document.querySelectorAll(SELECTORS.photoLink)) {
+        const id = idFromAnchor(a);
+        if (!id || !target.has(id) || confirmed.has(id)) continue;
+        const cb = checkboxForAnchor(a);
+        if (!cb) continue;
 
-  let idle = 0;
-  let lastScrollTop = -1;
-  while (confirmed.size < target.size && idle < MAX_IDLE) {
-    throwIfAborted(signal);
-    let progressed = false; // confirmed or newly clicked this pass
-
-    for (const a of document.querySelectorAll(SELECTORS.photoLink)) {
-      const id = idFromAnchor(a);
-      if (!id || !target.has(id) || confirmed.has(id)) continue;
-      const cb = checkboxForAnchor(a);
-      if (!cb) continue;
-
-      if (cb.getAttribute('aria-checked') === 'true') {
-        confirmed.add(id);
-        onProgress({ selected: confirmed.size, target: target.size });
-        progressed = true;
-      } else if (!clicked.has(id)) {
-        cb.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
-        cb.click();
-        clicked.add(id);
-        progressed = true;
-        // Many toggles flip aria-checked synchronously — confirm right away so
-        // we don't lose the cell if it scrolls out of view before the next pass.
         if (cb.getAttribute('aria-checked') === 'true') {
           confirmed.add(id);
-          onProgress({ selected: confirmed.size, target: target.size });
+          report();
+          progressed = true;
+        } else if (!clicked.has(id)) {
+          cb.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+          cb.click();
+          clicked.add(id);
+          progressed = true;
+          // Many toggles flip aria-checked synchronously — confirm right away so
+          // we don't lose the cell if it scrolls out of view before the next pass.
+          if (cb.getAttribute('aria-checked') === 'true') {
+            confirmed.add(id);
+            report();
+          }
         }
       }
-    }
-
-    if (confirmed.size >= target.size) break;
-
-    const before = container.scrollTop;
-    container.scrollBy(0, Math.max(400, container.clientHeight * 0.85));
-    await sleep(STEP_DELAY, signal);
-    const noScroll = container.scrollTop === before || container.scrollTop === lastScrollTop;
-    lastScrollTop = container.scrollTop;
-    idle = !progressed && noScroll ? idle + 1 : 0;
-  }
-
+      return { done: confirmed.size >= target.size, progressed };
+    },
+    TIMING.selectStepDelay,
+    signal,
+    /* startAtTop */ true
+  );
   return confirmed.size;
 }
 
@@ -344,26 +383,20 @@ export async function selectPhotos(
 export async function moveSelectedToBin(signal: AbortSignal): Promise<boolean> {
   // The selection toolbar (with its "Move to bin" button) renders a moment
   // after the last checkbox is ticked — poll for it.
-  let binBtn: HTMLElement | null = null;
-  for (let i = 0; i < 15 && !binBtn; i++) {
-    throwIfAborted(signal);
-    binBtn = findButton(SELECTORS.trashLabel);
-    if (!binBtn) await sleep(200, signal);
-  }
+  const binBtn = await waitFor(() => findButton(SELECTORS.trashLabel), TIMING.binButton, signal);
   if (!binBtn) throw new Error('Could not find the bulk "Move to bin" button');
   binBtn.click();
 
   // The confirm pop-up's button is also labelled "Move to bin" and animates in
   // a moment later. Poll, then pick the real dialog action (excluding binBtn).
-  let confirmBtn: HTMLElement | null = null;
-  for (let i = 0; i < 24 && !confirmBtn; i++) {
-    throwIfAborted(signal);
-    await sleep(150, signal);
-    confirmBtn = pickConfirmButton(findButtons(SELECTORS.confirmLabel), binBtn);
-  }
+  const confirmBtn = await waitFor(
+    () => pickConfirmButton(findButtons(SELECTORS.confirmLabel), binBtn),
+    TIMING.confirmButton,
+    signal
+  );
   if (!confirmBtn) throw new Error('Could not find the confirm button in the pop-up');
   confirmBtn.click();
-  await sleep(800, signal);
+  await sleep(TIMING.afterConfirm, signal);
   return true;
 }
 
