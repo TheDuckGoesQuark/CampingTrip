@@ -8,7 +8,7 @@ import {
   selectStats,
   selectTrashIds,
 } from '../store/sweepSlice';
-import type { Decision } from '../types';
+import type { Decision, ScrapedPhoto } from '../types';
 import { PhotoCard } from './PhotoCard';
 import {
   collectAllPhotos,
@@ -17,6 +17,7 @@ import {
   clearSelection,
   AbortError,
 } from './gphotos';
+import { loadSeen, saveSeen, clearSeen } from './seen';
 
 type Phase =
   | 'idle'
@@ -26,6 +27,7 @@ type Phase =
   | 'selecting'
   | 'deleting'
   | 'done'
+  | 'allseen'
   | 'error';
 
 const C = {
@@ -72,7 +74,57 @@ export function Overlay() {
   const [error, setError] = useState('');
   const [minimised, setMinimised] = useState(false);
   const [dir, setDir] = useState(1);
+  const [seenCount, setSeenCount] = useState(0);
+  const [alreadyReviewed, setAlreadyReviewed] = useState(0);
   const abortRef = useRef<AbortController | null>(null);
+  const seenRef = useRef<Set<string>>(new Set());
+  const collectedRef = useRef<ScrapedPhoto[]>([]);
+
+  // Load the "already reviewed" memory once on mount (for the idle counter).
+  useEffect(() => {
+    loadSeen().then((s) => {
+      seenRef.current = s;
+      setSeenCount(s.size);
+    });
+  }, []);
+
+  // Persist decisions as they happen, so a re-sweep skips reviewed photos even
+  // if this sweep is abandoned partway.
+  useEffect(() => {
+    if (phase !== 'sweeping' && phase !== 'review') return;
+    const ids = Object.keys(sweep.decisions);
+    if (ids.length === 0) return;
+    for (const id of ids) seenRef.current.add(id);
+    saveSeen(seenRef.current);
+    setSeenCount(seenRef.current.size);
+  }, [sweep.decisions, phase]);
+
+  const forgetReviewed = useCallback(() => {
+    clearSeen();
+    seenRef.current = new Set();
+    setSeenCount(0);
+    setAlreadyReviewed(0);
+  }, []);
+
+  // Google Photos is an SPA, so this content script mounts once and never
+  // re-runs on a new search/date. Watch the URL and reset to idle when the user
+  // navigates, so we never show a stale list. (The overlay never changes the
+  // URL itself, so a change always means the user moved.)
+  useEffect(() => {
+    let last = location.href;
+    const id = setInterval(() => {
+      if (location.href === last) return;
+      last = location.href;
+      abortRef.current?.abort();
+      dispatch(sweepActions.reset());
+      collectedRef.current = [];
+      setAlreadyReviewed(0);
+      setStatus('');
+      setError('');
+      setPhase('idle');
+    }, 800);
+    return () => clearInterval(id);
+  }, []);
 
   const s = { sweep };
   const current = selectCurrentPhoto(s);
@@ -133,25 +185,38 @@ export function Overlay() {
     return () => window.removeEventListener('keydown', onKey, true);
   }, [phase, triage, goBack]);
 
+  const startSweeping = useCallback((photos: ScrapedPhoto[]) => {
+    dispatch(sweepActions.fetchStart(location.pathname));
+    dispatch(sweepActions.fetchSuccess(photos));
+    setDir(1);
+    setPhase('sweeping');
+  }, []);
+
   const startCollect = useCallback(async () => {
     const ac = new AbortController();
     abortRef.current = ac;
     setError('');
     setPhase('collecting');
     setStatus('Scanning the grid…');
-    dispatch(sweepActions.fetchStart(location.pathname));
     try {
+      const seen = await loadSeen();
+      seenRef.current = seen;
+      setSeenCount(seen.size);
       const photos = await collectAllPhotos(
         (p) => setStatus(`Found ${p.count} photos…`),
         ac.signal
       );
-      dispatch(sweepActions.fetchSuccess(photos));
+      collectedRef.current = photos;
+      const fresh = photos.filter((p) => !seen.has(p.id));
+      setAlreadyReviewed(photos.length - fresh.length);
+
       if (photos.length === 0) {
         setError('No photos found on this page. Open a search/date first, then sweep.');
         setPhase('error');
+      } else if (fresh.length === 0) {
+        setPhase('allseen'); // everything here was reviewed on a previous sweep
       } else {
-        setDir(1);
-        setPhase('sweeping');
+        startSweeping(fresh);
       }
     } catch (e) {
       if (e instanceof AbortError) setPhase('idle');
@@ -160,7 +225,13 @@ export function Overlay() {
         setPhase('error');
       }
     }
-  }, []);
+  }, [startSweeping]);
+
+  /** "Sweep them anyway" — review the already-seen photos we just collected. */
+  const sweepAll = useCallback(() => {
+    setAlreadyReviewed(0);
+    startSweeping(collectedRef.current);
+  }, [startSweeping]);
 
   const confirmDelete = useCallback(async () => {
     if (trashIds.length === 0) {
@@ -291,11 +362,47 @@ export function Overlay() {
           <>
             <p style={{ margin: '0 0 12px', fontSize: 13, color: C.dim, lineHeight: 1.5 }}>
               Open a search or date in Google Photos, then sweep through the results with your
-              keyboard. Nothing is deleted until you confirm.
+              keyboard. Already-reviewed photos are skipped, and nothing is deleted until you
+              confirm.
             </p>
             <button style={{ ...btn(C.blue), width: '100%' }} onClick={startCollect}>
               Sweep this search
             </button>
+            {seenCount > 0 && (
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginTop: 10,
+                }}
+              >
+                <span style={{ fontSize: 12, color: C.dim }}>
+                  {seenCount.toLocaleString()} photo{seenCount === 1 ? '' : 's'} remembered as reviewed
+                </span>
+                <button style={btn('transparent', { padding: '4px 10px', fontSize: 12 })} onClick={forgetReviewed}>
+                  Forget
+                </button>
+              </div>
+            )}
+          </>
+        )}
+
+        {phase === 'allseen' && (
+          <>
+            <p style={{ margin: '0 0 12px', fontSize: 14 }}>
+              All {collectedRef.current.length} photo
+              {collectedRef.current.length === 1 ? '' : 's'} here have already been reviewed on this
+              machine.
+            </p>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button style={{ ...btn(C.blue), flex: 1 }} onClick={sweepAll}>
+                Sweep them anyway
+              </button>
+              <button style={btn('transparent')} onClick={forgetReviewed}>
+                Forget memory
+              </button>
+            </div>
           </>
         )}
 
@@ -358,6 +465,11 @@ export function Overlay() {
               <strong style={{ color: C.green }}>{stats.kept}</strong> kept ·{' '}
               <strong style={{ color: C.dim }}>{stats.skipped}</strong> skipped
             </p>
+            {alreadyReviewed > 0 && (
+              <p style={{ margin: '0 0 8px', fontSize: 12, color: C.dim }}>
+                ({alreadyReviewed} already reviewed on a previous sweep were skipped.)
+              </p>
+            )}
             <p style={{ margin: '0 0 14px', fontSize: 12, color: C.dim, lineHeight: 1.5 }}>
               This selects those {trashIds.length} photos in Google Photos and moves them to bin
               (recoverable for 60 days). You can hit Stop at any point.

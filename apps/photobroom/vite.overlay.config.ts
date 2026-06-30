@@ -15,6 +15,8 @@ export default defineConfig({
   define: {
     'process.env.NODE_ENV': '"production"',
   },
+  // Don't copy the web app's public/ assets into the extension dir.
+  publicDir: false,
   build: {
     outDir: resolve(__dirname, '../../extensions/photobroom'),
     emptyOutDir: false,
