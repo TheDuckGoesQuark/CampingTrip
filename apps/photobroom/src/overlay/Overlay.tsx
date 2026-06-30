@@ -77,31 +77,38 @@ export function Overlay() {
   const [seenCount, setSeenCount] = useState(0);
   const [alreadyReviewed, setAlreadyReviewed] = useState(0);
   const abortRef = useRef<AbortController | null>(null);
-  const seenRef = useRef<Set<string>>(new Set());
+  // Photos reviewed on PRIOR sweeps (loaded at sweep start, immutable during a
+  // sweep). This sweep's decisions are layered on top when persisting, so undo
+  // correctly un-remembers a photo.
+  const baseSeenRef = useRef<Set<string>>(new Set());
   const collectedRef = useRef<ScrapedPhoto[]>([]);
+  // Mirror of `phase` readable inside the long-lived interval closure below.
+  const phaseRef = useRef(phase);
+  phaseRef.current = phase;
 
   // Load the "already reviewed" memory once on mount (for the idle counter).
   useEffect(() => {
     loadSeen().then((s) => {
-      seenRef.current = s;
+      baseSeenRef.current = s;
       setSeenCount(s.size);
     });
   }, []);
 
-  // Persist decisions as they happen, so a re-sweep skips reviewed photos even
-  // if this sweep is abandoned partway.
+  // Persist (prior-seen ∪ this sweep's decisions) whenever decisions change, so
+  // a re-sweep skips reviewed photos even if abandoned partway. Because we
+  // recompute from the immutable base each time (rather than only adding),
+  // undoing a decision removes that id from what gets saved.
   useEffect(() => {
     if (phase !== 'sweeping' && phase !== 'review') return;
-    const ids = Object.keys(sweep.decisions);
-    if (ids.length === 0) return;
-    for (const id of ids) seenRef.current.add(id);
-    saveSeen(seenRef.current);
-    setSeenCount(seenRef.current.size);
+    const merged = new Set(baseSeenRef.current);
+    for (const id of Object.keys(sweep.decisions)) merged.add(id);
+    saveSeen(merged);
+    setSeenCount(merged.size);
   }, [sweep.decisions, phase]);
 
   const forgetReviewed = useCallback(() => {
     clearSeen();
-    seenRef.current = new Set();
+    baseSeenRef.current = new Set();
     setSeenCount(0);
     setAlreadyReviewed(0);
   }, []);
@@ -113,6 +120,12 @@ export function Overlay() {
   useEffect(() => {
     let last = location.href;
     const id = setInterval(() => {
+      // Never disturb an in-flight scan/select/delete — Google can tweak the
+      // URL mid-automation, and we don't want that to abort a bin. We also
+      // leave `last` untouched so a genuine navigation during automation is
+      // still caught on the next tick once it finishes.
+      const p = phaseRef.current;
+      if (p === 'collecting' || p === 'selecting' || p === 'deleting') return;
       if (location.href === last) return;
       last = location.href;
       abortRef.current?.abort();
@@ -200,7 +213,7 @@ export function Overlay() {
     setStatus('Scanning the grid…');
     try {
       const seen = await loadSeen();
-      seenRef.current = seen;
+      baseSeenRef.current = seen;
       setSeenCount(seen.size);
       const photos = await collectAllPhotos(
         (p) => setStatus(`Found ${p.count} photos…`),
@@ -249,10 +262,18 @@ export function Overlay() {
         (p) => setStatus(`Selecting ${p.selected}/${p.target}…`),
         ac.signal
       );
+      if (selected === 0) {
+        throw new Error("Couldn't select any photos — Google's grid may have changed.");
+      }
       setPhase('deleting');
       setStatus(`Moving ${selected} photo${selected === 1 ? '' : 's'} to bin…`);
       await moveSelectedToBin(ac.signal);
-      setStatus(`Moved ${selected} to bin.`);
+      const shortfall = trashIds.length - selected;
+      setStatus(
+        shortfall > 0
+          ? `Moved ${selected} to bin (${shortfall} couldn't be selected — try those again).`
+          : `Moved ${selected} to bin.`
+      );
       setPhase('done');
     } catch (e) {
       clearSelection();
