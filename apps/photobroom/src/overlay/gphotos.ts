@@ -273,7 +273,11 @@ export interface SelectProgress {
 
 /**
  * Select the given photo ids using Google's native checkboxes, scrolling so
- * virtualised cells render. Returns how many were actually selected.
+ * virtualised cells render. Counts a photo only once its checkbox actually
+ * reports aria-checked="true", so a click that doesn't register is NOT counted
+ * (we'd rather bin fewer than the wrong set). Each cell is clicked at most once,
+ * which also guarantees termination if a click never takes. Returns the number
+ * of photos confirmed selected — may be < ids.length if some couldn't be ticked.
  */
 export async function selectPhotos(
   ids: string[],
@@ -281,7 +285,8 @@ export async function selectPhotos(
   signal: AbortSignal
 ): Promise<number> {
   const target = new Set(ids);
-  const selected = new Set<string>();
+  const confirmed = new Set<string>();
+  const clicked = new Set<string>();
   const container = findScrollContainer();
   const MAX_IDLE = 6;
   const STEP_DELAY = 500;
@@ -291,35 +296,45 @@ export async function selectPhotos(
 
   let idle = 0;
   let lastScrollTop = -1;
-  while (selected.size < target.size && idle < MAX_IDLE) {
+  while (confirmed.size < target.size && idle < MAX_IDLE) {
     throwIfAborted(signal);
-    let clickedThisPass = false;
+    let progressed = false; // confirmed or newly clicked this pass
 
     for (const a of document.querySelectorAll(SELECTORS.photoLink)) {
       const id = idFromAnchor(a);
-      if (!id || !target.has(id) || selected.has(id)) continue;
+      if (!id || !target.has(id) || confirmed.has(id)) continue;
       const cb = checkboxForAnchor(a);
       if (!cb) continue;
-      if (cb.getAttribute('aria-checked') !== 'true') {
+
+      if (cb.getAttribute('aria-checked') === 'true') {
+        confirmed.add(id);
+        onProgress({ selected: confirmed.size, target: target.size });
+        progressed = true;
+      } else if (!clicked.has(id)) {
         cb.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
         cb.click();
-        clickedThisPass = true;
+        clicked.add(id);
+        progressed = true;
+        // Many toggles flip aria-checked synchronously — confirm right away so
+        // we don't lose the cell if it scrolls out of view before the next pass.
+        if (cb.getAttribute('aria-checked') === 'true') {
+          confirmed.add(id);
+          onProgress({ selected: confirmed.size, target: target.size });
+        }
       }
-      selected.add(id);
-      onProgress({ selected: selected.size, target: target.size });
     }
 
-    if (selected.size >= target.size) break;
+    if (confirmed.size >= target.size) break;
 
     const before = container.scrollTop;
     container.scrollBy(0, Math.max(400, container.clientHeight * 0.85));
     await sleep(STEP_DELAY, signal);
     const noScroll = container.scrollTop === before || container.scrollTop === lastScrollTop;
     lastScrollTop = container.scrollTop;
-    idle = !clickedThisPass && noScroll ? idle + 1 : 0;
+    idle = !progressed && noScroll ? idle + 1 : 0;
   }
 
-  return selected.size;
+  return confirmed.size;
 }
 
 /**
