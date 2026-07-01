@@ -91,6 +91,87 @@ resource "aws_iam_role" "github_actions" {
   })
 }
 
+# --- GitHub Actions: read-only role for PR plan previews ---
+# Assumable ONLY from the pull_request context, and the terraform.yml plan job
+# further gates itself to same-repo PRs. This role is read-only regardless, so
+# the worst a PR's plan can do is read (state included) — never mutate.
+resource "aws_iam_role" "github_actions_plan" {
+  name = "${local.name_prefix}-github-actions-plan"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect    = "Allow"
+      Principal = { Federated = aws_iam_openid_connect_provider.github.arn }
+      Action    = "sts:AssumeRoleWithWebIdentity"
+      Condition = {
+        StringEquals = {
+          "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
+        }
+        StringLike = {
+          "token.actions.githubusercontent.com:sub" = "repo:${var.github_org}/${var.github_repo}:pull_request"
+        }
+      }
+    }]
+  })
+}
+
+resource "aws_iam_role_policy" "github_plan_readonly" {
+  name = "terraform-plan-readonly"
+  role = aws_iam_role.github_actions_plan.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "ReadResources"
+        Effect = "Allow"
+        Action = [
+          "ec2:Describe*",
+          "route53:GetHostedZone",
+          "route53:ListHostedZones",
+          "route53:ListResourceRecordSets",
+          "route53:GetChange",
+          "route53:ListTagsForResource",
+          "iam:GetRole",
+          "iam:GetPolicy",
+          "iam:GetPolicyVersion",
+          "iam:GetRolePolicy",
+          "iam:GetInstanceProfile",
+          "iam:GetOpenIDConnectProvider",
+          "iam:ListRolePolicies",
+          "iam:ListAttachedRolePolicies",
+          "iam:ListInstanceProfilesForRole",
+          "s3:GetBucket*",
+          "s3:GetAccelerateConfiguration",
+          "s3:GetEncryptionConfiguration",
+          "s3:GetLifecycleConfiguration",
+          "s3:GetReplicationConfiguration",
+          "s3:ListBucket",
+          "logs:DescribeLogGroups",
+          "logs:ListTagsForResource",
+          "logs:ListTagsLogGroup",
+          "ssm:GetParameter",
+          "ssm:GetParameters",
+        ]
+        Resource = "*"
+      },
+      {
+        Sid    = "ReadTerraformState"
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:ListBucket",
+        ]
+        Resource = [
+          "arn:aws:s3:::jordanscamp-terraform-state",
+          "arn:aws:s3:::jordanscamp-terraform-state/*",
+        ]
+      }
+    ]
+  })
+}
+
 # GitHub Actions: SSM Run Command on EC2 for deploys
 resource "aws_iam_role_policy" "github_ssm" {
   name = "ssm-deploy"

@@ -22,6 +22,11 @@ output "github_actions_role_arn" {
   value       = aws_iam_role.github_actions.arn
 }
 
+output "github_actions_plan_role_arn" {
+  description = "Read-only IAM role ARN for PR plan previews — set this as the AWS_PLAN_ROLE_ARN repo variable"
+  value       = aws_iam_role.github_actions_plan.arn
+}
+
 output "deploy_bucket" {
   description = "S3 bucket for deploy artifacts"
   value       = aws_s3_bucket.deploy.id

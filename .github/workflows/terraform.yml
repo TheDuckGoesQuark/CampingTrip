@@ -39,6 +39,57 @@ jobs:
           terraform init -backend=false
           terraform validate
 
+  # Plan preview on PRs, using a READ-ONLY role. Gated to same-repo PRs so a
+  # fork never gets credentials, and only runs once AWS_PLAN_ROLE_ARN is set as
+  # a repo variable (see the PR description for the one-time setup).
+  plan:
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      vars.AWS_PLAN_ROLE_ARN != ''
+    needs: validate
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: write
+    defaults:
+      run:
+        working-directory: ${{ env.TF_DIR }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Configure AWS credentials (read-only)
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_PLAN_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~> 1.5"
+      - name: Terraform Init
+        run: terraform init
+      - name: Terraform Plan
+        id: plan
+        run: terraform plan -lock=false -no-color
+        continue-on-error: true
+      - name: Comment plan on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const out = `${{ steps.plan.outputs.stdout }}`;
+            const body = '### Terraform Plan (read-only preview)\n```\n'
+              + (out.length > 60000 ? out.slice(0, 60000) + '\n\n... (truncated)' : out)
+              + '\n```\n*Result: ${{ steps.plan.outcome }}*';
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body,
+            });
+      - name: Fail if plan errored
+        if: steps.plan.outcome == 'failure'
+        run: exit 1
+
   # Applies infra changes. Only ever on push to main — never on pull_request —
   # so the OIDC role is only assumed from a context the trust policy allows.
   apply:
