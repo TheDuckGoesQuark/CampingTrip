@@ -14,9 +14,11 @@ After completing a task or making a significant change:
 
 ## Conventions
 
-- Frontend dev (any app): `pnpm --filter <app-name> dev`
-- Frontend build (all): `pnpm -r build`
-- Frontend tests (all): `pnpm -r test`
-- Backend dev: `cd backend && docker compose up` (or `python manage.py runserver` with local venv)
-- Backend tests: `cd backend && python -m pytest`
-- Django migrations: `cd backend && python manage.py makemigrations && python manage.py migrate`
+The platform is static-only — three frontend apps (campsite, digitaltwins,
+photobroom), no backend.
+
+- Dev (one app): `pnpm --filter <app-name> dev`
+- Build (all): `pnpm -r build`
+- Tests (all): `pnpm -r test`
+- PhotoBroom extension bundle: `pnpm --filter photobroom build:overlay`
+  (outputs `extensions/photobroom/overlay.js`)

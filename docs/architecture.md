@@ -9,15 +9,22 @@ Browser
   |
   |-- jordanscamp.site               --> Campsite (static SPA)
   |-- digitaltwins.jordanscamp.site  --> Digital Twins (static SPA)
-  |-- photobroom.jordanscamp.site    --> PhotoBroom (static stub)
+  |-- photobroom.jordanscamp.site    --> PhotoBroom landing page (static SPA)
   |
   v
 Caddy (static file server + auto TLS)
   |
   |-- static files from /opt/jordanscamp/webapp/        (campsite)
   |-- static files from /opt/jordanscamp/digitaltwins/  (digital twins)
-  |-- static files from /opt/jordanscamp/photobroom/    (photobroom)
+  |-- static files from /opt/jordanscamp/photobroom/    (photobroom landing page)
 ```
+
+**PhotoBroom is more than the static site.** The site (`apps/photobroom`) is just
+an install/usage landing page. The actual tool is a Chrome extension in
+`extensions/photobroom` that injects an in-page overlay onto `photos.google.com`
+to sweep search results into the bin — it runs entirely in the browser (not served
+by Caddy). The overlay is built from `apps/photobroom` via `vite.overlay.config.ts`
+into `extensions/photobroom/overlay.js`.
 
 > **No backend today.** The platform previously ran a shared Django REST API on
 > RDS PostgreSQL, used only by the (now retired) workout tracker. With that app
@@ -32,7 +39,9 @@ Caddy (static file server + auto TLS)
 ├── apps/
 │   ├── campsite/           # 3D camping scene homepage
 │   ├── digitaltwins/       # Scrollytelling blog with interactive visualizations
-│   └── photobroom/         # Photo organisation tool (stub)
+│   └── photobroom/         # PhotoBroom landing page + source of the extension overlay
+├── extensions/
+│   └── photobroom/         # Chrome extension (manifest + built overlay.js)
 ├── infra/                  # Terraform IaC
 │   ├── main.tf
 │   ├── ec2.tf

@@ -4,9 +4,9 @@ import { resolve } from 'path';
 
 /**
  * Builds the in-page overlay as a single IIFE content-script bundle
- * (React + framer-motion + Redux Toolkit, all inlined) and writes it to the
- * extension directory. MV3 content scripts can't use ES module imports at
- * runtime, hence the IIFE single-file output.
+ * (React + framer-motion, all inlined) and writes it to the extension
+ * directory. MV3 content scripts can't use ES module imports at runtime,
+ * hence the IIFE single-file output.
  *
  *   pnpm --filter photobroom build:overlay
  */
