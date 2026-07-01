@@ -13,18 +13,11 @@
   },
   "dependencies": {
     "@mantine/core": "^8.3.17",
-    "@mantine/hooks": "^8.3.17",
-    "@reduxjs/toolkit": "^2.11.2",
     "framer-motion": "^11.18.2",
-    "idb-keyval": "^6.2.2",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "react-redux": "^9.2.0",
-    "react-router-dom": "^7.5.0",
-    "redux-persist": "^6.0.0"
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "@rtk-query/codegen-openapi": "^2.2.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
