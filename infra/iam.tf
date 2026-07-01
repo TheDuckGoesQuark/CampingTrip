@@ -2,6 +2,8 @@
 # IAM — EC2 instance role, GitHub Actions OIDC
 # -----------------------------------------------------------------------------
 
+data "aws_caller_identity" "current" {}
+
 # --- EC2 instance role ---
 
 resource "aws_iam_role" "ec2" {
@@ -319,17 +321,29 @@ resource "aws_iam_role_policy" "github_terraform_resources" {
         Resource = "*"
       },
       {
-        Sid    = "IAM"
+        # Read-only introspection — harmless, and some (GetPolicy on AWS-managed
+        # policies) legitimately need account-wide scope.
+        Sid    = "IAMRead"
         Effect = "Allow"
         Action = [
           "iam:GetRole",
           "iam:GetPolicy",
+          "iam:GetPolicyVersion",
           "iam:GetRolePolicy",
           "iam:GetInstanceProfile",
           "iam:GetOpenIDConnectProvider",
           "iam:ListRolePolicies",
           "iam:ListAttachedRolePolicies",
           "iam:ListInstanceProfilesForRole",
+        ]
+        Resource = "*"
+      },
+      {
+        # Mutating role/instance-profile actions are scoped to this project's
+        # resources only, so a compromise can't create/alter arbitrary roles.
+        Sid    = "IAMManageProjectRoles"
+        Effect = "Allow"
+        Action = [
           "iam:CreateRole",
           "iam:UpdateRole",
           "iam:DeleteRole",
@@ -337,18 +351,29 @@ resource "aws_iam_role_policy" "github_terraform_resources" {
           "iam:DeleteRolePolicy",
           "iam:AttachRolePolicy",
           "iam:DetachRolePolicy",
+          "iam:TagRole",
+          "iam:PassRole",
           "iam:CreateInstanceProfile",
           "iam:DeleteInstanceProfile",
           "iam:AddRoleToInstanceProfile",
           "iam:RemoveRoleFromInstanceProfile",
+        ]
+        Resource = [
+          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${local.name_prefix}-*",
+          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:instance-profile/${local.name_prefix}-*",
+        ]
+      },
+      {
+        # Only the GitHub Actions OIDC provider.
+        Sid    = "IAMManageOIDCProvider"
+        Effect = "Allow"
+        Action = [
           "iam:CreateOpenIDConnectProvider",
           "iam:DeleteOpenIDConnectProvider",
           "iam:UpdateOpenIDConnectProviderThumbprint",
           "iam:TagOpenIDConnectProvider",
-          "iam:TagRole",
-          "iam:PassRole",
         ]
-        Resource = "*"
+        Resource = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/token.actions.githubusercontent.com"
       },
       {
         Sid    = "S3"
