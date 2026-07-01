@@ -216,22 +216,6 @@ resource "aws_iam_role_policy" "github_terraform_resources" {
         Resource = "*"
       },
       {
-        Sid    = "RDS"
-        Effect = "Allow"
-        Action = [
-          "rds:Describe*",
-          "rds:CreateDBInstance",
-          "rds:ModifyDBInstance",
-          "rds:DeleteDBInstance",
-          "rds:CreateDBSubnetGroup",
-          "rds:ModifyDBSubnetGroup",
-          "rds:DeleteDBSubnetGroup",
-          "rds:AddTagsToResource",
-          "rds:ListTagsForResource",
-        ]
-        Resource = "*"
-      },
-      {
         Sid    = "Route53"
         Effect = "Allow"
         Action = [
@@ -309,22 +293,6 @@ resource "aws_iam_role_policy" "github_terraform_resources" {
         Resource = "*"
       },
       {
-        Sid    = "SecretsManager"
-        Effect = "Allow"
-        Action = [
-          "secretsmanager:CreateSecret",
-          "secretsmanager:GetSecretValue",
-          "secretsmanager:DescribeSecret",
-          "secretsmanager:PutSecretValue",
-          "secretsmanager:UpdateSecret",
-          "secretsmanager:UpdateSecretVersionStage",
-          "secretsmanager:DeleteSecret",
-          "secretsmanager:TagResource",
-          "secretsmanager:GetResourcePolicy",
-        ]
-        Resource = "*"
-      },
-      {
         Sid    = "CloudWatch"
         Effect = "Allow"
         Action = [
@@ -335,23 +303,6 @@ resource "aws_iam_role_policy" "github_terraform_resources" {
           "logs:TagResource",
           "logs:ListTagsForResource",
           "logs:ListTagsLogGroup",
-        ]
-        Resource = "*"
-      },
-      {
-        Sid    = "ECRManagement"
-        Effect = "Allow"
-        Action = [
-          "ecr:CreateRepository",
-          "ecr:DeleteRepository",
-          "ecr:DescribeRepositories",
-          "ecr:GetRepositoryPolicy",
-          "ecr:SetRepositoryPolicy",
-          "ecr:DeleteRepositoryPolicy",
-          "ecr:PutLifecyclePolicy",
-          "ecr:GetLifecyclePolicy",
-          "ecr:ListTagsForResource",
-          "ecr:TagResource",
         ]
         Resource = "*"
       },
