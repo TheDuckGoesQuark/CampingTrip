@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { Button, Kbd, Spinner, colors as C } from './ui';
 import { PhotoCard } from './PhotoCard';
@@ -5,6 +6,9 @@ import { currentPhoto, deckStats, trashIds, type Deck } from './sweepMachine';
 import type { Decision } from '../types';
 
 const dimText: React.CSSProperties = { fontSize: 13, color: C.dim, lineHeight: 1.5 };
+
+/** How many upcoming cards to prefetch so the next image is already cached. */
+const PRELOAD_AHEAD = 3;
 
 export function IdlePanel({
   seenCount,
@@ -88,6 +92,15 @@ export function ReviewDeck({
   onUndo: () => void;
   onReview: () => void;
 }) {
+  // Prefetch the next few thumbnails into the browser cache so advancing is
+  // instant — otherwise the next image only starts loading once it's shown.
+  useEffect(() => {
+    for (let i = 1; i <= PRELOAD_AHEAD; i++) {
+      const next = deck.photos[deck.index + i];
+      if (next) new Image().src = next.thumbnailUrl;
+    }
+  }, [deck.photos, deck.index]);
+
   const photo = currentPhoto(deck);
   if (!photo) return null;
   const stats = deckStats(deck);
