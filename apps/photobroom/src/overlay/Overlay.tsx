@@ -12,14 +12,14 @@ import {
 } from './phases';
 
 export function Overlay() {
-  const sweep = usePhotoSweep();
+  const s = usePhotoSweep();
   const [minimised, setMinimised] = useState(false);
-  const { phase } = sweep;
+  const { view } = s;
 
-  const busy = phase === 'collecting' || phase === 'selecting' || phase === 'deleting';
-  const expanded = !minimised && phase !== 'idle';
+  const busy = view.phase === 'collecting' || view.phase === 'selecting' || view.phase === 'deleting';
+  const expanded = !minimised && view.phase !== 'idle';
   // The review deck is the main focus — let it fill most of the viewport.
-  const big = expanded && phase === 'sweeping';
+  const big = expanded && view.phase === 'sweeping';
 
   const panel: React.CSSProperties = {
     position: 'fixed',
@@ -54,7 +54,6 @@ export function Overlay() {
 
   return (
     <div style={panel}>
-      {/* Header */}
       <div
         style={{
           display: 'flex',
@@ -67,7 +66,7 @@ export function Overlay() {
         <strong style={{ fontSize: 14 }}>🧹 PhotoBroom</strong>
         <div style={{ display: 'flex', gap: 8 }}>
           {busy && (
-            <Button color="red" onClick={sweep.stop} style={{ padding: '6px 12px' }}>
+            <Button color="red" onClick={s.stop} style={{ padding: '6px 12px' }}>
               ■ Stop
             </Button>
           )}
@@ -77,15 +76,33 @@ export function Overlay() {
         </div>
       </div>
 
-      {/* Body — one block per phase */}
       <div style={{ padding: 14, ...(big ? { flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 } : {}) }}>
-        {phase === 'idle' && <IdlePanel sweep={sweep} />}
-        {phase === 'allseen' && <AllSeenPanel sweep={sweep} />}
-        {busy && <BusyPanel status={sweep.status} />}
-        {phase === 'sweeping' && <ReviewDeck sweep={sweep} big={big} />}
-        {phase === 'review' && <ReviewSummary sweep={sweep} />}
-        {phase === 'done' && <DonePanel sweep={sweep} onClose={() => setMinimised(true)} />}
-        {phase === 'error' && <ErrorPanel sweep={sweep} />}
+        {view.phase === 'idle' && (
+          <IdlePanel seenCount={s.seenCount} onSweep={s.startCollect} onForget={s.forget} />
+        )}
+        {view.phase === 'allseen' && (
+          <AllSeenPanel count={view.collected.length} onSweepAll={s.sweepAll} onForget={s.forget} />
+        )}
+        {(view.phase === 'collecting' || view.phase === 'selecting' || view.phase === 'deleting') && (
+          <BusyPanel status={view.status} />
+        )}
+        {view.phase === 'sweeping' && (
+          <ReviewDeck
+            deck={view.deck}
+            dir={view.dir}
+            big={big}
+            onTriage={s.triage}
+            onUndo={s.goBack}
+            onReview={s.toReview}
+          />
+        )}
+        {view.phase === 'review' && (
+          <ReviewSummary deck={view.deck} onConfirm={s.confirmDelete} onBack={s.backToSweeping} />
+        )}
+        {view.phase === 'done' && (
+          <DonePanel status={view.status} onAgain={s.reset} onClose={() => setMinimised(true)} />
+        )}
+        {view.phase === 'error' && <ErrorPanel message={view.message} onReset={s.reset} />}
       </div>
     </div>
   );
