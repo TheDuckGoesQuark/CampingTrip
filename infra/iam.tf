@@ -76,8 +76,15 @@ resource "aws_iam_role" "github_actions" {
         StringEquals = {
           "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
         }
+        # Only these two contexts may assume the role. Notably this EXCLUDES
+        # `:pull_request`, so a PR (including from a fork) can never assume it.
+        #   - ref:refs/heads/main   → pushes to main (terraform apply) + main-dispatched infra-control
+        #   - environment:production → the deploy workflow's production environment
         StringLike = {
-          "token.actions.githubusercontent.com:sub" = "repo:${var.github_org}/${var.github_repo}:*"
+          "token.actions.githubusercontent.com:sub" = [
+            "repo:${var.github_org}/${var.github_repo}:ref:refs/heads/main",
+            "repo:${var.github_org}/${var.github_repo}:environment:production",
+          ]
         }
       }
     }]
