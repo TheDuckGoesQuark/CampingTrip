@@ -35,7 +35,7 @@ Add to the `locals` block:
 
 ### 1b. `infra/route53.tf` — add Route53 A record
 
-Add a new resource block (follow the digitaltwins pattern):
+Add a new resource block (follow the photobroom pattern):
 
 ```hcl
 # <APP_NAME>.jordanscamp.site → EC2 Elastic IP (<APP_TITLE> via Caddy)
@@ -97,27 +97,27 @@ In the `templatefile()` call inside `aws_instance.app`, add to the vars map:
 
 ### 2a. Create `apps/<APP_NAME>/`
 
-Use the **digitaltwins** app as the starting template (Vite + React + Mantine
-+ React Router).
+Use the **photobroom** app as the starting template (Vite + React 19 + Mantine 9).
+Prefer consuming the shared design system (`@jordanscamp/ds`) over a per-app theme —
+wrap the app in its `BrandProvider` rather than a bespoke `MantineProvider`/`theme.ts`.
 
-**Config files** (copy from digitaltwins, adjust name/title):
+**Config files** (copy from photobroom, adjust name/title):
 
-| File | Notes |
-|------|-------|
-| `package.json` | Set `name` to `<APP_NAME>`. Deps: `@mantine/core`, `@mantine/hooks`, `react`, `react-dom`, `react-router-dom` (drop router if single-page). DevDeps: `@vitejs/plugin-react`, `postcss`, `postcss-preset-mantine`, `typescript`, `vite`, `vitest`. |
-| `index.html` | Minimal shell, title = `<APP_TITLE>` |
-| `vite.config.ts` | `react()` plugin, `base: '/'` |
-| `tsconfig.json` / `tsconfig.app.json` / `tsconfig.node.json` | References pattern (app + node) |
-| `postcss.config.cjs` | `postcss-preset-mantine` |
+| File                                                         | Notes                                                                                                                                                                                                                                                                                |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `package.json`                                               | Set `name` to `<APP_NAME>`. Deps: `@jordanscamp/ds` (`workspace:*`), `@mantine/core`, `@mantine/hooks`, `react`, `react-dom`, `react-router-dom` (drop router if single-page). DevDeps: `@vitejs/plugin-react`, `postcss`, `postcss-preset-mantine`, `typescript`, `vite`, `vitest`. |
+| `index.html`                                                 | Minimal shell, title = `<APP_TITLE>`                                                                                                                                                                                                                                                 |
+| `vite.config.ts`                                             | `react()` plugin, `base: '/'`                                                                                                                                                                                                                                                        |
+| `tsconfig.json` / `tsconfig.app.json` / `tsconfig.node.json` | References pattern (app + node)                                                                                                                                                                                                                                                      |
+| `postcss.config.cjs`                                         | `postcss-preset-mantine`                                                                                                                                                                                                                                                             |
 
 **Source files**:
 
-| File | Notes |
-|------|-------|
-| `src/vite-env.d.ts` | `/// <reference types="vite/client" />` |
-| `src/theme.ts` | Copy from digitaltwins (orange Mantine theme) — each app keeps its own theme |
-| `src/App.tsx` | The page(s); follow digitaltwins' shell |
-| `src/main.tsx` | `MantineProvider` + `App` |
+| File                | Notes                                                                                                    |
+| ------------------- | -------------------------------------------------------------------------------------------------------- |
+| `src/vite-env.d.ts` | `/// <reference types="vite/client" />`                                                                  |
+| `src/App.tsx`       | The page(s)                                                                                              |
+| `src/main.tsx`      | Wrap `App` in `@jordanscamp/ds`'s `BrandProvider`; import `@mantine/core/styles.css` + the DS stylesheet |
 
 ### 2b. Root `package.json`
 
@@ -135,7 +135,7 @@ Add to `scripts` (optional convenience aliases):
 
 ### 3a. `.github/workflows/deploy.yml`
 
-**Add build job** (clone `build-digitaltwins`, change filter):
+**Add build job** (clone `build-photobroom`, change filter):
 
 ```yaml
 build-<APP_NAME>:
@@ -147,7 +147,7 @@ build-<APP_NAME>:
         version: 10
     - uses: actions/setup-node@v6
       with:
-        node-version: '22'
+        node-version: "22"
         cache: pnpm
     - name: Install dependencies
       run: pnpm install --frozen-lockfile

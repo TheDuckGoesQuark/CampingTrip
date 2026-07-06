@@ -4,11 +4,11 @@ on:
   push:
     branches: [main]
     paths:
-      - 'apps/**'
-      - 'package.json'
-      - 'pnpm-workspace.yaml'
-      - 'infra/Caddyfile'
-      - '.github/workflows/deploy.yml'
+      - "apps/**"
+      - "package.json"
+      - "pnpm-workspace.yaml"
+      - "infra/Caddyfile"
+      - ".github/workflows/deploy.yml"
 
 permissions:
   id-token: write
@@ -29,7 +29,7 @@ jobs:
 
       - uses: actions/setup-node@v6
         with:
-          node-version: '22'
+          node-version: "22"
           cache: pnpm
 
       - name: Install dependencies
@@ -45,33 +45,6 @@ jobs:
           path: apps/campsite/dist/
           retention-days: 1
 
-  build-digitaltwins:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10
-
-      - uses: actions/setup-node@v6
-        with:
-          node-version: '22'
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Build digitaltwins
-        run: pnpm --filter digitaltwins build
-
-      - name: Upload digitaltwins artifact
-        uses: actions/upload-artifact@v6
-        with:
-          name: digitaltwins
-          path: apps/digitaltwins/dist/
-          retention-days: 1
-
   build-photobroom:
     runs-on: ubuntu-latest
     steps:
@@ -83,7 +56,7 @@ jobs:
 
       - uses: actions/setup-node@v6
         with:
-          node-version: '22'
+          node-version: "22"
           cache: pnpm
 
       - name: Install dependencies
@@ -100,7 +73,7 @@ jobs:
           retention-days: 1
 
   deploy:
-    needs: [build-campsite, build-digitaltwins, build-photobroom]
+    needs: [build-campsite, build-photobroom]
     runs-on: ubuntu-latest
     environment: production
     steps:
@@ -121,12 +94,6 @@ jobs:
           name: campsite
           path: campsite
 
-      - name: Download digitaltwins artifact
-        uses: actions/download-artifact@v7
-        with:
-          name: digitaltwins
-          path: digitaltwins
-
       - name: Download photobroom artifact
         uses: actions/download-artifact@v7
         with:
@@ -137,9 +104,6 @@ jobs:
         run: |
           tar czf campsite.tar.gz -C campsite .
           aws s3 cp campsite.tar.gz s3://${{ vars.S3_DEPLOY_BUCKET }}/_deploy/webapp.tar.gz
-
-          tar czf digitaltwins.tar.gz -C digitaltwins .
-          aws s3 cp digitaltwins.tar.gz s3://${{ vars.S3_DEPLOY_BUCKET }}/_deploy/digitaltwins.tar.gz
 
           tar czf photobroom.tar.gz -C photobroom .
           aws s3 cp photobroom.tar.gz s3://${{ vars.S3_DEPLOY_BUCKET }}/_deploy/photobroom.tar.gz
@@ -179,11 +143,6 @@ jobs:
               'rm -rf /opt/jordanscamp/webapp/*',
               'tar xzf /tmp/webapp.tar.gz -C /opt/jordanscamp/webapp/',
               'rm /tmp/webapp.tar.gz',
-              'aws s3 cp s3://$S3_BUCKET/_deploy/digitaltwins.tar.gz /tmp/digitaltwins.tar.gz',
-              'mkdir -p /opt/jordanscamp/digitaltwins',
-              'rm -rf /opt/jordanscamp/digitaltwins/*',
-              'tar xzf /tmp/digitaltwins.tar.gz -C /opt/jordanscamp/digitaltwins/',
-              'rm /tmp/digitaltwins.tar.gz',
               'aws s3 cp s3://$S3_BUCKET/_deploy/photobroom.tar.gz /tmp/photobroom.tar.gz',
               'mkdir -p /opt/jordanscamp/photobroom',
               'rm -rf /opt/jordanscamp/photobroom/*',
