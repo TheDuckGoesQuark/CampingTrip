@@ -2,6 +2,7 @@ import { useEffect, useState, lazy, Suspense } from "react";
 
 import CampfireLoadingScreen from "./components/CampfireLoadingScreen";
 import ErrorBoundary from "./components/ErrorBoundary";
+import RouteSync from "./components/RouteSync";
 import WelcomeScreen from "./components/WelcomeScreen/WelcomeScreen";
 import { useSessionStore } from "./store/sessionStore";
 
@@ -29,6 +30,8 @@ export default function App() {
 
   return (
     <>
+      {/* Bridges the URL to the scene's overlay flags (mounted before the gate) */}
+      <RouteSync />
       {/* Welcome screen — fades out via CSS when completeWelcome fires, then unmounts */}
       {showWelcome && <WelcomeScreen />}
       {/* Campfire loading — always mounted, manages its own visibility/audio/fade */}

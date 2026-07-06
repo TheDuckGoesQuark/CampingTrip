@@ -1,8 +1,15 @@
+import { BrandProvider } from "@jordanscamp/ds";
 import { render, screen, act } from "@testing-library/react";
+import type { ReactNode } from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 import { useSceneStore } from "../../store/sceneStore";
 import LaptopScreenOverlay from "./LaptopScreenOverlay";
+
+const Wrapper = ({ children }: { children: ReactNode }) => (
+  <BrandProvider>{children}</BrandProvider>
+);
+const renderOverlay = () => render(<LaptopScreenOverlay />, { wrapper: Wrapper });
 
 // Mock the sound effects to avoid AudioContext issues
 vi.mock("../../audio/soundEffects", () => ({
@@ -26,22 +33,22 @@ describe("LaptopScreenOverlay (CatOS)", () => {
   });
 
   it("renders nothing when laptop is not focused", () => {
-    const { container } = render(<LaptopScreenOverlay />);
-    expect(container.firstChild).toBeNull();
+    renderOverlay();
+    expect(screen.queryByRole("dialog")).toBeNull();
   });
 
   it("mounts CatOS desktop when laptop becomes focused", () => {
     useSceneStore.setState({ laptopFocused: true });
-    render(<LaptopScreenOverlay />);
+    renderOverlay();
 
     expect(screen.getByText("CatOS")).toBeInTheDocument();
   });
 
   it("fades in after 650ms delay", () => {
     useSceneStore.setState({ laptopFocused: true });
-    const { container } = render(<LaptopScreenOverlay />);
+    renderOverlay();
 
-    const overlay = container.firstChild as HTMLElement;
+    const overlay = screen.getByRole("dialog");
     expect(overlay.style.opacity).toBe("0");
 
     act(() => {
@@ -53,7 +60,7 @@ describe("LaptopScreenOverlay (CatOS)", () => {
 
   it("shows menu bar with CatOS branding", () => {
     useSceneStore.setState({ laptopFocused: true });
-    render(<LaptopScreenOverlay />);
+    renderOverlay();
 
     expect(screen.getByText("CatOS")).toBeInTheDocument();
     expect(screen.getByText("Finder", { exact: true })).toBeInTheDocument();
@@ -61,21 +68,21 @@ describe("LaptopScreenOverlay (CatOS)", () => {
 
   it("shows back to tent button", () => {
     useSceneStore.setState({ laptopFocused: true });
-    render(<LaptopScreenOverlay />);
+    renderOverlay();
 
     expect(screen.getByText(/Back to tent/)).toBeInTheDocument();
   });
 
   it("shows Esc hint on back button", () => {
     useSceneStore.setState({ laptopFocused: true });
-    render(<LaptopScreenOverlay />);
+    renderOverlay();
 
     expect(screen.getByText("Esc")).toBeInTheDocument();
   });
 
   it("renders project desktop icons", () => {
     useSceneStore.setState({ laptopFocused: true });
-    render(<LaptopScreenOverlay />);
+    renderOverlay();
 
     // Projects from data/projects.ts
     expect(screen.getByText("Camping Trip")).toBeInTheDocument();
@@ -83,7 +90,7 @@ describe("LaptopScreenOverlay (CatOS)", () => {
 
   it("renders dock with standard icons", () => {
     useSceneStore.setState({ laptopFocused: true });
-    render(<LaptopScreenOverlay />);
+    renderOverlay();
 
     expect(screen.getByTitle("Finder")).toBeInTheDocument();
     expect(screen.getByTitle("Terminal")).toBeInTheDocument();

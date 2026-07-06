@@ -1,14 +1,26 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+import { Badge, Group, Stack, Text, Title } from "@jordanscamp/ds";
+import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 
 import { playWindowOpen, playSoftClick } from "../../audio/soundEffects";
 import { bookmarks } from "../../data/bookmarks";
 import { projects } from "../../data/projects";
+import { slugify } from "../../data/slug";
 import { useSceneStore } from "../../store/sceneStore";
 import { useSessionStore } from "../../store/sessionStore";
 import type { Project, Bookmark } from "../../types/project";
 import { asset } from "../../utils/assetPath";
 
 type OpenItem = { kind: "project"; data: Project } | { kind: "bookmark"; data: Bookmark };
+
+/** Resolve the open window from the URL-backed slug (single source of truth). */
+function resolveOpenItem(slug: string | null): OpenItem | null {
+  if (!slug) return null;
+  const project = projects.find((p) => slugify(p.title) === slug);
+  if (project) return { kind: "project", data: project };
+  const bookmark = bookmarks.find((b) => slugify(b.title) === slug);
+  if (bookmark) return { kind: "bookmark", data: bookmark };
+  return null;
+}
 
 /**
  * CatOS — the laptop's operating system overlay.
@@ -18,12 +30,18 @@ type OpenItem = { kind: "project"; data: Project } | { kind: "bookmark"; data: B
  */
 export default function LaptopScreenOverlay() {
   const laptopFocused = useSceneStore((s) => s.laptopFocused);
+  const activePostSlug = useSceneStore((s) => s.activePostSlug);
+  const setActivePostSlug = useSceneStore((s) => s.setActivePostSlug);
   const lastVisitedAt = useSessionStore((s) => s.lastVisitedAt);
   const [mounted, setMounted] = useState(false);
   const [opacity, setOpacity] = useState(0);
-  const [openItem, setOpenItem] = useState<OpenItem | null>(null);
   const [clock, setClock] = useState("");
   const prevFocused = useRef(false);
+
+  // The open window is derived from the URL-backed slug, so /home/:slug deep
+  // links open the right post and closing navigates back to /home.
+  const openItem = useMemo(() => resolveOpenItem(activePostSlug), [activePostSlug]);
+  const closeWindow = useCallback(() => setActivePostSlug(null), [setActivePostSlug]);
 
   // Mount/unmount with fade
   useEffect(() => {
@@ -33,7 +51,6 @@ export default function LaptopScreenOverlay() {
       return () => clearTimeout(timer);
     } else {
       setOpacity(0);
-      setOpenItem(null);
       const timer = setTimeout(() => setMounted(false), 400);
       return () => clearTimeout(timer);
     }
@@ -66,7 +83,7 @@ export default function LaptopScreenOverlay() {
       if (e.key === "Escape") {
         if (openItem) {
           e.stopPropagation();
-          setOpenItem(null);
+          closeWindow();
           playSoftClick();
         }
         // If no item open, TentScene's handler will close the laptop
@@ -74,17 +91,23 @@ export default function LaptopScreenOverlay() {
     };
     window.addEventListener("keydown", onKey, true);
     return () => window.removeEventListener("keydown", onKey, true);
-  }, [mounted, openItem]);
+  }, [mounted, openItem, closeWindow]);
 
-  const handleProjectClick = useCallback((project: Project) => {
-    setOpenItem({ kind: "project", data: project });
-    playWindowOpen();
-  }, []);
+  const handleProjectClick = useCallback(
+    (project: Project) => {
+      setActivePostSlug(slugify(project.title));
+      playWindowOpen();
+    },
+    [setActivePostSlug],
+  );
 
-  const handleBookmarkClick = useCallback((bookmark: Bookmark) => {
-    setOpenItem({ kind: "bookmark", data: bookmark });
-    playWindowOpen();
-  }, []);
+  const handleBookmarkClick = useCallback(
+    (bookmark: Bookmark) => {
+      setActivePostSlug(slugify(bookmark.title));
+      playWindowOpen();
+    },
+    [setActivePostSlug],
+  );
 
   if (!mounted) return null;
 
@@ -92,6 +115,9 @@ export default function LaptopScreenOverlay() {
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="CatOS — the laptop blog"
       style={{
         position: "fixed",
         inset: 0,
@@ -99,37 +125,18 @@ export default function LaptopScreenOverlay() {
         opacity,
         transition: "opacity 0.4s ease",
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-        color: "#e0e0e8",
+        color: "var(--brand-text)",
         userSelect: "none",
       }}
     >
-      {/* Wallpaper */}
+      {/* Wallpaper — soft green → ivory */}
       <div
         style={{
           position: "absolute",
           inset: 0,
-          background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 70%, #1a1a2e 100%)",
+          background: "linear-gradient(180deg, var(--brand-bg), var(--brand-surface))",
         }}
       />
-
-      {/* Subtle starfield dots */}
-      <div style={{ position: "absolute", inset: 0, overflow: "hidden", opacity: 0.3 }}>
-        {Array.from({ length: 40 }, (_, i) => (
-          <div
-            key={i}
-            style={{
-              position: "absolute",
-              width: i % 3 === 0 ? 2 : 1,
-              height: i % 3 === 0 ? 2 : 1,
-              borderRadius: "50%",
-              background: "#fff",
-              left: `${(i * 37 + 13) % 100}%`,
-              top: `${((i * 53 + 7) % 85) + 5}%`,
-              opacity: 0.3 + (i % 5) * 0.15,
-            }}
-          />
-        ))}
-      </div>
 
       {/* Menu bar */}
       <MenuBar clock={clock} />
@@ -204,7 +211,7 @@ export default function LaptopScreenOverlay() {
         <ProjectWindow
           project={openItem.data}
           onClose={() => {
-            setOpenItem(null);
+            closeWindow();
             playSoftClick();
           }}
         />
@@ -213,7 +220,7 @@ export default function LaptopScreenOverlay() {
         <BookmarkWindow
           bookmark={openItem.data}
           onClose={() => {
-            setOpenItem(null);
+            closeWindow();
             playSoftClick();
           }}
         />
@@ -228,9 +235,9 @@ export default function LaptopScreenOverlay() {
             bottom: 84,
             right: 20,
             zIndex: 5,
-            background: "rgba(255,255,255,0.06)",
-            border: "1px solid rgba(255,255,255,0.12)",
-            color: "rgba(255,255,255,0.4)",
+            background: "color-mix(in oklab, var(--brand-muted), transparent 88%)",
+            border: "1px solid color-mix(in oklab, var(--brand-muted), transparent 72%)",
+            color: "var(--brand-muted)",
             padding: "6px 14px",
             borderRadius: 6,
             cursor: "pointer",
@@ -238,12 +245,14 @@ export default function LaptopScreenOverlay() {
             transition: "background 0.2s, color 0.2s",
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = "rgba(255,255,255,0.12)";
-            e.currentTarget.style.color = "rgba(255,255,255,0.7)";
+            e.currentTarget.style.background =
+              "color-mix(in oklab, var(--brand-muted), transparent 78%)";
+            e.currentTarget.style.color = "var(--brand-text)";
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = "rgba(255,255,255,0.06)";
-            e.currentTarget.style.color = "rgba(255,255,255,0.4)";
+            e.currentTarget.style.background =
+              "color-mix(in oklab, var(--brand-muted), transparent 88%)";
+            e.currentTarget.style.color = "var(--brand-muted)";
           }}
         >
           Back to tent <span style={{ opacity: 0.5, marginLeft: 6 }}>Esc</span>
@@ -279,7 +288,7 @@ function SectionHeader({ label }: { label: string }) {
         fontWeight: 600,
         textTransform: "uppercase",
         letterSpacing: 1.2,
-        color: "rgba(255,255,255,0.35)",
+        color: "var(--brand-muted)",
         marginBottom: 16,
         textAlign: "center",
       }}
@@ -299,7 +308,7 @@ function MenuBar({ clock }: { clock: string }) {
         left: 0,
         right: 0,
         height: 28,
-        background: "rgba(0,0,0,0.55)",
+        background: "color-mix(in oklab, var(--brand-surface), transparent 12%)",
         backdropFilter: "blur(20px)",
         WebkitBackdropFilter: "blur(20px)",
         display: "flex",
@@ -308,7 +317,8 @@ function MenuBar({ clock }: { clock: string }) {
         fontSize: 13,
         fontWeight: 500,
         zIndex: 10,
-        borderBottom: "1px solid rgba(255,255,255,0.06)",
+        color: "var(--brand-text)",
+        borderBottom: "1px solid color-mix(in oklab, var(--brand-muted), transparent 80%)",
       }}
     >
       <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -381,9 +391,8 @@ function DesktopIcon({
         style={
           {
             fontSize: 13,
-            color: "#fff",
+            color: "var(--brand-text)",
             textAlign: "center",
-            textShadow: "0 1px 3px rgba(0,0,0,0.8)",
             lineHeight: 1.3,
             maxWidth: 110,
             overflow: "hidden",
@@ -554,13 +563,13 @@ function WindowShell({
           width: "90%",
           maxWidth: 520,
           minHeight: 300,
-          background: "rgba(30,30,45,0.95)",
+          background: "var(--brand-surface)",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
           borderRadius: 12,
-          border: "1px solid rgba(255,255,255,0.1)",
+          border: "1px solid color-mix(in oklab, var(--brand-muted), transparent 78%)",
           overflow: "hidden",
-          boxShadow: "0 20px 60px rgba(0,0,0,0.5)",
+          boxShadow: "var(--mantine-shadow-lg)",
           animation: "catosWindowIn 0.25s ease-out",
         }}
       >
@@ -627,38 +636,32 @@ function WindowShell({
 
 /* ─── Project Window ──────────────────────────────────────────── */
 function ProjectWindow({ project, onClose }: { project: Project; onClose: () => void }) {
-  const [imgError, setImgError] = useState(false);
+  const body =
+    typeof project.description === "string"
+      ? project.description.split("\n\n").map((para, i) => <p key={i}>{para}</p>)
+      : project.description;
 
   return (
     <WindowShell title={project.title} onClose={onClose}>
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 16, marginBottom: 20 }}>
-        {imgError ? (
-          <FallbackIcon title={project.title} color={project.color} />
-        ) : (
-          <img
-            src={asset(project.icon)}
-            alt=""
-            width={64}
-            height={64}
-            style={{ borderRadius: 12, objectFit: "cover", flexShrink: 0 }}
-            onError={() => setImgError(true)}
-          />
+      <Stack gap="xs" mb="md">
+        <Title order={2} c="var(--brand-text)">
+          {project.title}
+        </Title>
+        <Text size="sm" c="dimmed">
+          {project.year}
+        </Text>
+        {project.tags && project.tags.length > 0 && (
+          <Group gap="xs">
+            {project.tags.map((t) => (
+              <Badge key={t} variant="light">
+                {t}
+              </Badge>
+            ))}
+          </Group>
         )}
-        <div>
-          <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>{project.title}</h2>
-          <span style={{ fontSize: 13, opacity: 0.4 }}>{project.year}</span>
-        </div>
-      </div>
+      </Stack>
 
-      <div style={{ fontSize: 14, lineHeight: 1.6, opacity: 0.7, marginBottom: 24 }}>
-        {typeof project.description === "string"
-          ? project.description.split("\n\n").map((para, i) => (
-              <p key={i} style={{ margin: i === 0 ? 0 : "12px 0 0" }}>
-                {para}
-              </p>
-            ))
-          : project.description}
-      </div>
+      <div style={{ lineHeight: 1.7, color: "var(--brand-text)" }}>{body}</div>
 
       <div
         style={{
@@ -667,6 +670,7 @@ function ProjectWindow({ project, onClose }: { project: Project; onClose: () => 
           alignItems: "center",
           gap: 8,
           flexWrap: "wrap",
+          marginTop: 24,
         }}
       >
         <a

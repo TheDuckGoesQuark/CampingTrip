@@ -8,6 +8,7 @@ export interface Project {
   icon: string;
   color?: string;
   github?: string;
+  tags?: string[]; // topic pills shown in the blog window
   addedAt?: string; // ISO date string for "new" badge
   updatedAt?: string; // ISO date string for "updated" badge
 }
