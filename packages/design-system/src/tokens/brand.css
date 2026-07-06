@@ -1,0 +1,17 @@
+/*
+ * Brand tokens — the static green + ivory palette (granite, hunter/sea-green,
+ * mint-leaf, ivory). Reference these from a component's own CSS module for
+ * surfaces/text; use Mantine component props for everything else.
+ */
+
+.jc-brand {
+  --brand-bg: #f5f9e9;
+  --brand-surface: #ffffff;
+  --brand-text: #3f4b3b;
+  --brand-muted: #5f7356;
+  --brand-accent: #5a9367;
+  --brand-accent-rgb: 90, 147, 103;
+  --brand-glow: 0 0 0 3px rgba(90, 147, 103, 0.5);
+
+  color: var(--brand-text);
+}
