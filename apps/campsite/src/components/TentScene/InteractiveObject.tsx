@@ -1,4 +1,4 @@
-import { useRef, useCallback, useEffect, MutableRefObject } from "react";
+import { useRef, useCallback, useEffect } from "react";
 import * as THREE from "three";
 
 import { useInteractionStore } from "../../store/interactionStore";
@@ -21,9 +21,7 @@ export default function InteractiveObject({
   onActivate,
 }: Props) {
   const groupRef = useRef<THREE.Group>(null);
-  const leaveTimer = useRef<ReturnType<typeof setTimeout>>() as MutableRefObject<
-    ReturnType<typeof setTimeout> | undefined
-  >;
+  const leaveTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const emissiveCache = useRef<EmissiveCache>(new Map());
 
   const hoveredId = useInteractionStore((s) => s.hoveredId);
