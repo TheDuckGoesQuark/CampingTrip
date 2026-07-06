@@ -1,8 +1,9 @@
-import { useRef, useCallback, useEffect, MutableRefObject } from 'react';
-import * as THREE from 'three';
-import { useInteractionStore } from '../../store/interactionStore';
-import SceneLabel from './SceneLabel';
-import { applyHighlight, removeHighlight, type EmissiveCache } from '../../utils/highlight';
+import { useRef, useCallback, useEffect, MutableRefObject } from "react";
+import * as THREE from "three";
+
+import { useInteractionStore } from "../../store/interactionStore";
+import { applyHighlight, removeHighlight, type EmissiveCache } from "../../utils/highlight";
+import SceneLabel from "./SceneLabel";
 
 interface Props {
   id: string;
@@ -20,7 +21,9 @@ export default function InteractiveObject({
   onActivate,
 }: Props) {
   const groupRef = useRef<THREE.Group>(null);
-  const leaveTimer = useRef<ReturnType<typeof setTimeout>>() as MutableRefObject<ReturnType<typeof setTimeout> | undefined>;
+  const leaveTimer = useRef<ReturnType<typeof setTimeout>>() as MutableRefObject<
+    ReturnType<typeof setTimeout> | undefined
+  >;
   const emissiveCache = useRef<EmissiveCache>(new Map());
 
   const hoveredId = useInteractionStore((s) => s.hoveredId);
@@ -38,8 +41,8 @@ export default function InteractiveObject({
       const detail = (e as CustomEvent).detail;
       if (detail?.id === id) onActivate?.();
     };
-    window.addEventListener('scene-activate', handler);
-    return () => window.removeEventListener('scene-activate', handler);
+    window.addEventListener("scene-activate", handler);
+    return () => window.removeEventListener("scene-activate", handler);
   }, [id, onActivate]);
 
   // Apply / remove warm highlight on child meshes
@@ -59,7 +62,7 @@ export default function InteractiveObject({
       // between child meshes within the same group
       clearTimeout(leaveTimer.current);
       setHovered(id);
-      document.body.style.cursor = 'pointer';
+      document.body.style.cursor = "pointer";
     },
     [id, setHovered],
   );
@@ -74,11 +77,11 @@ export default function InteractiveObject({
         // (e.g. the logo inside the laptop) may have claimed hover already
         if (useInteractionStore.getState().hoveredId === id) {
           setHovered(null);
-          document.body.style.cursor = 'auto';
+          document.body.style.cursor = "auto";
         }
       }, 50);
     },
-    [setHovered],
+    [id, setHovered],
   );
 
   const handleClick = useCallback(
@@ -97,9 +100,7 @@ export default function InteractiveObject({
       onClick={handleClick}
     >
       {children}
-      {isHighlighted && (
-        <SceneLabel text={label} position={labelPosition} />
-      )}
+      {isHighlighted && <SceneLabel text={label} position={labelPosition} />}
     </group>
   );
 }

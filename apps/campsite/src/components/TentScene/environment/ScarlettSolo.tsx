@@ -1,23 +1,24 @@
-import { useEffect, useRef } from 'react';
-import { useGLTF } from '@react-three/drei';
-import * as THREE from 'three';
-import { useInteractionStore } from '../../../store/interactionStore';
-import { asset, DRACO_PATH } from '../../../utils/assetPath';
+import { useGLTF } from "@react-three/drei";
+import { useEffect, useRef } from "react";
+import * as THREE from "three";
+
+import { useInteractionStore } from "../../../store/interactionStore";
+import { asset, DRACO_PATH } from "../../../utils/assetPath";
 
 // Credit: "Focusrite Scarlett Solo Interface" on Sketchfab (CC-BY)
 // https://sketchfab.com/3d-models/focusrite-scarlett-solo-interface-f09111be4a5c48228c3b898965d62bba
 
-useGLTF.preload(asset('models/focusrite_scarlett_solo_interface.glb'), DRACO_PATH);
+useGLTF.preload(asset("models/focusrite_scarlett_solo_interface.glb"), DRACO_PATH);
 
 export default function ScarlettSolo() {
-  const { scene } = useGLTF(asset('models/focusrite_scarlett_solo_interface.glb'), DRACO_PATH);
+  const { scene } = useGLTF(asset("models/focusrite_scarlett_solo_interface.glb"), DRACO_PATH);
   const lightMeshes = useRef<
     { mat: THREE.MeshStandardMaterial; color: THREE.Color; intensity: number }[]
   >([]);
 
   const hoveredId = useInteractionStore((s) => s.hoveredId);
   const focusedId = useInteractionStore((s) => s.focusedId);
-  const isHighlighted = hoveredId === 'scarlett' || focusedId === 'scarlett';
+  const isHighlighted = hoveredId === "scarlett" || focusedId === "scarlett";
 
   // Initial setup: find emissive meshes, save originals, turn lights off
   useEffect(() => {
@@ -28,9 +29,7 @@ export default function ScarlettSolo() {
       child.castShadow = true;
       child.receiveShadow = true;
 
-      const mats = Array.isArray(child.material)
-        ? child.material
-        : [child.material];
+      const mats = Array.isArray(child.material) ? child.material : [child.material];
       mats.forEach((mat) => {
         if (!(mat as THREE.MeshStandardMaterial).isMeshStandardMaterial) return;
         const stdMat = mat as THREE.MeshStandardMaterial;
@@ -68,11 +67,7 @@ export default function ScarlettSolo() {
 
   // Native: ~14.3 x 4.8 x 9.9 units. Scale 0.012 → ~17cm wide
   return (
-    <group
-      position={[-1.9, 0.45, -0.1]}
-      rotation={[0, Math.PI * 0.0, 0]}
-      scale={[0.05,0.05,0.05]}
-    >
+    <group position={[-1.9, 0.45, -0.1]} rotation={[0, 0, 0]} scale={[0.05, 0.05, 0.05]}>
       <primitive object={scene} />
     </group>
   );

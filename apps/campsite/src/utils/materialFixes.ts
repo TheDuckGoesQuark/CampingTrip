@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import * as THREE from "three";
 
 /**
  * Fix moiré / shimmer on detailed normal-mapped meshes.

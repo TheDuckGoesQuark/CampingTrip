@@ -1,8 +1,9 @@
-import { useEffect, useRef } from 'react';
-import { useSceneStore } from '../../store/sceneStore';
-import { useSessionStore } from '../../store/sessionStore';
-import { useTimeStore, getNightFactor } from '../../store/timeStore';
-import { startRain, setRainVolume, stopRain, isRainPlaying } from '../../audio/rainSynth';
+import { useEffect, useRef } from "react";
+
+import { startRain, setRainVolume, stopRain, isRainPlaying } from "../../audio/rainSynth";
+import { useSceneStore } from "../../store/sceneStore";
+import { useSessionStore } from "../../store/sessionStore";
+import { useTimeStore, getNightFactor } from "../../store/timeStore";
 
 /**
  * Manages rain audio — only plays at night.
@@ -23,9 +24,9 @@ export default function RainAudio() {
       if (started.current) return;
       started.current = true;
       startRain(0); // start silent — volume controlled by time/door effect
-      window.removeEventListener('click', tryStart);
-      window.removeEventListener('touchstart', tryStart);
-      window.removeEventListener('keydown', tryStart);
+      window.removeEventListener("click", tryStart);
+      window.removeEventListener("touchstart", tryStart);
+      window.removeEventListener("keydown", tryStart);
     }
 
     // Try immediately (works if user already interacted, e.g. welcome screen click)
@@ -34,15 +35,15 @@ export default function RainAudio() {
     // Also listen for gestures in case AudioContext was blocked
     if (!isRainPlaying()) {
       started.current = false;
-      window.addEventListener('click', tryStart, { once: true });
-      window.addEventListener('touchstart', tryStart, { once: true });
-      window.addEventListener('keydown', tryStart, { once: true });
+      window.addEventListener("click", tryStart, { once: true });
+      window.addEventListener("touchstart", tryStart, { once: true });
+      window.addEventListener("keydown", tryStart, { once: true });
     }
 
     return () => {
-      window.removeEventListener('click', tryStart);
-      window.removeEventListener('touchstart', tryStart);
-      window.removeEventListener('keydown', tryStart);
+      window.removeEventListener("click", tryStart);
+      window.removeEventListener("touchstart", tryStart);
+      window.removeEventListener("keydown", tryStart);
     };
   }, [soundEnabled]);
 
@@ -65,7 +66,7 @@ export default function RainAudio() {
       return;
     }
 
-    const doorOpen = doorState === 'open' || doorState === 'opening';
+    const doorOpen = doorState === "open" || doorState === "opening";
     const baseVol = doorOpen ? 0.22 : 0.08;
     setRainVolume(baseVol * nf, 1.0);
   }, [doorState, soundEnabled, progress]);

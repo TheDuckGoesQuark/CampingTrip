@@ -4,8 +4,8 @@ Images here with these exact names — the landing page ("See it in action")
 shows them in order, and falls back to a "Screenshot coming soon" placeholder
 until each file exists:
 
-| File          | Stage shown                                                        |
-| ------------- | ------------------------------------------------------------------ |
+| File          | Stage shown                                                         |
+| ------------- | ------------------------------------------------------------------- |
 | `sweep.jpg`   | The PhotoBroom panel on a Google Photos search, "Sweep this search" |
 | `review.jpg`  | The big keyboard review view (a photo + Bin/Skip/Keep buttons)      |
 | `confirm.jpg` | The review summary with the "Move N to bin" button                  |

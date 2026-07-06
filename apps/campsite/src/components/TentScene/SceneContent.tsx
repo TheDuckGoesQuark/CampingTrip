@@ -1,26 +1,7 @@
-import { useState, useCallback } from 'react';
-import { useFrame, useThree } from '@react-three/fiber';
-import { Environment } from '@react-three/drei';
-import CameraController from './CameraController';
-import Lighting from './Lighting';
-import InteractiveObject from './InteractiveObject';
-import { useSceneStore } from '../../store/sceneStore';
-import { useTimeStore, lerpKeyframes } from '../../store/timeStore';
-import { useTimeSync } from '../../hooks/useTimeSync';
-import TentInterior from './environment/TentInterior';
-import PicnicArea from './environment/PicnicArea';
-import OutdoorScene from './environment/OutdoorScene';
-import Campfire from './environment/Campfire';
-import Guitar from './environment/Guitar';
-import MokaPot from './environment/MokaPot';
-import Laptop from './environment/Laptop';
-import ScarlettSolo from './environment/ScarlettSolo';
-import ShureMic from './environment/ShureMic';
-import MidiController from './environment/MidiController';
-import Notepad from './environment/Notepad';
-import WalkingCat from './environment/WalkingCat';
-import RainSystem from './environment/RainSystem';
-import RainAudio from './RainAudio';
+import { Environment } from "@react-three/drei";
+import { useFrame, useThree } from "@react-three/fiber";
+import { useState, useCallback } from "react";
+
 import {
   playLaptopOn,
   playLaptopOff,
@@ -28,19 +9,39 @@ import {
   playMidiNote,
   playPageFlip,
   playSoftClick,
-} from '../../audio/soundEffects';
-import { useMusicStore } from '../../store/musicStore';
+} from "../../audio/soundEffects";
+import { useTimeSync } from "../../hooks/useTimeSync";
+import { useMusicStore } from "../../store/musicStore";
+import { useSceneStore } from "../../store/sceneStore";
+import { useTimeStore, lerpKeyframes } from "../../store/timeStore";
+import CameraController from "./CameraController";
+import Campfire from "./environment/Campfire";
+import Guitar from "./environment/Guitar";
+import Laptop from "./environment/Laptop";
+import MidiController from "./environment/MidiController";
+import MokaPot from "./environment/MokaPot";
+import Notepad from "./environment/Notepad";
+import OutdoorScene from "./environment/OutdoorScene";
+import PicnicArea from "./environment/PicnicArea";
+import RainSystem from "./environment/RainSystem";
+import ScarlettSolo from "./environment/ScarlettSolo";
+import ShureMic from "./environment/ShureMic";
+import TentInterior from "./environment/TentInterior";
+import WalkingCat from "./environment/WalkingCat";
+import InteractiveObject from "./InteractiveObject";
+import Lighting from "./Lighting";
+import RainAudio from "./RainAudio";
 
 // Environment intensity keyframes (brighter during day)
 const ENV_INT = [
-  { t: 0.00, value: 0.3 },
+  { t: 0.0, value: 0.3 },
   { t: 0.15, value: 0.7 },
   { t: 0.25, value: 1.0 },
   { t: 0.42, value: 0.7 },
-  { t: 0.50, value: 0.4 },
+  { t: 0.5, value: 0.4 },
   { t: 0.58, value: 0.3 },
   { t: 0.75, value: 0.3 },
-  { t: 1.00, value: 0.3 },
+  { t: 1.0, value: 0.3 },
 ];
 
 /** Syncs the time store to the system clock and updates scene.environmentIntensity */
@@ -74,7 +75,7 @@ export default function SceneContent({ debug = false }: Props) {
   const activateNotepad = useCallback(() => {
     if (useSceneStore.getState().notepadFocused) return;
     playPageFlip();
-    useSceneStore.getState().setFocusTarget('default');
+    useSceneStore.getState().setFocusTarget("default");
     useSceneStore.getState().setNotepadFocused(true);
   }, []);
 
@@ -108,7 +109,7 @@ export default function SceneContent({ debug = false }: Props) {
 
       <InteractiveObject
         id="laptop"
-        label={laptopScreenOn ? 'Laptop (click to turn off)' : 'Laptop (click to turn on)'}
+        label={laptopScreenOn ? "Laptop (click to turn off)" : "Laptop (click to turn on)"}
         labelPosition={[-1.75, 1.75, -0.85]}
         onActivate={toggleLaptopScreen}
       >
@@ -125,11 +126,7 @@ export default function SceneContent({ debug = false }: Props) {
         castShadow={false}
       />
 
-      <InteractiveObject
-        id="scarlett"
-        label="Scarlett Solo"
-        labelPosition={[-1.9, 1.0, -0.1]}
-      >
+      <InteractiveObject id="scarlett" label="Scarlett Solo" labelPosition={[-1.9, 1.0, -0.1]}>
         <ScarlettSolo />
       </InteractiveObject>
 
@@ -160,11 +157,7 @@ export default function SceneContent({ debug = false }: Props) {
         <Notepad />
       </InteractiveObject>
 
-      <InteractiveObject
-        id="moka-pot"
-        label="Moka Pot"
-        labelPosition={[-1, 0.7, -1.8]}
-      >
+      <InteractiveObject id="moka-pot" label="Moka Pot" labelPosition={[-1, 0.7, -1.8]}>
         <MokaPot />
       </InteractiveObject>
 
@@ -174,7 +167,6 @@ export default function SceneContent({ debug = false }: Props) {
       <WalkingCat />
       <RainSystem />
       <RainAudio />
-
     </>
   );
 }

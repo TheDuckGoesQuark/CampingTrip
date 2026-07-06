@@ -1,7 +1,8 @@
-import { Howl } from 'howler';
-import { useMusicStore } from '../store/musicStore';
-import { songs } from '../data/songs';
-import { asset } from '../utils/assetPath';
+import { Howl } from "howler";
+
+import { songs } from "../data/songs";
+import { useMusicStore } from "../store/musicStore";
+import { asset } from "../utils/assetPath";
 
 let currentHowl: Howl | null = null;
 let progressInterval: ReturnType<typeof setInterval> | null = null;
@@ -63,9 +64,8 @@ function loadTrack(index: number): Howl | null {
 export const musicPlayer = {
   playTrack(index: number) {
     const wrappedIndex = ((index % songs.length) + songs.length) % songs.length;
-    const howl = wrappedIndex === loadedIndex && currentHowl
-      ? currentHowl
-      : loadTrack(wrappedIndex);
+    const howl =
+      wrappedIndex === loadedIndex && currentHowl ? currentHowl : loadTrack(wrappedIndex);
     if (!howl) return;
     howl.play();
     useMusicStore.getState().play();

@@ -11,7 +11,7 @@ let crackleTimeout: ReturnType<typeof setTimeout> | null = null;
 
 function getContext() {
   if (!ctx) ctx = new AudioContext();
-  if (ctx.state === 'suspended') ctx.resume();
+  if (ctx.state === "suspended") ctx.resume();
   return ctx;
 }
 
@@ -43,7 +43,7 @@ export function startCampfire(volume = 0.18) {
   baseSource.loop = true;
 
   const baseLp = context.createBiquadFilter();
-  baseLp.type = 'lowpass';
+  baseLp.type = "lowpass";
   baseLp.frequency.value = 400;
   baseLp.Q.value = 0.5;
 
@@ -71,7 +71,7 @@ export function startCampfire(volume = 0.18) {
     src.buffer = buf;
 
     const bp = ac.createBiquadFilter();
-    bp.type = 'bandpass';
+    bp.type = "bandpass";
     bp.frequency.value = 800 + Math.random() * 2500;
     bp.Q.value = 1 + Math.random() * 3;
 
@@ -107,10 +107,17 @@ export function stopCampfire(fadeTime = 1.0) {
     crackleTimeout = null;
   }
 
-  setTimeout(() => {
-    try { baseSource?.stop(); } catch (_) { /* */ }
-    baseSource = null;
-    masterGain = null;
-    playing = false;
-  }, fadeTime * 1000 + 200);
+  setTimeout(
+    () => {
+      try {
+        baseSource?.stop();
+      } catch {
+        /* */
+      }
+      baseSource = null;
+      masterGain = null;
+      playing = false;
+    },
+    fadeTime * 1000 + 200,
+  );
 }

@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 interface SessionState {
   soundEnabled: boolean;
@@ -26,6 +26,6 @@ export const useSessionStore = create<SessionState>()(
       resetWelcome: () => set({ hasCompletedWelcome: false }),
       updateLastVisited: () => set({ lastVisitedAt: new Date().toISOString() }),
     }),
-    { name: 'campingtrip-session' }
-  )
+    { name: "campingtrip-session" },
+  ),
 );

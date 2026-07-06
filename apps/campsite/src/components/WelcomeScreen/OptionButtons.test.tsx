@@ -1,9 +1,10 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
-import OptionButtons from './OptionButtons';
-import { useSessionStore } from '../../store/sessionStore';
+import { render, screen, fireEvent } from "@testing-library/react";
+import { describe, it, expect, beforeEach } from "vitest";
 
-describe('OptionButtons', () => {
+import { useSessionStore } from "../../store/sessionStore";
+import OptionButtons from "./OptionButtons";
+
+describe("OptionButtons", () => {
   beforeEach(() => {
     useSessionStore.setState({
       soundEnabled: true,
@@ -12,13 +13,13 @@ describe('OptionButtons', () => {
     });
   });
 
-  it('renders two option buttons', () => {
+  it("renders two option buttons", () => {
     render(<OptionButtons visible={true} />);
-    const buttons = screen.getAllByRole('button');
+    const buttons = screen.getAllByRole("button");
     expect(buttons).toHaveLength(2);
   });
 
-  it('shows full experience and just browsing options', () => {
+  it("shows full experience and just browsing options", () => {
     render(<OptionButtons visible={true} />);
     expect(screen.getByText(/full experience/)).toBeInTheDocument();
     expect(screen.getByText(/just browsing/)).toBeInTheDocument();

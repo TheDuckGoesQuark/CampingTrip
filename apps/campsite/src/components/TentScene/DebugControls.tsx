@@ -1,4 +1,4 @@
-import { OrbitControls, Grid } from '@react-three/drei';
+import { OrbitControls, Grid } from "@react-three/drei";
 
 /** Orbit controls + visual helpers for debugging scene layout */
 export default function DebugControls() {

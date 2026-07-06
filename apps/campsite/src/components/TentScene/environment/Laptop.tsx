@@ -1,17 +1,18 @@
-import { useEffect, useRef, useCallback } from 'react';
-import { useGLTF, useTexture } from '@react-three/drei';
-import * as THREE from 'three';
-import gsap from 'gsap';
-import { useSceneStore } from '../../../store/sceneStore';
-import { useInteractionStore } from '../../../store/interactionStore';
-import SceneLabel from '../SceneLabel';
-import { asset, DRACO_PATH } from '../../../utils/assetPath';
+import { useGLTF, useTexture } from "@react-three/drei";
+import gsap from "gsap";
+import { useEffect, useRef, useCallback } from "react";
+import * as THREE from "three";
+
+import { useInteractionStore } from "../../../store/interactionStore";
+import { useSceneStore } from "../../../store/sceneStore";
+import { asset, DRACO_PATH } from "../../../utils/assetPath";
+import SceneLabel from "../SceneLabel";
 
 // Credit: "Laptop" on Sketchfab (CC-BY)
 // https://sketchfab.com/3d-models/laptop-7d870e900889481395b4a575b9fa8c3e
 
-useGLTF.preload(asset('models/laptop.glb'), DRACO_PATH);
-useTexture.preload(asset('images/logo.webp'));
+useGLTF.preload(asset("models/laptop.glb"), DRACO_PATH);
+useTexture.preload(asset("images/logo.webp"));
 
 // Resting transform (inside tent)
 const REST_POS: [number, number, number] = [-1.6, 0.67, -0.85];
@@ -28,8 +29,8 @@ interface Props {
 }
 
 export default function Laptop({ screenOn }: Props) {
-  const { scene } = useGLTF(asset('models/laptop.glb'), DRACO_PATH);
-  const logoTexture = useTexture(asset('images/logo.webp'));
+  const { scene } = useGLTF(asset("models/laptop.glb"), DRACO_PATH);
+  const logoTexture = useTexture(asset("images/logo.webp"));
   const groupRef = useRef<THREE.Group>(null);
   const logoMeshRef = useRef<THREE.Mesh>(null);
   const screenMeshes = useRef<THREE.Mesh[]>([]);
@@ -45,8 +46,8 @@ export default function Laptop({ screenOn }: Props) {
   const hoveredId = useInteractionStore((s) => s.hoveredId);
   const focusedId = useInteractionStore((s) => s.focusedId);
   const setHovered = useInteractionStore((s) => s.setHovered);
-  const isLogoHighlighted = hoveredId === 'projects' || focusedId === 'projects';
-  const isLaptopHighlighted = hoveredId === 'laptop' || focusedId === 'laptop';
+  const isLogoHighlighted = hoveredId === "projects" || focusedId === "projects";
+  const isLaptopHighlighted = hoveredId === "laptop" || focusedId === "laptop";
 
   // Initial setup: find screen meshes and emissive lights, configure materials
   useEffect(() => {
@@ -62,10 +63,10 @@ export default function Laptop({ screenOn }: Props) {
       // Only detect screens by name — colour heuristic was too aggressive
       // and misclassified body/bezel meshes as screen panels
       const isScreen =
-        nameLC.includes('screen') ||
-        nameLC.includes('display') ||
-        nameLC.includes('monitor') ||
-        nameLC.includes('lcd');
+        nameLC.includes("screen") ||
+        nameLC.includes("display") ||
+        nameLC.includes("monitor") ||
+        nameLC.includes("lcd");
 
       if (isScreen) {
         screens.push(child);
@@ -128,7 +129,6 @@ export default function Laptop({ screenOn }: Props) {
       } else {
         screenCenter.current.copy(worldCenter);
       }
-
     }
   }, [scene]);
 
@@ -176,35 +176,53 @@ export default function Laptop({ screenOn }: Props) {
 
     if (laptopFocused) {
       gsap.to(g.position, {
-        x: FOCUS_POS[0], y: FOCUS_POS[1], z: FOCUS_POS[2],
-        duration: 1, ease: 'power2.inOut',
+        x: FOCUS_POS[0],
+        y: FOCUS_POS[1],
+        z: FOCUS_POS[2],
+        duration: 1,
+        ease: "power2.inOut",
       });
       gsap.to(g.rotation, {
-        x: FOCUS_ROT[0], y: FOCUS_ROT[1], z: FOCUS_ROT[2],
-        duration: 1, ease: 'power2.inOut',
+        x: FOCUS_ROT[0],
+        y: FOCUS_ROT[1],
+        z: FOCUS_ROT[2],
+        duration: 1,
+        ease: "power2.inOut",
       });
       gsap.to(g.scale, {
-        x: FOCUS_SCALE[0], y: FOCUS_SCALE[1], z: FOCUS_SCALE[2],
-        duration: 1, ease: 'power2.inOut',
+        x: FOCUS_SCALE[0],
+        y: FOCUS_SCALE[1],
+        z: FOCUS_SCALE[2],
+        duration: 1,
+        ease: "power2.inOut",
       });
     } else {
       gsap.to(g.position, {
-        x: REST_POS[0], y: REST_POS[1], z: REST_POS[2],
-        duration: 0.8, ease: 'power2.inOut',
+        x: REST_POS[0],
+        y: REST_POS[1],
+        z: REST_POS[2],
+        duration: 0.8,
+        ease: "power2.inOut",
       });
       gsap.to(g.rotation, {
-        x: REST_ROT[0], y: REST_ROT[1], z: REST_ROT[2],
-        duration: 0.8, ease: 'power2.inOut',
+        x: REST_ROT[0],
+        y: REST_ROT[1],
+        z: REST_ROT[2],
+        duration: 0.8,
+        ease: "power2.inOut",
       });
       gsap.to(g.scale, {
-        x: REST_SCALE[0], y: REST_SCALE[1], z: REST_SCALE[2],
-        duration: 0.8, ease: 'power2.inOut',
+        x: REST_SCALE[0],
+        y: REST_SCALE[1],
+        z: REST_SCALE[2],
+        duration: 0.8,
+        ease: "power2.inOut",
       });
     }
   }, [laptopFocused]);
 
   const handleLogoActivate = useCallback(() => {
-    useSceneStore.getState().setFocusTarget('default');
+    useSceneStore.getState().setFocusTarget("default");
     setLaptopFocused(true);
   }, [setLaptopFocused]);
 
@@ -221,12 +239,12 @@ export default function Laptop({ screenOn }: Props) {
   useEffect(() => {
     const handler = (e: Event) => {
       const detail = (e as CustomEvent).detail;
-      if (detail?.id === 'projects' && screenOn && !laptopFocused) {
+      if (detail?.id === "projects" && screenOn && !laptopFocused) {
         handleLogoActivate();
       }
     };
-    window.addEventListener('scene-activate', handler);
-    return () => window.removeEventListener('scene-activate', handler);
+    window.addEventListener("scene-activate", handler);
+    return () => window.removeEventListener("scene-activate", handler);
   }, [screenOn, laptopFocused, handleLogoActivate]);
 
   return (
@@ -237,11 +255,7 @@ export default function Laptop({ screenOn }: Props) {
           creation at toggle time; visibility toggled instead */}
       <group
         visible={screenOn}
-        position={[
-          screenCenter.current.x,
-          screenCenter.current.y,
-          screenCenter.current.z + 2,
-        ]}
+        position={[screenCenter.current.x, screenCenter.current.y, screenCenter.current.z + 2]}
       >
         <mesh
           ref={logoMeshRef}
@@ -249,14 +263,14 @@ export default function Laptop({ screenOn }: Props) {
           onPointerEnter={(e: any) => {
             if (!screenOn) return;
             e.stopPropagation();
-            setHovered('projects');
-            document.body.style.cursor = 'pointer';
+            setHovered("projects");
+            document.body.style.cursor = "pointer";
             if (logoMeshRef.current) logoMeshRef.current.scale.setScalar(1.15);
           }}
           onPointerLeave={(e: any) => {
             e.stopPropagation();
             setHovered(null);
-            document.body.style.cursor = 'auto';
+            document.body.style.cursor = "auto";
             if (logoMeshRef.current) logoMeshRef.current.scale.setScalar(1);
           }}
         >

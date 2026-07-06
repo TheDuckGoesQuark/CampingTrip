@@ -1,0 +1,7 @@
+#!/bin/sh
+# Blocks commits that aren't formatted or that have lint errors.
+# oxfmt + oxlint are fast (Rust), so we check the whole repo.
+# Bypass in a pinch with `git commit --no-verify`.
+set -e
+pnpm fmt:check
+pnpm lint

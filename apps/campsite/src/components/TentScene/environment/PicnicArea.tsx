@@ -1,7 +1,8 @@
-import { useEffect, useMemo } from 'react';
-import { useGLTF } from '@react-three/drei';
-import { asset, DRACO_PATH } from '../../../utils/assetPath';
-import { applyMoireFix } from '../../../utils/materialFixes';
+import { useGLTF } from "@react-three/drei";
+import { useEffect, useMemo } from "react";
+
+import { asset, DRACO_PATH } from "../../../utils/assetPath";
+import { applyMoireFix } from "../../../utils/materialFixes";
 
 // Credit: "Cosy Picnic Area" on Sketchfab (CC-BY)
 // https://sketchfab.com/3d-models/cosy-picnic-area-0a1fc21d723e454b91314809871e1031
@@ -11,10 +12,10 @@ const SCALE = 2.88;
 // that length runs mostly along Z. Half-length at scale:
 const HALF_LENGTH = (2.85 * SCALE) / 2; // ~4.1 units
 
-useGLTF.preload(asset('models/cosy_picnic_area.glb'), DRACO_PATH);
+useGLTF.preload(asset("models/cosy_picnic_area.glb"), DRACO_PATH);
 
 export default function PicnicArea() {
-  const { scene } = useGLTF(asset('models/cosy_picnic_area.glb'), DRACO_PATH);
+  const { scene } = useGLTF(asset("models/cosy_picnic_area.glb"), DRACO_PATH);
 
   // Clone for the second blanket so we don't share the same scene graph
   const clonedScene = useMemo(() => scene.clone(true), [scene]);

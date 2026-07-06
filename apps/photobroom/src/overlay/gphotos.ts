@@ -14,7 +14,7 @@
  *
  * LAST VERIFIED against photos.google.com on 2026-06-29 (en-GB locale).
  */
-import type { ScrapedPhoto } from '../types';
+import type { ScrapedPhoto } from "../types";
 
 // ---------------------------------------------------------------------------
 // Selectors — the only Google-Photos-specific knowledge in the app.
@@ -26,7 +26,7 @@ export const SELECTORS = {
   /** Extracts the media id from a (possibly search-scoped, relative) href. */
   photoId: /\/photo\/([A-Za-z0-9_-]+)/,
   /** Thumbnail URL is a background-image on a child div with this attribute. */
-  thumbAttr: 'data-latest-bg',
+  thumbAttr: "data-latest-bg",
   /** Fallback: any descendant carrying an inline background-image. */
   bgImageStyle: '[style*="background-image"]',
   /** Per-cell select checkbox (its aria-label matches the photo's). */
@@ -42,7 +42,7 @@ export const SELECTORS = {
   /** Clears an active multi-selection. */
   clearSelectionLabel: /clear selection/i,
   /** Marks a real dialog action button (vs the toolbar button of same label). */
-  dialogActionAttr: 'data-mdc-dialog-action',
+  dialogActionAttr: "data-mdc-dialog-action",
 } as const;
 
 /**
@@ -71,8 +71,8 @@ const TIMING = {
 
 export class AbortError extends Error {
   constructor() {
-    super('Aborted');
-    this.name = 'AbortError';
+    super("Aborted");
+    this.name = "AbortError";
   }
 }
 
@@ -81,12 +81,12 @@ const sleep = (ms: number, signal?: AbortSignal) =>
     if (signal?.aborted) return reject(new AbortError());
     const t = setTimeout(resolve, ms);
     signal?.addEventListener(
-      'abort',
+      "abort",
       () => {
         clearTimeout(t);
         reject(new AbortError());
       },
-      { once: true }
+      { once: true },
     );
   });
 
@@ -99,12 +99,12 @@ const throwIfAborted = (signal?: AbortSignal) => {
 // ---------------------------------------------------------------------------
 
 export function idFromAnchor(a: Element): string | null {
-  return (a.getAttribute('href') || '').match(SELECTORS.photoId)?.[1] ?? null;
+  return (a.getAttribute("href") || "").match(SELECTORS.photoId)?.[1] ?? null;
 }
 
 /** Grid thumbnails carry a size directive (=w81-h177); bump it for the deck. */
 export function upscale(url: string): string {
-  return url ? url.replace(/=w\d+-h\d+/, '=w640-h640') : '';
+  return url ? url.replace(/=w\d+-h\d+/, "=w640-h640") : "";
 }
 
 export function thumbFromAnchor(a: Element): string {
@@ -112,10 +112,10 @@ export function thumbFromAnchor(a: Element): string {
   const attr = bgEl?.getAttribute(SELECTORS.thumbAttr);
   if (attr) return attr;
   const styled = a.querySelector(SELECTORS.bgImageStyle);
-  const styleStr = styled?.getAttribute('style') || '';
+  const styleStr = styled?.getAttribute("style") || "";
   const m = styleStr.match(/background-image\s*:\s*url\(["']?([^"')]+)["']?\)/i);
   if (m?.[1]) return m[1];
-  return a.querySelector('img')?.getAttribute('src') || '';
+  return a.querySelector("img")?.getAttribute("src") || "";
 }
 
 /**
@@ -126,12 +126,12 @@ export function thumbFromAnchor(a: Element): string {
  * cell only.
  */
 export function checkboxForAnchor(a: Element): HTMLElement | null {
-  const label = a.getAttribute('aria-label');
+  const label = a.getAttribute("aria-label");
   let node: Element | null = a;
   if (label) {
     for (let i = 0; node && i < 5; i++, node = node.parentElement) {
       for (const cb of node.querySelectorAll(SELECTORS.checkbox)) {
-        if (cb.getAttribute('aria-label') === label) return cb as HTMLElement;
+        if (cb.getAttribute("aria-label") === label) return cb as HTMLElement;
       }
     }
   }
@@ -155,16 +155,14 @@ export function readGrid(root: ParentNode = document): ScrapedPhoto[] {
     const thumbnailUrl = upscale(thumbFromAnchor(a));
     if (!thumbnailUrl) continue;
     const ariaLabel =
-      a.getAttribute('aria-label') ||
-      a.closest('[aria-label]')?.getAttribute('aria-label') ||
-      '';
+      a.getAttribute("aria-label") || a.closest("[aria-label]")?.getAttribute("aria-label") || "";
     photos.set(id, { id, thumbnailUrl, ariaLabel });
   }
   return [...photos.values()];
 }
 
 export function labelOf(el: Element): string {
-  return `${el.textContent || ''} ${el.getAttribute('aria-label') || ''}`;
+  return `${el.textContent || ""} ${el.getAttribute("aria-label") || ""}`;
 }
 
 /**
@@ -174,12 +172,12 @@ export function labelOf(el: Element): string {
  */
 export function pickConfirmButton(
   candidates: HTMLElement[],
-  exclude: HTMLElement | null
+  exclude: HTMLElement | null,
 ): HTMLElement | null {
   const usable = candidates.filter((el) => el !== exclude);
   return (
     usable.find(
-      (el) => el.hasAttribute(SELECTORS.dialogActionAttr) || el.closest(SELECTORS.dialog)
+      (el) => el.hasAttribute(SELECTORS.dialogActionAttr) || el.closest(SELECTORS.dialog),
     ) ??
     usable[0] ??
     null
@@ -230,7 +228,7 @@ function findScrollContainer(): HTMLElement {
   let node: HTMLElement | null = anchor?.parentElement ?? null;
   while (node) {
     const oy = getComputedStyle(node).overflowY;
-    if ((oy === 'auto' || oy === 'scroll') && node.scrollHeight > node.clientHeight + 50) {
+    if ((oy === "auto" || oy === "scroll") && node.scrollHeight > node.clientHeight + 50) {
       return node;
     }
     node = node.parentElement;
@@ -242,7 +240,7 @@ function findScrollContainer(): HTMLElement {
 async function waitFor<T>(
   produce: () => T | null | undefined,
   { tries, delay }: { tries: number; delay: number },
-  signal: AbortSignal
+  signal: AbortSignal,
 ): Promise<T | null> {
   for (let i = 0; i < tries; i++) {
     throwIfAborted(signal);
@@ -263,7 +261,7 @@ async function scanGrid(
   onPass: () => { done: boolean; progressed: boolean },
   stepDelay: number,
   signal: AbortSignal,
-  startAtTop = false
+  startAtTop = false,
 ): Promise<void> {
   const container = findScrollContainer();
   if (startAtTop) {
@@ -303,7 +301,7 @@ export interface CollectProgress {
  */
 export async function collectAllPhotos(
   onProgress: (p: CollectProgress) => void,
-  signal: AbortSignal
+  signal: AbortSignal,
 ): Promise<ScrapedPhoto[]> {
   const photos = new Map<string, ScrapedPhoto>();
   await scanGrid(
@@ -314,7 +312,7 @@ export async function collectAllPhotos(
       return { done: photos.size >= TIMING.maxPhotos, progressed: photos.size > prev };
     },
     TIMING.collectStepDelay,
-    signal
+    signal,
   );
   return [...photos.values()];
 }
@@ -334,7 +332,7 @@ export interface SelectProgress {
 export async function selectPhotos(
   ids: string[],
   onProgress: (p: SelectProgress) => void,
-  signal: AbortSignal
+  signal: AbortSignal,
 ): Promise<number> {
   const target = new Set(ids);
   const confirmed = new Set<string>();
@@ -350,18 +348,18 @@ export async function selectPhotos(
         const cb = checkboxForAnchor(a);
         if (!cb) continue;
 
-        if (cb.getAttribute('aria-checked') === 'true') {
+        if (cb.getAttribute("aria-checked") === "true") {
           confirmed.add(id);
           report();
           progressed = true;
         } else if (!clicked.has(id)) {
-          cb.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+          cb.dispatchEvent(new MouseEvent("mouseover", { bubbles: true }));
           cb.click();
           clicked.add(id);
           progressed = true;
           // Many toggles flip aria-checked synchronously — confirm right away so
           // we don't lose the cell if it scrolls out of view before the next pass.
-          if (cb.getAttribute('aria-checked') === 'true') {
+          if (cb.getAttribute("aria-checked") === "true") {
             confirmed.add(id);
             report();
           }
@@ -371,7 +369,7 @@ export async function selectPhotos(
     },
     TIMING.selectStepDelay,
     signal,
-    /* startAtTop */ true
+    /* startAtTop */ true,
   );
   return confirmed.size;
 }
@@ -392,9 +390,9 @@ export async function moveSelectedToBin(signal: AbortSignal): Promise<boolean> {
   const confirmBtn = await waitFor(
     () => pickConfirmButton(findButtons(SELECTORS.confirmLabel), binBtn),
     TIMING.confirmButton,
-    signal
+    signal,
   );
-  if (!confirmBtn) throw new Error('Could not find the confirm button in the pop-up');
+  if (!confirmBtn) throw new Error("Could not find the confirm button in the pop-up");
   confirmBtn.click();
   await sleep(TIMING.afterConfirm, signal);
   return true;

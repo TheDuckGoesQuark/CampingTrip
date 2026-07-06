@@ -1,4 +1,4 @@
-import { create } from 'zustand';
+import { create } from "zustand";
 
 interface MusicState {
   isOpen: boolean;
@@ -29,8 +29,7 @@ export const useMusicStore = create<MusicState>()((set) => ({
   play: () => set({ isPlaying: true }),
   pause: () => set({ isPlaying: false }),
   togglePlay: () => set((s) => ({ isPlaying: !s.isPlaying })),
-  next: () =>
-    set((s) => ({ currentTrackIndex: s.currentTrackIndex + 1, progress: 0 })),
+  next: () => set((s) => ({ currentTrackIndex: s.currentTrackIndex + 1, progress: 0 })),
   prev: () =>
     set((s) => ({
       currentTrackIndex: Math.max(0, s.currentTrackIndex - 1),

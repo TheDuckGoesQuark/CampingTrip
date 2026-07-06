@@ -4,17 +4,17 @@ This document describes the design decisions, architecture, and patterns used in
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| UI Framework | React 18 |
-| 3D Rendering | Three.js via React Three Fiber (R3F) |
-| R3F Utilities | Drei (useGLTF, useTexture, Html, Environment) |
-| State Management | Zustand (5 independent stores) |
-| Animation | GSAP (timelines + tweens) + useFrame for per-frame updates |
-| Audio | Web Audio API (synthesised effects) + Howler.js (file playback) |
-| Build | Vite + TypeScript (strict mode) |
-| Testing | Vitest + Testing Library + jsdom |
-| Deploy | GitHub Pages at `/CampingTrip/` |
+| Layer            | Technology                                                      |
+| ---------------- | --------------------------------------------------------------- |
+| UI Framework     | React 18                                                        |
+| 3D Rendering     | Three.js via React Three Fiber (R3F)                            |
+| R3F Utilities    | Drei (useGLTF, useTexture, Html, Environment)                   |
+| State Management | Zustand (5 independent stores)                                  |
+| Animation        | GSAP (timelines + tweens) + useFrame for per-frame updates      |
+| Audio            | Web Audio API (synthesised effects) + Howler.js (file playback) |
+| Build            | Vite + TypeScript (strict mode)                                 |
+| Testing          | Vitest + Testing Library + jsdom                                |
+| Deploy           | GitHub Pages at `/CampingTrip/`                                 |
 
 ## Directory Structure
 
@@ -163,15 +163,15 @@ Canvas → shadows: on, antialias: on, alpha: off
 
 Seven independent lights with time-of-day keyframe animation:
 
-| Light | Role | Key Behaviour |
-|---|---|---|
-| Ambient | Base fill | Color shifts warm↔cool across day |
-| Hemisphere | Sky/ground bounce | Sky color tracks time of day |
-| Main Point | Lantern / string lights | Brightest at night (4.5 intensity) |
-| Warm Fill | Camera-area fill | Subtle depth cue |
-| Campfire Point | Outdoor warmth | Modulated by door state + night factor |
-| Rear Fill | Background dimension | Subtle, increases at night |
-| Door Spotlight | Moon/sunlight through door | Only visible when door is open |
+| Light          | Role                       | Key Behaviour                          |
+| -------------- | -------------------------- | -------------------------------------- |
+| Ambient        | Base fill                  | Color shifts warm↔cool across day      |
+| Hemisphere     | Sky/ground bounce          | Sky color tracks time of day           |
+| Main Point     | Lantern / string lights    | Brightest at night (4.5 intensity)     |
+| Warm Fill      | Camera-area fill           | Subtle depth cue                       |
+| Campfire Point | Outdoor warmth             | Modulated by door state + night factor |
+| Rear Fill      | Background dimension       | Subtle, increases at night             |
+| Door Spotlight | Moon/sunlight through door | Only visible when door is open         |
 
 All keyframe interpolation uses `smoothstep` (not linear) for organic transitions.
 
@@ -187,6 +187,7 @@ A 24-hour cycle mapped to a 0–1 progress value:
 ### Night Factor
 
 A smoothstep-derived value (0 = day, 1 = night) with two transition windows:
+
 - **Dawn:** progress 0.00–0.06 (6:00–7:30 AM) — night fades to day
 - **Dusk:** progress 0.46–0.54 (5:00–7:00 PM) — day fades to night
 
@@ -195,6 +196,7 @@ Used by lighting, rain, outdoor scene, and audio to smoothly react to time.
 ### Manual Override
 
 The `TimeOfDayArc` UI allows dragging to set time manually. When the user drags:
+
 1. `timeStore.isManual` is set to `true`, pausing auto-sync
 2. After 3 seconds of inactivity, `isManual` resets to `false`
 3. Auto-sync resumes, snapping back to real system time
@@ -205,13 +207,13 @@ The `TimeOfDayArc` UI allows dragging to set time manually. When the user drags:
 
 Five named camera positions for different focus targets:
 
-| Target | Position | Use |
-|---|---|---|
-| `default` | Elevated, centered | Normal exploration |
-| `lantern` | Mid-height, closer | Looking at ceiling lights |
-| `laptop` | Low, left | Looking at laptop/desk |
-| `door` | Mid-height, centered | Looking out the tent door |
-| `guitar` | Low, right | Looking at guitar |
+| Target    | Position             | Use                       |
+| --------- | -------------------- | ------------------------- |
+| `default` | Elevated, centered   | Normal exploration        |
+| `lantern` | Mid-height, closer   | Looking at ceiling lights |
+| `laptop`  | Low, left            | Looking at laptop/desk    |
+| `door`    | Mid-height, centered | Looking out the tent door |
+| `guitar`  | Low, right           | Looking at guitar         |
 
 Transitions between presets use GSAP tweens (0.8–1.0s, `power2.inOut`).
 
@@ -235,12 +237,13 @@ When focusing on an object (not `default`), parallax is dampened to 15% via `par
 All clickable 3D objects are wrapped in `InteractiveObject`:
 
 ```tsx
-<InteractiveObject id="guitar" label="Guitar" labelPosition={[x,y,z]} onActivate={playStrum}>
+<InteractiveObject id="guitar" label="Guitar" labelPosition={[x, y, z]} onActivate={playStrum}>
   <Guitar />
 </InteractiveObject>
 ```
 
 This wrapper provides:
+
 - **Hover highlight:** Traverses child meshes, sets emissive to warm brown (#442200)
 - **Label display:** Shows `SceneLabel` (floating HTML) when highlighted
 - **Click handling:** Calls `onActivate` callback
@@ -250,6 +253,7 @@ This wrapper provides:
 ## Accessibility
 
 `InteractionOverlay` renders 9 visually-hidden but focusable `<button>` elements, one per interactive object. These are:
+
 - Clipped to 1x1px (invisible but in the a11y tree)
 - Tabbable with `tabIndex={0}`
 - On focus: sets `interactionStore.focusedId` → highlights corresponding 3D object
@@ -263,13 +267,13 @@ This bridges DOM keyboard navigation to the 3D scene via the CustomEvent system.
 
 All one-shot sounds are generated from Web Audio oscillators and buffers — no audio files:
 
-| Effect | Technique |
-|---|---|
-| Laptop on | Two ascending sine tones (C5→E5) |
-| Laptop off | Two descending sine tones (E5→A4) |
-| MIDI note | Random pentatonic sawtooth through swept LPF |
-| Guitar strum | Karplus-Strong plucked string synthesis (6 strings, open G) |
-| Cat meow | Frequency-swept sine + harmonic through formant filters + noise |
+| Effect       | Technique                                                       |
+| ------------ | --------------------------------------------------------------- |
+| Laptop on    | Two ascending sine tones (C5→E5)                                |
+| Laptop off   | Two descending sine tones (E5→A4)                               |
+| MIDI note    | Random pentatonic sawtooth through swept LPF                    |
+| Guitar strum | Karplus-Strong plucked string synthesis (6 strings, open G)     |
+| Cat meow     | Frequency-swept sine + harmonic through formant filters + noise |
 
 Each function checks `sessionStore.soundEnabled` before creating any audio nodes.
 
@@ -316,11 +320,11 @@ For continuous, per-frame updates:
 Named GSAP easings in `animations/easings.ts`:
 
 ```ts
-smooth: 'power2.inOut'  // Default transitions
-out:    'power2.out'     // Decelerating exits
-snappy: 'power3.out'    // Quick, decisive movements
-bounce: 'back.out(1.7)' // Overshoot for playful elements
-gentle: 'power1.inOut'  // Subtle, slow transitions
+smooth: "power2.inOut"; // Default transitions
+out: "power2.out"; // Decelerating exits
+snappy: "power3.out"; // Quick, decisive movements
+bounce: "back.out(1.7)"; // Overshoot for playful elements
+gentle: "power1.inOut"; // Subtle, slow transitions
 ```
 
 ## Material Handling

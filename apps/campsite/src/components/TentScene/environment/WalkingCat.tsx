@@ -1,13 +1,14 @@
-import { useRef, useEffect, useMemo, useCallback } from 'react';
-import { useGLTF } from '@react-three/drei';
-import { useFrame } from '@react-three/fiber';
-import * as THREE from 'three';
-import { clone as skeletonClone } from 'three/examples/jsm/utils/SkeletonUtils.js';
-import { useInteractionStore } from '../../../store/interactionStore';
-import SceneLabel from '../SceneLabel';
-import { playCatMeow } from '../../../audio/soundEffects';
-import { asset, DRACO_PATH } from '../../../utils/assetPath';
-import { applyHighlight, removeHighlight, type EmissiveCache } from '../../../utils/highlight';
+import { useGLTF } from "@react-three/drei";
+import { useFrame } from "@react-three/fiber";
+import { useRef, useEffect, useMemo, useCallback } from "react";
+import * as THREE from "three";
+import { clone as skeletonClone } from "three/examples/jsm/utils/SkeletonUtils.js";
+
+import { playCatMeow } from "../../../audio/soundEffects";
+import { useInteractionStore } from "../../../store/interactionStore";
+import { asset, DRACO_PATH } from "../../../utils/assetPath";
+import { applyHighlight, removeHighlight, type EmissiveCache } from "../../../utils/highlight";
+import SceneLabel from "../SceneLabel";
 
 // Credit: "Cat Walk" animation (CC-BY)
 // Cat strolls past the tent outside, looping back and forth
@@ -20,17 +21,17 @@ const WALK_Z = -4.15;
 const WALK_Y = 0.15;
 const PAUSE_DURATION = 6;
 
-useGLTF.preload(asset('models/cat-walk.glb'), DRACO_PATH);
+useGLTF.preload(asset("models/cat-walk.glb"), DRACO_PATH);
 
 export default function WalkingCat() {
-  const { scene, animations } = useGLTF(asset('models/cat-walk.glb'), DRACO_PATH);
+  const { scene, animations } = useGLTF(asset("models/cat-walk.glb"), DRACO_PATH);
   const groupRef = useRef<THREE.Group>(null);
   const mixerRef = useRef<THREE.AnimationMixer | null>(null);
 
   const hoveredId = useInteractionStore((s) => s.hoveredId);
   const focusedId = useInteractionStore((s) => s.focusedId);
   const setHovered = useInteractionStore((s) => s.setHovered);
-  const isHighlighted = hoveredId === 'cat' || focusedId === 'cat';
+  const isHighlighted = hoveredId === "cat" || focusedId === "cat";
 
   const state = useRef({
     x: -WALK_RANGE,
@@ -79,8 +80,8 @@ export default function WalkingCat() {
   const handlePointerEnter = useCallback(
     (e: any) => {
       e.stopPropagation();
-      setHovered('cat');
-      document.body.style.cursor = 'pointer';
+      setHovered("cat");
+      document.body.style.cursor = "pointer";
     },
     [setHovered],
   );
@@ -89,7 +90,7 @@ export default function WalkingCat() {
     (e: any) => {
       e.stopPropagation();
       setHovered(null);
-      document.body.style.cursor = 'auto';
+      document.body.style.cursor = "auto";
     },
     [setHovered],
   );
@@ -116,10 +117,7 @@ export default function WalkingCat() {
 
     s.x += WALK_SPEED * s.direction * delta;
 
-    if (
-      (s.direction > 0 && s.x > WALK_RANGE) ||
-      (s.direction < 0 && s.x < -WALK_RANGE)
-    ) {
+    if ((s.direction > 0 && s.x > WALK_RANGE) || (s.direction < 0 && s.x < -WALK_RANGE)) {
       s.paused = true;
       s.pauseTimer = 0;
       groupRef.current.visible = false;
@@ -127,11 +125,7 @@ export default function WalkingCat() {
     }
 
     groupRef.current.position.set(s.x, WALK_Y, WALK_Z);
-    groupRef.current.rotation.set(
-      0,
-      s.direction > 0 ? Math.PI / 2 : -Math.PI / 2,
-      0,
-    );
+    groupRef.current.rotation.set(0, s.direction > 0 ? Math.PI / 2 : -Math.PI / 2, 0);
   });
 
   return (
@@ -146,9 +140,7 @@ export default function WalkingCat() {
       }}
     >
       <primitive object={clonedScene} />
-      {isHighlighted && (
-        <SceneLabel text="Smittens" position={[0, 55, 15]} />
-      )}
+      {isHighlighted && <SceneLabel text="Smittens" position={[0, 55, 15]} />}
     </group>
   );
 }

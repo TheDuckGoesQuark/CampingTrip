@@ -3,8 +3,8 @@
  * No audio files needed — everything is generated from oscillators and noise.
  */
 
-import { useSessionStore } from '../store/sessionStore';
-import { getAudioContext } from './audioContext';
+import { useSessionStore } from "../store/sessionStore";
+import { getAudioContext } from "./audioContext";
 
 /** Check if sound is enabled before playing */
 function isMuted(): boolean {
@@ -23,7 +23,7 @@ export function playLaptopOn() {
 
   // First tone: C5
   const osc1 = ac.createOscillator();
-  osc1.type = 'sine';
+  osc1.type = "sine";
   osc1.frequency.value = 523;
   const g1 = ac.createGain();
   g1.gain.setValueAtTime(0.3, t);
@@ -34,7 +34,7 @@ export function playLaptopOn() {
 
   // Second tone: E5 (slightly delayed)
   const osc2 = ac.createOscillator();
-  osc2.type = 'sine';
+  osc2.type = "sine";
   osc2.frequency.value = 659;
   const g2 = ac.createGain();
   g2.gain.setValueAtTime(0.001, t);
@@ -59,7 +59,7 @@ export function playLaptopOff() {
   master.connect(ac.destination);
 
   const osc1 = ac.createOscillator();
-  osc1.type = 'sine';
+  osc1.type = "sine";
   osc1.frequency.value = 659; // E5
   const g1 = ac.createGain();
   g1.gain.setValueAtTime(0.25, t);
@@ -69,7 +69,7 @@ export function playLaptopOff() {
   osc1.stop(t + 0.12);
 
   const osc2 = ac.createOscillator();
-  osc2.type = 'sine';
+  osc2.type = "sine";
   osc2.frequency.value = 440; // A4
   const g2 = ac.createGain();
   g2.gain.setValueAtTime(0.001, t);
@@ -97,12 +97,12 @@ export function playMidiNote() {
   const freq = notes[Math.floor(Math.random() * notes.length)];
 
   const osc = ac.createOscillator();
-  osc.type = 'sawtooth';
+  osc.type = "sawtooth";
   osc.frequency.value = freq;
 
   // Low-pass filter with envelope for that classic synth "pluck"
   const filter = ac.createBiquadFilter();
-  filter.type = 'lowpass';
+  filter.type = "lowpass";
   filter.Q.value = 5;
   filter.frequency.setValueAtTime(3000, t);
   filter.frequency.exponentialRampToValueAtTime(300, t + 0.3);
@@ -189,7 +189,7 @@ export function playCatMeow() {
 
   // Main "voice" — sine wave with frequency sweep
   const voice = ac.createOscillator();
-  voice.type = 'sine';
+  voice.type = "sine";
   // Meow: rise then fall in pitch
   voice.frequency.setValueAtTime(500, t);
   voice.frequency.linearRampToValueAtTime(750, t + 0.12);
@@ -199,7 +199,7 @@ export function playCatMeow() {
 
   // Add a subtle harmonic for richness
   const harmonic = ac.createOscillator();
-  harmonic.type = 'triangle';
+  harmonic.type = "triangle";
   harmonic.frequency.setValueAtTime(1000, t);
   harmonic.frequency.linearRampToValueAtTime(1500, t + 0.12);
   harmonic.frequency.linearRampToValueAtTime(1300, t + 0.25);
@@ -211,7 +211,7 @@ export function playCatMeow() {
 
   // "Mouth" formant filter — bandpass that sweeps for the "ee-ow" shape
   const formant = ac.createBiquadFilter();
-  formant.type = 'bandpass';
+  formant.type = "bandpass";
   formant.Q.value = 3;
   formant.frequency.setValueAtTime(800, t);
   formant.frequency.linearRampToValueAtTime(1200, t + 0.15);
@@ -235,7 +235,7 @@ export function playCatMeow() {
   const noise = ac.createBufferSource();
   noise.buffer = noiseBuf;
   const noiseFilter = ac.createBiquadFilter();
-  noiseFilter.type = 'bandpass';
+  noiseFilter.type = "bandpass";
   noiseFilter.frequency.value = 1000;
   noiseFilter.Q.value = 1;
 
@@ -270,14 +270,14 @@ export function playPageFlip() {
   const buf = ac.createBuffer(1, len, ac.sampleRate);
   const data = buf.getChannelData(0);
   for (let i = 0; i < len; i++) {
-    data[i] = (Math.random() * 2 - 1);
+    data[i] = Math.random() * 2 - 1;
   }
   const noise = ac.createBufferSource();
   noise.buffer = buf;
 
   // Bandpass for papery texture
   const bp = ac.createBiquadFilter();
-  bp.type = 'bandpass';
+  bp.type = "bandpass";
   bp.frequency.value = 3000;
   bp.Q.value = 1.5;
 
@@ -305,7 +305,7 @@ export function playSoftClick() {
   master.connect(ac.destination);
 
   const osc = ac.createOscillator();
-  osc.type = 'sine';
+  osc.type = "sine";
   osc.frequency.setValueAtTime(1200, t);
   osc.frequency.exponentialRampToValueAtTime(800, t + 0.03);
 
@@ -335,13 +335,13 @@ export function playWindowOpen() {
   const buf = ac.createBuffer(1, len, ac.sampleRate);
   const data = buf.getChannelData(0);
   for (let i = 0; i < len; i++) {
-    data[i] = (Math.random() * 2 - 1);
+    data[i] = Math.random() * 2 - 1;
   }
   const noise = ac.createBufferSource();
   noise.buffer = buf;
 
   const hp = ac.createBiquadFilter();
-  hp.type = 'highpass';
+  hp.type = "highpass";
   hp.frequency.setValueAtTime(800, t);
   hp.frequency.linearRampToValueAtTime(4000, t + 0.12);
 
@@ -352,7 +352,7 @@ export function playWindowOpen() {
 
   // Subtle tone underneath
   const osc = ac.createOscillator();
-  osc.type = 'sine';
+  osc.type = "sine";
   osc.frequency.setValueAtTime(600, t);
   osc.frequency.linearRampToValueAtTime(900, t + 0.1);
   const oscEnv = ac.createGain();

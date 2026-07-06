@@ -1,9 +1,7 @@
-import { describe, it, expect } from 'vitest';
-import * as THREE from 'three';
-import {
-  lerpKeyframes,
-  getNightFactor,
-} from '../../store/timeStore';
+import * as THREE from "three";
+import { describe, it, expect } from "vitest";
+
+import { lerpKeyframes, getNightFactor } from "../../store/timeStore";
 
 /**
  * The Lighting component is an R3F component that runs in a useFrame loop.
@@ -18,29 +16,29 @@ import {
 // they produce sensible values across the full day cycle.
 
 const AMBIENT_INT = [
-  { t: 0.00, value: 0.35 },
-  { t: 0.10, value: 0.8 },
+  { t: 0.0, value: 0.35 },
+  { t: 0.1, value: 0.8 },
   { t: 0.25, value: 1.0 },
   { t: 0.42, value: 0.8 },
-  { t: 0.50, value: 0.5 },
+  { t: 0.5, value: 0.5 },
   { t: 0.58, value: 0.55 },
   { t: 0.75, value: 0.55 },
-  { t: 1.00, value: 0.35 },
+  { t: 1.0, value: 0.35 },
 ];
 
 const MAIN_INT = [
-  { t: 0.00, value: 2.5 },
+  { t: 0.0, value: 2.5 },
   { t: 0.15, value: 2.0 },
   { t: 0.25, value: 1.5 },
   { t: 0.42, value: 2.5 },
-  { t: 0.50, value: 3.5 },
+  { t: 0.5, value: 3.5 },
   { t: 0.58, value: 4.5 },
   { t: 0.75, value: 4.5 },
-  { t: 1.00, value: 2.5 },
+  { t: 1.0, value: 2.5 },
 ];
 
-describe('Lighting keyframe configuration', () => {
-  it('ambient intensity is brightest at noon', () => {
+describe("Lighting keyframe configuration", () => {
+  it("ambient intensity is brightest at noon", () => {
     const noon = lerpKeyframes(AMBIENT_INT, 0.25);
     const dawn = lerpKeyframes(AMBIENT_INT, 0.0);
     const night = lerpKeyframes(AMBIENT_INT, 0.75);
@@ -49,21 +47,21 @@ describe('Lighting keyframe configuration', () => {
     expect(noon).toBeGreaterThan(night);
   });
 
-  it('main light is warmest/brightest at night (lantern effect)', () => {
+  it("main light is warmest/brightest at night (lantern effect)", () => {
     const night = lerpKeyframes(MAIN_INT, 0.75);
     const noon = lerpKeyframes(MAIN_INT, 0.25);
 
     expect(night).toBeGreaterThan(noon);
   });
 
-  it('all keyframe values are positive', () => {
+  it("all keyframe values are positive", () => {
     for (let p = 0; p <= 1; p += 0.05) {
       expect(lerpKeyframes(AMBIENT_INT, p)).toBeGreaterThanOrEqual(0);
       expect(lerpKeyframes(MAIN_INT, p)).toBeGreaterThanOrEqual(0);
     }
   });
 
-  it('ambient intensity is continuous (no large jumps)', () => {
+  it("ambient intensity is continuous (no large jumps)", () => {
     let prev = lerpKeyframes(AMBIENT_INT, 0);
     for (let p = 0.01; p <= 1; p += 0.01) {
       const current = lerpKeyframes(AMBIENT_INT, p);
@@ -74,10 +72,10 @@ describe('Lighting keyframe configuration', () => {
   });
 });
 
-describe('Lighting night factor integration', () => {
-  it('campfire is brighter at night', () => {
+describe("Lighting night factor integration", () => {
+  it("campfire is brighter at night", () => {
     const nightFactor = getNightFactor(0.75); // midnight
-    const dayFactor = getNightFactor(0.25);   // noon
+    const dayFactor = getNightFactor(0.25); // noon
 
     expect(nightFactor).toBe(1);
     expect(dayFactor).toBe(0);
@@ -97,7 +95,7 @@ describe('Lighting night factor integration', () => {
     expect(dayIntensity).toBe(2.0);
   });
 
-  it('door light is off when door is closed', () => {
+  it("door light is off when door is closed", () => {
     // From Lighting.tsx: intensity = doorOpen ? baseInt : 0
     const doorOpen = false;
     const baseInt = THREE.MathUtils.lerp(1.5, 0.6, getNightFactor(0.5));

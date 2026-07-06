@@ -1,6 +1,7 @@
-import { useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
-import { useTimeStore, progressFromSystemClock } from '../store/timeStore';
+import { useFrame } from "@react-three/fiber";
+import { useRef } from "react";
+
+import { useTimeStore, progressFromSystemClock } from "../store/timeStore";
 
 /**
  * Syncs the timeStore to the system clock when not in manual (drag) mode.

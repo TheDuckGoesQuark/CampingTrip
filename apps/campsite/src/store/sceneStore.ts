@@ -1,5 +1,6 @@
-import { create } from 'zustand';
-import type { TentDoorState, SceneName, FocusTarget } from '../types/scene';
+import { create } from "zustand";
+
+import type { TentDoorState, SceneName, FocusTarget } from "../types/scene";
 
 interface SceneState {
   wakeUpDone: boolean;
@@ -20,12 +21,12 @@ interface SceneState {
 
 export const useSceneStore = create<SceneState>()((set) => ({
   wakeUpDone: false,
-  tentDoorState: 'open',
+  tentDoorState: "open",
   lanternOn: true,
   laptopFocused: false,
   notepadFocused: false,
-  currentScene: 'tent',
-  focusTarget: 'default',
+  currentScene: "tent",
+  focusTarget: "default",
   setWakeUpDone: () => set({ wakeUpDone: true }),
   setTentDoorState: (s) => set({ tentDoorState: s }),
   toggleLantern: () => set((state) => ({ lanternOn: !state.lanternOn })),
