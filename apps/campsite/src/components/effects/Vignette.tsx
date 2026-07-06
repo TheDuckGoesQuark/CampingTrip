@@ -4,12 +4,11 @@ export default function Vignette() {
   return (
     <div
       style={{
-        position: 'fixed',
+        position: "fixed",
         inset: 0,
-        pointerEvents: 'none',
+        pointerEvents: "none",
         zIndex: 10,
-        background:
-          'radial-gradient(ellipse at center, transparent 45%, rgba(5,2,12,0.55) 100%)',
+        background: "radial-gradient(ellipse at center, transparent 45%, rgba(5,2,12,0.55) 100%)",
       }}
     />
   );

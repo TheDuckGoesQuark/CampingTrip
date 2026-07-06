@@ -1,23 +1,23 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
-let startRain: typeof import('./rainSynth').startRain;
-let stopRain: typeof import('./rainSynth').stopRain;
-let setRainVolume: typeof import('./rainSynth').setRainVolume;
-let isRainPlaying: typeof import('./rainSynth').isRainPlaying;
+let startRain: typeof import("./rainSynth").startRain;
+let stopRain: typeof import("./rainSynth").stopRain;
+let setRainVolume: typeof import("./rainSynth").setRainVolume;
+let isRainPlaying: typeof import("./rainSynth").isRainPlaying;
 
 let mockCtx: AudioContext;
 
-describe('rainSynth', () => {
+describe("rainSynth", () => {
   beforeEach(async () => {
     vi.useFakeTimers();
     vi.resetModules();
 
     mockCtx = new AudioContext();
-    vi.doMock('./audioContext', () => ({
+    vi.doMock("./audioContext", () => ({
       getAudioContext: () => mockCtx,
     }));
 
-    const mod = await import('./rainSynth');
+    const mod = await import("./rainSynth");
     startRain = mod.startRain;
     stopRain = mod.stopRain;
     setRainVolume = mod.setRainVolume;
@@ -32,15 +32,16 @@ describe('rainSynth', () => {
     vi.useRealTimers();
   });
 
-  it('is not playing initially', () => {
+  it("is not playing initially", () => {
     expect(isRainPlaying()).toBe(false);
   });
 
-  it('creates noise layers with filters and gain nodes on start', () => {
+  it("creates noise layers with filters and gain nodes on start", () => {
     startRain(0.15);
     expect(isRainPlaying()).toBe(true);
     // 3 looped noise layers + at least 1 drip burst source
-    const bufferSourceCalls = (mockCtx.createBufferSource as ReturnType<typeof vi.fn>).mock.calls.length;
+    const bufferSourceCalls = (mockCtx.createBufferSource as ReturnType<typeof vi.fn>).mock.calls
+      .length;
     expect(bufferSourceCalls).toBeGreaterThanOrEqual(3);
     // Deep (lowpass) + mid (bandpass) + high (bandpass) + drip (lowpass) filters
     const filterCalls = (mockCtx.createBiquadFilter as ReturnType<typeof vi.fn>).mock.calls.length;
@@ -50,7 +51,7 @@ describe('rainSynth', () => {
     expect(gainCalls).toBeGreaterThanOrEqual(4);
   });
 
-  it('creates noise buffers (brownian + white) for realistic rain texture', () => {
+  it("creates noise buffers (brownian + white) for realistic rain texture", () => {
     startRain(0.15);
     // createBuffer for deep noise (brownian, 6s), mid noise (white, 4s),
     // high noise (white, 3s), and at least one drip burst
@@ -58,16 +59,19 @@ describe('rainSynth', () => {
     expect(bufferCalls).toBeGreaterThanOrEqual(3);
   });
 
-  it('does not start twice if already playing', () => {
+  it("does not start twice if already playing", () => {
     startRain(0.15);
-    const callsAfterFirst = (mockCtx.createBufferSource as ReturnType<typeof vi.fn>).mock.calls.length;
+    const callsAfterFirst = (mockCtx.createBufferSource as ReturnType<typeof vi.fn>).mock.calls
+      .length;
     startRain(0.2);
     // No new sources should be created on second call
-    expect((mockCtx.createBufferSource as ReturnType<typeof vi.fn>).mock.calls.length).toBe(callsAfterFirst);
+    expect((mockCtx.createBufferSource as ReturnType<typeof vi.fn>).mock.calls.length).toBe(
+      callsAfterFirst,
+    );
     expect(isRainPlaying()).toBe(true);
   });
 
-  it('stops rain and cleans up sources after fade-out', () => {
+  it("stops rain and cleans up sources after fade-out", () => {
     startRain(0.15);
     expect(isRainPlaying()).toBe(true);
 
@@ -77,12 +81,12 @@ describe('rainSynth', () => {
     expect(isRainPlaying()).toBe(false);
   });
 
-  it('setRainVolume is a no-op when not playing', () => {
+  it("setRainVolume is a no-op when not playing", () => {
     setRainVolume(0.5);
     expect(isRainPlaying()).toBe(false);
   });
 
-  it('setRainVolume keeps rain playing after volume change', () => {
+  it("setRainVolume keeps rain playing after volume change", () => {
     startRain(0.15);
     setRainVolume(0.3, 0.5);
     expect(isRainPlaying()).toBe(true);

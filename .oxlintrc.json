@@ -1,0 +1,134 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "unicorn", "oxc", "import", "react", "promise"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn",
+    "perf": "warn"
+  },
+  "rules": {
+    "eqeqeq": ["error", "smart"],
+    "no-underscore-dangle": "off",
+    "max-lines-per-function": "off",
+    "max-lines": "off",
+    "import/max-dependencies": "off",
+    "unicorn/no-useless-undefined": "off",
+    "unicorn/prefer-number-coercion": "off",
+    "react/react-in-jsx-scope": "off",
+    "react/jsx-no-constructed-context-values": "off",
+    "react/no-unknown-property": "off",
+    "import/no-unassigned-import": ["warn", { "allow": ["**/*.css"] }],
+    "react/forbid-dom-props": ["error", { "forbid": ["style"] }]
+  },
+  "overrides": [
+    {
+      // The DS owns visual identity and uses inline style for dynamic geometry.
+      // It must stay domain-agnostic: no imports from apps, routing, state, or
+      // the 3D stack. See packages/design-system/CLAUDE.md.
+      "files": ["packages/design-system/**/*.{ts,tsx}"],
+      "rules": {
+        "react/forbid-dom-props": "off",
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["**/apps/**"],
+                "message": "The DS may not import from apps. It knows nothing about domain. See packages/design-system/CLAUDE.md."
+              }
+            ],
+            "paths": [
+              {
+                "name": "react-router-dom",
+                "message": "Routing is an app concern. DS components are unaware of routing."
+              },
+              {
+                "name": "zustand",
+                "message": "App state is a feature concern. DS components are stateless chrome."
+              },
+              {
+                "name": "three",
+                "message": "The 3D scene is a campsite concern. The DS is a plain DOM component library."
+              },
+              {
+                "name": "@react-three/fiber",
+                "message": "The 3D scene is a campsite concern. The DS is a plain DOM component library."
+              },
+              {
+                "name": "@react-three/drei",
+                "message": "The 3D scene is a campsite concern. The DS is a plain DOM component library."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      // Apps consume the design system via its public barrel — not deep paths.
+      "files": ["apps/**/*.{ts,tsx}"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["@jordanscamp/ds/src/*", "@jordanscamp/ds/dist/*"],
+                "message": "Import from the @jordanscamp/ds package entry, not deep paths into its source."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      // GRANDFATHERED inline `style` (react/forbid-dom-props). These are the
+      // pre-existing bespoke, inline-styled surfaces (the 3D scene + CatOS
+      // chrome, and photobroom's shadow-root overlay). The rule IS enforced for
+      // every other app file — including new ones — so fresh UI must use the
+      // design system / CSS modules. This is a shrinking tech-debt list: delete
+      // an entry once its inline styles are migrated. (R3F material/mesh props
+      // are not DOM `style` and were never affected.)
+      "files": [
+        "apps/campsite/src/components/CampfireLoadingScreen.tsx",
+        "apps/campsite/src/components/ErrorBoundary.tsx",
+        "apps/campsite/src/components/VirtualJoystick.tsx",
+        "apps/campsite/src/components/TentScene/InteractionOverlay.tsx",
+        "apps/campsite/src/components/TentScene/SceneLabel.tsx",
+        "apps/campsite/src/components/TentScene/TentScene.tsx",
+        "apps/campsite/src/components/effects/Vignette.tsx",
+        "apps/campsite/src/components/overlays/BlogSettingsMenu.tsx",
+        "apps/campsite/src/components/overlays/LaptopScreenOverlay.tsx",
+        "apps/campsite/src/components/overlays/MusicPlayerOverlay.tsx",
+        "apps/campsite/src/components/overlays/NotepadOverlay.tsx",
+        "apps/campsite/src/components/overlays/SettingsMenu.tsx",
+        "apps/campsite/src/components/overlays/TimeOfDayArc.tsx",
+        "apps/photobroom/src/App.tsx",
+        "apps/photobroom/src/overlay/Overlay.tsx",
+        "apps/photobroom/src/overlay/PhotoCard.tsx",
+        "apps/photobroom/src/overlay/phases.tsx",
+        "apps/photobroom/src/overlay/ui.tsx"
+      ],
+      "rules": {
+        "react/forbid-dom-props": "off"
+      }
+    },
+    {
+      // Tests and stories define local render helpers and ship fixture markup.
+      "files": ["**/*.test.{ts,tsx}", "**/*.spec.{ts,tsx}", "**/*.stories.{ts,tsx}"],
+      "rules": {
+        "react/forbid-dom-props": "off",
+        "max-lines": "off",
+        "max-lines-per-function": "off",
+        "unicorn/consistent-function-scoping": "off"
+      }
+    }
+  ],
+  "ignorePatterns": [
+    "**/dist/**",
+    "**/node_modules/**",
+    "**/storybook-static/**",
+    "**/coverage/**",
+    "extensions/photobroom/overlay.js",
+    "apps/campsite/public/**"
+  ]
+}

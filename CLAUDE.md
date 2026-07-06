@@ -14,11 +14,14 @@ After completing a task or making a significant change:
 
 ## Conventions
 
-The platform is static-only — three frontend apps (campsite, digitaltwins,
-photobroom), no backend.
+The platform is static-only — two frontend apps (campsite, photobroom) plus
+`packages/design-system` (`@jordanscamp/ds` — Mantine + Storybook brand DS), no backend.
+The whole workspace is React 19; Mantine is v9.
 
 - Dev (one app): `pnpm --filter <app-name> dev`
 - Build (all): `pnpm -r build`
 - Tests (all): `pnpm -r test`
+- Lint / format / dep-graph: `pnpm lint`, `pnpm fmt`, `pnpm check-deps`
+- Design system stories: `pnpm --filter @jordanscamp/ds storybook`
 - PhotoBroom extension bundle: `pnpm --filter photobroom build:overlay`
   (outputs `extensions/photobroom/overlay.js`)

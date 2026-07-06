@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import {
   Anchor,
   Badge,
@@ -15,24 +14,25 @@ import {
   Text,
   ThemeIcon,
   Title,
-} from '@mantine/core';
+} from "@mantine/core";
+import { useState } from "react";
 
-const REPO = 'https://github.com/TheDuckGoesQuark/CampingTrip';
-const EXT_DIR = 'extensions/photobroom';
-const COFFEE_URL = 'https://buymeacoffee.com/jordanmackie';
+const REPO = "https://github.com/TheDuckGoesQuark/CampingTrip";
+const EXT_DIR = "extensions/photobroom";
+const COFFEE_URL = "https://buymeacoffee.com/jordanmackie";
 
 /** A screenshot slot that shows a graceful placeholder until the image exists. */
 function Shot({ src, caption }: { src: string; caption: string }) {
   const [ok, setOk] = useState(true);
   return (
-    <Card withBorder bg="dark.7" radius="md" padding={0} style={{ overflow: 'hidden' }}>
+    <Card withBorder bg="dark.7" radius="md" padding={0} style={{ overflow: "hidden" }}>
       <Box
         style={{
-          aspectRatio: '16 / 10',
-          background: 'var(--mantine-color-dark-8)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
+          aspectRatio: "16 / 10",
+          background: "var(--mantine-color-dark-8)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
         }}
       >
         {ok ? (
@@ -40,7 +40,7 @@ function Shot({ src, caption }: { src: string; caption: string }) {
             src={src}
             alt={caption}
             onError={() => setOk(false)}
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
           />
         ) : (
           <Text
@@ -48,9 +48,9 @@ function Shot({ src, caption }: { src: string; caption: string }) {
             c="dimmed"
             ta="center"
             style={{
-              border: '1px dashed var(--mantine-color-dark-4)',
+              border: "1px dashed var(--mantine-color-dark-4)",
               borderRadius: 8,
-              padding: '32px 24px',
+              padding: "32px 24px",
             }}
           >
             Screenshot coming soon
@@ -112,8 +112,8 @@ export function App() {
       <Box
         component="header"
         style={{
-          borderBottom: '1px solid var(--mantine-color-dark-5)',
-          background: 'var(--mantine-color-dark-8)',
+          borderBottom: "1px solid var(--mantine-color-dark-5)",
+          background: "var(--mantine-color-dark-8)",
         }}
       >
         <Container size="md">
@@ -123,7 +123,13 @@ export function App() {
               <Anchor href={REPO} target="_blank" size="sm" c="dimmed" visibleFrom="xs">
                 Source
               </Anchor>
-              <Anchor href="https://jordanscamp.site" target="_blank" size="sm" c="dimmed" visibleFrom="sm">
+              <Anchor
+                href="https://jordanscamp.site"
+                target="_blank"
+                size="sm"
+                c="dimmed"
+                visibleFrom="sm"
+              >
                 jordanscamp.site
               </Anchor>
               <CoffeeButton size="xs" />
@@ -139,24 +145,36 @@ export function App() {
             <Badge variant="light" color="orange" size="lg" radius="sm">
               Chrome extension
             </Badge>
-            <Title order={1} style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', lineHeight: 1.1 }}>
+            <Title order={1} style={{ fontSize: "clamp(2rem, 5vw, 3rem)", lineHeight: 1.1 }}>
               Sweep your Google Photos clutter into the bin.
             </Title>
             <Text size="lg" c="dimmed" maw={620}>
-              PhotoBroom overlays a fast, keyboard-driven review on top of Google Photos
-              search results. Flick through photos — keep, skip, or bin — then send the binned
-              ones to Google's bin in one go. Nothing is deleted until you confirm, and the bin
-              is recoverable for 60 days.
+              PhotoBroom overlays a fast, keyboard-driven review on top of Google Photos search
+              results. Flick through photos — keep, skip, or bin — then send the binned ones to
+              Google's bin in one go. Nothing is deleted until you confirm, and the bin is
+              recoverable for 60 days.
             </Text>
           </Stack>
 
           {/* Gallery */}
           <Section title="See it in action">
             <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
-              <Shot src="images/screenshots/sweep.jpg" caption="1. Search a date, then hit “Sweep this search”." />
-              <Shot src="images/screenshots/review.jpg" caption="2. Review each photo with the arrow keys — bin, skip, or keep." />
-              <Shot src="images/screenshots/confirm.jpg" caption="3. Check the tally, then move the binned ones in one go." />
-              <Shot src="images/screenshots/done.jpg" caption="4. Done — and re-reviewed photos are remembered next time." />
+              <Shot
+                src="images/screenshots/sweep.jpg"
+                caption="1. Search a date, then hit “Sweep this search”."
+              />
+              <Shot
+                src="images/screenshots/review.jpg"
+                caption="2. Review each photo with the arrow keys — bin, skip, or keep."
+              />
+              <Shot
+                src="images/screenshots/confirm.jpg"
+                caption="3. Check the tally, then move the binned ones in one go."
+              />
+              <Shot
+                src="images/screenshots/done.jpg"
+                caption="4. Done — and re-reviewed photos are remembered next time."
+              />
             </SimpleGrid>
           </Section>
 
@@ -164,16 +182,16 @@ export function App() {
           <Section title="Why a browser extension?">
             <Text c="dimmed">
               Google Photos has no bulk "delete everything from this search" button, and its API
-              can't delete photos at all. So PhotoBroom works the only way that's actually
-              possible: as an extension that drives the Google Photos web page itself — using
-              Google's own multi-select and "Move to bin", just faster and with a nicer review UI.
+              can't delete photos at all. So PhotoBroom works the only way that's actually possible:
+              as an extension that drives the Google Photos web page itself — using Google's own
+              multi-select and "Move to bin", just faster and with a nicer review UI.
             </Text>
             <Card withBorder bg="dark.7" radius="md" padding="md">
               <Group gap="sm" wrap="nowrap" align="flex-start">
                 <Text size="lg">🔒</Text>
                 <Text size="sm" c="dimmed">
-                  It runs entirely in your browser, on <Code>photos.google.com</Code>, while
-                  you're logged in. No photos, tokens, or data are ever sent anywhere — there's no
+                  It runs entirely in your browser, on <Code>photos.google.com</Code>, while you're
+                  logged in. No photos, tokens, or data are ever sent anywhere — there's no
                   PhotoBroom server.
                 </Text>
               </Group>
@@ -195,8 +213,8 @@ export function App() {
               </Step>
               <Step n={2}>
                 <Text>
-                  Open <Code>chrome://extensions</Code> and turn on <b>Developer mode</b>{' '}
-                  (top-right toggle).
+                  Open <Code>chrome://extensions</Code> and turn on <b>Developer mode</b> (top-right
+                  toggle).
                 </Text>
               </Step>
               <Step n={3}>
@@ -219,7 +237,10 @@ export function App() {
             <Stack gap="lg">
               <Step n={1}>
                 <Text>
-                  Go to <Anchor href="https://photos.google.com" target="_blank">photos.google.com</Anchor>{' '}
+                  Go to{" "}
+                  <Anchor href="https://photos.google.com" target="_blank">
+                    photos.google.com
+                  </Anchor>{" "}
                   and search for what you want to thin out — a date like <Code>June 29</Code>, a
                   place, or anything else.
                 </Text>
@@ -233,10 +254,18 @@ export function App() {
               <Step n={3}>
                 <Text>Review each photo with your keyboard (or the buttons):</Text>
                 <Group gap="xs" mt={8}>
-                  <Badge color="red" variant="light" radius="sm" size="lg">← Bin</Badge>
-                  <Badge color="gray" variant="light" radius="sm" size="lg">↑ Skip</Badge>
-                  <Badge color="green" variant="light" radius="sm" size="lg">→ Keep</Badge>
-                  <Badge color="dark" variant="light" radius="sm" size="lg">⌫ Undo</Badge>
+                  <Badge color="red" variant="light" radius="sm" size="lg">
+                    ← Bin
+                  </Badge>
+                  <Badge color="gray" variant="light" radius="sm" size="lg">
+                    ↑ Skip
+                  </Badge>
+                  <Badge color="green" variant="light" radius="sm" size="lg">
+                    → Keep
+                  </Badge>
+                  <Badge color="dark" variant="light" radius="sm" size="lg">
+                    ⌫ Undo
+                  </Badge>
                 </Group>
               </Step>
               <Step n={4}>
@@ -248,8 +277,8 @@ export function App() {
               <Step n={5}>
                 <Text>
                   Changed your mind mid-run? The red <b>■ Stop</b> button aborts instantly and
-                  clears the selection. Binned photos sit in Google's bin for 60 days, so nothing
-                  is gone for good.
+                  clears the selection. Binned photos sit in Google's bin for 60 days, so nothing is
+                  gone for good.
                 </Text>
               </Step>
             </Stack>
@@ -264,7 +293,7 @@ export function App() {
               </List.Item>
               <List.Item>
                 It reads the photo grid directly and scrolls it to load every result, then drives
-                Google's <b>native multi-select</b> checkboxes and the built-in <b>Move to bin</b>{' '}
+                Google's <b>native multi-select</b> checkboxes and the built-in <b>Move to bin</b>{" "}
                 action.
               </List.Item>
               <List.Item>
@@ -272,7 +301,7 @@ export function App() {
                 their markup it's a quick, single-spot fix — and a test suite guards the contract.
               </List.Item>
               <List.Item>
-                Nothing leaves your browser, and nothing is deleted until you press{' '}
+                Nothing leaves your browser, and nothing is deleted until you press{" "}
                 <b>Move to bin</b>.
               </List.Item>
             </List>
@@ -304,7 +333,7 @@ export function App() {
           <Divider color="dark.5" />
           <Group justify="space-between">
             <Text size="sm" c="dimmed">
-              Part of{' '}
+              Part of{" "}
               <Anchor href="https://jordanscamp.site" target="_blank" c="dimmed">
                 jordanscamp.site
               </Anchor>

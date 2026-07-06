@@ -10,7 +10,7 @@
  * store) can't clobber each other's history. The list is capped FIFO so it
  * can't grow without bound.
  */
-const KEY = 'photobroom.seen';
+const KEY = "photobroom.seen";
 /** Keep at most this many ids; oldest are dropped first. */
 const MAX_SEEN = 50_000;
 
@@ -26,11 +26,11 @@ const storage: ChromeLocal | undefined = (
 function readRaw(): Promise<string[]> {
   if (storage) {
     return new Promise((resolve) =>
-      storage.get(KEY, (items) => resolve((items?.[KEY] as string[] | undefined) ?? []))
+      storage.get(KEY, (items) => resolve((items?.[KEY] as string[] | undefined) ?? [])),
     );
   }
   try {
-    return Promise.resolve(JSON.parse(localStorage.getItem(KEY) || '[]') as string[]);
+    return Promise.resolve(JSON.parse(localStorage.getItem(KEY) || "[]") as string[]);
   } catch {
     return Promise.resolve([]);
   }

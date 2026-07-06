@@ -1,18 +1,19 @@
-import { useEffect, useRef } from 'react';
-import { useFrame, useThree } from '@react-three/fiber';
-import * as THREE from 'three';
-import gsap from 'gsap';
-import { useSceneStore } from '../../store/sceneStore';
-import { mobileInput } from '../../mobileInput';
-import { isMobile } from '../../utils/deviceDetect';
-import type { FocusTarget } from '../../types/scene';
+import { useFrame, useThree } from "@react-three/fiber";
+import gsap from "gsap";
+import { useEffect, useRef } from "react";
+import * as THREE from "three";
+
+import { mobileInput } from "../../mobileInput";
+import { useSceneStore } from "../../store/sceneStore";
+import type { FocusTarget } from "../../types/scene";
+import { isMobile } from "../../utils/deviceDetect";
 
 const CAMERA_PRESETS: Record<FocusTarget, { pos: THREE.Vector3; target: THREE.Vector3 }> = {
-  default: { pos: new THREE.Vector3(0, 2.8, 2.8),    target: new THREE.Vector3(0, 1.0, -4) },
-  lantern: { pos: new THREE.Vector3(0, 1.8, 1.5),    target: new THREE.Vector3(0, 2.2, 0.5) },
-  laptop:  { pos: new THREE.Vector3(-1.2, 0.6, 1.5), target: new THREE.Vector3(-1.5, 0.3, 0.5) },
-  door:    { pos: new THREE.Vector3(0, 2.2, 1.5),    target: new THREE.Vector3(0, 1.5, -5) },
-  guitar:  { pos: new THREE.Vector3(1.2, 0.6, 0.5),  target: new THREE.Vector3(1.6, 0.3, -1.2) },
+  default: { pos: new THREE.Vector3(0, 2.8, 2.8), target: new THREE.Vector3(0, 1.0, -4) },
+  lantern: { pos: new THREE.Vector3(0, 1.8, 1.5), target: new THREE.Vector3(0, 2.2, 0.5) },
+  laptop: { pos: new THREE.Vector3(-1.2, 0.6, 1.5), target: new THREE.Vector3(-1.5, 0.3, 0.5) },
+  door: { pos: new THREE.Vector3(0, 2.2, 1.5), target: new THREE.Vector3(0, 1.5, -5) },
+  guitar: { pos: new THREE.Vector3(1.2, 0.6, 0.5), target: new THREE.Vector3(1.6, 0.3, -1.2) },
   notepad: { pos: new THREE.Vector3(-0.4, 0.8, 0.8), target: new THREE.Vector3(-0.7, 0.4, -0.7) },
 };
 
@@ -23,8 +24,8 @@ const POS_X = 0.12;
 const POS_Y = 0.08;
 
 // Mobile: angular camera rotation
-const MOBILE_MAX_YAW = (85 * Math.PI) / 180;   // ±85° horizontal
-const MOBILE_MAX_PITCH = (25 * Math.PI) / 180;  // ±25° vertical
+const MOBILE_MAX_YAW = (85 * Math.PI) / 180; // ±85° horizontal
+const MOBILE_MAX_PITCH = (25 * Math.PI) / 180; // ±25° vertical
 
 // Joystick: normalised units per second at full deflection
 const JOYSTICK_SPEED = 0.35;
@@ -47,7 +48,6 @@ const BREATHE_SPEED = 0.22;
 const BREATHE_Y = 0.008;
 const SWAY_SPEED = 0.12;
 const SWAY_X = 0.004;
-
 
 export default function CameraController() {
   const { camera, gl } = useThree();
@@ -88,7 +88,7 @@ export default function CameraController() {
   const basePos = useRef(CAMERA_PRESETS.default.pos.clone());
   const baseTarget = useRef(CAMERA_PRESETS.default.target.clone());
   const paralaxMul = useRef(1);
-  const prevFocus = useRef<FocusTarget>('default');
+  const prevFocus = useRef<FocusTarget>("default");
 
   // Focus target transitions
   useEffect(() => {
@@ -104,36 +104,50 @@ export default function CameraController() {
       gsap.killTweensOf(baseTarget.current);
       gsap.killTweensOf(paralaxMul);
 
-      if (focus === 'default') {
+      if (focus === "default") {
         gsap.to(basePos.current, {
-          x: preset.pos.x, y: preset.pos.y, z: preset.pos.z,
-          duration: 0.8, ease: 'power2.inOut',
+          x: preset.pos.x,
+          y: preset.pos.y,
+          z: preset.pos.z,
+          duration: 0.8,
+          ease: "power2.inOut",
         });
         gsap.to(baseTarget.current, {
-          x: preset.target.x, y: preset.target.y, z: preset.target.z,
-          duration: 0.8, ease: 'power2.inOut',
+          x: preset.target.x,
+          y: preset.target.y,
+          z: preset.target.z,
+          duration: 0.8,
+          ease: "power2.inOut",
         });
-        gsap.to(paralaxMul, { current: 1, duration: 0.6, ease: 'power2.in' });
+        gsap.to(paralaxMul, { current: 1, duration: 0.6, ease: "power2.in" });
       } else {
         // Mobile: fully zero out parallax so focus preset camera angles work correctly
         const targetMul = isMobile ? 0 : 0.15;
-        gsap.to(paralaxMul, { current: targetMul, duration: 0.4, ease: 'power2.out' });
+        gsap.to(paralaxMul, { current: targetMul, duration: 0.4, ease: "power2.out" });
 
         // Mobile: smoothly center the accumulated angle so the focus view faces forward
         if (isMobile) {
           gsap.to(angleRef.current, {
-            x: 0, y: 0,
-            duration: 0.8, ease: 'power2.inOut',
+            x: 0,
+            y: 0,
+            duration: 0.8,
+            ease: "power2.inOut",
           });
         }
 
         gsap.to(basePos.current, {
-          x: preset.pos.x, y: preset.pos.y, z: preset.pos.z,
-          duration: 1.0, ease: 'power2.inOut',
+          x: preset.pos.x,
+          y: preset.pos.y,
+          z: preset.pos.z,
+          duration: 1.0,
+          ease: "power2.inOut",
         });
         gsap.to(baseTarget.current, {
-          x: preset.target.x, y: preset.target.y, z: preset.target.z,
-          duration: 1.0, ease: 'power2.inOut',
+          x: preset.target.x,
+          y: preset.target.y,
+          z: preset.target.z,
+          duration: 1.0,
+          ease: "power2.inOut",
         });
       }
     });
@@ -151,7 +165,7 @@ export default function CameraController() {
         // Save current angle and animate to center
         savedAngleRef.current.x = angleRef.current.x;
         savedAngleRef.current.y = angleRef.current.y;
-        gsap.to(angleRef.current, { x: 0, y: 0, duration: 0.8, ease: 'power2.inOut' });
+        gsap.to(angleRef.current, { x: 0, y: 0, duration: 0.8, ease: "power2.inOut" });
         gsap.to(velocityRef.current, { x: 0, y: 0, duration: 0.3 });
       } else if (!focused && isMobile) {
         // Restore saved angle
@@ -159,7 +173,7 @@ export default function CameraController() {
           x: savedAngleRef.current.x,
           y: savedAngleRef.current.y,
           duration: 0.8,
-          ease: 'power2.inOut',
+          ease: "power2.inOut",
         });
       }
     });
@@ -205,7 +219,10 @@ export default function CameraController() {
       if (drag.id === null) return;
       let touch: Touch | null = null;
       for (let i = 0; i < e.touches.length; i++) {
-        if (e.touches[i].identifier === drag.id) { touch = e.touches[i]; break; }
+        if (e.touches[i].identifier === drag.id) {
+          touch = e.touches[i];
+          break;
+        }
       }
       if (!touch) return;
 
@@ -221,20 +238,25 @@ export default function CameraController() {
       }
 
       // Natural drag: swipe right → scene slides left (look right)
-      angleRef.current.x = Math.max(-ANGLE_CLAMP, Math.min(ANGLE_CLAMP,
-        drag.startAngleX + (dx / window.innerWidth) * DRAG_SENSITIVITY,
-      ));
+      angleRef.current.x = Math.max(
+        -ANGLE_CLAMP,
+        Math.min(ANGLE_CLAMP, drag.startAngleX + (dx / window.innerWidth) * DRAG_SENSITIVITY),
+      );
       // Natural vertical drag: swipe down → scene slides down (look up)
       // Vertical sensitivity is half of horizontal to reduce heavy feel
-      angleRef.current.y = Math.max(-ANGLE_CLAMP, Math.min(ANGLE_CLAMP,
-        drag.startAngleY - (dy / window.innerHeight) * DRAG_SENSITIVITY * 0.5,
-      ));
+      angleRef.current.y = Math.max(
+        -ANGLE_CLAMP,
+        Math.min(
+          ANGLE_CLAMP,
+          drag.startAngleY - (dy / window.innerHeight) * DRAG_SENSITIVITY * 0.5,
+        ),
+      );
 
       // Track velocity for release inertia
       const now = performance.now();
       const dt = (now - drag.lastTime) / 1000;
       if (dt > 0.001) {
-        drag.velX = (touch.clientX - drag.lastX) / window.innerWidth * DRAG_SENSITIVITY / dt;
+        drag.velX = (((touch.clientX - drag.lastX) / window.innerWidth) * DRAG_SENSITIVITY) / dt;
       }
       drag.lastX = touch.clientX;
       drag.lastTime = now;
@@ -256,22 +278,22 @@ export default function CameraController() {
     };
 
     if (isTouch) {
-      window.addEventListener('deviceorientation', onOrientation, { passive: true });
-      canvas.addEventListener('touchstart', onTouchStart, { passive: true });
-      canvas.addEventListener('touchmove', onTouchMove, { passive: true });
-      canvas.addEventListener('touchend', onTouchEnd, { passive: true });
-      canvas.addEventListener('touchcancel', onTouchEnd, { passive: true });
+      window.addEventListener("deviceorientation", onOrientation, { passive: true });
+      canvas.addEventListener("touchstart", onTouchStart, { passive: true });
+      canvas.addEventListener("touchmove", onTouchMove, { passive: true });
+      canvas.addEventListener("touchend", onTouchEnd, { passive: true });
+      canvas.addEventListener("touchcancel", onTouchEnd, { passive: true });
     } else {
-      window.addEventListener('mousemove', onMouseMove, { passive: true });
+      window.addEventListener("mousemove", onMouseMove, { passive: true });
     }
 
     return () => {
-      window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('deviceorientation', onOrientation);
-      canvas.removeEventListener('touchstart', onTouchStart);
-      canvas.removeEventListener('touchmove', onTouchMove);
-      canvas.removeEventListener('touchend', onTouchEnd);
-      canvas.removeEventListener('touchcancel', onTouchEnd);
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("deviceorientation", onOrientation);
+      canvas.removeEventListener("touchstart", onTouchStart);
+      canvas.removeEventListener("touchmove", onTouchMove);
+      canvas.removeEventListener("touchend", onTouchEnd);
+      canvas.removeEventListener("touchcancel", onTouchEnd);
     };
   }, [gl]);
 
@@ -364,11 +386,7 @@ export default function CameraController() {
         basePos.current.y + dy + Math.sin(pitch) * dist + breatheOffset * 0.3,
         0.06,
       );
-      lookAt.current.z = THREE.MathUtils.lerp(
-        lookAt.current.z,
-        basePos.current.z + rotZ,
-        0.06,
-      );
+      lookAt.current.z = THREE.MathUtils.lerp(lookAt.current.z, basePos.current.z + rotZ, 0.06);
     } else {
       // ── Desktop: subtle parallax (unchanged) ──
       const targetX = basePos.current.x + ix * POS_X * mul + swayOffset;
@@ -387,11 +405,7 @@ export default function CameraController() {
         baseTarget.current.y - iy * LOOK_Y * mul + breatheOffset * 0.3,
         0.06,
       );
-      lookAt.current.z = THREE.MathUtils.lerp(
-        lookAt.current.z,
-        baseTarget.current.z,
-        0.06,
-      );
+      lookAt.current.z = THREE.MathUtils.lerp(lookAt.current.z, baseTarget.current.z, 0.06);
     }
 
     camera.lookAt(lookAt.current);

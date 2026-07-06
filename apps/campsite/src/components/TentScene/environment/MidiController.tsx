@@ -1,23 +1,24 @@
-import { useEffect, useRef } from 'react';
-import { useGLTF } from '@react-three/drei';
-import * as THREE from 'three';
-import { useInteractionStore } from '../../../store/interactionStore';
-import { asset, DRACO_PATH } from '../../../utils/assetPath';
+import { useGLTF } from "@react-three/drei";
+import { useEffect, useRef } from "react";
+import * as THREE from "three";
+
+import { useInteractionStore } from "../../../store/interactionStore";
+import { asset, DRACO_PATH } from "../../../utils/assetPath";
 
 // Credit: "Akai MPK Mini MIDI Controller" on Sketchfab (CC-BY)
 // https://sketchfab.com/3d-models/akai-mpk-mini-midi-controller-89eae01d0547430bb8e10110eaadaa81
 
-useGLTF.preload(asset('models/akai_mpk_mini_midi_controller.glb'), DRACO_PATH);
+useGLTF.preload(asset("models/akai_mpk_mini_midi_controller.glb"), DRACO_PATH);
 
 export default function MidiController() {
-  const { scene } = useGLTF(asset('models/akai_mpk_mini_midi_controller.glb'), DRACO_PATH);
+  const { scene } = useGLTF(asset("models/akai_mpk_mini_midi_controller.glb"), DRACO_PATH);
   const lightMeshes = useRef<
     { mat: THREE.MeshStandardMaterial; color: THREE.Color; intensity: number }[]
   >([]);
 
   const hoveredId = useInteractionStore((s) => s.hoveredId);
   const focusedId = useInteractionStore((s) => s.focusedId);
-  const isHighlighted = hoveredId === 'midi' || focusedId === 'midi';
+  const isHighlighted = hoveredId === "midi" || focusedId === "midi";
 
   // Initial setup: find light meshes, save originals, turn them off
   useEffect(() => {
@@ -28,9 +29,7 @@ export default function MidiController() {
       child.castShadow = true;
       child.receiveShadow = true;
 
-      const mats = Array.isArray(child.material)
-        ? child.material
-        : [child.material];
+      const mats = Array.isArray(child.material) ? child.material : [child.material];
       mats.forEach((mat) => {
         if (!(mat as THREE.MeshStandardMaterial).isMeshStandardMaterial) return;
         const stdMat = mat as THREE.MeshStandardMaterial;
@@ -71,7 +70,7 @@ export default function MidiController() {
   // Native: ~11.6 x 1.5 x 6.3 units. Scale 0.03 → ~35cm wide
   return (
     <group
-      position={[-1.05, 0.30, 0.4]}
+      position={[-1.05, 0.3, 0.4]}
       rotation={[-Math.PI * 0.01, Math.PI * 0.3, 0]}
       scale={[0.075, 0.075, 0.075]}
     >

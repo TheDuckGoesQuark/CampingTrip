@@ -1,7 +1,8 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { useSessionStore } from './sessionStore';
+import { describe, it, expect, beforeEach } from "vitest";
 
-describe('useSessionStore', () => {
+import { useSessionStore } from "./sessionStore";
+
+describe("useSessionStore", () => {
   beforeEach(() => {
     useSessionStore.setState({
       soundEnabled: true,
@@ -10,14 +11,14 @@ describe('useSessionStore', () => {
     });
   });
 
-  it('initialises with default values', () => {
+  it("initialises with default values", () => {
     const state = useSessionStore.getState();
     expect(state.soundEnabled).toBe(true);
     expect(state.effectsEnabled).toBe(true);
     expect(state.hasCompletedWelcome).toBe(false);
   });
 
-  it('toggles sound on/off', () => {
+  it("toggles sound on/off", () => {
     useSessionStore.getState().setSoundEnabled(false);
     expect(useSessionStore.getState().soundEnabled).toBe(false);
 
@@ -25,7 +26,7 @@ describe('useSessionStore', () => {
     expect(useSessionStore.getState().soundEnabled).toBe(true);
   });
 
-  it('toggles effects on/off', () => {
+  it("toggles effects on/off", () => {
     useSessionStore.getState().setEffectsEnabled(false);
     expect(useSessionStore.getState().effectsEnabled).toBe(false);
 
@@ -33,12 +34,12 @@ describe('useSessionStore', () => {
     expect(useSessionStore.getState().effectsEnabled).toBe(true);
   });
 
-  it('completes welcome', () => {
+  it("completes welcome", () => {
     useSessionStore.getState().completeWelcome();
     expect(useSessionStore.getState().hasCompletedWelcome).toBe(true);
   });
 
-  it('resets welcome', () => {
+  it("resets welcome", () => {
     useSessionStore.getState().completeWelcome();
     expect(useSessionStore.getState().hasCompletedWelcome).toBe(true);
 

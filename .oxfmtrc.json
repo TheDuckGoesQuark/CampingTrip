@@ -1,0 +1,15 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "sortImports": true,
+  "sortPackageJson": true,
+  "ignorePatterns": [
+    "dist",
+    "node_modules",
+    "storybook-static",
+    "coverage",
+    "**/public/**",
+    "extensions/photobroom/overlay.js",
+    "pnpm-lock.yaml",
+    ".claude/settings.local.json"
+  ]
+}

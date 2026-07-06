@@ -1,15 +1,16 @@
-import { useEffect } from 'react';
-import { useGLTF } from '@react-three/drei';
-import * as THREE from 'three';
-import { asset, DRACO_PATH } from '../../../utils/assetPath';
+import { useGLTF } from "@react-three/drei";
+import { useEffect } from "react";
+import * as THREE from "three";
+
+import { asset, DRACO_PATH } from "../../../utils/assetPath";
 
 // Credit: "Acoustic Guitar" on Sketchfab (CC-BY)
 // Model placed inside tent, leaning to the left of the door
 
-useGLTF.preload(asset('models/acoustic_guitar.glb'), DRACO_PATH);
+useGLTF.preload(asset("models/acoustic_guitar.glb"), DRACO_PATH);
 
 export default function Guitar() {
-  const { scene } = useGLTF(asset('models/acoustic_guitar.glb'), DRACO_PATH);
+  const { scene } = useGLTF(asset("models/acoustic_guitar.glb"), DRACO_PATH);
 
   useEffect(() => {
     scene.traverse((child) => {
@@ -23,7 +24,7 @@ export default function Guitar() {
   return (
     <group
       position={[1.6, 0.7, -0.6]}
-      rotation={[-0.10, Math.PI * 1.25 - Math.PI / 12, -1.15]}
+      rotation={[-0.1, Math.PI * 1.25 - Math.PI / 12, -1.15]}
       scale={[1.8, 1.8, -1.8]}
     >
       <primitive object={scene} />

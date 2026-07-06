@@ -1,12 +1,16 @@
-@import './tokens.css';
+@import "./tokens.css";
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   width: 100%;
   height: 100%;
   overflow: hidden;
@@ -35,4 +39,6 @@ canvas {
 }
 
 /* Hide scrollbar globally — everything is in-scene */
-::-webkit-scrollbar { display: none; }
+::-webkit-scrollbar {
+  display: none;
+}

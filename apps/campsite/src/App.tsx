@@ -1,13 +1,14 @@
-import { useEffect, useState, lazy, Suspense } from 'react';
-import { useSessionStore } from './store/sessionStore';
-import WelcomeScreen from './components/WelcomeScreen/WelcomeScreen';
-import CampfireLoadingScreen from './components/CampfireLoadingScreen';
-import ErrorBoundary from './components/ErrorBoundary';
+import { useEffect, useState, lazy, Suspense } from "react";
+
+import CampfireLoadingScreen from "./components/CampfireLoadingScreen";
+import ErrorBoundary from "./components/ErrorBoundary";
+import WelcomeScreen from "./components/WelcomeScreen/WelcomeScreen";
+import { useSessionStore } from "./store/sessionStore";
 
 // Lazy-load the heavy 3D scene so the welcome screen renders instantly.
 // The dynamic import fires as soon as App mounts, so Three.js / R3F download
 // in the background while the user is on the welcome screen.
-const TentScene = lazy(() => import('./components/TentScene/TentScene'));
+const TentScene = lazy(() => import("./components/TentScene/TentScene"));
 
 export default function App() {
   const hasCompletedWelcome = useSessionStore((s) => s.hasCompletedWelcome);

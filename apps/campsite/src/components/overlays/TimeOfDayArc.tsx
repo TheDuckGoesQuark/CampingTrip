@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { useTimeStore, getTimeOfDay } from '../../store/timeStore';
+import { useCallback, useEffect, useRef, useState } from "react";
+
+import { useTimeStore, getTimeOfDay } from "../../store/timeStore";
 
 const SIZE = 120;
 const PAD = 18;
@@ -19,18 +20,14 @@ function arcPoint(t: number): { x: number; y: number } {
 
 // Key points along the arc with labels
 const KEY_LABELS: { t: number; label: string }[] = [
-  { t: 0, label: '6am' },
-  { t: 0.25, label: 'noon' },
-  { t: 0.5, label: '6pm' },
-  { t: 0.75, label: '12am' },
+  { t: 0, label: "6am" },
+  { t: 0.25, label: "noon" },
+  { t: 0.5, label: "6pm" },
+  { t: 0.75, label: "12am" },
 ];
 
 /** Convert a page-space pointer position to arc progress (0–1). */
-function pointerToProgress(
-  clientX: number,
-  clientY: number,
-  containerRect: DOMRect,
-): number {
+function pointerToProgress(clientX: number, clientY: number, containerRect: DOMRect): number {
   // Pointer relative to the arc center (CX, CY) in SVG coords
   const svgX = clientX - containerRect.left - 14; // 14 = container left offset
   const svgY = clientY - containerRect.top - 14;
@@ -97,13 +94,13 @@ export default function TimeOfDayArc() {
     const el = containerRef.current;
     if (!el) return;
     const stop = (e: TouchEvent) => e.stopPropagation();
-    el.addEventListener('touchstart', stop, { passive: true });
-    el.addEventListener('touchmove', stop, { passive: true });
-    el.addEventListener('touchend', stop, { passive: true });
+    el.addEventListener("touchstart", stop, { passive: true });
+    el.addEventListener("touchmove", stop, { passive: true });
+    el.addEventListener("touchend", stop, { passive: true });
     return () => {
-      el.removeEventListener('touchstart', stop);
-      el.removeEventListener('touchmove', stop);
-      el.removeEventListener('touchend', stop);
+      el.removeEventListener("touchstart", stop);
+      el.removeEventListener("touchmove", stop);
+      el.removeEventListener("touchend", stop);
     };
   }, []);
 
@@ -111,15 +108,15 @@ export default function TimeOfDayArc() {
     <div
       ref={containerRef}
       style={{
-        position: 'fixed',
+        position: "fixed",
         top: 14,
         left: 14,
         width: SIZE + 40,
         height: SIZE + 10,
         zIndex: 50,
-        cursor: dragging ? 'grabbing' : 'grab',
-        touchAction: 'none',
-        userSelect: 'none',
+        cursor: dragging ? "grabbing" : "grab",
+        touchAction: "none",
+        userSelect: "none",
       }}
       onPointerDown={startDrag}
       onPointerMove={onDrag}
@@ -132,8 +129,8 @@ export default function TimeOfDayArc() {
         viewBox={`0 0 ${SIZE + 40} ${SIZE + 10}`}
         fill="none"
         style={{
-          transition: dragging ? 'none' : 'filter 0.3s',
-          filter: dragging ? 'drop-shadow(0 0 8px rgba(255,200,60,0.4))' : 'none',
+          transition: dragging ? "none" : "filter 0.3s",
+          filter: dragging ? "drop-shadow(0 0 8px rgba(255,200,60,0.4))" : "none",
         }}
       >
         {/* Dashed arc track */}
@@ -153,12 +150,7 @@ export default function TimeOfDayArc() {
           const oy = Math.sin(angle) * 10;
           return (
             <g key={t}>
-              <circle
-                cx={p.x}
-                cy={p.y}
-                r={2}
-                fill="rgba(255, 220, 150, 0.2)"
-              />
+              <circle cx={p.x} cy={p.y} r={2} fill="rgba(255, 220, 150, 0.2)" />
               <text
                 x={p.x + ox}
                 y={p.y + oy + 3}
@@ -178,35 +170,28 @@ export default function TimeOfDayArc() {
           cx={pos.x}
           cy={pos.y}
           r={dragging ? 16 : 12}
-          fill={isDaytime
-            ? 'rgba(255, 210, 80, 0.12)'
-            : 'rgba(180, 200, 255, 0.08)'}
-          style={{ transition: 'r 0.2s' }}
+          fill={isDaytime ? "rgba(255, 210, 80, 0.12)" : "rgba(180, 200, 255, 0.08)"}
+          style={{ transition: "r 0.2s" }}
         />
 
         {/* Sun / Moon emoji via foreignObject */}
-        <foreignObject
-          x={pos.x - 12}
-          y={pos.y - 12}
-          width={24}
-          height={24}
-        >
+        <foreignObject x={pos.x - 12} y={pos.y - 12} width={24} height={24}>
           <div
             style={{
               width: 24,
               height: 24,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
               fontSize: dragging ? 18 : 16,
               lineHeight: 1,
-              transition: 'font-size 0.2s',
+              transition: "font-size 0.2s",
               filter: isDaytime
-                ? 'drop-shadow(0 0 6px rgba(255,200,60,0.7))'
-                : 'drop-shadow(0 0 6px rgba(180,200,255,0.5))',
+                ? "drop-shadow(0 0 6px rgba(255,200,60,0.7))"
+                : "drop-shadow(0 0 6px rgba(180,200,255,0.5))",
             }}
           >
-            {isDaytime ? '☀️' : '🌙'}
+            {isDaytime ? "☀️" : "🌙"}
           </div>
         </foreignObject>
 

@@ -1,14 +1,15 @@
-import { useEffect, useRef } from 'react';
-import { useGLTF } from '@react-three/drei';
-import * as THREE from 'three';
-import gsap from 'gsap';
-import { useSceneStore } from '../../../store/sceneStore';
-import { asset, DRACO_PATH } from '../../../utils/assetPath';
+import { useGLTF } from "@react-three/drei";
+import gsap from "gsap";
+import { useEffect, useRef } from "react";
+import * as THREE from "three";
+
+import { useSceneStore } from "../../../store/sceneStore";
+import { asset, DRACO_PATH } from "../../../utils/assetPath";
 
 // Credit: "Notepad" on Sketchfab (CC-BY)
 // https://sketchfab.com/3d-models/notepadb-0b30d2efe63f41b0a812904b610fe577
 
-useGLTF.preload(asset('models/notepadb.glb'), DRACO_PATH);
+useGLTF.preload(asset("models/notepadb.glb"), DRACO_PATH);
 
 // Resting transform (inside tent)
 const REST_POS: [number, number, number] = [-0.7, 0.4, -0.7];
@@ -21,7 +22,7 @@ const FOCUS_ROT: [number, number, number] = [-0.3, 0, 0];
 const FOCUS_SCALE: [number, number, number] = [0.012, 0.012, 0.012];
 
 export default function Notepad() {
-  const { scene } = useGLTF(asset('models/notepadb.glb'), DRACO_PATH);
+  const { scene } = useGLTF(asset("models/notepadb.glb"), DRACO_PATH);
   const groupRef = useRef<THREE.Group>(null);
   const notepadFocused = useSceneStore((s) => s.notepadFocused);
 
@@ -49,29 +50,47 @@ export default function Notepad() {
 
     if (notepadFocused) {
       gsap.to(g.position, {
-        x: FOCUS_POS[0], y: FOCUS_POS[1], z: FOCUS_POS[2],
-        duration: 0.9, ease: 'power2.inOut',
+        x: FOCUS_POS[0],
+        y: FOCUS_POS[1],
+        z: FOCUS_POS[2],
+        duration: 0.9,
+        ease: "power2.inOut",
       });
       gsap.to(g.rotation, {
-        x: FOCUS_ROT[0], y: FOCUS_ROT[1], z: FOCUS_ROT[2],
-        duration: 0.9, ease: 'power2.inOut',
+        x: FOCUS_ROT[0],
+        y: FOCUS_ROT[1],
+        z: FOCUS_ROT[2],
+        duration: 0.9,
+        ease: "power2.inOut",
       });
       gsap.to(g.scale, {
-        x: FOCUS_SCALE[0], y: FOCUS_SCALE[1], z: FOCUS_SCALE[2],
-        duration: 0.9, ease: 'power2.inOut',
+        x: FOCUS_SCALE[0],
+        y: FOCUS_SCALE[1],
+        z: FOCUS_SCALE[2],
+        duration: 0.9,
+        ease: "power2.inOut",
       });
     } else {
       gsap.to(g.position, {
-        x: REST_POS[0], y: REST_POS[1], z: REST_POS[2],
-        duration: 0.7, ease: 'power2.inOut',
+        x: REST_POS[0],
+        y: REST_POS[1],
+        z: REST_POS[2],
+        duration: 0.7,
+        ease: "power2.inOut",
       });
       gsap.to(g.rotation, {
-        x: REST_ROT[0], y: REST_ROT[1], z: REST_ROT[2],
-        duration: 0.7, ease: 'power2.inOut',
+        x: REST_ROT[0],
+        y: REST_ROT[1],
+        z: REST_ROT[2],
+        duration: 0.7,
+        ease: "power2.inOut",
       });
       gsap.to(g.scale, {
-        x: REST_SCALE[0], y: REST_SCALE[1], z: REST_SCALE[2],
-        duration: 0.7, ease: 'power2.inOut',
+        x: REST_SCALE[0],
+        y: REST_SCALE[1],
+        z: REST_SCALE[2],
+        duration: 0.7,
+        ease: "power2.inOut",
       });
     }
   }, [notepadFocused]);

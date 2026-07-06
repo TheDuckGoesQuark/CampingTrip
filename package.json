@@ -1,20 +1,31 @@
 {
   "name": "jordanscamp",
   "private": true,
-  "pnpm": {
-    "onlyBuiltDependencies": ["esbuild"]
-  },
   "scripts": {
+    "prepare": "git config core.hooksPath .githooks || true",
     "dev:campsite": "pnpm --filter campsite dev",
-    "dev:digitaltwins": "pnpm --filter digitaltwins dev",
     "build:campsite": "pnpm --filter campsite build",
-    "build:digitaltwins": "pnpm --filter digitaltwins build",
     "dev:photobroom": "pnpm --filter photobroom dev",
     "build:photobroom": "pnpm --filter photobroom build",
     "build": "pnpm -r build",
     "test": "pnpm -r test",
     "test:campsite": "pnpm --filter campsite test",
-    "test:digitaltwins": "pnpm --filter digitaltwins test",
-    "test:photobroom": "pnpm --filter photobroom test"
+    "test:photobroom": "pnpm --filter photobroom test",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check",
+    "check-deps": "depcruise apps packages",
+    "validate": "pnpm fmt:check && pnpm lint && pnpm check-deps && pnpm -r exec tsc -b && pnpm -r test"
+  },
+  "devDependencies": {
+    "dependency-cruiser": "^17.4.3",
+    "oxfmt": "^0.56.0",
+    "oxlint": "^1.72.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
   }
 }

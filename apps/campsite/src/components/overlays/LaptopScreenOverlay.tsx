@@ -1,15 +1,14 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
-import { useSceneStore } from '../../store/sceneStore';
-import { useSessionStore } from '../../store/sessionStore';
-import { projects } from '../../data/projects';
-import { bookmarks } from '../../data/bookmarks';
-import { asset } from '../../utils/assetPath';
-import { playWindowOpen, playSoftClick } from '../../audio/soundEffects';
-import type { Project, Bookmark } from '../../types/project';
+import { useEffect, useState, useCallback, useRef } from "react";
 
-type OpenItem =
-  | { kind: 'project'; data: Project }
-  | { kind: 'bookmark'; data: Bookmark };
+import { playWindowOpen, playSoftClick } from "../../audio/soundEffects";
+import { bookmarks } from "../../data/bookmarks";
+import { projects } from "../../data/projects";
+import { useSceneStore } from "../../store/sceneStore";
+import { useSessionStore } from "../../store/sessionStore";
+import type { Project, Bookmark } from "../../types/project";
+import { asset } from "../../utils/assetPath";
+
+type OpenItem = { kind: "project"; data: Project } | { kind: "bookmark"; data: Bookmark };
 
 /**
  * CatOS — the laptop's operating system overlay.
@@ -23,7 +22,7 @@ export default function LaptopScreenOverlay() {
   const [mounted, setMounted] = useState(false);
   const [opacity, setOpacity] = useState(0);
   const [openItem, setOpenItem] = useState<OpenItem | null>(null);
-  const [clock, setClock] = useState('');
+  const [clock, setClock] = useState("");
   const prevFocused = useRef(false);
 
   // Mount/unmount with fade
@@ -53,9 +52,7 @@ export default function LaptopScreenOverlay() {
     if (!mounted) return;
     const update = () => {
       const now = new Date();
-      setClock(
-        now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      );
+      setClock(now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
     };
     update();
     const id = setInterval(update, 10_000);
@@ -66,7 +63,7 @@ export default function LaptopScreenOverlay() {
   useEffect(() => {
     if (!mounted) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         if (openItem) {
           e.stopPropagation();
           setOpenItem(null);
@@ -75,17 +72,17 @@ export default function LaptopScreenOverlay() {
         // If no item open, TentScene's handler will close the laptop
       }
     };
-    window.addEventListener('keydown', onKey, true);
-    return () => window.removeEventListener('keydown', onKey, true);
+    window.addEventListener("keydown", onKey, true);
+    return () => window.removeEventListener("keydown", onKey, true);
   }, [mounted, openItem]);
 
   const handleProjectClick = useCallback((project: Project) => {
-    setOpenItem({ kind: 'project', data: project });
+    setOpenItem({ kind: "project", data: project });
     playWindowOpen();
   }, []);
 
   const handleBookmarkClick = useCallback((bookmark: Bookmark) => {
-    setOpenItem({ kind: 'bookmark', data: bookmark });
+    setOpenItem({ kind: "bookmark", data: bookmark });
     playWindowOpen();
   }, []);
 
@@ -94,32 +91,43 @@ export default function LaptopScreenOverlay() {
   const hasBookmarks = bookmarks.length > 0;
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 100,
-      opacity, transition: 'opacity 0.4s ease',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-      color: '#e0e0e8',
-      userSelect: 'none',
-    }}>
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 100,
+        opacity,
+        transition: "opacity 0.4s ease",
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+        color: "#e0e0e8",
+        userSelect: "none",
+      }}
+    >
       {/* Wallpaper */}
-      <div style={{
-        position: 'absolute', inset: 0,
-        background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 70%, #1a1a2e 100%)',
-      }} />
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 70%, #1a1a2e 100%)",
+        }}
+      />
 
       {/* Subtle starfield dots */}
-      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', opacity: 0.3 }}>
+      <div style={{ position: "absolute", inset: 0, overflow: "hidden", opacity: 0.3 }}>
         {Array.from({ length: 40 }, (_, i) => (
-          <div key={i} style={{
-            position: 'absolute',
-            width: i % 3 === 0 ? 2 : 1,
-            height: i % 3 === 0 ? 2 : 1,
-            borderRadius: '50%',
-            background: '#fff',
-            left: `${(i * 37 + 13) % 100}%`,
-            top: `${(i * 53 + 7) % 85 + 5}%`,
-            opacity: 0.3 + (i % 5) * 0.15,
-          }} />
+          <div
+            key={i}
+            style={{
+              position: "absolute",
+              width: i % 3 === 0 ? 2 : 1,
+              height: i % 3 === 0 ? 2 : 1,
+              borderRadius: "50%",
+              background: "#fff",
+              left: `${(i * 37 + 13) % 100}%`,
+              top: `${((i * 53 + 7) % 85) + 5}%`,
+              opacity: 0.3 + (i % 5) * 0.15,
+            }}
+          />
         ))}
       </div>
 
@@ -127,21 +135,28 @@ export default function LaptopScreenOverlay() {
       <MenuBar clock={clock} />
 
       {/* Desktop — scrollable sections */}
-      <div style={{
-        position: 'absolute',
-        top: 36, left: 0, right: 0, bottom: 72,
-        overflowY: 'auto',
-        padding: '24px 32px',
-      }}>
+      <div
+        style={{
+          position: "absolute",
+          top: 36,
+          left: 0,
+          right: 0,
+          bottom: 72,
+          overflowY: "auto",
+          padding: "24px 32px",
+        }}
+      >
         {/* My Projects */}
         <SectionHeader label="My Projects" />
-        <div style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          justifyContent: 'center',
-          gap: 24,
-          marginBottom: hasBookmarks ? 32 : 0,
-        }}>
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            justifyContent: "center",
+            gap: 24,
+            marginBottom: hasBookmarks ? 32 : 0,
+          }}
+        >
           {projects.map((p) => (
             <DesktopIcon
               key={p.title}
@@ -158,12 +173,14 @@ export default function LaptopScreenOverlay() {
         {hasBookmarks && (
           <>
             <SectionHeader label="Bookmarks" />
-            <div style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              justifyContent: 'center',
-              gap: 24,
-            }}>
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                justifyContent: "center",
+                gap: 24,
+              }}
+            >
               {bookmarks.map((b) => (
                 <DesktopIcon
                   key={b.title}
@@ -183,16 +200,22 @@ export default function LaptopScreenOverlay() {
       <Dock />
 
       {/* Window (if open) */}
-      {openItem?.kind === 'project' && (
+      {openItem?.kind === "project" && (
         <ProjectWindow
           project={openItem.data}
-          onClose={() => { setOpenItem(null); playSoftClick(); }}
+          onClose={() => {
+            setOpenItem(null);
+            playSoftClick();
+          }}
         />
       )}
-      {openItem?.kind === 'bookmark' && (
+      {openItem?.kind === "bookmark" && (
         <BookmarkWindow
           bookmark={openItem.data}
-          onClose={() => { setOpenItem(null); playSoftClick(); }}
+          onClose={() => {
+            setOpenItem(null);
+            playSoftClick();
+          }}
         />
       )}
 
@@ -201,20 +224,26 @@ export default function LaptopScreenOverlay() {
         <button
           onClick={() => useSceneStore.getState().setLaptopFocused(false)}
           style={{
-            position: 'absolute', bottom: 84, right: 20, zIndex: 5,
-            background: 'rgba(255,255,255,0.06)',
-            border: '1px solid rgba(255,255,255,0.12)',
-            color: 'rgba(255,255,255,0.4)',
-            padding: '6px 14px', borderRadius: 6, cursor: 'pointer',
-            fontSize: 12, transition: 'background 0.2s, color 0.2s',
+            position: "absolute",
+            bottom: 84,
+            right: 20,
+            zIndex: 5,
+            background: "rgba(255,255,255,0.06)",
+            border: "1px solid rgba(255,255,255,0.12)",
+            color: "rgba(255,255,255,0.4)",
+            padding: "6px 14px",
+            borderRadius: 6,
+            cursor: "pointer",
+            fontSize: 12,
+            transition: "background 0.2s, color 0.2s",
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(255,255,255,0.12)';
-            e.currentTarget.style.color = 'rgba(255,255,255,0.7)';
+            e.currentTarget.style.background = "rgba(255,255,255,0.12)";
+            e.currentTarget.style.color = "rgba(255,255,255,0.7)";
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
-            e.currentTarget.style.color = 'rgba(255,255,255,0.4)';
+            e.currentTarget.style.background = "rgba(255,255,255,0.06)";
+            e.currentTarget.style.color = "rgba(255,255,255,0.4)";
           }}
         >
           Back to tent <span style={{ opacity: 0.5, marginLeft: 6 }}>Esc</span>
@@ -244,15 +273,17 @@ function isNewSince(
 
 function SectionHeader({ label }: { label: string }) {
   return (
-    <div style={{
-      fontSize: 13,
-      fontWeight: 600,
-      textTransform: 'uppercase',
-      letterSpacing: 1.2,
-      color: 'rgba(255,255,255,0.35)',
-      marginBottom: 16,
-      textAlign: 'center',
-    }}>
+    <div
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        textTransform: "uppercase",
+        letterSpacing: 1.2,
+        color: "rgba(255,255,255,0.35)",
+        marginBottom: 16,
+        textAlign: "center",
+      }}
+    >
       {label}
     </div>
   );
@@ -261,29 +292,42 @@ function SectionHeader({ label }: { label: string }) {
 /* ─── Menu Bar ────────────────────────────────────────────────── */
 function MenuBar({ clock }: { clock: string }) {
   return (
-    <div style={{
-      position: 'absolute', top: 0, left: 0, right: 0, height: 28,
-      background: 'rgba(0,0,0,0.55)',
-      backdropFilter: 'blur(20px)',
-      WebkitBackdropFilter: 'blur(20px)',
-      display: 'flex', alignItems: 'center',
-      padding: '0 12px',
-      fontSize: 13, fontWeight: 500, zIndex: 10,
-      borderBottom: '1px solid rgba(255,255,255,0.06)',
-    }}>
-      <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+    <div
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        height: 28,
+        background: "rgba(0,0,0,0.55)",
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
+        display: "flex",
+        alignItems: "center",
+        padding: "0 12px",
+        fontSize: 13,
+        fontWeight: 500,
+        zIndex: 10,
+        borderBottom: "1px solid rgba(255,255,255,0.06)",
+      }}
+    >
+      <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
         <span style={{ fontSize: 16 }}>🐱</span>
         <span style={{ fontWeight: 700 }}>CatOS</span>
       </span>
       <span style={{ marginLeft: 20, opacity: 0.6 }}>Finder</span>
-      <span style={{ marginLeft: 'auto', opacity: 0.7 }}>{clock}</span>
+      <span style={{ marginLeft: "auto", opacity: 0.7 }}>{clock}</span>
     </div>
   );
 }
 
 /* ─── Desktop Icon ────────────────────────────────────────────── */
 function DesktopIcon({
-  title, icon, color, isNew, onClick,
+  title,
+  icon,
+  color,
+  isNew,
+  onClick,
 }: {
   title: string;
   icon: string;
@@ -296,16 +340,25 @@ function DesktopIcon({
 
   return (
     <button
-      onClick={() => { playSoftClick(); onClick(); }}
+      onClick={() => {
+        playSoftClick();
+        onClick();
+      }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        position: 'relative',
-        display: 'flex', flexDirection: 'column', alignItems: 'center',
-        width: 120, padding: '12px 8px', gap: 8,
-        background: hovered ? 'rgba(255,255,255,0.08)' : 'transparent',
-        border: 'none', borderRadius: 12, cursor: 'pointer',
-        transition: 'background 0.15s',
+        position: "relative",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        width: 120,
+        padding: "12px 8px",
+        gap: 8,
+        background: hovered ? "rgba(255,255,255,0.08)" : "transparent",
+        border: "none",
+        borderRadius: 12,
+        cursor: "pointer",
+        transition: "background 0.15s",
       }}
     >
       {imgError ? (
@@ -314,8 +367,9 @@ function DesktopIcon({
         <img
           src={asset(icon)}
           alt={title}
-          width={72} height={72}
-          style={{ borderRadius: 14, objectFit: 'cover' }}
+          width={72}
+          height={72}
+          style={{ borderRadius: 14, objectFit: "cover" }}
           onError={() => setImgError(true)}
         />
       )}
@@ -323,13 +377,23 @@ function DesktopIcon({
       {/* "New" badge */}
       {isNew && <NewBadge />}
 
-      <span style={{
-        fontSize: 13, color: '#fff', textAlign: 'center',
-        textShadow: '0 1px 3px rgba(0,0,0,0.8)',
-        lineHeight: 1.3, maxWidth: 110,
-        overflow: 'hidden', textOverflow: 'ellipsis',
-        display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
-      } as React.CSSProperties}>
+      <span
+        style={
+          {
+            fontSize: 13,
+            color: "#fff",
+            textAlign: "center",
+            textShadow: "0 1px 3px rgba(0,0,0,0.8)",
+            lineHeight: 1.3,
+            maxWidth: 110,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+          } as React.CSSProperties
+        }
+      >
         {title}
       </span>
     </button>
@@ -339,19 +403,23 @@ function DesktopIcon({
 /* ─── New Badge ───────────────────────────────────────────────── */
 function NewBadge() {
   return (
-    <span style={{
-      position: 'absolute', top: 6, right: 14,
-      background: '#ff6b6b',
-      color: '#fff',
-      fontSize: 9,
-      fontWeight: 700,
-      padding: '2px 5px',
-      borderRadius: 6,
-      lineHeight: 1,
-      letterSpacing: 0.5,
-      boxShadow: '0 0 8px rgba(255,107,107,0.6)',
-      animation: 'catosNewPulse 2s ease-in-out infinite',
-    }}>
+    <span
+      style={{
+        position: "absolute",
+        top: 6,
+        right: 14,
+        background: "#ff6b6b",
+        color: "#fff",
+        fontSize: 9,
+        fontWeight: 700,
+        padding: "2px 5px",
+        borderRadius: 6,
+        lineHeight: 1,
+        letterSpacing: 0.5,
+        boxShadow: "0 0 8px rgba(255,107,107,0.6)",
+        animation: "catosNewPulse 2s ease-in-out infinite",
+      }}
+    >
       NEW
       <style>{`
         @keyframes catosNewPulse {
@@ -365,16 +433,24 @@ function NewBadge() {
 
 /* ─── Fallback Icon (generated from title) ────────────────────── */
 function FallbackIcon({ title, color }: { title: string; color?: string }) {
-  const bg = color || '#4a9eff';
+  const bg = color || "#4a9eff";
   const letter = title.charAt(0).toUpperCase();
   return (
-    <div style={{
-      width: 72, height: 72, borderRadius: 14,
-      background: `linear-gradient(135deg, ${bg}, ${bg}88)`,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontSize: 28, fontWeight: 700, color: '#fff',
-      boxShadow: `0 2px 8px ${bg}44`,
-    }}>
+    <div
+      style={{
+        width: 72,
+        height: 72,
+        borderRadius: 14,
+        background: `linear-gradient(135deg, ${bg}, ${bg}88)`,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: 28,
+        fontWeight: 700,
+        color: "#fff",
+        boxShadow: `0 2px 8px ${bg}44`,
+      }}
+    >
       {letter}
     </div>
   );
@@ -383,21 +459,28 @@ function FallbackIcon({ title, color }: { title: string; color?: string }) {
 /* ─── Dock ────────────────────────────────────────────────────── */
 function Dock() {
   return (
-    <div style={{
-      position: 'absolute', bottom: 8, left: '50%', transform: 'translateX(-50%)',
-      background: 'rgba(255,255,255,0.08)',
-      backdropFilter: 'blur(20px)',
-      WebkitBackdropFilter: 'blur(20px)',
-      borderRadius: 16,
-      border: '1px solid rgba(255,255,255,0.1)',
-      padding: '6px 16px',
-      display: 'flex', alignItems: 'center', gap: 12,
-      zIndex: 10,
-    }}>
+    <div
+      style={{
+        position: "absolute",
+        bottom: 8,
+        left: "50%",
+        transform: "translateX(-50%)",
+        background: "rgba(255,255,255,0.08)",
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
+        borderRadius: 16,
+        border: "1px solid rgba(255,255,255,0.1)",
+        padding: "6px 16px",
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        zIndex: 10,
+      }}
+    >
       <DockIcon label="Finder" emoji="📁" />
       <DockIcon label="Terminal" emoji="🖥️" />
       <DockIcon label="Notes" emoji="📝" />
-      <div style={{ width: 1, height: 28, background: 'rgba(255,255,255,0.15)' }} />
+      <div style={{ width: 1, height: 28, background: "rgba(255,255,255,0.15)" }} />
       <DockIcon label="Trash" emoji="🗑️" />
     </div>
   );
@@ -410,20 +493,31 @@ function DockIcon({ label, emoji }: { label: string; emoji: string }) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        position: 'relative',
-        fontSize: 28, cursor: 'default',
-        transform: hovered ? 'scale(1.25) translateY(-4px)' : 'scale(1)',
-        transition: 'transform 0.15s ease',
+        position: "relative",
+        fontSize: 28,
+        cursor: "default",
+        transform: hovered ? "scale(1.25) translateY(-4px)" : "scale(1)",
+        transition: "transform 0.15s ease",
       }}
       title={label}
     >
       {emoji}
       {hovered && (
-        <div style={{
-          position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)',
-          marginBottom: 6, background: 'rgba(0,0,0,0.75)', color: '#fff',
-          fontSize: 11, padding: '2px 8px', borderRadius: 4, whiteSpace: 'nowrap',
-        }}>
+        <div
+          style={{
+            position: "absolute",
+            bottom: "100%",
+            left: "50%",
+            transform: "translateX(-50%)",
+            marginBottom: 6,
+            background: "rgba(0,0,0,0.75)",
+            color: "#fff",
+            fontSize: 11,
+            padding: "2px 8px",
+            borderRadius: 4,
+            whiteSpace: "nowrap",
+          }}
+        >
           {label}
         </div>
       )}
@@ -433,64 +527,90 @@ function DockIcon({ label, emoji }: { label: string; emoji: string }) {
 
 /* ─── Shared Window Shell ─────────────────────────────────────── */
 function WindowShell({
-  title, onClose, children,
+  title,
+  onClose,
+  children,
 }: {
   title: string;
   onClose: () => void;
   children: React.ReactNode;
 }) {
   return (
-    <div style={{
-      position: 'absolute', inset: 0, zIndex: 20,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: 'rgba(0,0,0,0.3)',
-    }} onClick={onClose}>
+    <div
+      style={{
+        position: "absolute",
+        inset: 0,
+        zIndex: 20,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "rgba(0,0,0,0.3)",
+      }}
+      onClick={onClose}
+    >
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          width: '90%', maxWidth: 520, minHeight: 300,
-          background: 'rgba(30,30,45,0.95)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
+          width: "90%",
+          maxWidth: 520,
+          minHeight: 300,
+          background: "rgba(30,30,45,0.95)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
           borderRadius: 12,
-          border: '1px solid rgba(255,255,255,0.1)',
-          overflow: 'hidden',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
-          animation: 'catosWindowIn 0.25s ease-out',
+          border: "1px solid rgba(255,255,255,0.1)",
+          overflow: "hidden",
+          boxShadow: "0 20px 60px rgba(0,0,0,0.5)",
+          animation: "catosWindowIn 0.25s ease-out",
         }}
       >
         {/* Title bar */}
-        <div style={{
-          height: 38, background: 'rgba(0,0,0,0.3)',
-          display: 'flex', alignItems: 'center', padding: '0 12px',
-          borderBottom: '1px solid rgba(255,255,255,0.06)',
-        }}>
-          <div style={{ display: 'flex', gap: 6 }}>
+        <div
+          style={{
+            height: 38,
+            background: "rgba(0,0,0,0.3)",
+            display: "flex",
+            alignItems: "center",
+            padding: "0 12px",
+            borderBottom: "1px solid rgba(255,255,255,0.06)",
+          }}
+        >
+          <div style={{ display: "flex", gap: 6 }}>
             <button
               onClick={onClose}
               style={{
-                width: 12, height: 12, borderRadius: '50%',
-                background: '#ff5f57', border: 'none', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 8, color: 'transparent', transition: 'color 0.15s',
+                width: 12,
+                height: 12,
+                borderRadius: "50%",
+                background: "#ff5f57",
+                border: "none",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 8,
+                color: "transparent",
+                transition: "color 0.15s",
                 padding: 0,
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = 'rgba(0,0,0,0.5)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = 'transparent'; }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = "rgba(0,0,0,0.5)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = "transparent";
+              }}
             >
               ✕
             </button>
-            <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#febc2e' }} />
-            <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#28c840' }} />
+            <div style={{ width: 12, height: 12, borderRadius: "50%", background: "#febc2e" }} />
+            <div style={{ width: 12, height: 12, borderRadius: "50%", background: "#28c840" }} />
           </div>
-          <span style={{ flex: 1, textAlign: 'center', fontSize: 13, opacity: 0.7 }}>
-            {title}
-          </span>
+          <span style={{ flex: 1, textAlign: "center", fontSize: 13, opacity: 0.7 }}>{title}</span>
           <div style={{ width: 52 }} />
         </div>
 
         {/* Content */}
-        <div style={{ padding: '24px 28px', maxHeight: 'calc(80vh - 38px)', overflowY: 'auto' }}>
+        <div style={{ padding: "24px 28px", maxHeight: "calc(80vh - 38px)", overflowY: "auto" }}>
           {children}
         </div>
       </div>
@@ -511,15 +631,16 @@ function ProjectWindow({ project, onClose }: { project: Project; onClose: () => 
 
   return (
     <WindowShell title={project.title} onClose={onClose}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16, marginBottom: 20 }}>
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 16, marginBottom: 20 }}>
         {imgError ? (
           <FallbackIcon title={project.title} color={project.color} />
         ) : (
           <img
             src={asset(project.icon)}
             alt=""
-            width={64} height={64}
-            style={{ borderRadius: 12, objectFit: 'cover', flexShrink: 0 }}
+            width={64}
+            height={64}
+            style={{ borderRadius: 12, objectFit: "cover", flexShrink: 0 }}
             onError={() => setImgError(true)}
           />
         )}
@@ -530,28 +651,48 @@ function ProjectWindow({ project, onClose }: { project: Project; onClose: () => 
       </div>
 
       <div style={{ fontSize: 14, lineHeight: 1.6, opacity: 0.7, marginBottom: 24 }}>
-        {typeof project.description === 'string'
-          ? project.description.split('\n\n').map((para, i) => (
-              <p key={i} style={{ margin: i === 0 ? 0 : '12px 0 0' }}>{para}</p>
+        {typeof project.description === "string"
+          ? project.description.split("\n\n").map((para, i) => (
+              <p key={i} style={{ margin: i === 0 ? 0 : "12px 0 0" }}>
+                {para}
+              </p>
             ))
           : project.description}
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: 8,
+          flexWrap: "wrap",
+        }}
+      >
         <a
           href={project.url}
           target="_blank"
           rel="noopener noreferrer"
           style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6,
-            background: 'rgba(74,158,255,0.15)',
-            border: '1px solid rgba(74,158,255,0.3)',
-            color: '#4a9eff', padding: '8px 16px', borderRadius: 8,
-            textDecoration: 'none', fontSize: 13, fontWeight: 500,
-            transition: 'background 0.2s',
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            background: "rgba(74,158,255,0.15)",
+            border: "1px solid rgba(74,158,255,0.3)",
+            color: "#4a9eff",
+            padding: "8px 16px",
+            borderRadius: 8,
+            textDecoration: "none",
+            fontSize: 13,
+            fontWeight: 500,
+            transition: "background 0.2s",
           }}
-          onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(74,158,255,0.25)'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(74,158,255,0.15)'; }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "rgba(74,158,255,0.25)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "rgba(74,158,255,0.15)";
+          }}
         >
           Visit Project →
         </a>
@@ -561,15 +702,25 @@ function ProjectWindow({ project, onClose }: { project: Project; onClose: () => 
             target="_blank"
             rel="noopener noreferrer"
             style={{
-              display: 'inline-flex', alignItems: 'center', gap: 6,
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.12)',
-              color: '#e0e0e8', padding: '8px 16px', borderRadius: 8,
-              textDecoration: 'none', fontSize: 13, fontWeight: 500,
-              transition: 'background 0.2s',
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              background: "rgba(255,255,255,0.06)",
+              border: "1px solid rgba(255,255,255,0.12)",
+              color: "#e0e0e8",
+              padding: "8px 16px",
+              borderRadius: 8,
+              textDecoration: "none",
+              fontSize: 13,
+              fontWeight: 500,
+              transition: "background 0.2s",
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.12)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "rgba(255,255,255,0.12)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "rgba(255,255,255,0.06)";
+            }}
           >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
               <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
@@ -588,15 +739,16 @@ function BookmarkWindow({ bookmark, onClose }: { bookmark: Bookmark; onClose: ()
 
   return (
     <WindowShell title={bookmark.title} onClose={onClose}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16, marginBottom: 20 }}>
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 16, marginBottom: 20 }}>
         {imgError ? (
           <FallbackIcon title={bookmark.title} color={bookmark.color} />
         ) : (
           <img
             src={asset(bookmark.icon)}
             alt=""
-            width={64} height={64}
-            style={{ borderRadius: 12, objectFit: 'cover', flexShrink: 0 }}
+            width={64}
+            height={64}
+            style={{ borderRadius: 12, objectFit: "cover", flexShrink: 0 }}
             onError={() => setImgError(true)}
           />
         )}
@@ -614,15 +766,25 @@ function BookmarkWindow({ bookmark, onClose }: { bookmark: Bookmark; onClose: ()
         target="_blank"
         rel="noopener noreferrer"
         style={{
-          display: 'inline-flex', alignItems: 'center', gap: 6,
-          background: 'rgba(74,158,255,0.15)',
-          border: '1px solid rgba(74,158,255,0.3)',
-          color: '#4a9eff', padding: '8px 16px', borderRadius: 8,
-          textDecoration: 'none', fontSize: 13, fontWeight: 500,
-          transition: 'background 0.2s',
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 6,
+          background: "rgba(74,158,255,0.15)",
+          border: "1px solid rgba(74,158,255,0.3)",
+          color: "#4a9eff",
+          padding: "8px 16px",
+          borderRadius: 8,
+          textDecoration: "none",
+          fontSize: 13,
+          fontWeight: 500,
+          transition: "background 0.2s",
         }}
-        onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(74,158,255,0.25)'; }}
-        onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(74,158,255,0.15)'; }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = "rgba(74,158,255,0.25)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = "rgba(74,158,255,0.15)";
+        }}
       >
         Check it out →
       </a>

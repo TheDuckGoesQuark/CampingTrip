@@ -1,8 +1,9 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import type { ScrapedPhoto } from '../types';
+import { motion } from "framer-motion";
+import { useState } from "react";
 
-const DARK_8 = '#1a1b1e';
+import type { ScrapedPhoto } from "../types";
+
+const DARK_8 = "#1a1b1e";
 
 /**
  * A single large photo in the review deck. No drag — desktop review is driven
@@ -16,12 +17,12 @@ export function PhotoCard({ photo, direction }: { photo: ScrapedPhoto; direction
       initial={{ opacity: 0, x: direction * 60, scale: 0.97 }}
       animate={{ opacity: 1, x: 0, scale: 1 }}
       exit={{ opacity: 0, x: direction * -60, scale: 0.97, transition: { duration: 0.15 } }}
-      transition={{ duration: 0.2, ease: 'easeOut' }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
       style={{
-        position: 'absolute',
+        position: "absolute",
         inset: 0,
         borderRadius: 12,
-        overflow: 'hidden',
+        overflow: "hidden",
         background: DARK_8,
       }}
     >
@@ -31,17 +32,17 @@ export function PhotoCard({ photo, direction }: { photo: ScrapedPhoto; direction
           alt={photo.ariaLabel}
           onError={() => setImgError(true)}
           draggable={false}
-          style={{ width: '100%', height: '100%', objectFit: 'contain', background: DARK_8 }}
+          style={{ width: "100%", height: "100%", objectFit: "contain", background: DARK_8 }}
         />
       ) : (
         <div
           style={{
-            width: '100%',
-            height: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#868e96',
+            width: "100%",
+            height: "100%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "#868e96",
             fontSize: 13,
           }}
         >
@@ -51,13 +52,13 @@ export function PhotoCard({ photo, direction }: { photo: ScrapedPhoto; direction
       {photo.ariaLabel && (
         <div
           style={{
-            position: 'absolute',
+            position: "absolute",
             bottom: 0,
             left: 0,
             right: 0,
-            padding: '28px 16px 12px',
-            background: 'linear-gradient(transparent, rgba(0,0,0,0.75))',
-            color: 'white',
+            padding: "28px 16px 12px",
+            background: "linear-gradient(transparent, rgba(0,0,0,0.75))",
+            color: "white",
             fontSize: 13,
             fontWeight: 500,
           }}

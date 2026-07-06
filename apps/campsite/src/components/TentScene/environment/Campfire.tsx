@@ -1,19 +1,20 @@
-import { useRef, useEffect } from 'react';
-import { useGLTF } from '@react-three/drei';
-import { useFrame } from '@react-three/fiber';
-import * as THREE from 'three';
-import { asset, DRACO_PATH } from '../../../utils/assetPath';
-import { isMobile } from '../../../utils/deviceDetect';
+import { useGLTF } from "@react-three/drei";
+import { useFrame } from "@react-three/fiber";
+import { useRef, useEffect } from "react";
+import * as THREE from "three";
+
+import { asset, DRACO_PATH } from "../../../utils/assetPath";
+import { isMobile } from "../../../utils/deviceDetect";
 
 // Credit: "Stylized Campfire" by Natalia Campos on Sketchfab (CC-BY)
 // https://sketchfab.com/3d-models/stylized-campfire-3b507b1eb4c142218a4b3baa043e3ed4
 
 const SCALE = 60.0;
 
-useGLTF.preload(asset('models/stylized_campfire.glb'), DRACO_PATH);
+useGLTF.preload(asset("models/stylized_campfire.glb"), DRACO_PATH);
 
 export default function Campfire() {
-  const { scene } = useGLTF(asset('models/stylized_campfire.glb'), DRACO_PATH);
+  const { scene } = useGLTF(asset("models/stylized_campfire.glb"), DRACO_PATH);
   const fireLight = useRef<THREE.PointLight>(null);
   const t = useRef(0);
 
@@ -30,9 +31,10 @@ export default function Campfire() {
   useFrame((_, delta) => {
     if (!fireLight.current) return;
     t.current += delta;
-    const flicker = Math.sin(t.current * 8) * 0.4
-      + Math.sin(t.current * 13) * 0.2
-      + Math.sin(t.current * 21) * 0.1;
+    const flicker =
+      Math.sin(t.current * 8) * 0.4 +
+      Math.sin(t.current * 13) * 0.2 +
+      Math.sin(t.current * 21) * 0.1;
     fireLight.current.intensity = 4.0 + flicker;
   });
 

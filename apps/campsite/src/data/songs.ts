@@ -6,18 +6,18 @@ export interface Song {
 
 export const songs: Song[] = [
   {
-    title: 'Late Night Drive',
-    artist: 'Jordan',
-    src: 'audio/songs/late-night-drive.mp3',
+    title: "Late Night Drive",
+    artist: "Jordan",
+    src: "audio/songs/late-night-drive.mp3",
   },
   {
-    title: 'Campfire Loop',
-    artist: 'Jordan',
-    src: 'audio/songs/campfire-loop.mp3',
+    title: "Campfire Loop",
+    artist: "Jordan",
+    src: "audio/songs/campfire-loop.mp3",
   },
   {
-    title: 'Morning Fog',
-    artist: 'Jordan',
-    src: 'audio/songs/morning-fog.mp3',
+    title: "Morning Fog",
+    artist: "Jordan",
+    src: "audio/songs/morning-fog.mp3",
   },
 ];

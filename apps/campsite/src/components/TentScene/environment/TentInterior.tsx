@@ -1,20 +1,20 @@
-import { useRef, useEffect } from 'react';
-import { useGLTF } from '@react-three/drei';
-import * as THREE from 'three';
-import { asset, DRACO_PATH } from '../../../utils/assetPath';
-import { applyMoireFix } from '../../../utils/materialFixes';
+import { useGLTF } from "@react-three/drei";
+import { useRef, useEffect } from "react";
+import * as THREE from "three";
+
+import { asset, DRACO_PATH } from "../../../utils/assetPath";
+import { applyMoireFix } from "../../../utils/materialFixes";
 
 const TENT_SCALE = 4;
 
-useGLTF.preload(asset('models/tent.glb'), DRACO_PATH);
+useGLTF.preload(asset("models/tent.glb"), DRACO_PATH);
 
 export default function TentInterior() {
-  const { scene } = useGLTF(asset('models/tent.glb'), DRACO_PATH);
+  const { scene } = useGLTF(asset("models/tent.glb"), DRACO_PATH);
   const groupRef = useRef<THREE.Group>(null);
 
   useEffect(() => {
     applyMoireFix(scene);
-
   }, [scene]);
 
   return (

@@ -4,7 +4,7 @@
  * for natural fluctuation (gusts of heavier rain, lulls, drip patterns).
  */
 
-import { getAudioContext } from './audioContext';
+import { getAudioContext } from "./audioContext";
 
 let masterGain: GainNode | null = null;
 let sources: AudioBufferSourceNode[] = [];
@@ -60,7 +60,7 @@ export function startRain(volume = 0.15) {
   sources.push(deepNoise);
 
   const deepLP = context.createBiquadFilter();
-  deepLP.type = 'lowpass';
+  deepLP.type = "lowpass";
   deepLP.frequency.value = 600;
   deepLP.Q.value = 0.7;
 
@@ -78,7 +78,7 @@ export function startRain(volume = 0.15) {
   sources.push(midNoise);
 
   const midBP = context.createBiquadFilter();
-  midBP.type = 'bandpass';
+  midBP.type = "bandpass";
   midBP.frequency.value = 2200;
   midBP.Q.value = 0.8;
 
@@ -96,7 +96,7 @@ export function startRain(volume = 0.15) {
   sources.push(highNoise);
 
   const highBP = context.createBiquadFilter();
-  highBP.type = 'bandpass';
+  highBP.type = "bandpass";
   highBP.frequency.value = 5500;
   highBP.Q.value = 0.5;
 
@@ -128,7 +128,7 @@ export function startRain(volume = 0.15) {
 
     // Low-pass filter for deep thud character
     const dripLP = context.createBiquadFilter();
-    dripLP.type = 'lowpass';
+    dripLP.type = "lowpass";
     dripLP.frequency.value = 250 + Math.random() * 350; // 250–600 Hz
     dripLP.Q.value = 2 + Math.random() * 4; // resonant thump
 
@@ -201,12 +201,21 @@ export function stopRain(fadeTime = 1.5) {
     dripInterval = null;
   }
 
-  setTimeout(() => {
-    sources.forEach((s) => { try { s.stop(); } catch (_) { /* */ } });
-    sources = [];
-    masterGain = null;
-    playing = false;
-  }, fadeTime * 1000 + 200);
+  setTimeout(
+    () => {
+      sources.forEach((s) => {
+        try {
+          s.stop();
+        } catch {
+          /* */
+        }
+      });
+      sources = [];
+      masterGain = null;
+      playing = false;
+    },
+    fadeTime * 1000 + 200,
+  );
 }
 
 export function isRainPlaying() {

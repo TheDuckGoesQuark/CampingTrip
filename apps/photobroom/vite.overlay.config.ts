@@ -1,6 +1,7 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import { resolve } from 'path';
+import { resolve } from "path";
+
+import react from "@vitejs/plugin-react";
+import { defineConfig } from "vite";
 
 /**
  * Builds the in-page overlay as a single IIFE content-script bundle
@@ -13,18 +14,18 @@ import { resolve } from 'path';
 export default defineConfig({
   plugins: [react()],
   define: {
-    'process.env.NODE_ENV': '"production"',
+    "process.env.NODE_ENV": '"production"',
   },
   // Don't copy the web app's public/ assets into the extension dir.
   publicDir: false,
   build: {
-    outDir: resolve(__dirname, '../../extensions/photobroom'),
+    outDir: resolve(__dirname, "../../extensions/photobroom"),
     emptyOutDir: false,
     lib: {
-      entry: resolve(__dirname, 'src/overlay/content.tsx'),
-      name: 'PhotoBroomOverlay',
-      formats: ['iife'],
-      fileName: () => 'overlay.js',
+      entry: resolve(__dirname, "src/overlay/content.tsx"),
+      name: "PhotoBroomOverlay",
+      formats: ["iife"],
+      fileName: () => "overlay.js",
     },
     rollupOptions: {
       output: { inlineDynamicImports: true },

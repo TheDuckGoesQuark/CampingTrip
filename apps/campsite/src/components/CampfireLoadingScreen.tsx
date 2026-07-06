@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
-import { useProgress } from '@react-three/drei';
-import { useSessionStore } from '../store/sessionStore';
-import { startCampfire, stopCampfire } from '../audio/campfireSynth';
-import { startRain } from '../audio/rainSynth';
+import { useProgress } from "@react-three/drei";
+import { useEffect, useRef, useState } from "react";
+
+import { startCampfire, stopCampfire } from "../audio/campfireSynth";
+import { startRain } from "../audio/rainSynth";
+import { useSessionStore } from "../store/sessionStore";
 
 // Fire grows with progress: embers → kindling → growing → full flame.
 // Every line is exactly 14 Braille chars; every frame is exactly 12 lines.
@@ -70,9 +71,7 @@ export default function CampfireLoadingScreen() {
       const target = progress;
       const prev = displayRef.current;
       // Advance at ~60%/s, or snap if within 1%
-      const next = Math.abs(target - prev) < 1
-        ? target
-        : prev + Math.min(target - prev, 60 * dt);
+      const next = Math.abs(target - prev) < 1 ? target : prev + Math.min(target - prev, 60 * dt);
       displayRef.current = next;
       setDisplayPct(Math.round(next));
       if (next < 100) raf = requestAnimationFrame(tick);
@@ -113,11 +112,11 @@ export default function CampfireLoadingScreen() {
         audioStarted.current = true;
       }
     };
-    window.addEventListener('touchstart', unlock, { once: true, passive: true });
-    window.addEventListener('click', unlock, { once: true });
+    window.addEventListener("touchstart", unlock, { once: true, passive: true });
+    window.addEventListener("click", unlock, { once: true });
     return () => {
-      window.removeEventListener('touchstart', unlock);
-      window.removeEventListener('click', unlock);
+      window.removeEventListener("touchstart", unlock);
+      window.removeEventListener("click", unlock);
     };
   }, [hasCompletedWelcome, soundEnabled]);
 
@@ -149,40 +148,47 @@ export default function CampfireLoadingScreen() {
 
   const barWidth = 20;
   const filled = Math.max(0, Math.min(barWidth, Math.round((displayPct / 100) * barWidth)));
-  const bar = '\u2591'.repeat(filled) + '\u00B7'.repeat(barWidth - filled);
+  const bar = "\u2591".repeat(filled) + "\u00B7".repeat(barWidth - filled);
 
   return (
     <div
       style={{
-        position: 'fixed',
+        position: "fixed",
         inset: 0,
-        background: '#0a0612',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
+        background: "#0a0612",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
         zIndex: 50,
-        fontFamily: 'Courier New, monospace',
-        color: '#9e8a6a',
-        userSelect: 'none',
+        fontFamily: "Courier New, monospace",
+        color: "#9e8a6a",
+        userSelect: "none",
         opacity: fadingOut ? 0 : 1,
-        transition: fadingOut ? 'opacity 1.6s ease-out' : 'none',
+        transition: fadingOut ? "opacity 1.6s ease-out" : "none",
       }}
     >
       <pre
         style={{
           margin: 0,
-          fontSize: 'clamp(0.75rem, 3.5vw, 1.2rem)',
+          fontSize: "clamp(0.75rem, 3.5vw, 1.2rem)",
           lineHeight: 1.0,
-          color: '#c4935a',
+          color: "#c4935a",
         }}
       >
         {fireArt}
       </pre>
 
-      <div style={{ marginTop: '2rem', fontSize: '0.8rem', letterSpacing: '0.12em', textAlign: 'center' }}>
+      <div
+        style={{
+          marginTop: "2rem",
+          fontSize: "0.8rem",
+          letterSpacing: "0.12em",
+          textAlign: "center",
+        }}
+      >
         <div style={{ opacity: 0.9 }}>setting up camp...</div>
-        <div style={{ marginTop: '0.6rem', opacity: 0.5 }}>
+        <div style={{ marginTop: "0.6rem", opacity: 0.5 }}>
           [{bar}] {displayPct}%
         </div>
       </div>

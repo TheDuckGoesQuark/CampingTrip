@@ -12,4 +12,4 @@ export interface ScrapedPhoto {
 }
 
 /** User's decision for a photo during the sweep. */
-export type Decision = 'keep' | 'trash' | 'skip';
+export type Decision = "keep" | "trash" | "skip";

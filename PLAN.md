@@ -1,23 +1,24 @@
 # Cosy Tent Personal Website — Implementation Plan (v2)
 
 ## Context
+
 A personal website built as a geocities-style art experiment. The main experience is a cosy tent interior built with React Three Fiber — real 3D with proper lighting, but the camera is controlled and locked to a "diorama" view (like looking into a shadow box), not a free-roaming 3D game. Mouse movement creates subtle parallax by nudging the camera position slightly. Warm lantern lighting is a core part of the feel. TypeScript + React. Supports desktop and mobile.
 
 ---
 
 ## Core Technical Decisions
 
-| Decision | Choice | Reason |
-|---|---|---|
-| 3D engine | React Three Fiber (R3F) | Real lighting, shadows, no CSS clip-path hacks |
-| Camera model | Locked perspective, narrow FOV (~45°) | Diorama/shadow-box feel without full orbit |
-| Parallax | Camera position nudge via `useFrame` lerp | No CSS vars, no Zustand — pure Three.js |
-| Animation | GSAP (free) + `useFrame` + Three.js AnimationMixer | One approach per concern, no library duplication |
-| Art assets | GLTF models (sourced free/CC0) | No SVG illustration work required |
-| State | Zustand for app state only (not per-frame data) | Clear separation; per-frame stays in Three.js |
-| Lighting | `PointLight` at lantern + `AmbientLight` | Real shadows, warm falloff, multiple sources later |
-| Audio | Howler.js + raw Web Audio API (AC sounds) | Howler for spatial/looping, Web Audio for typing |
-| UI overlays | HTML/React outside the Canvas | Welcome screen, laptop screen, tooltips |
+| Decision     | Choice                                             | Reason                                             |
+| ------------ | -------------------------------------------------- | -------------------------------------------------- |
+| 3D engine    | React Three Fiber (R3F)                            | Real lighting, shadows, no CSS clip-path hacks     |
+| Camera model | Locked perspective, narrow FOV (~45°)              | Diorama/shadow-box feel without full orbit         |
+| Parallax     | Camera position nudge via `useFrame` lerp          | No CSS vars, no Zustand — pure Three.js            |
+| Animation    | GSAP (free) + `useFrame` + Three.js AnimationMixer | One approach per concern, no library duplication   |
+| Art assets   | GLTF models (sourced free/CC0)                     | No SVG illustration work required                  |
+| State        | Zustand for app state only (not per-frame data)    | Clear separation; per-frame stays in Three.js      |
+| Lighting     | `PointLight` at lantern + `AmbientLight`           | Real shadows, warm falloff, multiple sources later |
+| Audio        | Howler.js + raw Web Audio API (AC sounds)          | Howler for spatial/looping, Web Audio for typing   |
+| UI overlays  | HTML/React outside the Canvas                      | Welcome screen, laptop screen, tooltips            |
 
 ---
 
@@ -159,17 +160,17 @@ Mouse movement shifts the camera slightly left/right/up/down — the "looking ar
 ```typescript
 // CameraController.tsx
 const mouseRef = useRef({ x: 0, y: 0 });
-const basePos    = new THREE.Vector3(0, 0.8, 2.5);
+const basePos = new THREE.Vector3(0, 0.8, 2.5);
 const baseTarget = new THREE.Vector3(0, 0.5, -2.5);
 const lookAtTarget = useRef(baseTarget.clone());
 
 useEffect(() => {
   const onMove = (e: MouseEvent) => {
-    mouseRef.current.x = (e.clientX / window.innerWidth  - 0.5);
-    mouseRef.current.y = (e.clientY / window.innerHeight - 0.5);
+    mouseRef.current.x = e.clientX / window.innerWidth - 0.5;
+    mouseRef.current.y = e.clientY / window.innerHeight - 0.5;
   };
-  window.addEventListener('mousemove', onMove);
-  return () => window.removeEventListener('mousemove', onMove);
+  window.addEventListener("mousemove", onMove);
+  return () => window.removeEventListener("mousemove", onMove);
 }, []);
 
 useFrame(({ camera }) => {
@@ -180,7 +181,11 @@ useFrame(({ camera }) => {
   camera.position.y = THREE.MathUtils.lerp(camera.position.y, targetY, 0.04);
 
   // lookAt also shifts to pan the view slightly
-  lookAtTarget.current.x = THREE.MathUtils.lerp(lookAtTarget.current.x, mouseRef.current.x * 0.5, 0.04);
+  lookAtTarget.current.x = THREE.MathUtils.lerp(
+    lookAtTarget.current.x,
+    mouseRef.current.x * 0.5,
+    0.04,
+  );
   camera.lookAt(lookAtTarget.current);
 });
 ```
@@ -193,11 +198,11 @@ Clicking an object pivots and glides the camera to look at it closely, then back
 
 ```typescript
 const presets = {
-  default:  { pos: [0, 0.8, 2.5],    target: [0, 0.5, -2.5] },  // looking toward door
-  lantern:  { pos: [0, 1.8, 1.5],    target: [0, 2.2,  0.5] },  // look up at lantern
-  laptop:   { pos: [-1.2, 0.6, 1.5], target: [-1.5, 0.3, 0.5] },
-  door:     { pos: [0, 0.9, 1.0],    target: [0, 0.8, -3.0] },   // lean toward door
-  guitar:   { pos: [1.5, 0.8, 0.5],  target: [2.0, 0.5, -1.5] },
+  default: { pos: [0, 0.8, 2.5], target: [0, 0.5, -2.5] }, // looking toward door
+  lantern: { pos: [0, 1.8, 1.5], target: [0, 2.2, 0.5] }, // look up at lantern
+  laptop: { pos: [-1.2, 0.6, 1.5], target: [-1.5, 0.3, 0.5] },
+  door: { pos: [0, 0.9, 1.0], target: [0, 0.8, -3.0] }, // lean toward door
+  guitar: { pos: [1.5, 0.8, 0.5], target: [2.0, 0.5, -1.5] },
 };
 ```
 
@@ -223,6 +228,7 @@ transitionToScene: (scene: SceneName, entryPoint?: THREE.Vector3) => void;
 ```
 
 Possible world structure:
+
 ```
 [Tent interior] → [Forest clearing with campfire → music]
                 → [Forest path → deeper woods]
@@ -274,33 +280,45 @@ All mesh components set `castShadow` and `receiveShadow`. The tent floor and wal
 
 ```typescript
 // sceneStore.ts
-type TentDoorState = 'closed' | 'opening' | 'open' | 'closing';
-type CatLocation  = 'sleeping' | 'awake-inside' | 'outside' | 'scratching';
-type LaptopState  = 'in-bag' | 'pulled-out' | 'open' | 'closing';
+type TentDoorState = "closed" | "opening" | "open" | "closing";
+type CatLocation = "sleeping" | "awake-inside" | "outside" | "scratching";
+type LaptopState = "in-bag" | "pulled-out" | "open" | "closing";
 
 interface SceneState {
   tentDoorState: TentDoorState;
-  catLocation:   CatLocation;
-  lanternOn:     boolean;
-  laptopState:   LaptopState;
+  catLocation: CatLocation;
+  lanternOn: boolean;
+  laptopState: LaptopState;
   // Actions
   setTentDoorState: (s: TentDoorState) => void;
-  setCatLocation:   (l: CatLocation) => void;
-  toggleLantern:    () => void;
-  setLaptopState:   (s: LaptopState) => void;
+  setCatLocation: (l: CatLocation) => void;
+  toggleLantern: () => void;
+  setLaptopState: (s: LaptopState) => void;
 }
 ```
 
 **Audio side effects — not in components:**
+
 ```typescript
 // audioManager.ts — called once at App init
-sceneStore.subscribe(s => s.tentDoorState, state => {
-  if (state === 'opening') { howler.door.play('rustle'); howler.rain.fade(0.3, 0.9, 800); }
-  if (state === 'closed')  { howler.rain.fade(0.9, 0.3, 600); }
-});
-sceneStore.subscribe(s => s.lanternOn, on => {
-  howler.lantern.play(on ? 'click-on' : 'click-off');
-});
+sceneStore.subscribe(
+  (s) => s.tentDoorState,
+  (state) => {
+    if (state === "opening") {
+      howler.door.play("rustle");
+      howler.rain.fade(0.3, 0.9, 800);
+    }
+    if (state === "closed") {
+      howler.rain.fade(0.9, 0.3, 600);
+    }
+  },
+);
+sceneStore.subscribe(
+  (s) => s.lanternOn,
+  (on) => {
+    howler.lantern.play(on ? "click-on" : "click-off");
+  },
+);
 ```
 
 ---
@@ -309,36 +327,38 @@ sceneStore.subscribe(s => s.lanternOn, on => {
 
 ### Clear division of responsibility
 
-| Animation | Tool | Why |
-|---|---|---|
-| Cat breathing, tail sway | `useFrame` in Cat.tsx | Continuous, per-frame, no need for library |
-| Cat blink | `useFrame` + random timer ref | Same |
-| GLTF skeletal animation (cat walk, idle) | `THREE.AnimationMixer` | Native to the GLTF format |
-| Cat wander path | `THREE.CatmullRomCurve3` + `useFrame` | Native Three.js, no paid plugin needed |
-| Wake-up intro timeline | GSAP | Multi-step sequence with precise timing |
-| Tent door 3D fold | GSAP | `rotateY` on door mesh ref |
-| Laptop pull-out + open | GSAP | Position + rotation timeline with callbacks |
-| Camera focus transitions | GSAP | Smooth position + lookAt interpolation |
-| Lantern intensity change | Direct Three.js ref | `lightRef.current.intensity = value` in handler |
+| Animation                                | Tool                                  | Why                                             |
+| ---------------------------------------- | ------------------------------------- | ----------------------------------------------- |
+| Cat breathing, tail sway                 | `useFrame` in Cat.tsx                 | Continuous, per-frame, no need for library      |
+| Cat blink                                | `useFrame` + random timer ref         | Same                                            |
+| GLTF skeletal animation (cat walk, idle) | `THREE.AnimationMixer`                | Native to the GLTF format                       |
+| Cat wander path                          | `THREE.CatmullRomCurve3` + `useFrame` | Native Three.js, no paid plugin needed          |
+| Wake-up intro timeline                   | GSAP                                  | Multi-step sequence with precise timing         |
+| Tent door 3D fold                        | GSAP                                  | `rotateY` on door mesh ref                      |
+| Laptop pull-out + open                   | GSAP                                  | Position + rotation timeline with callbacks     |
+| Camera focus transitions                 | GSAP                                  | Smooth position + lookAt interpolation          |
+| Lantern intensity change                 | Direct Three.js ref                   | `lightRef.current.intensity = value` in handler |
 
 GSAP is the only animation library. It works on Three.js object refs directly:
+
 ```typescript
-gsap.to(doorMeshRef.current.rotation, { y: -Math.PI * 0.85, duration: 0.8, ease: 'power2.out' });
+gsap.to(doorMeshRef.current.rotation, { y: -Math.PI * 0.85, duration: 0.8, ease: "power2.out" });
 ```
 
 ### Cat wander path — no paid plugin
+
 ```typescript
 // catPaths.ts
 export const wanderPath = new THREE.CatmullRomCurve3([
-  new THREE.Vector3(-1.5, 0, 0.5),   // sleeping bag
+  new THREE.Vector3(-1.5, 0, 0.5), // sleeping bag
   new THREE.Vector3(-0.5, 0, -0.5),
-  new THREE.Vector3(0.5, 0, -1.0),   // tent door
+  new THREE.Vector3(0.5, 0, -1.0), // tent door
 ]);
 
 // In Cat.tsx useFrame:
 const t = useRef(0);
 useFrame((_, delta) => {
-  if (catLocation !== 'outside') return;
+  if (catLocation !== "outside") return;
   t.current = Math.min(t.current + delta * 0.3, 1);
   const point = wanderPath.getPoint(t.current);
   catGroupRef.current.position.lerp(point, 0.1);
@@ -358,23 +378,27 @@ export function createWakeUpTimeline(refs: { overlay: HTMLElement; camera: THREE
 
   // Start: lying in sleeping bag — camera near floor, tilted upward looking at ceiling
   tl.set(refs.camera.position, { x: 0, y: 0.15, z: 2.5 })
-    .set(refs.overlay, { opacity: 1, background: '#000' })
+    .set(refs.overlay, { opacity: 1, background: "#000" })
 
-  // Eyes open — blink sequence (like waking slowly)
-    .to(refs.overlay, { opacity: 0.3, duration: 0.4, ease: 'power1.out' }, 0.5)
-    .to(refs.overlay, { opacity: 0.9, duration: 0.1 }, 0.95)   // blink closed again
-    .to(refs.overlay, { opacity: 0.0, duration: 0.6, ease: 'power2.out' }, 1.1)  // open properly
+    // Eyes open — blink sequence (like waking slowly)
+    .to(refs.overlay, { opacity: 0.3, duration: 0.4, ease: "power1.out" }, 0.5)
+    .to(refs.overlay, { opacity: 0.9, duration: 0.1 }, 0.95) // blink closed again
+    .to(refs.overlay, { opacity: 0.0, duration: 0.6, ease: "power2.out" }, 1.1) // open properly
 
-  // Sit up — camera rises and tilts forward to look toward the door
-    .to(refs.camera.position, {
-      y: 0.8,        // sitting-up height
-      duration: 1.8,
-      ease: 'power2.out'
-    }, 0.9)
+    // Sit up — camera rises and tilts forward to look toward the door
+    .to(
+      refs.camera.position,
+      {
+        y: 0.8, // sitting-up height
+        duration: 1.8,
+        ease: "power2.out",
+      },
+      0.9,
+    )
 
     // Slight sway as you settle
-    .to(refs.camera.position, { y: 0.75, duration: 0.3, ease: 'power1.inOut' }, 2.7)
-    .to(refs.camera.position, { y: 0.8,  duration: 0.4, ease: 'power1.inOut' }, 3.0);
+    .to(refs.camera.position, { y: 0.75, duration: 0.3, ease: "power1.inOut" }, 2.7)
+    .to(refs.camera.position, { y: 0.8, duration: 0.4, ease: "power1.inOut" }, 3.0);
 
   return tl;
 }
@@ -391,12 +415,12 @@ In 3D, this is simple: the door is a mesh with a pivot at its top edge. GSAP rot
 const doorPivotRef = useRef<THREE.Group>(null);
 
 function openDoor() {
-  sceneStore.setTentDoorState('opening');
+  sceneStore.setTentDoorState("opening");
   gsap.to(doorPivotRef.current!.rotation, {
-    x: -Math.PI * 0.9,   // fold up toward tent ceiling
+    x: -Math.PI * 0.9, // fold up toward tent ceiling
     duration: 0.8,
-    ease: 'power2.out',
-    onComplete: () => sceneStore.setTentDoorState('open')
+    ease: "power2.out",
+    onComplete: () => sceneStore.setTentDoorState("open"),
   });
 }
 ```
@@ -429,18 +453,19 @@ For canvas texture on walls: source a fabric/canvas texture from Poly Haven (CC0
 
 ## Asset Sources
 
-| Asset | Source | License | URL |
-|---|---|---|---|
-| **Animated cat** | Quaternius Animal Pack Vol.2 (via OpenGameArt) | CC0 | opengameart.org/content/animated-animales-low-poly |
-| **Guitar** | Sketchfab — search "low poly guitar" | CC-BY or CC0 | sketchfab.com/tags/low-poly-guitar |
-| **Lantern** | Sketchfab — "LowPoly Lantern" by USBEN | Check per-model | sketchfab.com |
-| **Sleeping bag** | Sketchfab — "Camping sleeping bag" by Fochdog | Check per-model | sketchfab.com |
-| **Laptop** | Kenney Furniture Kit or Sketchfab | CC0 | kenney.nl/assets/furniture-kit |
-| **Trees / outdoor** | Sketchfab "Low Poly Camping And Forest Pack" | Check per-model | sketchfab.com |
-| **Canvas texture** | Poly Haven | CC0 | polyhaven.com |
-| **Furniture / props** | Kenney.nl packs | CC0 | kenney.nl/assets |
+| Asset                 | Source                                         | License         | URL                                                |
+| --------------------- | ---------------------------------------------- | --------------- | -------------------------------------------------- |
+| **Animated cat**      | Quaternius Animal Pack Vol.2 (via OpenGameArt) | CC0             | opengameart.org/content/animated-animales-low-poly |
+| **Guitar**            | Sketchfab — search "low poly guitar"           | CC-BY or CC0    | sketchfab.com/tags/low-poly-guitar                 |
+| **Lantern**           | Sketchfab — "LowPoly Lantern" by USBEN         | Check per-model | sketchfab.com                                      |
+| **Sleeping bag**      | Sketchfab — "Camping sleeping bag" by Fochdog  | Check per-model | sketchfab.com                                      |
+| **Laptop**            | Kenney Furniture Kit or Sketchfab              | CC0             | kenney.nl/assets/furniture-kit                     |
+| **Trees / outdoor**   | Sketchfab "Low Poly Camping And Forest Pack"   | Check per-model | sketchfab.com                                      |
+| **Canvas texture**    | Poly Haven                                     | CC0             | polyhaven.com                                      |
+| **Furniture / props** | Kenney.nl packs                                | CC0             | kenney.nl/assets                                   |
 
 **Asset workflow:**
+
 1. Download as GLTF/GLB (or convert FBX → GLB via Blender's free export)
 2. Optimise with `gltf-transform` CLI (free, reduces file size dramatically)
 3. Place in `public/models/`
@@ -464,11 +489,12 @@ App.tsx
 On choice: store preferences → fade to black (CSS transition) → `hasCompletedWelcome = true` → `App.tsx` renders `<TentScene />` → GSAP wake-up timeline plays.
 
 ### Animal Crossing typing sounds
+
 ```typescript
 // useTypingSound.ts — raw Web Audio API only
-const notes = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25]; // C pentatonic
+const notes = [261.63, 293.66, 329.63, 392.0, 440.0, 523.25]; // C pentatonic
 const osc = ctx.createOscillator();
-osc.type = 'triangle';
+osc.type = "triangle";
 osc.frequency.value = notes[Math.floor(Math.random() * notes.length)];
 // 50ms burst, exponential gain envelope
 ```

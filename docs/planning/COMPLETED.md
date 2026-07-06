@@ -19,12 +19,14 @@ Rebuilt PhotoBroom into a single in-page **overlay** on `photos.google.com` with
 - Added PhotoBroom to the campsite projects list.
 
 **Key decisions**:
+
 - **In-page overlay, not iframe or two tabs.** Embedding Google Photos in an iframe is blocked by frame-ancestors headers and would log out under third-party-cookie partitioning; an overlay is first-party on the page, so login, native thumbnails, and same-origin DOM access all just work.
 - **Drive Google's own multi-select** rather than per-photo navigation — one confirmation, much faster, stays on the results page.
 - **Centralised selectors + contract tests** so a Google DOM change is a single-spot fix, caught early.
 - **Not for the Chrome Web Store** — automating Google's UI breaches their ToS; it's a personal, load-unpacked tool. "Move to bin" is reversible for 60 days, keeping the blast radius small.
 
 **Deferred**:
+
 - Report which photos failed to bin (e.g. shared/partner items) instead of skipping silently.
 - Surface the `inspectPage()` health check in the UI as a "layout may have changed" warning.
 - Shrink/code-split the ~290KB overlay bundle.
@@ -64,13 +66,16 @@ Rebuilt PhotoBroom into a single in-page **overlay** on `photos.google.com` with
 **What was done**:
 
 Infrastructure:
+
 - Added `photobroom.jordanscamp.site` subdomain: Route53 A record, Caddyfile site block, EC2 templatefile vars + CORS origins, user_data.sh (mkdir, S3 deploy, Caddyfile template)
 
 Backend:
+
 - Created `backend/apps/photobroom/` Django app (empty models, serializers, views, URLs, admin, migrations)
 - Registered in `INSTALLED_APPS` and wired URLs at `/api/photobroom/`
 
 Frontend:
+
 - Created `apps/photobroom/` — React + Vite + TypeScript + Mantine (dark theme, orange accent)
 - RTK Query setup with codegen config (filtering `/api/photobroom/` + `/api/auth/`)
 - Redux store with auth slice + redux-persist (IndexedDB)
@@ -78,13 +83,16 @@ Frontend:
 - Root workspace scripts: dev/build/test:photobroom
 
 CI/CD:
+
 - Added `build-photobroom` job in deploy.yml (parallel frontend build)
 - Wired artifact download, S3 upload, and SSM extract in deploy job
 
 Claude Code:
+
 - Created `.claude/skills/new-site.md` — reusable skill documenting the full multi-site scaffold process (infra, backend, frontend, CI/CD, API codegen pattern)
 
 **Key decisions**:
+
 - Followed workout app pattern for API-backed setup (RTK Query + codegen + auth slice + IDB persist)
 - Followed digitaltwins pattern for app shell (Mantine AppShell + simple header + BrowserRouter)
 - No offline middleware yet (can be added when needed, unlike workout which needed it from day one)
@@ -92,6 +100,7 @@ Claude Code:
 - Skill file created first, then used as the guide for scaffolding
 
 **Deferred**:
+
 - Domain models, serializers, views (no features yet — just the skeleton)
 - Photo upload/storage implementation
 - OpenAPI schema generation (no endpoints to document yet)
@@ -105,10 +114,12 @@ Claude Code:
 **What was done**:
 
 Frontend — Guided Workout (`GuidedWorkout.tsx`):
+
 - **Progress bar**: workout-spanning progress indicator at top of guided flow showing percentage complete, current exercise label, and "Next: {exercise}" preview. Tracks warm-ups done + sets completed across all exercises.
 - **Postpone button**: "Postpone — someone's using this" button on exercise screen. Swaps current exercise with the next one in the queue (not move-to-end). Only shown when there's a next exercise available. Resets set index on swap.
 
 Frontend — Dashboard (`Dashboard.tsx`):
+
 - Replaced boring stat cards with two progress charts using `@mantine/charts` (Recharts wrapper)
 - **Session Volume bar chart**: orange bars showing total weight moved per session (reps x kg)
 - **Weight Progression line chart**: multi-series line chart with per-exercise color coding, exercise selector dropdown, monotone curves
@@ -116,23 +127,27 @@ Frontend — Dashboard (`Dashboard.tsx`):
 - Fallback message when no chart data yet
 
 Backend — Dashboard charts endpoint (`views.py`):
+
 - Added `GET /api/workout/dashboard/charts/` action on `DashboardView`
-- `volume_per_session`: sum of (reps * weight) for completed working sets per session
+- `volume_per_session`: sum of (reps \* weight) for completed working sets per session
 - `weight_per_exercise`: max working weight per exercise per completed session
 - OpenAPI schema regenerated, RTK Query hooks regenerated (`useWorkoutDashboardChartsRetrieveQuery`)
 
 Infrastructure:
+
 - Added `@mantine/charts` and `recharts@2` dependencies
 - Imported `@mantine/charts/styles.css` in `main.tsx`
 - Fixed stale RTK Query cache bug: removed `baseApi.reducerPath` from redux-persist whitelist (API cache was persisted in IndexedDB, causing new endpoints to get stuck in pending state)
 
 **Key decisions**:
+
 - Postpone swaps with next exercise (not move-to-end) — simpler, predictable behavior per user preference
 - Charts use `@mantine/charts` (Mantine's Recharts wrapper) for consistency with design system
 - API cache no longer persisted in IndexedDB — it refetches on mount anyway, and stale persisted state was causing new query endpoints to break
 - Volume chart uses bar chart (good for comparing days), weight progression uses line chart (good for seeing trends/plateaus)
 
 **Deferred**:
+
 - Dashboard date range filtering → Phase 4
 - Better handling of multiple sessions on the same date → Phase 4
 
@@ -145,6 +160,7 @@ Infrastructure:
 **What was done**:
 
 Backend:
+
 - Added `MuscleGroup` model (9 groups: lats, biceps, chest, triceps, shoulders, forearms, core, legs, general)
 - Added `WarmUpExercise` model with M2M to `MuscleGroup` and `duration_seconds` field
 - Added `muscle_groups` M2M field to `Exercise` model
@@ -157,6 +173,7 @@ Backend:
 - Updated `copy_defaults_to_user()` to copy muscle group assignments
 
 Frontend:
+
 - **Audio module** (`audio/audioContext.ts`, `audio/sounds.ts`) — Web Audio API singleton with 4 sound functions: `playCountdownBeep` (880Hz), `playGoSound` (880→1320Hz ascending), `playTimerWarning` (660Hz gentle), `playCompleteSound` (two-tone chime)
 - **Timer hook** (`hooks/useTimer.ts`) — countdown timer with audio integration, plays warning beep in last 5 seconds, returns `{ remaining, isActive, progress, start, pause, skip }`
 - **GuidedWorkout page** (`pages/GuidedWorkout.tsx`) — full-screen overlay at `/workout/:id/guided` with state machine via `useReducer`:
@@ -170,6 +187,7 @@ Frontend:
 - Both modes available: guided interactive mode for live workouts, log mode for editing data after the fact
 
 **Key decisions**:
+
 - Muscle groups modelled as separate model (not enum) for extensibility
 - Warm-up selection uses annotation/ordering rather than manual scoring — leverages Django ORM for efficient coverage-based ranking
 - Guided workout uses `useReducer` for phase transitions + `useState` for exercise/set indices — reducer handles phase logic, local state handles mutable exercise data
@@ -177,6 +195,7 @@ Frontend:
 - GuidedWorkout is a fixed-position overlay (zIndex 1000) that covers the AppShell, rather than a separate route layout
 
 **Deferred**:
+
 - Exercise demo videos/images in guided workout screens → Phase 4
 - Warm-up duration customisation per user → Future
 
@@ -189,6 +208,7 @@ Frontend:
 **What was done**:
 
 Backend:
+
 - Added `warmup_sets_count` and `warmup_start_pct` fields to `LadderNode` — configures how many warm-up sets before working sets and the starting weight percentage
 - Added `working_weight` (DecimalField) to `UserNodeProgress` — tracks the user's current working weight for weighted exercises
 - Added `is_warmup_set` (BooleanField) to `ExerciseSet` — distinguishes warm-up sets from working sets
@@ -204,16 +224,19 @@ Backend:
 - Seed data: weighted exercises (Weighted Pull-ups, Weighted Chin-ups, Weighted Dips, Weighted Rows) get 2-3 warm-up sets; bodyweight exercises get 0
 
 Frontend:
+
 - GuidedWorkout: warm-up sets show "Warm-up Set N" badge (gray) instead of working set counter; type selector hidden for warm-up sets; `is_warmup_set` propagated in all save/complete payloads
 - Ladder detail page: added NumberInput for "Working wt" (kg) on each node card, saves on blur via create/patch UserNodeProgress
 
 **Key decisions**:
+
 - Warm-up set configuration lives on LadderNode (not a separate model) — simple, per-exercise control
 - Exponential weight curve (not linear) gives more time at lighter weights, matching standard gym warm-up practice
 - Working weight is set during onboarding on ladder detail page, then auto-updated from max logged weight after session completion
 - Session update serializer matches exercises by (exercise_id, order) composite key to preserve server-generated read-only fields
 
 **Deferred**:
+
 - Full onboarding flow for initial working weight → Future
 - Warm-up set reps curve customisation → Future
 
@@ -226,6 +249,7 @@ Frontend:
 **What was done**:
 
 Simulation engine (`simulation.ts`):
+
 - Pure headless tick-based simulation: 1 tick = 1 minute, 1440 ticks/day
 - Task generation with per-queue configurable distributions (size 1-180min, priority 1-5) using Box-Muller transform
 - Selector algorithms: round-robin and priority-based
@@ -238,6 +262,7 @@ Simulation engine (`simulation.ts`):
 - `resampleQueues()` with z-score rescaling: proportionally adjusts task properties when distributions change, preserving relative positions
 
 React visual layer:
+
 - `SimulatorPanel.tsx` — full pipeline visualization: queues → allocation bar → selector → executor → done area
 - `TaskChip` — sized by duration (44-120px), star ratings for priority, progress fill (left-to-right color fill as work completes)
 - `ExecutorDisplay` — 4 states: working (chip filling up), context switching (orange warmup), interrupted (red countdown), idle
@@ -249,6 +274,7 @@ React visual layer:
 - 7 preset configurations: Balanced day, Open office chaos, Deep work, Structured time-boxing, Fire-fighting day, One big project, Slow & steady
 
 MetricsPanel — 6 canvas charts with axes, gridlines, legends:
+
 - Queue depth per project
 - Backlog vs completed (combined)
 - Throughput rate (rolling 30-min average, tasks/hr)
@@ -257,6 +283,7 @@ MetricsPanel — 6 canvas charts with axes, gridlines, legends:
 - Oldest task age per queue
 
 **Key decisions**:
+
 - Pure JS simulation engine with no React dependency — can run headless for batch experiments
 - Z-score rescaling instead of random resampling: changing a distribution slider proportionally rescales existing tasks rather than re-rolling random values
 - Progress stored on SimTask (not just ExecutorSlot) so preempted tasks show partial fill in queues
@@ -266,6 +293,7 @@ MetricsPanel — 6 canvas charts with axes, gridlines, legends:
 - Metrics panel scrollable independently with minHeight per chart
 
 **Deferred**:
+
 - Scroll-driven animation engine for storytelling (Phase 1 in plan file)
 - Wait time and per-project throughput breakdown charts
 - Scrollytelling narrative content
@@ -277,6 +305,7 @@ MetricsPanel — 6 canvas charts with axes, gridlines, legends:
 **Date**: 2026-03-18
 
 **What was done**:
+
 - Created `apps/digitaltwins/` as a new frontend-only app (Vite + React + Mantine + Framer Motion)
 - Set up app shell with BrowserRouter, Mantine dark theme, minimal header
 - Built scrollytelling framework: `useScrollyProgress` hook (Intersection Observer), `ScrollySection`, `ScrollyLayout` components
@@ -287,12 +316,14 @@ MetricsPanel — 6 canvas charts with axes, gridlines, legends:
 - Updated README with Digital Twins in the apps table
 
 **Key decisions**:
+
 - No external scrollytelling library — custom ~30-line hook using Intersection Observer with rootMargin midpoint trigger
 - No PWA, Redux, or backend API — frontend-only, simpler than workout app
 - Framer Motion for queue animations (to be built)
 - Scrollytelling layout: sticky viz fills viewport, narrative sections scroll over with semi-transparent dark cards
 
 **Deferred**:
+
 - Simulation engine (algorithms, task generator, playback) — to be built hands-on
 - Narrative content and wording — to be crafted manually
 - Interactive controls and metrics panel
@@ -304,6 +335,7 @@ MetricsPanel — 6 canvas charts with axes, gridlines, legends:
 **Date**: 2026-03-16
 
 **What was done**:
+
 - Designed and implemented 11 Django models: WorkoutUser, Exercise, Ladder, LadderNode, Criterion, UserNodeProgress, WeeklyPlan, PlanSlot, WorkoutSession, SessionExercise, ExerciseSet
 - Created DRF serializers with nested creates (sessions include exercises + sets, plans include slots)
 - Created DRF viewsets for all models + Dashboard aggregate view
@@ -317,6 +349,7 @@ MetricsPanel — 6 canvas charts with axes, gridlines, legends:
 - Created `docs/planning/design-decisions.md` documenting architecture choices
 
 **Key decisions** (see `docs/planning/design-decisions.md` for full rationale):
+
 - React PWA over React Native
 - Mantine + Storybook over Tailwind
 - Redux/RTKQ + codegen over Zustand
@@ -327,6 +360,7 @@ MetricsPanel — 6 canvas charts with axes, gridlines, legends:
 - No denormalization — compute from session logs
 
 **Deferred**:
+
 - Equipment/muscle group tracking on exercises → Backlog
 - Strava integration → Backlog
 - Default ladder seeding from Notion → Phase 3
@@ -342,6 +376,7 @@ MetricsPanel — 6 canvas charts with axes, gridlines, legends:
 **What was done**:
 
 Backend:
+
 - Added `POST /api/workout/sessions/generate/` — generates a workout session from the user's active weekly plan for a given date
 - `resolve_ladder_exercise()` picks the current exercise from a ladder based on user progress (first unachieved node, or highest if all achieved)
 - Enhanced Dashboard endpoint with `today_session` and `today_plan_exercises` fields
@@ -349,6 +384,7 @@ Backend:
 - 5 new tests: generate session from plan, from ladder with progression, no plan, no exercises today, dashboard today plan
 
 Frontend:
+
 - **Weekly Plan editor** — full CRUD: create/edit plans with per-day exercise slots. Supports both direct exercise and ladder assignments. Full-screen modal editor with searchable dropdowns.
 - **Dashboard** — shows today's planned exercises (from active weekly plan), quick-start workout button, generates session from plan or continues existing one. Stats grid (total sessions, completed, ladders, achievements).
 - **Active Workout UI** — set-by-set logging with typed data inputs (reps+weight, reps only, duration, distance). Rest timer with countdown ring. Per-exercise progress bars. Save/Finish controls. Auto-copies last set values when adding new sets.
@@ -359,6 +395,7 @@ Frontend:
 - Bottom nav active state now matches prefix routes (e.g. `/workout/123` highlights Workout tab).
 
 **Key decisions**:
+
 - Session generation is a POST action on the sessions viewset, not a separate endpoint
 - Offline queue uses a separate IndexedDB store from redux-persist to avoid coupling
 - Rest timer is per-set (starts automatically after logging a set), with skip option
@@ -366,6 +403,7 @@ Frontend:
 - Dashboard response is cast from the codegen array type since inline_serializer produces a ViewSet list action
 
 **Deferred**:
+
 - Batch sync endpoint (`POST /api/workout/sync/`) → Phase 2 remaining
 - Rest timer sounds/vibration → Phase 2 remaining
 - End-to-end offline workflow testing → Phase 2 remaining
@@ -379,6 +417,7 @@ Frontend:
 **What was done**:
 
 Backend:
+
 - Created `progression.py` — criterion evaluation engine that checks session logs against ladder node criteria
   - `evaluate_criterion()` dispatches to type-specific checkers: `_check_min_reps_sets`, `_check_min_weight`, `_check_sustained_sessions`, `_check_min_duration`
   - `check_node_progress()` evaluates all criteria on a node, returns achievement status
@@ -389,6 +428,7 @@ Backend:
 - 12 new tests: criterion evaluation (min_reps_sets met/not met, min_weight, sustained_sessions met/not met, min_duration, node progress all met, update_user_progress marks achieved, incomplete session ignored), API tests (check-progress endpoint, ladder progress endpoint, complete session evaluates progression)
 
 Frontend:
+
 - **Ladder list page** — CRUD for ladders with create modal, delete button, click-to-detail navigation. Shows node count badges.
 - **Ladder detail page** — tech tree visualization using @xyflow/react with:
   - Custom `LadderTreeNode` component: green (achieved), orange/pulsing (current level), grey (locked)
@@ -402,12 +442,14 @@ Frontend:
 - Regenerated OpenAPI schema and RTKQ hooks with all new endpoints
 
 **Key decisions**:
+
 - Progression evaluation only counts sets from completed sessions (in_progress sessions are ignored)
 - The `complete` endpoint both marks the session completed AND evaluates progression in one call, avoiding race conditions
 - Tech tree uses implicit level-based edges when no explicit prerequisites are set, giving a sensible default visualization
 - Criteria forms are type-specific: each criterion type has its own parameter inputs matching the JSON schema
 
 **Deferred**:
+
 - Advancement notifications (toast/badge when achieved) → Phase 4
 
 ---
@@ -419,6 +461,7 @@ Frontend:
 **What was done**:
 
 Backend:
+
 - Created `seed_default_ladders` management command that seeds all ladder/exercise/plan data from Jordan's Notion
   - 5 ladders: Pull (7 nodes), Chin-up (4 nodes), Push (7 nodes), Row (3 nodes), Carry (5 nodes)
   - 4 standalone exercises: Running, Yoga, Swimming, Parkrun 5k
@@ -433,6 +476,7 @@ Backend:
 - 9 new tests (40 total): seed creates correct counts, weekly plan, idempotency, clear+reseed, linear prerequisites, copy to user, independence check, no-seed noop, signal integration
 
 **Key decisions**:
+
 - Seed data owned by a dedicated inactive user (`_workout_defaults`), not tied to any real account
 - Copy happens in the existing `post_save` signal — no separate signal needed
 - Carry ladder uses `min_duration` criterion (target is time-based: 4x30m, 4x20m) while all others use `min_reps_sets`

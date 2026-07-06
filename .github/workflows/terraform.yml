@@ -4,13 +4,13 @@ on:
   push:
     branches: [main]
     paths:
-      - 'infra/**'
-      - '.github/workflows/terraform.yml'
+      - "infra/**"
+      - ".github/workflows/terraform.yml"
   pull_request:
     branches: [main]
     paths:
-      - 'infra/**'
-      - '.github/workflows/terraform.yml'
+      - "infra/**"
+      - ".github/workflows/terraform.yml"
 
 env:
   AWS_REGION: eu-west-2

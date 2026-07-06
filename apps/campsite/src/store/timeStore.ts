@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import * as THREE from 'three';
+import * as THREE from "three";
+import { create } from "zustand";
 
 /**
  * Centralised time-of-day state.
@@ -42,8 +42,8 @@ export function getTimeOfDay(progress: number) {
   const minutes = Math.floor((totalHours - hours) * 60);
   const isDaytime = hours >= 6 && hours < 18;
   const h12 = hours % 12 || 12;
-  const ampm = hours < 12 ? 'am' : 'pm';
-  const timeStr = `${h12}:${String(minutes).padStart(2, '0')} ${ampm}`;
+  const ampm = hours < 12 ? "am" : "pm";
+  const timeStr = `${h12}:${String(minutes).padStart(2, "0")} ${ampm}`;
   return { hours, minutes, isDaytime, timeStr, h12, ampm };
 }
 

@@ -1,5 +1,5 @@
-import { vi, afterEach } from 'vitest';
-import '@testing-library/jest-dom/vitest';
+import { vi, afterEach } from "vitest";
+import "@testing-library/jest-dom/vitest";
 
 // ─── Mock Web Audio API ──────────────────────────────────────────
 class MockGainNode {
@@ -15,7 +15,7 @@ class MockGainNode {
 }
 
 class MockOscillator {
-  type = 'sine';
+  type = "sine";
   frequency = {
     value: 440,
     setValueAtTime: vi.fn().mockReturnThis(),
@@ -30,7 +30,7 @@ class MockOscillator {
 }
 
 class MockBiquadFilter {
-  type = 'lowpass';
+  type = "lowpass";
   frequency = {
     value: 350,
     setValueAtTime: vi.fn().mockReturnThis(),
@@ -60,7 +60,7 @@ class MockAudioBufferSource {
 }
 
 class MockAudioContext {
-  state = 'running' as AudioContextState;
+  state = "running" as AudioContextState;
   currentTime = 0;
   destination = { maxChannelCount: 2 };
   sampleRate = 44100;
@@ -99,7 +99,7 @@ const mockWebGLContext = {
   getExtension: vi.fn(() => ({})),
   getParameter: vi.fn((param: number) => {
     const defaults: Record<number, unknown> = {
-      0x1f02: 'Mock WebGL',
+      0x1f02: "Mock WebGL",
       0x8b4c: 16,
       0x0d33: 4096,
       0x851c: 16,
@@ -140,10 +140,10 @@ const mockWebGLContext = {
   depthFunc: vi.fn(),
   drawArrays: vi.fn(),
   drawElements: vi.fn(),
-  getShaderInfoLog: vi.fn(() => ''),
-  getProgramInfoLog: vi.fn(() => ''),
-  getActiveAttrib: vi.fn(() => ({ name: '', size: 1, type: 0 })),
-  getActiveUniform: vi.fn(() => ({ name: '', size: 1, type: 0 })),
+  getShaderInfoLog: vi.fn(() => ""),
+  getProgramInfoLog: vi.fn(() => ""),
+  getActiveAttrib: vi.fn(() => ({ name: "", size: 1, type: 0 })),
+  getActiveUniform: vi.fn(() => ({ name: "", size: 1, type: 0 })),
   getAttribLocation: vi.fn(() => 0),
   getUniformLocation: vi.fn(() => ({})),
   uniform1f: vi.fn(),
@@ -180,14 +180,14 @@ HTMLCanvasElement.prototype.getContext = vi.fn(function (
   contextType: string,
   ...args: unknown[]
 ) {
-  if (contextType === 'webgl' || contextType === 'webgl2') {
+  if (contextType === "webgl" || contextType === "webgl2") {
     return mockWebGLContext as unknown as RenderingContext;
   }
   return originalGetContext.call(this, contextType, ...args);
 }) as typeof HTMLCanvasElement.prototype.getContext;
 
 // ─── Mock matchMedia ─────────────────────────────────────────────
-Object.defineProperty(window, 'matchMedia', {
+Object.defineProperty(window, "matchMedia", {
   writable: true,
   value: vi.fn().mockImplementation((query: string) => ({
     matches: false,
