@@ -77,6 +77,9 @@ export default function NotepadOverlay() {
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Notepad — journal entries"
       style={{
         position: "fixed",
         inset: 0,

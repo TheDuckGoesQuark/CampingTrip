@@ -104,33 +104,36 @@ export default function CameraController() {
       gsap.killTweensOf(baseTarget.current);
       gsap.killTweensOf(paralaxMul);
 
+      // Honour prefers-reduced-motion: snap instead of animating.
+      const rm = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 1;
+
       if (focus === "default") {
         gsap.to(basePos.current, {
           x: preset.pos.x,
           y: preset.pos.y,
           z: preset.pos.z,
-          duration: 0.8,
+          duration: 0.8 * rm,
           ease: "power2.inOut",
         });
         gsap.to(baseTarget.current, {
           x: preset.target.x,
           y: preset.target.y,
           z: preset.target.z,
-          duration: 0.8,
+          duration: 0.8 * rm,
           ease: "power2.inOut",
         });
-        gsap.to(paralaxMul, { current: 1, duration: 0.6, ease: "power2.in" });
+        gsap.to(paralaxMul, { current: 1, duration: 0.6 * rm, ease: "power2.in" });
       } else {
         // Mobile: fully zero out parallax so focus preset camera angles work correctly
         const targetMul = isMobile ? 0 : 0.15;
-        gsap.to(paralaxMul, { current: targetMul, duration: 0.4, ease: "power2.out" });
+        gsap.to(paralaxMul, { current: targetMul, duration: 0.4 * rm, ease: "power2.out" });
 
         // Mobile: smoothly center the accumulated angle so the focus view faces forward
         if (isMobile) {
           gsap.to(angleRef.current, {
             x: 0,
             y: 0,
-            duration: 0.8,
+            duration: 0.8 * rm,
             ease: "power2.inOut",
           });
         }
@@ -139,14 +142,14 @@ export default function CameraController() {
           x: preset.pos.x,
           y: preset.pos.y,
           z: preset.pos.z,
-          duration: 1.0,
+          duration: 1.0 * rm,
           ease: "power2.inOut",
         });
         gsap.to(baseTarget.current, {
           x: preset.target.x,
           y: preset.target.y,
           z: preset.target.z,
-          duration: 1.0,
+          duration: 1.0 * rm,
           ease: "power2.inOut",
         });
       }

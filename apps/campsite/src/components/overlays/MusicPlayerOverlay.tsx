@@ -55,6 +55,9 @@ export default function MusicPlayerOverlay() {
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Music player"
       style={{
         position: "fixed",
         inset: 0,
