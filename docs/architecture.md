@@ -2,20 +2,18 @@
 
 ## Overview
 
-Jordan's Camp is a monorepo hosting multiple web apps under the `jordanscamp.site` domain. Each frontend app is a separate Vite project in `apps/`. They are currently **static SPAs** — there is no backend or database. All three are served as static files by Caddy on a single EC2 instance.
+Jordan's Camp is a monorepo hosting web apps under the `jordanscamp.site` domain. Each frontend app is a separate Vite project in `apps/`. They are currently **static SPAs** — there is no backend or database. All are served as static files by Caddy on a single EC2 instance.
 
 ```
 Browser
   |
   |-- jordanscamp.site               --> Campsite (static SPA)
-  |-- digitaltwins.jordanscamp.site  --> Digital Twins (static SPA)
   |-- photobroom.jordanscamp.site    --> PhotoBroom landing page (static SPA)
   |
   v
 Caddy (static file server + auto TLS)
   |
   |-- static files from /opt/jordanscamp/webapp/        (campsite)
-  |-- static files from /opt/jordanscamp/digitaltwins/  (digital twins)
   |-- static files from /opt/jordanscamp/photobroom/    (photobroom landing page)
 ```
 
@@ -37,8 +35,7 @@ into `extensions/photobroom/overlay.js`.
 ```
 /
 ├── apps/
-│   ├── campsite/           # 3D camping scene homepage
-│   ├── digitaltwins/       # Scrollytelling blog with interactive visualizations
+│   ├── campsite/           # 3D camping scene homepage (+ /home blog via the laptop)
 │   └── photobroom/         # PhotoBroom landing page + source of the extension overlay
 ├── extensions/
 │   └── photobroom/         # Chrome extension (manifest + built overlay.js)
@@ -70,11 +67,11 @@ into `extensions/photobroom/overlay.js`.
 
 All infrastructure is managed by Terraform in `infra/`.
 
-| Service | Purpose |
-|---------|---------|
+| Service                    | Purpose                                                                                                       |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------- |
 | **EC2** (t4g.micro, ARM64) | Runs Caddy serving the static frontends. Docker + Compose are installed but idle, ready for a future backend. |
-| **S3** | Deploy artifacts (frontend tarballs), Terraform state |
-| **Route53** | DNS for jordanscamp.site and subdomains |
+| **S3**                     | Deploy artifacts (frontend tarballs), Terraform state                                                         |
+| **Route53**                | DNS for jordanscamp.site and subdomains                                                                       |
 
 The EC2 instance can be started/stopped via GitHub Actions (`infra-control.yml`) for cost management.
 
@@ -89,10 +86,12 @@ Push to main
 ```
 
 **Deploy flow**:
+
 1. Frontend apps are built into tarballs and uploaded to S3
 2. SSM sends commands to the EC2 instance to extract the frontend bundles and the Caddyfile, then restart Caddy
 
 **PR flow**:
+
 1. CI runs typecheck, tests, and build for all apps
 2. Terraform plans are posted as PR comments (infra changes only)
 

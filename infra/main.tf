@@ -21,7 +21,6 @@ provider "aws" {
 }
 
 locals {
-  name_prefix         = "jordanscamp-${var.environment}"
-  digitaltwins_domain = "digitaltwins.${var.domain_name}"
-  photobroom_domain   = "photobroom.${var.domain_name}"
+  name_prefix       = "jordanscamp-${var.environment}"
+  photobroom_domain = "photobroom.${var.domain_name}"
 }
