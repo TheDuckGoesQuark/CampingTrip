@@ -1,23 +1,27 @@
-import { MantineProvider, type MantineColorScheme } from "@mantine/core";
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 
-import { theme } from "./theme";
+export type ColorScheme = "light" | "dark";
 
 export interface BrandProviderProps {
   children: ReactNode;
   /** Colour scheme. Defaults to light (the green + ivory brand). */
-  defaultColorScheme?: MantineColorScheme;
+  colorScheme?: ColorScheme;
 }
 
 /**
- * Wraps the app in the brand theme. The brand's green + ivory palette is exposed
- * as static `--brand-*` tokens (see tokens/brand.css) for the few surfaces that
- * want them; everything else uses Mantine component props.
+ * Applies the brand: a `.jc-brand` wrapper (brand font + base ink) and the
+ * colour scheme. The scheme is written as `data-theme` on <html> — not just the
+ * wrapper — so Base UI dialogs, which portal to <body> outside this subtree,
+ * still re-theme through the token cascade. Tokens themselves come from
+ * `@jordanscamp/ds/tokens.css`, which the app imports once.
  */
-export function BrandProvider({ children, defaultColorScheme = "light" }: BrandProviderProps) {
-  return (
-    <MantineProvider theme={theme} defaultColorScheme={defaultColorScheme}>
-      <div className="jc-brand">{children}</div>
-    </MantineProvider>
-  );
+export function BrandProvider({ children, colorScheme = "light" }: BrandProviderProps) {
+  useEffect(() => {
+    const root = document.documentElement;
+    if (colorScheme === "dark") root.setAttribute("data-theme", "dark");
+    else root.removeAttribute("data-theme");
+    return () => root.removeAttribute("data-theme");
+  }, [colorScheme]);
+
+  return <div className="jc-brand">{children}</div>;
 }

@@ -1,0 +1,73 @@
+.base {
+  font-family: var(--font-sans);
+  margin: 0;
+}
+
+/* Variants (size / line-height / weight) */
+.title-1 {
+  font-size: var(--text-title-1-size);
+  line-height: var(--text-title-1-lh);
+  font-weight: var(--weight-heading);
+}
+.title-2 {
+  font-size: var(--text-title-2-size);
+  line-height: var(--text-title-2-lh);
+  font-weight: var(--weight-heading);
+}
+.title-3 {
+  font-size: var(--text-title-3-size);
+  line-height: var(--text-title-3-lh);
+  font-weight: var(--weight-heading);
+}
+.title-4 {
+  font-size: var(--text-title-4-size);
+  line-height: var(--text-title-4-lh);
+  font-weight: var(--weight-bold);
+}
+.body-lg {
+  font-size: var(--text-body-lg-size);
+  line-height: var(--text-body-lg-lh);
+  font-weight: var(--weight-regular);
+}
+.body {
+  font-size: var(--text-body-md-size);
+  line-height: var(--text-body-md-lh);
+  font-weight: var(--weight-regular);
+}
+.body-sm {
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-lh);
+  font-weight: var(--weight-regular);
+}
+.label {
+  font-size: var(--text-label-size);
+  line-height: var(--text-label-lh);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--text-label-tracking);
+  text-transform: uppercase;
+}
+
+/* Tone (colour) */
+.tone-default {
+  color: var(--brand-text);
+}
+.tone-muted {
+  color: var(--brand-text-muted);
+}
+.tone-on-brand {
+  color: var(--brand-text-on-brand);
+}
+.tone-link {
+  color: var(--brand-link);
+}
+
+/* Alignment */
+.align-start {
+  text-align: start;
+}
+.align-center {
+  text-align: center;
+}
+.align-end {
+  text-align: end;
+}

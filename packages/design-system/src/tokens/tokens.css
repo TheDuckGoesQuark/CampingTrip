@@ -1,0 +1,27 @@
+/*
+ * @jordanscamp/ds token entry — import once in the consuming app:
+ *
+ *   import "@jordanscamp/ds/tokens.css";
+ *
+ * Loads the brand font and the token layers in order: primitives (raw ramps)
+ * back semantic (themed light/dark), then dimensions, typography, shadows.
+ */
+
+/* Brand font */
+@import "@fontsource/nunito/400.css";
+@import "@fontsource/nunito/600.css";
+@import "@fontsource/nunito/700.css";
+@import "@fontsource/nunito/800.css";
+
+/* Token layers (order matters: primitives back semantic) */
+@import "./primitives.css";
+@import "./semantic.css";
+@import "./dimensions.css";
+@import "./typography.css";
+@import "./shadow.css";
+
+/* Brand base — applied by <BrandProvider>'s wrapper. */
+.jc-brand {
+  font-family: var(--font-sans);
+  color: var(--brand-text);
+}

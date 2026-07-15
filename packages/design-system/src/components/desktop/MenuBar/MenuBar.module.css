@@ -1,0 +1,29 @@
+.bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 28px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: var(--space-l);
+  padding: 0 var(--space-m);
+  font-size: var(--text-body-sm-size);
+  color: var(--brand-text);
+  background: color-mix(in oklab, var(--brand-surface), transparent 12%);
+  border-bottom: 1px solid var(--brand-border-subtle);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-l);
+}
+
+.right {
+  margin-left: auto;
+  opacity: 0.7;
+}

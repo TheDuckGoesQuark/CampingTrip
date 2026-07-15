@@ -1,0 +1,49 @@
+/*
+ * Primitive colour ramps — the raw palette. These back the semantic tokens in
+ * semantic.css and are NOT consumed directly by components (bind to semantic
+ * tokens instead). Hand-maintained; the brand is five colours: granite #3f4b3b,
+ * hunter-green #44633f, sea-green #5a9367, mint-leaf #5cab7d, ivory #f5f9e9.
+ */
+
+:root {
+  /* Sage — brand primary ramp (0 lightest → 9 darkest); 6 = sea-green. */
+  --sage-0: #eef4ea;
+  --sage-1: #dde9d4;
+  --sage-2: #bdd4b0;
+  --sage-3: #99bd88;
+  --sage-4: #7aab68;
+  --sage-5: #659a54;
+  --sage-6: #5a9367;
+  --sage-7: #4c7d57;
+  --sage-8: #446340;
+  --sage-9: #38492f;
+
+  /* Amber — warm accent ramp. */
+  --amber-0: #fff6e8;
+  --amber-1: #ffe9cc;
+  --amber-2: #ffd49b;
+  --amber-3: #ffbe66;
+  --amber-4: #ffac3c;
+  --amber-5: #ffa11f;
+  --amber-6: #f2913a;
+  --amber-7: #d1770f;
+  --amber-8: #a95f06;
+  --amber-9: #7f4700;
+
+  /* Neutral — greenish-grey ink ramp. */
+  --neutral-0: #f7f8f5;
+  --neutral-1: #e9ede5;
+  --neutral-2: #d3dacb;
+  --neutral-3: #b3bdaa;
+  --neutral-4: #8b9880;
+  --neutral-5: #6b7a60;
+  --neutral-6: #5f7356;
+  --neutral-7: #465138;
+  --neutral-8: #2b3327;
+  --neutral-9: #1a2118;
+
+  /* Base */
+  --paper: #ffffff;
+  --ivory: #f5f9e9;
+  --ink: #2b3327;
+}

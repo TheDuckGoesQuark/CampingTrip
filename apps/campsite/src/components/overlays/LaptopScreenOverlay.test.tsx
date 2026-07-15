@@ -1,8 +1,8 @@
 import { BrandProvider } from "@jordanscamp/ds";
-import { render, screen, act } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { MemoryRouter } from "react-router-dom";
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import { useSceneStore } from "../../store/sceneStore";
 import LaptopScreenOverlay from "./LaptopScreenOverlay";
@@ -27,74 +27,44 @@ vi.mock("../../audio/soundEffects", () => ({
 
 describe("LaptopScreenOverlay (CatOS)", () => {
   beforeEach(() => {
-    vi.useFakeTimers();
-    useSceneStore.setState({ laptopFocused: false });
+    useSceneStore.setState({ laptopFocused: false, activePostSlug: null });
   });
 
-  afterEach(() => {
-    vi.useRealTimers();
-  });
-
-  it("renders nothing when laptop is not focused", () => {
+  it("renders no dialog when the laptop is not focused", () => {
     renderOverlay();
     expect(screen.queryByRole("dialog")).toBeNull();
   });
 
-  it("mounts CatOS desktop when laptop becomes focused", () => {
+  it("mounts the CatOS takeover dialog when focused", () => {
     useSceneStore.setState({ laptopFocused: true });
     renderOverlay();
+    expect(screen.getByRole("dialog", { name: /CatOS/ })).toBeInTheDocument();
+  });
 
+  it("shows the menu bar branding", () => {
+    useSceneStore.setState({ laptopFocused: true });
+    renderOverlay();
     expect(screen.getByText("CatOS")).toBeInTheDocument();
+    // "Finder" appears in the menu bar and the dock tooltip — both are fine.
+    expect(screen.getAllByText("Finder").length).toBeGreaterThan(0);
   });
 
-  it("fades in after 650ms delay", () => {
+  it("shows the back-to-tent button with an Esc hint", () => {
     useSceneStore.setState({ laptopFocused: true });
     renderOverlay();
-
-    const overlay = screen.getByRole("dialog");
-    expect(overlay.style.opacity).toBe("0");
-
-    act(() => {
-      vi.advanceTimersByTime(650);
-    });
-
-    expect(overlay.style.opacity).toBe("1");
-  });
-
-  it("shows menu bar with CatOS branding", () => {
-    useSceneStore.setState({ laptopFocused: true });
-    renderOverlay();
-
-    expect(screen.getByText("CatOS")).toBeInTheDocument();
-    expect(screen.getByText("Finder", { exact: true })).toBeInTheDocument();
-  });
-
-  it("shows back to tent button", () => {
-    useSceneStore.setState({ laptopFocused: true });
-    renderOverlay();
-
     expect(screen.getByText(/Back to tent/)).toBeInTheDocument();
-  });
-
-  it("shows Esc hint on back button", () => {
-    useSceneStore.setState({ laptopFocused: true });
-    renderOverlay();
-
     expect(screen.getByText("Esc")).toBeInTheDocument();
   });
 
   it("renders project desktop icons", () => {
     useSceneStore.setState({ laptopFocused: true });
     renderOverlay();
-
-    // Projects from data/projects.ts
     expect(screen.getByText("Camping Trip")).toBeInTheDocument();
   });
 
-  it("renders dock with standard icons", () => {
+  it("renders the dock with standard icons", () => {
     useSceneStore.setState({ laptopFocused: true });
     renderOverlay();
-
     expect(screen.getByTitle("Finder")).toBeInTheDocument();
     expect(screen.getByTitle("Terminal")).toBeInTheDocument();
     expect(screen.getByTitle("Notes")).toBeInTheDocument();

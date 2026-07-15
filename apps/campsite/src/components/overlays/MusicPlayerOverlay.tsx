@@ -1,3 +1,4 @@
+import { Modal } from "@jordanscamp/ds";
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -14,66 +15,27 @@ import { useMusicStore } from "../../store/musicStore";
 export default function MusicPlayerOverlay() {
   const navigate = useNavigate();
   const isOpen = useMusicStore((s) => s.isOpen);
-  const [mounted, setMounted] = useState(false);
-  const [opacity, setOpacity] = useState(0);
   const [view, setView] = useState<"list" | "playing">("list");
 
+  // Reset to the song list whenever the player closes.
   useEffect(() => {
-    if (isOpen) {
-      setMounted(true);
-      requestAnimationFrame(() => setOpacity(1));
-    } else {
-      setOpacity(0);
-      const timer = setTimeout(() => {
-        setMounted(false);
-        setView("list");
-      }, 300);
-      return () => clearTimeout(timer);
-    }
+    if (!isOpen) setView("list");
   }, [isOpen]);
 
-  // Escape to close
-  useEffect(() => {
-    if (!mounted) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        e.stopPropagation();
-        if (view === "playing") {
-          setView("list");
-          playSoftClick();
-        } else {
-          // Closing the player is a navigation; Landing's closeOverlays() stops audio.
-          navigate(routes.tent);
-        }
-      }
-    };
-    window.addEventListener("keydown", onKey, true);
-    return () => window.removeEventListener("keydown", onKey, true);
-  }, [mounted, view, navigate]);
-
-  if (!mounted) return null;
+  // Base UI dismiss (Escape / backdrop): from the now-playing view, step back to
+  // the list; otherwise close the player (navigation; Landing stops the audio).
+  const onOpenChange = (open: boolean) => {
+    if (open) return;
+    if (view === "playing") {
+      setView("list");
+      playSoftClick();
+    } else {
+      navigate(routes.tent);
+    }
+  };
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-label="Music player"
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 95,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        background: "rgba(0,0,0,0.4)",
-        opacity,
-        transition: "opacity 0.3s ease",
-        pointerEvents: opacity > 0 ? "auto" : "none",
-      }}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) navigate(routes.tent);
-      }}
-    >
+    <Modal variant="bare" open={isOpen} onOpenChange={onOpenChange} ariaLabel="Music player">
       {/* iPod body */}
       <div
         style={{
@@ -169,7 +131,7 @@ export default function MusicPlayerOverlay() {
           to { transform: scale(1) translateY(0); opacity: 1; }
         }
       `}</style>
-    </div>
+    </Modal>
   );
 }
 

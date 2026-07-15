@@ -1,17 +1,14 @@
 import {
-  Anchor,
   Badge,
-  Box,
   Button,
   DesktopIcon,
   Dock,
   DockDivider,
   DockItem,
-  Group,
+  Link,
   MenuBar,
-  Stack,
+  Modal,
   Text,
-  Title,
   Window,
 } from "@jordanscamp/ds";
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
@@ -40,18 +37,16 @@ function resolveOpenItem(slug: string | null): OpenItem | null {
 }
 
 /**
- * CatOS — the laptop's operating system overlay. Composes the DS faux-desktop
+ * CatOS — the laptop's blog, a full-screen Base UI takeover (so it traps focus,
+ * returns focus on close, and handles Escape). Composes the DS faux-desktop
  * chrome (MenuBar, DesktopIcon, Dock, Window) with the campsite's own content.
- * Items added since the visitor's last session get a "New" badge.
- * Press Escape to close window → desktop → tent.
+ * Open state is URL-driven (`laptopFocused`); Escape/close navigate.
  */
 export default function LaptopScreenOverlay() {
   const navigate = useNavigate();
   const laptopFocused = useSceneStore((s) => s.laptopFocused);
   const activePostSlug = useSceneStore((s) => s.activePostSlug);
   const lastVisitedAt = useSessionStore((s) => s.lastVisitedAt);
-  const [mounted, setMounted] = useState(false);
-  const [opacity, setOpacity] = useState(0);
   const [clock, setClock] = useState("");
   const prevFocused = useRef(false);
 
@@ -60,20 +55,7 @@ export default function LaptopScreenOverlay() {
   const openItem = useMemo(() => resolveOpenItem(activePostSlug), [activePostSlug]);
   const closeWindow = useCallback(() => navigate(routes.blog()), [navigate]);
 
-  // Mount/unmount with fade
-  useEffect(() => {
-    if (laptopFocused) {
-      setMounted(true);
-      const timer = setTimeout(() => setOpacity(1), 650);
-      return () => clearTimeout(timer);
-    } else {
-      setOpacity(0);
-      const timer = setTimeout(() => setMounted(false), 400);
-      return () => clearTimeout(timer);
-    }
-  }, [laptopFocused]);
-
-  // Update lastVisitedAt when leaving CatOS
+  // Update lastVisitedAt when leaving CatOS.
   useEffect(() => {
     if (prevFocused.current && !laptopFocused) {
       useSessionStore.getState().updateLastVisited();
@@ -81,32 +63,26 @@ export default function LaptopScreenOverlay() {
     prevFocused.current = laptopFocused;
   }, [laptopFocused]);
 
-  // Live clock
+  // Live clock while open.
   useEffect(() => {
-    if (!mounted) return;
-    const update = () => {
-      const now = new Date();
-      setClock(now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
-    };
+    if (!laptopFocused) return;
+    const update = () =>
+      setClock(new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
     update();
     const id = setInterval(update, 10_000);
     return () => clearInterval(id);
-  }, [mounted]);
+  }, [laptopFocused]);
 
-  // Escape handling: close window first, then exit CatOS
-  useEffect(() => {
-    if (!mounted) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        e.stopPropagation();
-        playSoftClick();
-        // Close the open post first, then leave CatOS entirely.
-        navigate(openItem ? routes.blog() : routes.tent);
-      }
-    };
-    window.addEventListener("keydown", onKey, true);
-    return () => window.removeEventListener("keydown", onKey, true);
-  }, [mounted, openItem, navigate]);
+  // Base UI reports close intent (Escape). Close the open post first, else the
+  // whole takeover — mirrors the layered Escape behaviour, no manual keydown.
+  const onOpenChange = useCallback(
+    (open: boolean) => {
+      if (open) return;
+      playSoftClick();
+      navigate(openItem ? routes.blog() : routes.tent);
+    },
+    [openItem, navigate],
+  );
 
   const handleProjectClick = useCallback(
     (project: Project) => {
@@ -124,130 +100,116 @@ export default function LaptopScreenOverlay() {
     [navigate],
   );
 
-  if (!mounted) return null;
-
   const hasBookmarks = bookmarks.length > 0;
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-label="CatOS — the laptop blog"
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 100,
-        opacity,
-        transition: "opacity 0.4s ease",
-        color: "var(--brand-text)",
-        userSelect: "none",
-      }}
+    <Modal
+      variant="takeover"
+      open={laptopFocused}
+      onOpenChange={onOpenChange}
+      ariaLabel="CatOS — the laptop blog"
     >
-      {/* Wallpaper — soft green → ivory */}
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          background: "linear-gradient(180deg, var(--brand-bg), var(--brand-surface))",
-        }}
-      />
+      <div style={{ position: "absolute", inset: 0, userSelect: "none" }}>
+        {/* Wallpaper — soft green → ivory */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: "linear-gradient(180deg, var(--brand-bg), var(--brand-surface))",
+          }}
+        />
 
-      <MenuBar
-        left={
-          <>
-            <Group gap={6}>
-              <Text span>🐱</Text>
-              <Text span fw={700} size="sm">
-                CatOS
-              </Text>
-            </Group>
-            <Text size="sm" c="dimmed">
-              Finder
-            </Text>
-          </>
-        }
-        right={
-          <Text size="sm" c="dimmed">
-            {clock}
-          </Text>
-        }
-      />
+        <MenuBar
+          left={
+            <>
+              <span style={{ display: "flex", gap: 6 }}>
+                <span>🐱</span>
+                <span style={{ fontWeight: 700 }}>CatOS</span>
+              </span>
+              <span style={{ opacity: 0.7 }}>Finder</span>
+            </>
+          }
+          right={<span style={{ opacity: 0.7 }}>{clock}</span>}
+        />
 
-      {/* Desktop — scrollable sections */}
-      <div
-        style={{
-          position: "absolute",
-          top: 36,
-          left: 0,
-          right: 0,
-          bottom: 72,
-          overflowY: "auto",
-          padding: "24px 32px",
-        }}
-      >
-        <SectionHeader label="My Projects" />
-        <Group justify="center" gap={24} mb={hasBookmarks ? 32 : 0}>
-          {projects.map((p) => (
-            <DesktopIcon
-              key={p.title}
-              label={p.title}
-              icon={asset(p.icon)}
-              color={p.color}
-              isNew={isNewSince(p.addedAt, p.updatedAt, lastVisitedAt)}
-              onClick={() => handleProjectClick(p)}
-            />
-          ))}
-        </Group>
+        {/* Desktop — scrollable sections */}
+        <div
+          style={{
+            position: "absolute",
+            top: 36,
+            left: 0,
+            right: 0,
+            bottom: 72,
+            overflowY: "auto",
+            padding: "24px 32px",
+          }}
+        >
+          <SectionHeader label="My Projects" />
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              justifyContent: "center",
+              gap: 24,
+              marginBottom: hasBookmarks ? 32 : 0,
+            }}
+          >
+            {projects.map((p) => (
+              <DesktopIcon
+                key={p.title}
+                label={p.title}
+                icon={asset(p.icon)}
+                color={p.color}
+                isNew={isNewSince(p.addedAt, p.updatedAt, lastVisitedAt)}
+                onClick={() => handleProjectClick(p)}
+              />
+            ))}
+          </div>
 
-        {hasBookmarks && (
-          <>
-            <SectionHeader label="Bookmarks" />
-            <Group justify="center" gap={24}>
-              {bookmarks.map((b) => (
-                <DesktopIcon
-                  key={b.title}
-                  label={b.title}
-                  icon={asset(b.icon)}
-                  color={b.color}
-                  isNew={isNewSince(b.addedAt, undefined, lastVisitedAt)}
-                  onClick={() => handleBookmarkClick(b)}
-                />
-              ))}
-            </Group>
-          </>
+          {hasBookmarks && (
+            <>
+              <SectionHeader label="Bookmarks" />
+              <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 24 }}>
+                {bookmarks.map((b) => (
+                  <DesktopIcon
+                    key={b.title}
+                    label={b.title}
+                    icon={asset(b.icon)}
+                    color={b.color}
+                    isNew={isNewSince(b.addedAt, undefined, lastVisitedAt)}
+                    onClick={() => handleBookmarkClick(b)}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+
+        <Dock>
+          <DockItem label="Finder">📁</DockItem>
+          <DockItem label="Terminal">🖥️</DockItem>
+          <DockItem label="Notes">📝</DockItem>
+          <DockDivider />
+          <DockItem label="Trash">🗑️</DockItem>
+        </Dock>
+
+        {openItem?.kind === "project" && (
+          <ProjectWindow project={openItem.data} onClose={closeWindow} />
+        )}
+        {openItem?.kind === "bookmark" && (
+          <BookmarkWindow bookmark={openItem.data} onClose={closeWindow} />
+        )}
+
+        {!openItem && (
+          <div style={{ position: "absolute", bottom: 84, right: 20, zIndex: 5 }}>
+            <Button variant="ghost" size="sm" onClick={() => navigate(routes.tent)}>
+              Back to tent
+              <span style={{ opacity: 0.5, marginLeft: 6 }}>Esc</span>
+            </Button>
+          </div>
         )}
       </div>
-
-      <Dock>
-        <DockItem label="Finder">📁</DockItem>
-        <DockItem label="Terminal">🖥️</DockItem>
-        <DockItem label="Notes">📝</DockItem>
-        <DockDivider />
-        <DockItem label="Trash">🗑️</DockItem>
-      </Dock>
-
-      {openItem?.kind === "project" && (
-        <ProjectWindow project={openItem.data} onClose={closeWindow} />
-      )}
-      {openItem?.kind === "bookmark" && (
-        <BookmarkWindow bookmark={openItem.data} onClose={closeWindow} />
-      )}
-
-      {!openItem && (
-        <Button
-          variant="subtle"
-          color="gray"
-          size="xs"
-          onClick={() => navigate(routes.tent)}
-          style={{ position: "absolute", bottom: 84, right: 20, zIndex: 5 }}
-        >
-          Back to tent
-          <Text span opacity={0.5} ml={6}>
-            Esc
-          </Text>
-        </Button>
-      )}
-    </div>
+    </Modal>
   );
 }
 
@@ -269,17 +231,11 @@ function isNewSince(
 
 function SectionHeader({ label }: { label: string }) {
   return (
-    <Text
-      ta="center"
-      tt="uppercase"
-      fw={600}
-      size="sm"
-      c="dimmed"
-      mb="md"
-      style={{ letterSpacing: 1.2 }}
-    >
-      {label}
-    </Text>
+    <div style={{ marginBottom: 16 }}>
+      <Text variant="label" tone="muted" align="center">
+        {label}
+      </Text>
+    </div>
   );
 }
 
@@ -293,46 +249,38 @@ function ProjectWindow({ project, onClose }: { project: Project; onClose: () => 
 
   return (
     <Window title={project.title} onClose={onClose}>
-      <Stack gap="xs" mb="md">
-        <Title order={2}>{project.title}</Title>
-        <Text size="sm" c="dimmed">
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
+        <Text variant="title-2">{project.title}</Text>
+        <Text variant="body-sm" tone="muted">
           {project.year}
         </Text>
         {project.tags && project.tags.length > 0 && (
-          <Group gap="xs">
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             {project.tags.map((t) => (
-              <Badge key={t} variant="light">
-                {t}
-              </Badge>
+              <Badge key={t}>{t}</Badge>
             ))}
-          </Group>
+          </div>
         )}
-      </Stack>
+      </div>
 
-      <Box style={{ lineHeight: 1.7 }}>{body}</Box>
+      <div style={{ lineHeight: 1.7 }}>{body}</div>
 
-      <Group mt="lg" gap="sm">
+      <div style={{ display: "flex", gap: 8, marginTop: 24, flexWrap: "wrap" }}>
         <Button
-          component="a"
-          href={project.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          variant="light"
+          render={<a href={project.url} target="_blank" rel="noopener noreferrer" />}
+          variant="subtle"
         >
           Visit Project →
         </Button>
         {project.github && (
           <Button
-            component="a"
-            href={project.github}
-            target="_blank"
-            rel="noopener noreferrer"
+            render={<a href={project.github} target="_blank" rel="noopener noreferrer" />}
             variant="default"
           >
             Source
           </Button>
         )}
-      </Group>
+      </div>
     </Window>
   );
 }
@@ -342,7 +290,7 @@ function BookmarkWindow({ bookmark, onClose }: { bookmark: Bookmark; onClose: ()
 
   return (
     <Window title={bookmark.title} onClose={onClose}>
-      <Group align="flex-start" gap="md" mb="md">
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 16, marginBottom: 16 }}>
         {!imgError && (
           <img
             src={asset(bookmark.icon)}
@@ -353,16 +301,18 @@ function BookmarkWindow({ bookmark, onClose }: { bookmark: Bookmark; onClose: ()
             onError={() => setImgError(true)}
           />
         )}
-        <Title order={3}>{bookmark.title}</Title>
-      </Group>
+        <Text variant="title-3">{bookmark.title}</Text>
+      </div>
 
-      <Text size="sm" c="dimmed" mb="lg">
+      <Text variant="body-sm" tone="muted">
         {bookmark.blurb}
       </Text>
 
-      <Anchor href={bookmark.url} target="_blank" rel="noopener noreferrer">
-        Check it out →
-      </Anchor>
+      <div style={{ marginTop: 24 }}>
+        <Link href={bookmark.url} target="_blank" rel="noopener noreferrer">
+          Check it out →
+        </Link>
+      </div>
     </Window>
   );
 }
