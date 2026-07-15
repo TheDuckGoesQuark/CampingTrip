@@ -3,6 +3,7 @@ import gsap from "gsap";
 import { useEffect, useRef, useCallback } from "react";
 import * as THREE from "three";
 
+import { requestOpen } from "../../../routing/navigation";
 import { useInteractionStore } from "../../../store/interactionStore";
 import { useSceneStore } from "../../../store/sceneStore";
 import { asset, DRACO_PATH } from "../../../utils/assetPath";
@@ -40,7 +41,6 @@ export default function Laptop({ screenOn }: Props) {
   const screenCenter = useRef(new THREE.Vector3(0, 12, -3));
 
   const laptopFocused = useSceneStore((s) => s.laptopFocused);
-  const setLaptopFocused = useSceneStore((s) => s.setLaptopFocused);
 
   // Interaction store for "projects" logo hover/focus/label
   const hoveredId = useInteractionStore((s) => s.hoveredId);
@@ -221,10 +221,12 @@ export default function Laptop({ screenOn }: Props) {
     }
   }, [laptopFocused]);
 
+  // Opening the blog is a navigation, not a direct state change. The laptop lives
+  // inside the R3F Canvas (no router access), so it asks to open the blog through
+  // the overlayNavigation emitter, which SceneRoot subscribes to.
   const handleLogoActivate = useCallback(() => {
-    useSceneStore.getState().setFocusTarget("default");
-    setLaptopFocused(true);
-  }, [setLaptopFocused]);
+    requestOpen.blog();
+  }, []);
 
   const handleLogoClick = useCallback(
     (e: any) => {

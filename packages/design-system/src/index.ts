@@ -9,3 +9,6 @@ export { theme } from "./theme";
 
 // The full Mantine component surface, themed.
 export * from "./primitives";
+
+// Faux-desktop chrome (Window, MenuBar, Dock, DesktopIcon) for OS-style UIs.
+export * from "./desktop";

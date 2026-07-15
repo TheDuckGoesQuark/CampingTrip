@@ -10,6 +10,7 @@ export const projects: Project[] = [
     year: 2025,
     icon: "images/projects/campingtrip.png",
     color: "#4a9eff",
+    tags: ["three.js", "react", "vibe-coding"],
     addedAt: "2026-01-15",
   },
   {
@@ -19,6 +20,7 @@ export const projects: Project[] = [
     year: 2026,
     icon: "images/projects/catmap.jpg",
     color: "#1a1a1a",
+    tags: ["pets", "maps"],
     addedAt: "2026-02-01",
   },
   {
@@ -30,6 +32,7 @@ export const projects: Project[] = [
     year: 2026,
     icon: "images/projects/photobroom.png",
     color: "#ffb347",
+    tags: ["chrome-extension", "tools"],
     addedAt: "2026-06-29",
   },
 ];

@@ -1,5 +1,5 @@
 import { Canvas } from "@react-three/fiber";
-import { Suspense, useEffect, useState, useRef, useCallback } from "react";
+import { memo, Suspense, useEffect, useState, useRef, useCallback } from "react";
 
 import { useSceneStore } from "../../store/sceneStore";
 import { isMobile } from "../../utils/deviceDetect";
@@ -18,7 +18,10 @@ interface TentSceneProps {
   visible: boolean;
 }
 
-export default function TentScene({ visible }: TentSceneProps) {
+// Heavy 3D scene. Memoised so SceneRoot re-rendering on every location change
+// (it subscribes to useLocation) doesn't re-render the whole Canvas subtree —
+// only a change to `visible` should.
+function TentScene({ visible }: TentSceneProps) {
   const [debug, setDebug] = useState(false);
   const [fadeIn, setFadeIn] = useState(true);
   const [contextLost, setContextLost] = useState(false);
@@ -53,16 +56,8 @@ export default function TentScene({ visible }: TentSceneProps) {
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        const store = useSceneStore.getState();
-        if (store.notepadFocused) {
-          store.setNotepadFocused(false);
-        } else if (store.laptopFocused) {
-          store.setLaptopFocused(false);
-        } else {
-          store.setFocusTarget("default");
-        }
-      }
+      // Overlays handle their own Escape (each navigates back to "/"), so the
+      // scene only owns the debug toggle here.
       // Debug toggle: Alt+D, dev builds only
       if (import.meta.env.DEV && e.altKey && e.key === "d") {
         // Skip if user is typing in an input
@@ -191,3 +186,5 @@ export default function TentScene({ visible }: TentSceneProps) {
     </div>
   );
 }
+
+export default memo(TentScene);

@@ -1,8 +1,10 @@
 import { useEffect, useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { musicPlayer } from "../../audio/musicPlayer";
 import { playSoftClick } from "../../audio/soundEffects";
 import { songs } from "../../data/songs";
+import { routes } from "../../routing/navigation";
 import { useMusicStore } from "../../store/musicStore";
 
 /**
@@ -10,8 +12,8 @@ import { useMusicStore } from "../../store/musicStore";
  * Opens when clicking the microphone in the tent scene.
  */
 export default function MusicPlayerOverlay() {
+  const navigate = useNavigate();
   const isOpen = useMusicStore((s) => s.isOpen);
-  const close = useMusicStore((s) => s.close);
   const [mounted, setMounted] = useState(false);
   const [opacity, setOpacity] = useState(0);
   const [view, setView] = useState<"list" | "playing">("list");
@@ -35,20 +37,19 @@ export default function MusicPlayerOverlay() {
     if (!mounted) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
+        e.stopPropagation();
         if (view === "playing") {
           setView("list");
           playSoftClick();
-          e.stopPropagation();
         } else {
-          close();
-          musicPlayer.stop();
-          e.stopPropagation();
+          // Closing the player is a navigation; Landing's closeOverlays() stops audio.
+          navigate(routes.tent);
         }
       }
     };
     window.addEventListener("keydown", onKey, true);
     return () => window.removeEventListener("keydown", onKey, true);
-  }, [mounted, view, close]);
+  }, [mounted, view, navigate]);
 
   if (!mounted) return null;
 
@@ -67,10 +68,7 @@ export default function MusicPlayerOverlay() {
         pointerEvents: opacity > 0 ? "auto" : "none",
       }}
       onClick={(e) => {
-        if (e.target === e.currentTarget) {
-          close();
-          musicPlayer.stop();
-        }
+        if (e.target === e.currentTarget) navigate(routes.tent);
       }}
     >
       {/* iPod body */}
@@ -117,10 +115,7 @@ export default function MusicPlayerOverlay() {
             onMenu={() => {
               playSoftClick();
               if (view === "playing") setView("list");
-              else {
-                close();
-                musicPlayer.stop();
-              }
+              else navigate(routes.tent);
             }}
             onPlay={() => {
               playSoftClick();
@@ -142,10 +137,7 @@ export default function MusicPlayerOverlay() {
 
         {/* Close X */}
         <button
-          onClick={() => {
-            close();
-            musicPlayer.stop();
-          }}
+          onClick={() => navigate(routes.tent)}
           style={{
             position: "absolute",
             top: -8,
