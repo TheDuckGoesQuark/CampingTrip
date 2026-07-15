@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 
-import { OVERLAY_LINKS } from "../routing/overlays";
+import { overlayNavigation } from "../routing/navigation";
 import { useSceneNavigate } from "../routing/useSceneNavigate";
 import { useSessionStore } from "../store/sessionStore";
 import CampfireLoadingScreen from "./CampfireLoadingScreen";
@@ -32,16 +32,9 @@ export default function SceneRoot() {
   }, []);
 
   // 3D objects render inside the R3F Canvas and can't reach the router, so they
-  // request navigation via a window event that we turn into a real route change.
-  useEffect(() => {
-    const onNavigate = (e: Event) => {
-      const path = (e as CustomEvent<{ path: string }>).detail?.path;
-      const link = OVERLAY_LINKS.find((l) => l.path === path);
-      if (link) navigateWithFocus(link);
-    };
-    window.addEventListener("overlay-navigate", onNavigate);
-    return () => window.removeEventListener("overlay-navigate", onNavigate);
-  }, [navigateWithFocus]);
+  // ask the overlayNavigation emitter to open something; we turn that into a
+  // real route change here.
+  useEffect(() => overlayNavigation.subscribe(navigateWithFocus), [navigateWithFocus]);
 
   const showTent = hasCompletedWelcome || location.pathname !== "/";
 

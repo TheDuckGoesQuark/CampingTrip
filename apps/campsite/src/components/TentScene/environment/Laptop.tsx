@@ -3,6 +3,7 @@ import gsap from "gsap";
 import { useEffect, useRef, useCallback } from "react";
 import * as THREE from "three";
 
+import { requestOpen } from "../../../routing/navigation";
 import { useInteractionStore } from "../../../store/interactionStore";
 import { useSceneStore } from "../../../store/sceneStore";
 import { asset, DRACO_PATH } from "../../../utils/assetPath";
@@ -220,11 +221,11 @@ export default function Laptop({ screenOn }: Props) {
     }
   }, [laptopFocused]);
 
-  // Opening the blog is a navigation, not a direct state change. The laptop
-  // lives inside the R3F Canvas (no router access), so it asks SceneRoot to
-  // navigate to /blog via a window event.
+  // Opening the blog is a navigation, not a direct state change. The laptop lives
+  // inside the R3F Canvas (no router access), so it asks to open the blog through
+  // the overlayNavigation emitter, which SceneRoot subscribes to.
   const handleLogoActivate = useCallback(() => {
-    window.dispatchEvent(new CustomEvent("overlay-navigate", { detail: { path: "/blog" } }));
+    requestOpen.blog();
   }, []);
 
   const handleLogoClick = useCallback(

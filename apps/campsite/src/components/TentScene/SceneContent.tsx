@@ -11,6 +11,7 @@ import {
   playSoftClick,
 } from "../../audio/soundEffects";
 import { useTimeSync } from "../../hooks/useTimeSync";
+import { requestOpen } from "../../routing/navigation";
 import { useMusicStore } from "../../store/musicStore";
 import { useSceneStore } from "../../store/sceneStore";
 import { useTimeStore, lerpKeyframes } from "../../store/timeStore";
@@ -72,24 +73,20 @@ export default function SceneContent({ debug = false }: Props) {
     });
   }, []);
 
-  // Overlay objects don't open overlays directly — they ask SceneRoot to
-  // navigate (the URL owns what's open). SceneRoot can't be reached from inside
-  // the R3F Canvas, so we bridge out with a window event.
-  const requestOverlay = useCallback((path: string) => {
-    window.dispatchEvent(new CustomEvent("overlay-navigate", { detail: { path } }));
-  }, []);
-
+  // Overlay objects don't open overlays directly — they ask to navigate (the URL
+  // owns what's open). The router isn't reachable from inside the R3F Canvas, so
+  // this goes through the overlayNavigation emitter, which SceneRoot subscribes to.
   const activateNotepad = useCallback(() => {
     if (useSceneStore.getState().notepadFocused) return;
     playPageFlip();
-    requestOverlay("/notes");
-  }, [requestOverlay]);
+    requestOpen.notes();
+  }, []);
 
   const activateMusicPlayer = useCallback(() => {
     if (useMusicStore.getState().isOpen) return;
     playSoftClick();
-    requestOverlay("/music");
-  }, [requestOverlay]);
+    requestOpen.music();
+  }, []);
 
   return (
     <>

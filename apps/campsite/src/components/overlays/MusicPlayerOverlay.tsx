@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { musicPlayer } from "../../audio/musicPlayer";
 import { playSoftClick } from "../../audio/soundEffects";
 import { songs } from "../../data/songs";
+import { routes } from "../../routing/navigation";
 import { useMusicStore } from "../../store/musicStore";
 
 /**
@@ -42,7 +43,7 @@ export default function MusicPlayerOverlay() {
           playSoftClick();
         } else {
           // Closing the player is a navigation; Landing's closeOverlays() stops audio.
-          navigate("/");
+          navigate(routes.tent);
         }
       }
     };
@@ -67,7 +68,7 @@ export default function MusicPlayerOverlay() {
         pointerEvents: opacity > 0 ? "auto" : "none",
       }}
       onClick={(e) => {
-        if (e.target === e.currentTarget) navigate("/");
+        if (e.target === e.currentTarget) navigate(routes.tent);
       }}
     >
       {/* iPod body */}
@@ -114,7 +115,7 @@ export default function MusicPlayerOverlay() {
             onMenu={() => {
               playSoftClick();
               if (view === "playing") setView("list");
-              else navigate("/");
+              else navigate(routes.tent);
             }}
             onPlay={() => {
               playSoftClick();
@@ -136,7 +137,7 @@ export default function MusicPlayerOverlay() {
 
         {/* Close X */}
         <button
-          onClick={() => navigate("/")}
+          onClick={() => navigate(routes.tent)}
           style={{
             position: "absolute",
             top: -8,

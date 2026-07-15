@@ -6,6 +6,7 @@ import { playWindowOpen, playSoftClick } from "../../audio/soundEffects";
 import { bookmarks } from "../../data/bookmarks";
 import { projects } from "../../data/projects";
 import { slugify } from "../../data/slug";
+import { routes } from "../../routing/navigation";
 import { useSceneStore } from "../../store/sceneStore";
 import { useSessionStore } from "../../store/sessionStore";
 import type { Project, Bookmark } from "../../types/project";
@@ -44,7 +45,7 @@ export default function LaptopScreenOverlay() {
   const openItem = useMemo(() => resolveOpenItem(activePostSlug), [activePostSlug]);
   // The open window is URL-backed, so closing/opening a post is a navigation:
   // BlogRoute maps /blog/:slug back onto activePostSlug.
-  const closeWindow = useCallback(() => navigate("/blog"), [navigate]);
+  const closeWindow = useCallback(() => navigate(routes.blog()), [navigate]);
 
   // Mount/unmount with fade
   useEffect(() => {
@@ -87,7 +88,7 @@ export default function LaptopScreenOverlay() {
         e.stopPropagation();
         playSoftClick();
         // Close the open post first, then leave CatOS entirely.
-        navigate(openItem ? "/blog" : "/");
+        navigate(openItem ? routes.blog() : routes.tent);
       }
     };
     window.addEventListener("keydown", onKey, true);
@@ -96,7 +97,7 @@ export default function LaptopScreenOverlay() {
 
   const handleProjectClick = useCallback(
     (project: Project) => {
-      navigate(`/blog/${slugify(project.title)}`);
+      navigate(routes.blog(slugify(project.title)));
       playWindowOpen();
     },
     [navigate],
@@ -104,7 +105,7 @@ export default function LaptopScreenOverlay() {
 
   const handleBookmarkClick = useCallback(
     (bookmark: Bookmark) => {
-      navigate(`/blog/${slugify(bookmark.title)}`);
+      navigate(routes.blog(slugify(bookmark.title)));
       playWindowOpen();
     },
     [navigate],
@@ -230,7 +231,7 @@ export default function LaptopScreenOverlay() {
       {/* Back to tent button */}
       {!openItem && (
         <button
-          onClick={() => navigate("/")}
+          onClick={() => navigate(routes.tent)}
           style={{
             position: "absolute",
             bottom: 84,

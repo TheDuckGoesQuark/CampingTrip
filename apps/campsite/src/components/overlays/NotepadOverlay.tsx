@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import { playPageFlip } from "../../audio/soundEffects";
 import { notebookEntries } from "../../data/notebook";
+import { routes } from "../../routing/navigation";
 import { useSceneStore } from "../../store/sceneStore";
 
 /**
@@ -62,7 +63,7 @@ export default function NotepadOverlay() {
       }
       if (e.key === "Escape") {
         e.preventDefault();
-        navigate("/");
+        navigate(routes.tent);
       }
     };
     window.addEventListener("keydown", onKey);
@@ -238,7 +239,7 @@ export default function NotepadOverlay() {
 
       {/* Close button */}
       <button
-        onClick={() => navigate("/")}
+        onClick={() => navigate(routes.tent)}
         style={{
           position: "fixed",
           bottom: 32,
