@@ -1,8 +1,8 @@
-# Landing-page screenshots
+# PhotoBroom screenshots
 
-Images here with these exact names — the landing page ("See it in action")
-shows them in order, and falls back to a "Screenshot coming soon" placeholder
-until each file exists:
+Images here with these exact names — the PhotoBroom blog page
+(`/blog/photobroom`, "See it in action") shows them in order, and falls back to
+a "Screenshot coming soon" placeholder until each file exists:
 
 | File          | Stage shown                                                         |
 | ------------- | ------------------------------------------------------------------- |
