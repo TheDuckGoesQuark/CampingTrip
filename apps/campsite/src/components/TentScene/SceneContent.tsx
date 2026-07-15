@@ -72,17 +72,24 @@ export default function SceneContent({ debug = false }: Props) {
     });
   }, []);
 
+  // Overlay objects don't open overlays directly — they ask SceneRoot to
+  // navigate (the URL owns what's open). SceneRoot can't be reached from inside
+  // the R3F Canvas, so we bridge out with a window event.
+  const requestOverlay = useCallback((path: string) => {
+    window.dispatchEvent(new CustomEvent("overlay-navigate", { detail: { path } }));
+  }, []);
+
   const activateNotepad = useCallback(() => {
     if (useSceneStore.getState().notepadFocused) return;
     playPageFlip();
-    useSceneStore.getState().setFocusTarget("default");
-    useSceneStore.getState().setNotepadFocused(true);
-  }, []);
+    requestOverlay("/notes");
+  }, [requestOverlay]);
 
   const activateMusicPlayer = useCallback(() => {
+    if (useMusicStore.getState().isOpen) return;
     playSoftClick();
-    useMusicStore.getState().open();
-  }, []);
+    requestOverlay("/music");
+  }, [requestOverlay]);
 
   return (
     <>

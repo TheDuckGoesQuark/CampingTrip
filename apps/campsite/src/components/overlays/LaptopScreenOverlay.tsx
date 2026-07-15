@@ -1,5 +1,6 @@
 import { Badge, Group, Stack, Text, Title } from "@jordanscamp/ds";
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { playWindowOpen, playSoftClick } from "../../audio/soundEffects";
 import { bookmarks } from "../../data/bookmarks";
@@ -29,19 +30,21 @@ function resolveOpenItem(slug: string | null): OpenItem | null {
  * Press Escape to close window → desktop → tent.
  */
 export default function LaptopScreenOverlay() {
+  const navigate = useNavigate();
   const laptopFocused = useSceneStore((s) => s.laptopFocused);
   const activePostSlug = useSceneStore((s) => s.activePostSlug);
-  const setActivePostSlug = useSceneStore((s) => s.setActivePostSlug);
   const lastVisitedAt = useSessionStore((s) => s.lastVisitedAt);
   const [mounted, setMounted] = useState(false);
   const [opacity, setOpacity] = useState(0);
   const [clock, setClock] = useState("");
   const prevFocused = useRef(false);
 
-  // The open window is derived from the URL-backed slug, so /home/:slug deep
-  // links open the right post and closing navigates back to /home.
+  // The open window is derived from the URL-backed slug, so /blog/:slug deep
+  // links open the right post and closing navigates back to /blog.
   const openItem = useMemo(() => resolveOpenItem(activePostSlug), [activePostSlug]);
-  const closeWindow = useCallback(() => setActivePostSlug(null), [setActivePostSlug]);
+  // The open window is URL-backed, so closing/opening a post is a navigation:
+  // BlogRoute maps /blog/:slug back onto activePostSlug.
+  const closeWindow = useCallback(() => navigate("/blog"), [navigate]);
 
   // Mount/unmount with fade
   useEffect(() => {
@@ -81,32 +84,30 @@ export default function LaptopScreenOverlay() {
     if (!mounted) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        if (openItem) {
-          e.stopPropagation();
-          closeWindow();
-          playSoftClick();
-        }
-        // If no item open, TentScene's handler will close the laptop
+        e.stopPropagation();
+        playSoftClick();
+        // Close the open post first, then leave CatOS entirely.
+        navigate(openItem ? "/blog" : "/");
       }
     };
     window.addEventListener("keydown", onKey, true);
     return () => window.removeEventListener("keydown", onKey, true);
-  }, [mounted, openItem, closeWindow]);
+  }, [mounted, openItem, navigate]);
 
   const handleProjectClick = useCallback(
     (project: Project) => {
-      setActivePostSlug(slugify(project.title));
+      navigate(`/blog/${slugify(project.title)}`);
       playWindowOpen();
     },
-    [setActivePostSlug],
+    [navigate],
   );
 
   const handleBookmarkClick = useCallback(
     (bookmark: Bookmark) => {
-      setActivePostSlug(slugify(bookmark.title));
+      navigate(`/blog/${slugify(bookmark.title)}`);
       playWindowOpen();
     },
-    [setActivePostSlug],
+    [navigate],
   );
 
   if (!mounted) return null;
@@ -229,7 +230,7 @@ export default function LaptopScreenOverlay() {
       {/* Back to tent button */}
       {!openItem && (
         <button
-          onClick={() => useSceneStore.getState().setLaptopFocused(false)}
+          onClick={() => navigate("/")}
           style={{
             position: "absolute",
             bottom: 84,

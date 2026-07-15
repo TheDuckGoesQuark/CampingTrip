@@ -1,0 +1,51 @@
+.bar {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--brand-surface, #fff), transparent 12%);
+  border: 1px solid color-mix(in oklab, var(--brand-muted, #8a8a8a), transparent 78%);
+  box-shadow: var(--mantine-shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.15));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.tab {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--brand-muted, #667);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+  text-decoration: none;
+  padding: 6px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.tab:hover,
+.tab:focus-visible {
+  color: var(--brand-text, #223);
+  background: color-mix(in oklab, var(--brand-muted, #8a8a8a), transparent 86%);
+}
+
+.tab[data-active] {
+  color: var(--brand-text, #223);
+  background: color-mix(in oklab, var(--brand-accent, #5a9367), transparent 80%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab {
+    transition: none;
+  }
+}

@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { playPageFlip } from "../../audio/soundEffects";
 import { notebookEntries } from "../../data/notebook";
@@ -9,6 +10,7 @@ import { useSceneStore } from "../../store/sceneStore";
  * Styled like an open journal/notebook with page-flip navigation.
  */
 export default function NotepadOverlay() {
+  const navigate = useNavigate();
   const notepadFocused = useSceneStore((s) => s.notepadFocused);
   const [mounted, setMounted] = useState(false);
   const [opacity, setOpacity] = useState(0);
@@ -58,10 +60,14 @@ export default function NotepadOverlay() {
         e.preventDefault();
         goPrev();
       }
+      if (e.key === "Escape") {
+        e.preventDefault();
+        navigate("/");
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [mounted, goNext, goPrev]);
+  }, [mounted, goNext, goPrev, navigate]);
 
   if (!mounted) return null;
 
@@ -232,7 +238,7 @@ export default function NotepadOverlay() {
 
       {/* Close button */}
       <button
-        onClick={() => useSceneStore.getState().setNotepadFocused(false)}
+        onClick={() => navigate("/")}
         style={{
           position: "fixed",
           bottom: 32,

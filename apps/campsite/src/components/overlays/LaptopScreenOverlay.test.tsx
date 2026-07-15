@@ -1,13 +1,16 @@
 import { BrandProvider } from "@jordanscamp/ds";
 import { render, screen, act } from "@testing-library/react";
 import type { ReactNode } from "react";
+import { MemoryRouter } from "react-router-dom";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 import { useSceneStore } from "../../store/sceneStore";
 import LaptopScreenOverlay from "./LaptopScreenOverlay";
 
 const Wrapper = ({ children }: { children: ReactNode }) => (
-  <BrandProvider>{children}</BrandProvider>
+  <MemoryRouter>
+    <BrandProvider>{children}</BrandProvider>
+  </MemoryRouter>
 );
 const renderOverlay = () => render(<LaptopScreenOverlay />, { wrapper: Wrapper });
 

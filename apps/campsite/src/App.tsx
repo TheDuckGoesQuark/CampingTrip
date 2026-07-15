@@ -1,49 +1,23 @@
-import { useEffect, useState, lazy, Suspense } from "react";
+import { Navigate, Route, Routes } from "react-router-dom";
 
-import CampfireLoadingScreen from "./components/CampfireLoadingScreen";
-import ErrorBoundary from "./components/ErrorBoundary";
-import RouteSync from "./components/RouteSync";
-import WelcomeScreen from "./components/WelcomeScreen/WelcomeScreen";
-import { useSessionStore } from "./store/sessionStore";
+import SceneRoot from "./components/SceneRoot";
+import { BlogRoute, Landing, MusicRoute, NotesRoute } from "./routing/OverlayRoutes";
 
-// Lazy-load the heavy 3D scene so the welcome screen renders instantly.
-// The dynamic import fires as soon as App mounts, so Three.js / R3F download
-// in the background while the user is on the welcome screen.
-const TentScene = lazy(() => import("./components/TentScene/TentScene"));
-
+/**
+ * Declarative routing: the URL is the single source of truth for what's open.
+ * <SceneRoot> is the always-mounted tent layout; each child route declares the
+ * overlay it opens. No bidirectional store↔URL syncing.
+ */
 export default function App() {
-  const hasCompletedWelcome = useSessionStore((s) => s.hasCompletedWelcome);
-
-  // Keep welcome mounted during its fade-out animation, and bring it back on reset
-  const [showWelcome, setShowWelcome] = useState(!hasCompletedWelcome);
-  useEffect(() => {
-    if (hasCompletedWelcome && showWelcome) {
-      // Fade-out done → unmount
-      const timer = setTimeout(() => setShowWelcome(false), 1400);
-      return () => clearTimeout(timer);
-    }
-    if (!hasCompletedWelcome && !showWelcome) {
-      // Reset triggered → bring welcome back
-      setShowWelcome(true);
-    }
-  }, [hasCompletedWelcome, showWelcome]);
-
   return (
-    <>
-      {/* Bridges the URL to the scene's overlay flags (mounted before the gate) */}
-      <RouteSync />
-      {/* Welcome screen — fades out via CSS when completeWelcome fires, then unmounts */}
-      {showWelcome && <WelcomeScreen />}
-      {/* Campfire loading — always mounted, manages its own visibility/audio/fade */}
-      <CampfireLoadingScreen />
-      {/* Defer TentScene until welcome completes so typing animation gets full CPU */}
-      {hasCompletedWelcome && (
-        <ErrorBoundary>
-          <Suspense fallback={null}>
-            <TentScene visible={hasCompletedWelcome} />
-          </Suspense>
-        </ErrorBoundary>
-      )}
-    </>
+    <Routes>
+      <Route path="/" element={<SceneRoot />}>
+        <Route index element={<Landing />} />
+        <Route path="blog/:slug?" element={<BlogRoute />} />
+        <Route path="music" element={<MusicRoute />} />
+        <Route path="notes" element={<NotesRoute />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Route>
+    </Routes>
   );
 }

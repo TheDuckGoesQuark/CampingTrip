@@ -53,16 +53,8 @@ export default function TentScene({ visible }: TentSceneProps) {
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        const store = useSceneStore.getState();
-        if (store.notepadFocused) {
-          store.setNotepadFocused(false);
-        } else if (store.laptopFocused) {
-          store.setLaptopFocused(false);
-        } else {
-          store.setFocusTarget("default");
-        }
-      }
+      // Overlays handle their own Escape (each navigates back to "/"), so the
+      // scene only owns the debug toggle here.
       // Debug toggle: Alt+D, dev builds only
       if (import.meta.env.DEV && e.altKey && e.key === "d") {
         // Skip if user is typing in an input

@@ -1,0 +1,60 @@
+import { musicPlayer } from "../audio/musicPlayer";
+import { useMusicStore } from "../store/musicStore";
+import { useSceneStore } from "../store/sceneStore";
+
+/** Which overlay a route opens. Exactly one is open at a time. */
+export type OverlayKind = "laptop" | "notepad" | "music";
+
+export interface OverlayLink {
+  /** URL that opens this overlay — the tab links here and deep links land here. */
+  path: string;
+  /** Tab-bar text (and the tab's accessible name). */
+  label: string;
+  /** interactionStore id of the 3D object this belongs to — glows on tab hover/focus. */
+  objectId: string;
+  /** The overlay this route opens. */
+  kind: OverlayKind;
+  /** Rough open-animation length; an in-app click holds the URL update this long. */
+  animMs: number;
+}
+
+/**
+ * The three openable places, shared by the tab bar and the 3D-object
+ * activations so both drive the exact same navigation.
+ */
+export const OVERLAY_LINKS: OverlayLink[] = [
+  { path: "/blog", label: "Blog", objectId: "laptop", kind: "laptop", animMs: 900 },
+  { path: "/music", label: "Music", objectId: "shure-mic", kind: "music", animMs: 250 },
+  { path: "/notes", label: "Notes", objectId: "notepad", kind: "notepad", animMs: 600 },
+];
+
+/**
+ * Declare the scene's complete overlay state. Opens `kind` and closes the rest,
+ * so it fully describes "what a route means". Idempotent — routes call it on
+ * mount (URL is the source of truth), and an in-app click calls it once up front
+ * to start the open animation before the URL commits. `null` closes everything.
+ *
+ * All overlays keep the default camera framing: the laptop/notepad "open" look is
+ * driven by their own model/overlay animation, not a camera preset.
+ */
+export function applyOverlayState(kind: OverlayKind | null, slug: string | null = null): void {
+  const scene = useSceneStore.getState();
+  const music = useMusicStore.getState();
+
+  scene.setLaptopFocused(kind === "laptop");
+  scene.setNotepadFocused(kind === "notepad");
+  scene.setActivePostSlug(kind === "laptop" ? slug : null);
+  scene.setFocusTarget("default");
+
+  if (kind === "music") {
+    music.open();
+  } else if (music.isOpen) {
+    music.close();
+    musicPlayer.stop();
+  }
+}
+
+/** Canonical "nothing open" state, used by the index route and every close path. */
+export function closeOverlays(): void {
+  applyOverlayState(null);
+}

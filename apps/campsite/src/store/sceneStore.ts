@@ -8,7 +8,7 @@ interface SceneState {
   lanternOn: boolean;
   laptopFocused: boolean;
   notepadFocused: boolean;
-  /** Slug of the open blog post/window, or null. Mirrors /home/:slug. */
+  /** Slug of the open blog post/window, or null. Mirrors /blog/:slug. */
   activePostSlug: string | null;
   currentScene: SceneName;
   focusTarget: FocusTarget;
