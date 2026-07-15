@@ -45,35 +45,8 @@ jobs:
           path: apps/campsite/dist/
           retention-days: 1
 
-  build-photobroom:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10
-
-      - uses: actions/setup-node@v6
-        with:
-          node-version: "22"
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Build photobroom
-        run: pnpm --filter photobroom build
-
-      - name: Upload photobroom artifact
-        uses: actions/upload-artifact@v6
-        with:
-          name: photobroom
-          path: apps/photobroom/dist/
-          retention-days: 1
-
   deploy:
-    needs: [build-campsite, build-photobroom]
+    needs: [build-campsite]
     runs-on: ubuntu-latest
     environment: production
     steps:
@@ -94,19 +67,10 @@ jobs:
           name: campsite
           path: campsite
 
-      - name: Download photobroom artifact
-        uses: actions/download-artifact@v7
-        with:
-          name: photobroom
-          path: photobroom
-
       - name: Upload deploy artifacts to S3
         run: |
           tar czf campsite.tar.gz -C campsite .
           aws s3 cp campsite.tar.gz s3://${{ vars.S3_DEPLOY_BUCKET }}/_deploy/webapp.tar.gz
-
-          tar czf photobroom.tar.gz -C photobroom .
-          aws s3 cp photobroom.tar.gz s3://${{ vars.S3_DEPLOY_BUCKET }}/_deploy/photobroom.tar.gz
 
           aws s3 cp infra/Caddyfile s3://${{ vars.S3_DEPLOY_BUCKET }}/_deploy/Caddyfile
 
@@ -143,11 +107,6 @@ jobs:
               'rm -rf /opt/jordanscamp/webapp/*',
               'tar xzf /tmp/webapp.tar.gz -C /opt/jordanscamp/webapp/',
               'rm /tmp/webapp.tar.gz',
-              'aws s3 cp s3://$S3_BUCKET/_deploy/photobroom.tar.gz /tmp/photobroom.tar.gz',
-              'mkdir -p /opt/jordanscamp/photobroom',
-              'rm -rf /opt/jordanscamp/photobroom/*',
-              'tar xzf /tmp/photobroom.tar.gz -C /opt/jordanscamp/photobroom/',
-              'rm /tmp/photobroom.tar.gz',
               'aws s3 cp s3://$S3_BUCKET/_deploy/Caddyfile /etc/caddy/Caddyfile',
               'systemctl restart caddy',
               'sleep 3',

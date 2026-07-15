@@ -30,10 +30,8 @@ module.exports = {
     {
       name: "no-mantine",
       severity: "error",
-      comment:
-        "Mantine is retired from the design system and campsite — use @jordanscamp/ds " +
-        "(Base UI + tokens). Only photobroom still uses Mantine, pending its move into the blog.",
-      from: { path: "^(packages/design-system|apps/campsite)/src/" },
+      comment: "Mantine is retired workspace-wide — use @jordanscamp/ds (Base UI + tokens).",
+      from: {},
       to: { path: "(^|/)@mantine/", dependencyTypes: ["npm", "npm-peer", "npm-dev"] },
     },
     {

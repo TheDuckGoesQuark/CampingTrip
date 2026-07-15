@@ -102,7 +102,6 @@ jobs:
               'set -e',
               'cd /opt/jordanscamp',
               'if aws s3 ls s3://$S3_BUCKET/_deploy/webapp.tar.gz 2>/dev/null; then aws s3 cp s3://$S3_BUCKET/_deploy/webapp.tar.gz /tmp/webapp.tar.gz && mkdir -p /opt/jordanscamp/webapp && rm -rf /opt/jordanscamp/webapp/* && tar xzf /tmp/webapp.tar.gz -C /opt/jordanscamp/webapp/ && rm /tmp/webapp.tar.gz && echo \"Campsite app updated from S3\"; else echo \"No webapp archive in S3, keeping existing\"; fi',
-              'if aws s3 ls s3://$S3_BUCKET/_deploy/photobroom.tar.gz 2>/dev/null; then aws s3 cp s3://$S3_BUCKET/_deploy/photobroom.tar.gz /tmp/photobroom.tar.gz && mkdir -p /opt/jordanscamp/photobroom && rm -rf /opt/jordanscamp/photobroom/* && tar xzf /tmp/photobroom.tar.gz -C /opt/jordanscamp/photobroom/ && rm /tmp/photobroom.tar.gz && echo \"PhotoBroom app updated from S3\"; else echo \"No photobroom archive in S3, keeping existing\"; fi',
               'if aws s3 ls s3://$S3_BUCKET/_deploy/Caddyfile 2>/dev/null; then aws s3 cp s3://$S3_BUCKET/_deploy/Caddyfile /etc/caddy/Caddyfile && echo \"Caddyfile updated from S3\"; else echo \"No Caddyfile in S3, keeping existing\"; fi',
               'systemctl restart caddy',
               'sleep 3',

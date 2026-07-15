@@ -23,6 +23,7 @@ import { useSceneStore } from "../../store/sceneStore";
 import { useSessionStore } from "../../store/sessionStore";
 import type { Project, Bookmark } from "../../types/project";
 import { asset } from "../../utils/assetPath";
+import PhotoBroomPage from "./PhotoBroomPage";
 
 type OpenItem = { kind: "project"; data: Project } | { kind: "bookmark"; data: Bookmark };
 
@@ -242,6 +243,15 @@ function SectionHeader({ label }: { label: string }) {
 /* ─── Windows ─────────────────────────────────────────────────── */
 
 function ProjectWindow({ project, onClose }: { project: Project; onClose: () => void }) {
+  // PhotoBroom has a full landing page (folded in from its old subdomain).
+  if (slugify(project.title) === "photobroom") {
+    return (
+      <Window size="page" title="PhotoBroom" onClose={onClose}>
+        <PhotoBroomPage />
+      </Window>
+    );
+  }
+
   const body =
     typeof project.description === "string"
       ? project.description.split("\n\n").map((para, i) => <p key={i}>{para}</p>)
