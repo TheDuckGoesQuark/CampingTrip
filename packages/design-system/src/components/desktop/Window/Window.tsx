@@ -7,6 +7,8 @@ export interface WindowProps {
   title?: string;
   /** Fires when the red traffic light or the backdrop is clicked. */
   onClose?: () => void;
+  /** `md` (default, ~520px) or `page` — a wide window for a full content page. */
+  size?: "md" | "page";
   children: ReactNode;
 }
 
@@ -16,10 +18,13 @@ export interface WindowProps {
  * (e.g. a CatOS post window). Clicking the backdrop or the red light calls
  * `onClose`. Not a focus-trapping dialog — it lives inside one.
  */
-export function Window({ title, onClose, children }: WindowProps) {
+export function Window({ title, onClose, size = "md", children }: WindowProps) {
   return (
     <div className={styles.backdrop} onClick={onClose}>
-      <div className={styles.window} onClick={(e) => e.stopPropagation()}>
+      <div
+        className={size === "page" ? `${styles.window} ${styles.page}` : styles.window}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className={styles.titlebar}>
           <div className={styles.lights}>
             <button

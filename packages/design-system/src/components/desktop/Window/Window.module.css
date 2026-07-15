@@ -14,7 +14,7 @@
   width: 90%;
   max-width: 520px;
   min-height: 300px;
-  max-height: calc(85vh);
+  max-height: 85vh;
   overflow: hidden;
   background: var(--brand-surface-raised);
   color: var(--brand-text);
@@ -22,6 +22,13 @@
   border-radius: var(--radius-l);
   box-shadow: var(--shadow-4);
   animation: windowIn 0.25s ease-out;
+}
+
+/* Wide "page" window for a full content page. */
+.page {
+  max-width: 880px;
+  width: 92%;
+  max-height: 90vh;
 }
 
 .titlebar {

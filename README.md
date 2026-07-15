@@ -4,16 +4,17 @@ A personal platform hosted at **[jordanscamp.site](https://jordanscamp.site)**, 
 
 ## Apps
 
-| App            | URL                                                                | Description                                                                                                         | Docs                                                               |
-| -------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| **Campsite**   | [jordanscamp.site](https://jordanscamp.site)                       | Interactive 3D camping scene — the homepage, with the laptop opening a `/home` blog                                 | [apps/campsite/README.md](apps/campsite/README.md)                 |
-| **PhotoBroom** | [photobroom.jordanscamp.site](https://photobroom.jordanscamp.site) | Chrome extension for sweeping Google Photos search results into the bin; the site is its install/usage landing page | [extensions/photobroom/README.md](extensions/photobroom/README.md) |
+| App            | URL                                                                          | Description                                                                                                     | Docs                                                               |
+| -------------- | ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| **Campsite**   | [jordanscamp.site](https://jordanscamp.site)                                 | Interactive 3D camping scene — the homepage, with the laptop opening a `/blog`                                  | [apps/campsite/README.md](apps/campsite/README.md)                 |
+| **PhotoBroom** | [jordanscamp.site/blog/photobroom](https://jordanscamp.site/blog/photobroom) | Chrome extension for sweeping Google Photos search results into the bin; its landing lives in the campsite blog | [extensions/photobroom/README.md](extensions/photobroom/README.md) |
 
-PhotoBroom is the one app that's more than a static site: `apps/photobroom` is a
-landing page, and the actual tool is a Chrome extension in `extensions/photobroom`
-that injects an in-page overlay onto `photos.google.com`. Build its bundle with
-`pnpm --filter photobroom build:overlay`, then load `extensions/photobroom`
-unpacked. See its [README](extensions/photobroom/README.md).
+PhotoBroom is a Chrome extension in `extensions/photobroom` that injects an
+in-page overlay onto `photos.google.com`. `apps/photobroom` is now just that
+overlay's source + build (`pnpm --filter photobroom build:overlay` emits
+`extensions/photobroom/overlay.js`); its landing/marketing page lives in the
+campsite blog at `/blog/photobroom`. See its
+[README](extensions/photobroom/README.md).
 
 See [docs/architecture.md](docs/architecture.md) for how everything fits together.
 
@@ -21,8 +22,8 @@ See [docs/architecture.md](docs/architecture.md) for how everything fits togethe
 
 ```bash
 pnpm install                    # install all workspace dependencies
-pnpm --filter campsite dev      # run campsite locally
-pnpm --filter photobroom dev    # run photobroom locally
+pnpm --filter campsite dev            # run campsite locally
+pnpm --filter photobroom build:overlay  # build the PhotoBroom extension bundle
 ```
 
 ## Workspace commands
