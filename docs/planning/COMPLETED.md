@@ -4,6 +4,52 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## Brand design system, shareable blog routes, and scene accessibility
+
+**Date**: 2026-07-06
+
+**What was done**:
+
+- **New `packages/design-system` (`@jordanscamp/ds`)** — the first `packages/*`, a Mantine 9 + Storybook 10 personal-brand DS. Twilight/dusk palette + amber accent (lantern `#ffb347`), Nunito (bundled via `@fontsource`), chunky radii, tactile shadows, springy micro-motion. Layered `primitives → components → patterns` with a strict authoring rubric in its `CLAUDE.md` (adapted from citrus2). Components: `BlogLayout`, `PostCard`, `Article`, `Tag`, `NightShiftToggle` (each with stories + tests). Consumed as TS source across the workspace.
+- **Night shift** — `BrandProvider` takes a `warmth` (0–1) that drives `--brand-*` surface tokens via `color-mix` (pure CSS, continuous). campsite's `BrandRoot` feeds it `getNightFactor(progress)` (quantised to 0.02), so the blog warms with the in-app time-of-day and the time-arc scrubber warms it live. A "⚙ Blog" settings menu in CatOS toggles it (persisted `sessionStore.nightShiftEnabled`) plus light/dark.
+- **Shareable routes** (react-router-dom 7) — `/` scene, `/home` blog, `/home/:slug` open post, `/notes`, `/music`. `RouteSync` is the single URL⇄store bridge (drives existing overlay flags + `sceneStore.activePostSlug`); pure mapping in `routing/paths.ts` (unit-tested). Deep links skip the welcome intro. The CatOS project window now renders through DS `Article`; project slugs are derived from titles (`data/slug.ts`, no denormalisation).
+- **Accessibility** — single `data/interactables.ts` registry (kills the 3-way id duplication) feeding the keyboard toolbar; `aria-live` announcer ("Blog opened" …); "Skip to blog" link; informational-only objects (moka pot, Scarlett) no longer fire dead activations and carry `aria-description`; `role="dialog"`/`aria-modal`/`aria-label` on all three overlays; camera GSAP transitions honour `prefers-reduced-motion`.
+- **Repo linting** — adopted oxlint + oxfmt + dependency-cruiser (translated from citrus2). Enforces DS domain-agnosticism (no `apps/**`/router/zustand/three imports), barrel-only DS consumption, Mantine-only-in-`primitives/` chokepoint, and a `style` escape-hatch ban (legacy campsite/photobroom exempt as tracked tech-debt). One-time repo format applied.
+
+**Key decisions**:
+
+- Night-shift warms our own `--brand-*` tokens only; warming Mantine's palette via `cssVariablesResolver` is left as a documented spike in the DS README.
+- Extended `projects` with `slug`/`tags` (derived slug) rather than a parallel `posts.ts`, keeping titles the single source of truth.
+- The `style`-ban is off for the two existing bespoke apps (a 3D art piece and a shadow-root overlay) — a guardrail for future feature code, not a legacy purge.
+
+**Deferred**:
+
+- Mantine `FocusTrap` + return-focus inside the bespoke overlays (they have their own keyboard handlers; roles/aria added, trap left for later).
+- Warming the full Mantine palette with night-shift (spike).
+- Migrating photobroom onto DS components (it took the React 19 + Mantine 9 bump only).
+
+---
+
+## Monorepo upgrade to React 19 + removal of Digital Twins
+
+**Date**: 2026-07-06
+
+**What was done**:
+
+- **React 19 across the workspace.** campsite → React 19 + `@react-three/fiber` v9 (`@react-three/drei` v10, `@react-three/test-renderer` v9); the only code change needed was a `useRef(undefined)` initial-argument fix in `InteractiveObject.tsx` (React 19 tightened `useRef`). photobroom → React 19 + Mantine 9. React pinned to `~19.2` — the only range satisfying both Mantine 9 (`^19.2.0`) and R3F v9 (`>=19 <19.3`).
+- **Deleted `apps/digitaltwins`** (a vibe-coded MVP) and its whole footprint: the Route53 A record + Caddy vhost + EC2 bootstrap block (`infra/{route53,main,ec2}.tf`, `Caddyfile`, `templates/user_data.sh`), the `build-digitaltwins` CI job + deploy/restore steps (`deploy.yml`, `infra-control.yml`), root `package.json` scripts, and docs. Removing the DNS record requires a `terraform apply`.
+
+**Key decisions**:
+
+- Chose Mantine 9 (React-19-only) over staying on Mantine 8, accepting the R3F v9 scene migration — which turned out near-trivial since campsite uses only standard R3F intrinsics (no `extend`/custom shaders/JSX augmentation).
+- Prerequisite step for the new `packages/design-system` (`@jordanscamp/ds`) which requires React 19.
+
+**Deferred**:
+
+- Photobroom adopts the React 19 + Mantine 9 bump only; migrating it onto the shared DS _components_ is later.
+
+---
+
 ## PhotoBroom — in-page overlay for sweeping Google Photos into the bin
 
 **Date**: 2026-06-29
