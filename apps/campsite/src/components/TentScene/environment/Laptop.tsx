@@ -237,18 +237,6 @@ export default function Laptop({ screenOn }: Props) {
     [screenOn, handleLogoActivate],
   );
 
-  // Keyboard activation via accessibility overlay
-  useEffect(() => {
-    const handler = (e: Event) => {
-      const detail = (e as CustomEvent).detail;
-      if (detail?.id === "projects" && screenOn && !laptopFocused) {
-        handleLogoActivate();
-      }
-    };
-    window.addEventListener("scene-activate", handler);
-    return () => window.removeEventListener("scene-activate", handler);
-  }, [screenOn, laptopFocused, handleLogoActivate]);
-
   return (
     <group ref={groupRef}>
       <primitive object={scene} />

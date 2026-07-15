@@ -33,16 +33,6 @@ export default function InteractiveObject({
   // Clean up leave timer on unmount
   useEffect(() => () => clearTimeout(leaveTimer.current), []);
 
-  // Listen for keyboard activation events from the accessibility overlay
-  useEffect(() => {
-    const handler = (e: Event) => {
-      const detail = (e as CustomEvent).detail;
-      if (detail?.id === id) onActivate?.();
-    };
-    window.addEventListener("scene-activate", handler);
-    return () => window.removeEventListener("scene-activate", handler);
-  }, [id, onActivate]);
-
   // Apply / remove warm highlight on child meshes
   useEffect(() => {
     if (!groupRef.current) return;

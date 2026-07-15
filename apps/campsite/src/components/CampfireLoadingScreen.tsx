@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { startCampfire, stopCampfire } from "../audio/campfireSynth";
 import { startRain } from "../audio/rainSynth";
+import { useSceneStore } from "../store/sceneStore";
 import { useSessionStore } from "../store/sessionStore";
 
 // Fire grows with progress: embers → kindling → growing → full flame.
@@ -60,6 +61,12 @@ export default function CampfireLoadingScreen() {
       mountTime.current = Date.now();
     }
   }, [hasCompletedWelcome]);
+
+  // Expose "loading finished" to the store so the tent chrome (tab bar, settings,
+  // day/night control) only appears once the user is actually on the tent view.
+  useEffect(() => {
+    useSceneStore.getState().setSceneReady(!visible);
+  }, [visible]);
 
   // Smooth progress animation — lerps displayPct toward real progress
   useEffect(() => {

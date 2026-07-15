@@ -52,6 +52,7 @@ export default function TimeOfDayArc() {
   const setManual = useTimeStore((s) => s.setManual);
 
   const [dragging, setDragging] = useState(false);
+  const [focused, setFocused] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const { isDaytime, timeStr } = getTimeOfDay(progress);
@@ -89,6 +90,23 @@ export default function TimeOfDayArc() {
     setDragging(false);
   }, []);
 
+  // Keyboard control: arrows nudge by an hour, Home/End jump to the ends.
+  const onKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      const STEP = 1 / 24; // one hour
+      let next: number | null = null;
+      if (e.key === "ArrowRight" || e.key === "ArrowUp") next = progress + STEP;
+      else if (e.key === "ArrowLeft" || e.key === "ArrowDown") next = progress - STEP;
+      else if (e.key === "Home") next = 0;
+      else if (e.key === "End") next = 1 - STEP;
+      if (next === null) return;
+      e.preventDefault();
+      setManual(true);
+      setProgress(Math.max(0, Math.min(0.9999, next)));
+    },
+    [progress, setManual, setProgress],
+  );
+
   // Swallow native touch events so CameraController (on window) doesn't react
   useEffect(() => {
     const el = containerRef.current;
@@ -107,6 +125,13 @@ export default function TimeOfDayArc() {
   return (
     <div
       ref={containerRef}
+      role="slider"
+      tabIndex={0}
+      aria-label="Time of day"
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={Math.round(progress * 100)}
+      aria-valuetext={timeStr}
       style={{
         position: "fixed",
         top: 14,
@@ -117,11 +142,17 @@ export default function TimeOfDayArc() {
         cursor: dragging ? "grabbing" : "grab",
         touchAction: "none",
         userSelect: "none",
+        borderRadius: 12,
+        outline: focused ? "2px solid rgba(255,220,150,0.7)" : "none",
+        outlineOffset: 2,
       }}
       onPointerDown={startDrag}
       onPointerMove={onDrag}
       onPointerUp={endDrag}
       onPointerCancel={endDrag}
+      onKeyDown={onKeyDown}
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
     >
       <svg
         width={SIZE + 40}
