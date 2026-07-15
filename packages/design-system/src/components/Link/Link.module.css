@@ -1,0 +1,19 @@
+.base {
+  color: var(--brand-link);
+  font-family: var(--font-sans);
+  font-weight: var(--weight-medium);
+  text-decoration: none;
+  border-radius: var(--radius-s);
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.base:hover {
+  color: var(--brand-link-hover);
+  text-decoration: underline;
+}
+
+.base:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}

@@ -1,0 +1,24 @@
+/*
+ * Dimension tokens — spacing (T-shirt scale) and corner radius. Brand-neutral.
+ * Components reference these; no raw px in component CSS.
+ */
+
+:root {
+  /* Spacing */
+  --space-xxxs: 2px;
+  --space-xxs: 4px;
+  --space-xs: 6px;
+  --space-s: 8px;
+  --space-m: 16px;
+  --space-l: 24px;
+  --space-xl: 32px;
+  --space-xxl: 48px;
+
+  /* Corner radius (softly rounded brand) */
+  --radius-none: 0px;
+  --radius-s: 7px;
+  --radius-m: 10px;
+  --radius-l: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+}

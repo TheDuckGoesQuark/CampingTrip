@@ -1,0 +1,22 @@
+.bar {
+  position: fixed;
+  inset-inline: 0;
+  top: 16px;
+  z-index: 60;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.pill {
+  display: flex;
+  gap: var(--space-xxs);
+  padding: var(--space-xxs);
+  border-radius: var(--radius-full);
+  background: color-mix(in oklab, var(--brand-surface), transparent 12%);
+  border: 1px solid var(--brand-border-subtle);
+  box-shadow: var(--shadow-2);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  pointer-events: auto;
+}

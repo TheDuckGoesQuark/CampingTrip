@@ -1,0 +1,38 @@
+/*
+ * Typography tokens — Nunito brand type. Font-family + a compact type scale
+ * (size / line-height / weight per role). `<Text>` owns these; components
+ * reference the vars rather than raw px.
+ */
+
+:root {
+  --font-sans: "Nunito", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+
+  --weight-regular: 400;
+  --weight-medium: 600;
+  --weight-bold: 700;
+  --weight-heading: 800;
+
+  /* Headings (Nunito 800) — size / line-height */
+  --text-title-1-size: 2rem; /* 32 */
+  --text-title-1-lh: 1.2;
+  --text-title-2-size: 1.625rem; /* 26 */
+  --text-title-2-lh: 1.25;
+  --text-title-3-size: 1.3125rem; /* 21 */
+  --text-title-3-lh: 1.3;
+  --text-title-4-size: 1.0625rem; /* 17 */
+  --text-title-4-lh: 1.35;
+
+  /* Body */
+  --text-body-lg-size: 1.125rem; /* 18 */
+  --text-body-lg-lh: 1.6;
+  --text-body-md-size: 1rem; /* 16 */
+  --text-body-md-lh: 1.6;
+  --text-body-sm-size: 0.875rem; /* 14 */
+  --text-body-sm-lh: 1.55;
+
+  /* Label — small, uppercase eyebrow */
+  --text-label-size: 0.75rem; /* 12 */
+  --text-label-lh: 1.4;
+  --text-label-tracking: 0.08em;
+}

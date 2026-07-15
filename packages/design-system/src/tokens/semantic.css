@@ -1,0 +1,100 @@
+/*
+ * Semantic colour tokens — the layer components bind to. Light values at :root;
+ * dark values under [data-theme="dark"] (BrandProvider sets that attribute on
+ * <html> so Base UI's body-portalled dialogs re-theme through the cascade too).
+ *
+ * Naming: `--brand-*` for the whole brand-coloured surface. Spacing/radius/
+ * shadow/type are brand-neutral and live in their own files.
+ */
+
+:root {
+  /* Surfaces */
+  --brand-bg: var(--ivory); /* page background */
+  --brand-surface: var(--paper); /* default card/panel */
+  --brand-surface-raised: var(--paper); /* elevated (menus, popups) */
+  --brand-surface-sunken: var(--sage-0); /* wells, insets */
+  --brand-surface-inverse: var(--neutral-8);
+
+  /* Text */
+  --brand-text: #3f4b3b; /* primary ink */
+  --brand-text-muted: var(--neutral-6); /* secondary / captions */
+  --brand-text-disabled: var(--neutral-4);
+  --brand-text-on-brand: #ffffff; /* on a solid brand fill */
+  --brand-text-inverse: var(--sage-0);
+  --brand-link: var(--sage-7);
+  --brand-link-hover: var(--sage-9);
+
+  /* Borders */
+  --brand-border: var(--neutral-2);
+  --brand-border-strong: var(--neutral-3);
+  --brand-border-subtle: var(--neutral-1);
+
+  /* Brand (primary — sea-green) */
+  --brand-solid: var(--sage-6);
+  --brand-solid-hover: var(--sage-7);
+  --brand-solid-active: var(--sage-8);
+  --brand-subtle: var(--sage-1);
+  --brand-subtle-hover: var(--sage-2);
+
+  /* Accent (amber) */
+  --brand-accent: var(--amber-6);
+  --brand-accent-subtle: var(--amber-1);
+
+  /* Interaction */
+  --brand-focus: rgba(90, 147, 103, 0.55);
+  --brand-state-hover: rgba(90, 147, 103, 0.08);
+  --brand-state-pressed: rgba(90, 147, 103, 0.16);
+  --brand-scrim: rgba(31, 41, 28, 0.45);
+
+  /* Status */
+  --brand-danger: #c0492f;
+  --brand-danger-subtle: #f7e2dc;
+
+  /* Kept for existing consumers (CatOS wallpaper glow). */
+  --brand-accent-rgb: 90, 147, 103;
+  --brand-glow: 0 0 0 3px rgba(90, 147, 103, 0.5);
+
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  --brand-bg: #141a12;
+  --brand-surface: #1e261b;
+  --brand-surface-raised: #27301f;
+  --brand-surface-sunken: #10150e;
+  --brand-surface-inverse: var(--sage-0);
+
+  --brand-text: var(--sage-0);
+  --brand-text-muted: var(--neutral-4);
+  --brand-text-disabled: var(--neutral-5);
+  --brand-text-on-brand: #10150e;
+  --brand-text-inverse: var(--neutral-8);
+  --brand-link: var(--sage-3);
+  --brand-link-hover: var(--sage-2);
+
+  --brand-border: #33402c;
+  --brand-border-strong: #46583b;
+  --brand-border-subtle: #27301f;
+
+  --brand-solid: var(--sage-5);
+  --brand-solid-hover: var(--sage-4);
+  --brand-solid-active: var(--sage-3);
+  --brand-subtle: #27301f;
+  --brand-subtle-hover: #33402c;
+
+  --brand-accent: var(--amber-5);
+  --brand-accent-subtle: #3a2c12;
+
+  --brand-focus: rgba(122, 171, 104, 0.6);
+  --brand-state-hover: rgba(122, 171, 104, 0.12);
+  --brand-state-pressed: rgba(122, 171, 104, 0.22);
+  --brand-scrim: rgba(0, 0, 0, 0.6);
+
+  --brand-danger: #e8836b;
+  --brand-danger-subtle: #3a201a;
+
+  --brand-accent-rgb: 122, 171, 104;
+  --brand-glow: 0 0 0 3px rgba(122, 171, 104, 0.5);
+
+  color-scheme: dark;
+}

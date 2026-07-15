@@ -1,7 +1,6 @@
 import type { Decorator, Preview } from "@storybook/react-vite";
 
-import "@mantine/core/styles.css";
-import "../src/styles.css";
+import "../src/tokens/tokens.css";
 import { BrandProvider } from "../src/BrandProvider";
 
 const withBrand: Decorator = (Story) => (

@@ -1,0 +1,58 @@
+.button {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-s);
+  width: 120px;
+  padding: var(--space-s) var(--space-s);
+  border: none;
+  border-radius: var(--radius-m);
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.button:hover {
+  background: var(--brand-state-hover);
+}
+.button:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
+.icon {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-l);
+  object-fit: cover;
+}
+
+.fallback {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-l);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: var(--weight-heading);
+  color: #fff;
+}
+
+.badge {
+  position: absolute;
+  top: var(--space-xs);
+  right: var(--space-m);
+}
+
+.label {
+  font-size: var(--text-body-sm-size);
+  color: var(--brand-text);
+  text-align: center;
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}

@@ -3,10 +3,10 @@
  *
  * The per-file forbidden-import bans (DS → routing/state/three, apps → deep DS
  * paths) live in `.oxlintrc.json`. dep-cruiser keeps only rules that need a
- * graph view: the `ds-mantine-via-primitives-only` chokepoint (allow @mantine
+ * graph view: the `ds-base-ui-via-primitives-only` chokepoint (allow @base-ui
  * in `primitives/**`, ban it elsewhere in the DS — a file-pattern scope oxlint's
- * no-restricted-imports can't express) plus the hygiene rules (no-circular,
- * no-orphans).
+ * no-restricted-imports can't express), the `no-mantine` ban (DS + campsite),
+ * plus the hygiene rules (no-circular, no-orphans).
  *
  * Run via `pnpm check-deps`.
  */
@@ -15,21 +15,25 @@
 module.exports = {
   forbidden: [
     {
-      name: "ds-mantine-via-primitives-only",
+      name: "ds-base-ui-via-primitives-only",
       severity: "error",
       comment:
-        "Inside the DS, @mantine/* may only be imported by the primitives layer " +
-        "(and the theme/provider entry). Components must import from " +
-        "`../primitives/<Name>`. This is the swap-readiness chokepoint — see " +
-        "packages/design-system/src/primitives/README.md.",
+        "Inside the DS, @base-ui/react may only be imported by the primitives " +
+        "layer. Components must import from `../primitives/<Name>`. This is the " +
+        "swap-readiness chokepoint — see packages/design-system/src/primitives/README.md.",
       from: {
         path: "^packages/design-system/src/(?!primitives/)",
-        pathNot: [
-          "^packages/design-system/src/(theme|BrandProvider)\\.tsx?$",
-          "\\.stories\\.(ts|tsx)$",
-          "\\.test\\.(ts|tsx)$",
-        ],
+        pathNot: ["\\.stories\\.(ts|tsx)$", "\\.test\\.(ts|tsx)$"],
       },
+      to: { path: "(^|/)@base-ui/", dependencyTypes: ["npm", "npm-peer", "npm-dev"] },
+    },
+    {
+      name: "no-mantine",
+      severity: "error",
+      comment:
+        "Mantine is retired from the design system and campsite — use @jordanscamp/ds " +
+        "(Base UI + tokens). Only photobroom still uses Mantine, pending its move into the blog.",
+      from: { path: "^(packages/design-system|apps/campsite)/src/" },
       to: { path: "(^|/)@mantine/", dependencyTypes: ["npm", "npm-peer", "npm-dev"] },
     },
     {
