@@ -3,10 +3,13 @@ import { Outlet, useLocation } from "react-router-dom";
 
 import { overlayNavigation } from "../routing/navigation";
 import { useSceneNavigate } from "../routing/useSceneNavigate";
+import { useSceneStore } from "../store/sceneStore";
 import { useSessionStore } from "../store/sessionStore";
 import CampfireLoadingScreen from "./CampfireLoadingScreen";
 import ErrorBoundary from "./ErrorBoundary";
 import OverlayTabBar from "./overlays/OverlayTabBar";
+import SettingsMenu from "./overlays/SettingsMenu";
+import TimeOfDayArc from "./overlays/TimeOfDayArc";
 
 // Lazy-load the heavy 3D scene so the welcome screen renders instantly.
 const TentScene = lazy(() => import("./TentScene/TentScene"));
@@ -19,6 +22,7 @@ const TentScene = lazy(() => import("./TentScene/TentScene"));
  */
 export default function SceneRoot() {
   const hasCompletedWelcome = useSessionStore((s) => s.hasCompletedWelcome);
+  const sceneReady = useSceneStore((s) => s.sceneReady);
   const location = useLocation();
   const navigateWithFocus = useSceneNavigate();
 
@@ -37,6 +41,9 @@ export default function SceneRoot() {
   useEffect(() => overlayNavigation.subscribe(navigateWithFocus), [navigateWithFocus]);
 
   const showTent = hasCompletedWelcome || location.pathname !== "/";
+  // The tent chrome appears only once the user is actually on the tent view —
+  // not over the loading screen or the landing story.
+  const showChrome = hasCompletedWelcome && sceneReady;
 
   return (
     <>
@@ -51,7 +58,15 @@ export default function SceneRoot() {
         </ErrorBoundary>
       )}
 
-      {hasCompletedWelcome && <OverlayTabBar />}
+      {/* Tent chrome. DOM order = keyboard tab order:
+          blog → music → notes (tab bar), settings, then the day/night control. */}
+      {showChrome && (
+        <>
+          <OverlayTabBar />
+          <SettingsMenu />
+          <TimeOfDayArc />
+        </>
+      )}
 
       {/* Landing / Blog / Music / Notes */}
       <Outlet />

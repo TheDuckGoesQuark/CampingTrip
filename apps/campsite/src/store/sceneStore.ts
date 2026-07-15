@@ -4,6 +4,8 @@ import type { TentDoorState, SceneName, FocusTarget } from "../types/scene";
 
 interface SceneState {
   wakeUpDone: boolean;
+  /** True once the loading screen has finished — i.e. the user is on the tent view. */
+  sceneReady: boolean;
   tentDoorState: TentDoorState;
   lanternOn: boolean;
   laptopFocused: boolean;
@@ -13,6 +15,7 @@ interface SceneState {
   currentScene: SceneName;
   focusTarget: FocusTarget;
   setWakeUpDone: () => void;
+  setSceneReady: (v: boolean) => void;
   setTentDoorState: (s: TentDoorState) => void;
   toggleLantern: () => void;
   setLaptopFocused: (f: boolean) => void;
@@ -24,6 +27,7 @@ interface SceneState {
 
 export const useSceneStore = create<SceneState>()((set) => ({
   wakeUpDone: false,
+  sceneReady: false,
   tentDoorState: "open",
   lanternOn: true,
   laptopFocused: false,
@@ -32,6 +36,7 @@ export const useSceneStore = create<SceneState>()((set) => ({
   currentScene: "tent",
   focusTarget: "default",
   setWakeUpDone: () => set({ wakeUpDone: true }),
+  setSceneReady: (v) => set({ sceneReady: v }),
   setTentDoorState: (s) => set({ tentDoorState: s }),
   toggleLantern: () => set((state) => ({ lanternOn: !state.lanternOn })),
   setLaptopFocused: (f) => set({ laptopFocused: f }),

@@ -7,8 +7,6 @@ import Vignette from "../effects/Vignette";
 import LaptopScreenOverlay from "../overlays/LaptopScreenOverlay";
 import MusicPlayerOverlay from "../overlays/MusicPlayerOverlay";
 import NotepadOverlay from "../overlays/NotepadOverlay";
-import SettingsMenu from "../overlays/SettingsMenu";
-import TimeOfDayArc from "../overlays/TimeOfDayArc";
 import VirtualJoystick from "../VirtualJoystick";
 import DebugControls from "./DebugControls";
 import InteractionOverlay from "./InteractionOverlay";
@@ -180,8 +178,6 @@ function TentScene({ visible }: TentSceneProps) {
 
       {/* Ambient UI overlays */}
       <Vignette />
-      <TimeOfDayArc />
-      <SettingsMenu />
       <VirtualJoystick />
     </div>
   );
