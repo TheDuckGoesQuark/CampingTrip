@@ -4,9 +4,6 @@ import { memo, Suspense, useEffect, useState, useRef, useCallback } from "react"
 import { useSceneStore } from "../../store/sceneStore";
 import { isMobile } from "../../utils/deviceDetect";
 import Vignette from "../effects/Vignette";
-import LaptopScreenOverlay from "../overlays/LaptopScreenOverlay";
-import MusicPlayerOverlay from "../overlays/MusicPlayerOverlay";
-import NotepadOverlay from "../overlays/NotepadOverlay";
 import VirtualJoystick from "../VirtualJoystick";
 import DebugControls from "./DebugControls";
 import InteractionOverlay from "./InteractionOverlay";
@@ -171,10 +168,8 @@ function TentScene({ visible }: TentSceneProps) {
       {/* Hidden buttons for keyboard / screen-reader access to 3D objects */}
       <InteractionOverlay />
 
-      {/* Fullscreen overlays */}
-      <LaptopScreenOverlay />
-      <NotepadOverlay />
-      <MusicPlayerOverlay />
+      {/* The blog/notes/music overlays render in SceneRoot, not here, so a cold
+          deep link to them doesn't have to mount this 3D scene at all. */}
 
       {/* Ambient UI overlays */}
       <Vignette />
