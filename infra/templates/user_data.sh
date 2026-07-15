@@ -5,8 +5,8 @@ set -euo pipefail
 # EC2 User Data — Bootstrap Caddy to serve the static frontends
 # Template variables are injected by Terraform templatefile()
 #
-# There is no backend/database any more: campsite and the photobroom stub
-# are static SPAs served directly by Caddy. Docker + Compose
+# There is no backend/database any more: campsite is a static SPA served
+# directly by Caddy. Docker + Compose
 # are still installed so a future backend can be added as a drop-in compose
 # file (service container + co-located Postgres) without re-bootstrapping.
 # -----------------------------------------------------------------------------
@@ -68,12 +68,6 @@ ${domain_name} {
     try_files {path} /index.html
     file_server
 }
-
-${photobroom_domain} {
-    root * /opt/jordanscamp/photobroom
-    try_files {path} /index.html
-    file_server
-}
 CADDYEOF
 
 # Caddy systemd service (if not installed via package manager)
@@ -132,8 +126,8 @@ CWEOF
 APP_DIR="/opt/jordanscamp"
 mkdir -p "$APP_DIR"
 
-# --- Deploy static frontends from S3 ---
-mkdir -p "$APP_DIR/webapp" "$APP_DIR/photobroom"
+# --- Deploy static frontend from S3 ---
+mkdir -p "$APP_DIR/webapp"
 
 if aws s3 cp "s3://${s3_bucket}/_deploy/webapp.tar.gz" /tmp/webapp.tar.gz --region "${aws_region}" 2>/dev/null; then
   tar xzf /tmp/webapp.tar.gz -C "$APP_DIR/webapp/"
@@ -141,14 +135,6 @@ if aws s3 cp "s3://${s3_bucket}/_deploy/webapp.tar.gz" /tmp/webapp.tar.gz --regi
   echo "Webapp (campsite) deployed from S3"
 else
   echo "No webapp tarball in S3 yet — will be deployed by CI"
-fi
-
-if aws s3 cp "s3://${s3_bucket}/_deploy/photobroom.tar.gz" /tmp/photobroom.tar.gz --region "${aws_region}" 2>/dev/null; then
-  tar xzf /tmp/photobroom.tar.gz -C "$APP_DIR/photobroom/"
-  rm /tmp/photobroom.tar.gz
-  echo "PhotoBroom app deployed from S3"
-else
-  echo "No photobroom tarball in S3 yet — will be deployed by CI"
 fi
 
 # --- Start Caddy ---

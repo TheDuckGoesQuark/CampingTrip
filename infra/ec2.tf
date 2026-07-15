@@ -32,10 +32,9 @@ resource "aws_instance" "app" {
   }
 
   user_data = base64encode(templatefile("${path.module}/templates/user_data.sh", {
-    aws_region        = var.aws_region
-    s3_bucket         = aws_s3_bucket.deploy.id
-    domain_name       = var.domain_name
-    photobroom_domain = local.photobroom_domain
+    aws_region  = var.aws_region
+    s3_bucket   = aws_s3_bucket.deploy.id
+    domain_name = var.domain_name
   }))
 
   tags = {

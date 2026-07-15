@@ -3,9 +3,3 @@ jordanscamp.site {
     try_files {path} /index.html
     file_server
 }
-
-photobroom.jordanscamp.site {
-    root * /opt/jordanscamp/photobroom
-    try_files {path} /index.html
-    file_server
-}
