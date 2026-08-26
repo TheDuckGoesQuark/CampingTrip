@@ -6,30 +6,7 @@ All planned and deferred work, organised by priority.
 
 ## Next Up
 
-### terraform.yml never runs on a stacked PR
-
-`terraform.yml` filters `pull_request` on `branches: [main]`, and that filter
-matches the PR's **base** branch. In a Graphite stack every PR's base is its
-parent branch, so an `infra/**` change reviewed as part of a stack gets no
-`terraform fmt -check`, no `terraform validate`, and no plan-preview comment —
-the first time Terraform runs against it is `apply -auto-approve` after the
-merge.
-
-This was found the practical way: the five infra PRs implementing the isolation
-plan (#66–#70) all skipped the workflow entirely. It also invalidates that
-plan's §5 assumption that "the PR plan job on the next PR is the check".
-
-Options, roughly in order of preference:
-
-- Add `infra/**` PRs to the trigger regardless of base — e.g. drop the
-  `branches` filter from the `pull_request` event and instead gate the `apply`
-  job on `github.ref == 'refs/heads/main'` (it already is).
-- Keep the filter and rely on laptop applies for stacked work, but then say so
-  explicitly in the workflow's comments so the gap is not rediscovered.
-
-Note the read-only plan job is additionally gated on
-`vars.AWS_PLAN_ROLE_ARN != ''`, so check that repo variable is set before
-concluding the trigger is the only problem.
+_(nothing queued)_
 
 ---
 

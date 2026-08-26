@@ -4,6 +4,38 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## terraform.yml now runs on stacked PRs
+
+**Date**: 2026-08-26
+
+**What was done**:
+
+- **Dropped `branches: [main]` from `terraform.yml`'s `pull_request` trigger.**
+  That filter matches a PR's _base_, and this repo uses Graphite, where every PR
+  in a stack is based on its parent branch. So stacked `infra/**` changes matched
+  nothing and got no `fmt -check`, no `validate` and no plan preview — the first
+  Terraform to see them was `apply -auto-approve` after the merge.
+- **The plan comment now names what it was computed against.** On a stacked PR
+  the plan is still against live infrastructure, so it includes the parent
+  branches' unmerged changes; without a note that reads as an unexplained extra
+  diff.
+
+**Key decisions**:
+
+- **Removed the filter rather than enumerating branch patterns.** A pattern list
+  would need maintaining as branch naming changed, and the safety property does
+  not come from the trigger anyway — it comes from the job gates.
+- **Left the `push` trigger restricted to main.** Combined with the `apply` job's
+  existing `github.event_name == 'push' && github.ref == 'refs/heads/main'`
+  condition, a feature branch can still only reach `validate` and the read-only
+  `plan`. Verified both gates, plus the `plan` job's same-repo condition that
+  keeps fork PRs away from credentials, are untouched.
+
+**Why it mattered**: found the practical way — the five PRs that scoped this
+account's IAM policies (#66–#70) all skipped the workflow entirely, while #72,
+a single PR based on main, got the full check. The stack that most needed a plan
+preview was the one that could not get one.
+
 ## DNS cleanup — www now works, orphaned hosted zone removed
 
 **Date**: 2026-08-26
