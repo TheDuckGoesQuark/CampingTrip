@@ -75,6 +75,32 @@ All infrastructure is managed by Terraform in `infra/`.
 
 The EC2 instance can be started/stopped via GitHub Actions (`infra-control.yml`) for cost management.
 
+### Account isolation
+
+This AWS account (`477395207022`) is shared with an unrelated project, CatMap.
+There is no account boundary between them, so the boundary is drawn in IAM, and
+**the `Project` tag is the boundary**. Every resource here carries
+`Project=jordanscamp` from the provider's `default_tags`; CatMap's carry
+`Project=catmap`.
+
+Consequences for anyone editing `infra/`:
+
+| Rule                                                                 | Why                                                                                                             |
+| -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| No new `Resource = "*"` on a mutating action                         | It reaches CatMap's estate. Scope by ARN, or condition on `aws:ResourceTag/Project`                             |
+| Creates condition on `aws:RequestTag/Project`, not `aws:ResourceTag` | A resource that does not exist yet has no tags to test                                                          |
+| Never widen `ec2:CreateTags`                                         | Tags _are_ the boundary, so arbitrary tagging moves it. It is gated on `ec2:CreateAction`                       |
+| New resource types must be tagged at create                          | An untagged resource is invisible to every tag-conditioned statement — including the ones that let us manage it |
+
+The one shared resource is the GitHub OIDC provider, an account-level singleton
+owned by CatMap's `infra/shared/` and read here as a `data` source. `infra/iam.tf`
+explains why at length; it is not to be reclaimed as a resource.
+
+Changes to the deploy role's permissions should be proven with
+`aws iam simulate-principal-policy` (negative check plus positive control), not
+assumed — the full method and its pitfalls are in
+`docs/planning/archive/2026-08-26-isolate-from-catmap.md`.
+
 ## CI/CD pipeline
 
 ```

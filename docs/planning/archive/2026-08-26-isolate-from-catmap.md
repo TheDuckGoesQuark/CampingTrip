@@ -1,5 +1,107 @@
 # Plan — Isolate jordanscamp from CatMap
 
+> **ARCHIVED — completed 26 Aug 2026.** This is the plan as written, kept for
+> the reasoning, with an outcome record below and `> **Outcome:**` notes inline
+> where reality differed from what was expected. Do not work from it again; the
+> policy it describes is now in `infra/iam.tf`, whose comments are the live
+> reference.
+
+## Outcome
+
+All of §3, §5 and §6 landed, in five PRs stacked on the plan itself, each
+applied from the laptop and verified with the §4 simulator before the next was
+started:
+
+| PR      | Scope                                                  | Result                                            |
+| ------- | ------------------------------------------------------ | ------------------------------------------------- |
+| §5 + §6 | AMI pin, `prevent_destroy` on EIP and hosted zone      | No AWS calls — `lifecycle` is Terraform-side only |
+| §3.1    | Route53 writes → this zone; `CreateHostedZone` dropped | Applied, verified                                 |
+| §3.2    | Logs → `jordanscamp-prod/*` prefix                     | Applied, verified                                 |
+| §3.3    | S3 → `jordanscamp-*` prefix                            | Applied, verified                                 |
+| §3.4    | EC2/VPC → one statement became seven                   | Applied, verified                                 |
+
+§7's definition of done, checked at the end: `plan` reports `No changes`, every
+negative simulator check returns `implicitDeny` with its positive control
+`allowed`, `https://jordanscamp.site` returns 200, `aws_instance.app` no longer
+appears in an unrelated plan, and every remaining mention of `catmap` under
+`infra/*.tf` is inside a comment.
+
+### What the plan got wrong, or could not have known
+
+- **CatMap's infrastructure went live during the work.** The plan describes it
+  as "about to add" resources. By the time §3.4 was written they existed:
+  `vpc-0a814667fb5f091ae`, `subnet-0b9789ac400ecb0a2`, `sg-0e47f26a28d19bc34`,
+  `igw-040c6fb9c92414de2`, `rtb-0ce1cac69606ef287`, tagged `Project=catmap`.
+  The hole was live, not hypothetical.
+
+- **`ec2:CreateTags` was the most serious grant, and §3.4 treated it as a
+  detail.** Tags are the boundary in every other statement, so authority to tag
+  arbitrary resources _is_ authority to move the boundary: tag CatMap's instance
+  `Project=jordanscamp` and every tag-conditioned statement then permits
+  terminating it. It needed the `ec2:CreateAction` gate more than any `Delete*`
+  needed its tag condition.
+
+- **The network interface carries no tags at all.** §3.4 predicted
+  `default_tags` would miss something; this is what. `eni-0a9713ee64a568cd2`,
+  behind the live instance, has an empty tag set — the provider requests
+  `TagSpecifications` for `instance` and `volume` on `RunInstances` but not for
+  `network-interface`. A `Project` condition there would have denied this
+  project's own instance rebuild. Resolved with an `ec2:Vpc` condition instead,
+  which is equally tight for the actual threat and does not depend on tagging
+  behaviour. The plan's suggested fallback — grant the create unconditionally,
+  keep the tag condition on the delete — was not needed.
+
+- **§3.4's advice to grant `subnet/*` unconditionally was unnecessary.** Only
+  `image/*` genuinely cannot be conditioned (an AL2023 AMI is Amazon-owned and
+  carries none of our tags). The subnet and security group are ours and tagged,
+  and `ec2:Vpc` covers them at `RunInstances` time.
+
+- **§3.2's ARN-suffix warning was right, and here is the concrete form.** AWS's
+  canonical ARN for the log group is
+  `arn:aws:logs:eu-west-2:477395207022:log-group:jordanscamp-prod/ec2:*`, while
+  Terraform state stores the bare form. Both are granted.
+
+- **§3.1's literal zone id was replaced with `aws_route53_zone.main.zone_id`.**
+  Known at plan time, no dependency cycle, one fewer copy of an identifier whose
+  source of truth is in `route53.tf`. It resolved to `Z094957516GTOTOWK1PS3` —
+  the live zone, not the orphan.
+
+- **The AMI had not drifted when §5 was applied.** The instance was rebuilt the
+  same morning, so the pin landed before the next republish rather than after
+  one. `plan` was clean before and after; the effect is entirely on future
+  plans.
+
+### Two traps in §4's own commands
+
+Both produce a false `implicitDeny` — a denial that looks exactly like a working
+boundary, which is the worst possible failure mode for an acceptance test.
+
+1. **The simulator matches the action against the resource _type_.**
+   `ec2:TerminateInstances` against a VPC ARN returns `implicitDeny` no matter
+   what the policy says. Every action must be paired with an ARN of the type it
+   actually operates on, which means a table of (action, resource) pairs rather
+   than one ARN and a list of actions.
+
+2. **zsh does not word-split unquoted parameters.** A helper doing
+   `--action-names $1` with a space-joined string passes _one_ bogus action
+   name, and the simulator denies it. Pass action names as separate arguments,
+   and assert the returned row count equals the action count.
+
+### Left undone, deliberately
+
+- **The orphaned `jordanscamp.site` hosted zone `Z0321657TI5MQR8EEVXL` still
+  exists** — 5 records against the live zone's 3, exactly the trap §2 describes.
+  Since identified: it is the zone Route53 Registrar auto-created when the domain
+  was registered, still holding the pre-Terraform GitHub Pages config. Its
+  delegation set appears nowhere in the registrar's configuration, so §2's
+  warning is real but the resolution is unambiguous — full detail in `TODO.md`.
+  Deleting it is irreversible, it is not in Terraform state, and it is not
+  something a `terraform apply` does, so it was left for a deliberate manual
+  decision. Tracked in `TODO.md`. Re-read §2 before touching it.
+- **§0's shared OIDC provider arrangement is untouched**, as instructed.
+
+---
+
 Make this estate incapable of affecting the other project in the same AWS
 account, and vice versa. The two may keep sharing account `477395207022`; what
 must go is any overlap in resources and any ability to destroy one from the
@@ -83,6 +185,11 @@ Everything carries `Project=jordanscamp`, `Environment=prod`,
 `ManagedBy=terraform` from the provider's `default_tags`. CatMap's carry
 `Project=catmap`. That tag is the boundary.
 
+> **Outcome:** identified 26 Aug 2026 — it is the Route53 Registrar's
+> auto-created zone from domain registration, still pointing at the old GitHub
+> Pages site. Nothing delegates to it. §2's instruction to resolve by ID against
+> the delegation set is exactly right, and is what settled it.
+
 > **There is a second, orphaned `jordanscamp.site` hosted zone**,
 > `Z0321657TI5MQR8EEVXL`, and it has **more** records than the live one. Resolve
 > zones by ID against the registrar's delegation set, never by name or by how
@@ -106,6 +213,9 @@ support resource-level permissions at all, and narrowing them buys nothing.
 
 ### 3.1 Route53 — scope to this zone
 
+> **Outcome:** done as described, except the zone id is taken as
+> `aws_route53_zone.main.zone_id` rather than written literally.
+
 `ChangeResourceRecordSets` on `"*"` currently means this role can rewrite
 `catmaps.me`. Route53 record changes _are_ scopable to a hosted zone ARN:
 
@@ -127,6 +237,9 @@ managed here; the role has no legitimate need to create another, and
 
 ### 3.2 CloudWatch Logs — scope by name prefix
 
+> **Outcome:** done as described. Both ARN forms were needed — see the
+> outcome record above for the exact pair.
+
 ```
 Resource = "arn:aws:logs:eu-west-2:477395207022:log-group:jordanscamp-prod/*"
 ```
@@ -141,6 +254,10 @@ if an apply fails, add `.../jordanscamp-prod/*:*`.
 
 ### 3.3 S3 — scope by bucket name prefix
 
+> **Outcome:** done as described. Note `${local.name_prefix}-*` would be
+> wrong: the state bucket is `jordanscamp-terraform-state` and carries no
+> environment segment, so the prefix local misses it and `init` breaks.
+
 ```
 Resource = ["arn:aws:s3:::jordanscamp-*", "arn:aws:s3:::jordanscamp-*/*"]
 ```
@@ -153,6 +270,10 @@ and should stay that way.
 the bucket ARN, which the prefix covers.
 
 ### 3.4 EC2 and VPC — the fiddly one
+
+> **Outcome:** done, as seven statements. The ENI tag prediction was
+> correct and is the interesting part; `ec2:CreateTags` turned out to
+> matter more than anything in the `Delete*` list. See above.
 
 This is the statement that lets this role terminate CatMap's instance. It is
 also the one where a wrong answer breaks the apply, so treat it as iterative

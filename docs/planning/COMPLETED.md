@@ -4,6 +4,67 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## Account isolation — scope the Terraform apply role away from CatMap
+
+**Date**: 2026-08-26
+
+**What was done**:
+
+- **Every `Resource = "*"` in the Terraform apply role narrowed** (`infra/iam.tf`,
+  `aws_iam_role_policy.github_terraform_resources`). This role shares AWS account
+  `477395207022` with an unrelated project, CatMap, whose VPC, subnet, security
+  group, internet gateway and route table went live during this work. Before the
+  change the role could terminate their instance, delete their network, rewrite
+  `catmaps.me`, drop their log groups and delete their buckets.
+- **Route53** — mutating actions (`ChangeResourceRecordSets`,
+  `ChangeTagsForResource`) scoped to `aws_route53_zone.main.zone_id`; reads left
+  on `"*"`; `route53:CreateHostedZone` deleted outright (unscopable, and no
+  legitimate caller now the zone exists and is protected).
+- **CloudWatch Logs** — scoped to the `jordanscamp-prod/*` prefix in both ARN
+  forms (bare and `:*`-suffixed — AWS's canonical ARN uses the suffix,
+  Terraform's state stores the bare form). `logs:DescribeLogGroups` split out
+  and left on `"*"`; it is the enumeration call and supports no resource scope.
+- **S3** — scoped to `arn:aws:s3:::jordanscamp-*` (+ `/*`), covering the deploy
+  and state buckets while excluding `catmap-*`.
+- **EC2/VPC** — one statement of eleven wildcards became seven statements:
+  reads unconditioned; mutations on existing resources gated on
+  `aws:ResourceTag/Project`; creates gated on `aws:RequestTag/Project`; network
+  interfaces gated on `ec2:Vpc`; `RunInstances` split three ways for its
+  sub-resource authorisation; and `ec2:CreateTags` gated on `ec2:CreateAction`.
+- **Lifecycle guardrails** (`infra/ec2.tf`, `infra/route53.tf`) — `ami` pinned
+  via `ignore_changes` so an unrelated `infra/**` merge stops replacing the web
+  server, and `prevent_destroy` on the Elastic IP and the hosted zone.
+- **Verified, not assumed.** Each step was applied from the laptop and checked
+  with `aws iam simulate-principal-policy` before the next began: every negative
+  check `implicitDeny`, every positive control `allowed`, site still 200.
+
+**Key decisions**:
+
+- **Tags are the boundary**, which is why `ec2:CreateTags` needed the
+  `ec2:CreateAction` gate more urgently than any `Delete*` needed its tag
+  condition — authority to tag arbitrary resources is authority to move the
+  boundary.
+- **`ec2:Vpc` rather than a tag for network interfaces.** The provider does not
+  tag ENIs (verified: `eni-0a9713ee64a568cd2` has an empty tag set), so a
+  `Project` condition would have denied this project's own instance rebuild.
+- **EC2 actions enumerated, not wildcarded.** `ec2:*Instance*` spans both
+  `RunInstances` (needs `aws:RequestTag`) and `TerminateInstances` (needs
+  `aws:ResourceTag`), so no single condition can be correct for it.
+- **S3 kept as a prefix rather than the two bucket ARNs.** The residual
+  capability is confined to this project's own namespace, and enumerating would
+  reintroduce the bootstrap deadlock on every future bucket.
+- **AMI pin first**, so that every subsequent plan showed only the IAM diff.
+
+**Deferred**:
+
+- The orphaned `jordanscamp.site` hosted zone `Z0321657TI5MQR8EEVXL` (5 records
+  against the live zone's 3). Irreversible, not in Terraform state, so left for
+  a deliberate manual decision — see TODO.md.
+- `RunInstances` grants are verified only by simulation. The role's trust policy
+  admits GitHub OIDC only, so it cannot be assumed locally to test for real, and
+  with the AMI pinned a normal apply never exercises those paths.
+- The shared GitHub OIDC provider arrangement from #64 is unchanged by design.
+
 ## Brand design system, shareable blog routes, and scene accessibility
 
 **Date**: 2026-07-06
