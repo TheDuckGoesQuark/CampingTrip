@@ -510,7 +510,32 @@ resource "aws_iam_role_policy" "github_terraform_resources" {
           "s3:GetReplicationConfiguration",
           "s3:ListBucket",
         ]
-        Resource = "*"
+        # On `"*"` this list included `s3:DeleteBucket` against every bucket in
+        # a shared account. A name prefix is enough to draw the boundary here
+        # because both buckets this project owns are `jordanscamp-*` and
+        # CatMap's will be `catmap-*`.
+        #
+        # `jordanscamp-*` rather than `${local.name_prefix}-*`: the state bucket
+        # is `jordanscamp-terraform-state`, which carries no environment
+        # segment, so the existing prefix local (`jordanscamp-prod`) would match
+        # the deploy bucket and silently miss the one holding the state. Getting
+        # that wrong breaks `init`, not the apply, which is a confusing place to
+        # discover it.
+        #
+        # This deliberately stays a prefix rather than enumerating the two
+        # buckets, which would be tighter. The residual capability is "this role
+        # could create or delete a bucket named jordanscamp-something", which is
+        # entirely inside this project's own namespace and so is not the risk
+        # being managed. Enumerating would also reintroduce §5's bootstrap
+        # deadlock every time a bucket is added: the apply that grants access to
+        # the new bucket would itself need that access.
+        #
+        # `s3:ListAllMyBuckets` is not granted and should stay that way — it is
+        # account-wide by construction and would enumerate CatMap's buckets.
+        Resource = [
+          "arn:aws:s3:::jordanscamp-*",
+          "arn:aws:s3:::jordanscamp-*/*",
+        ]
       },
       {
         # `logs:DescribeLogGroups` does not support resource-level permissions —
