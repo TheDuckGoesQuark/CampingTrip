@@ -31,43 +31,6 @@ Note the read-only plan job is additionally gated on
 `vars.AWS_PLAN_ROLE_ARN != ''`, so check that repo variable is set before
 concluding the trigger is the only problem.
 
-### Delete the orphaned jordanscamp.site hosted zone
-
-`Z0321657TI5MQR8EEVXL` is a second, unused `jordanscamp.site` zone. Identified
-26 Aug 2026 — it is **the zone Route53 Registrar created automatically when the
-domain was registered** (`CallerReference: RISWorkflow-RD:...`,
-`Comment: "HostedZone created by Route53 Registrar"`, domain registered
-2026-02-22). Its records still describe the pre-Terraform site on GitHub Pages:
-`A` -> `185.199.108-111.153`, `AAAA` -> `2606:50c0:800x::153`, and
-`www` -> `TheDuckGoesQuark.github.io`. Terraform later created its own zone for
-the same domain and the registrar's delegation was repointed at it, leaving this
-one behind.
-
-It only _looked_ more authoritative because GitHub Pages needs A + AAAA + a
-`www` CNAME (5 records) where the live zone needs one A record (3).
-
-**Verified safe to delete.** Its delegation set — `ns-1163.awsdns-17.org`,
-`ns-1572.awsdns-04.co.uk`, `ns-800.awsdns-36.net`, `ns-164.awsdns-20.com` —
-appears nowhere in the registrar's configuration, so nothing on the internet
-resolves through it. All three sources agree the live zone is
-`Z094957516GTOTOWK1PS3`: `dig NS jordanscamp.site`,
-`route53domains get-domain-detail`, and Terraform state.
-
-Deletion needs the non-required records removed first (the `www` CNAME, the A and
-the AAAA); Route53 removes the zone's own NS and SOA with it. Not in Terraform
-state, so this is a manual call, and it is irreversible.
-
-### Decide whether www.jordanscamp.site should work
-
-Found while investigating the zone above: **`www.jordanscamp.site` does not
-resolve at all today.** The only `www` record anywhere in the account is the
-stale GitHub Pages CNAME inside the orphaned zone, which nothing queries.
-
-If www should work, it is an A record for `www` -> `aws_eip.app.public_ip` in
-`infra/route53.tf` plus a matching Caddy vhost in `infra/Caddyfile` and
-`infra/templates/user_data.sh`. If it should not, no action — but delete the
-orphan knowing it takes the last trace of the old www config with it.
-
 ---
 
 ## Backlog

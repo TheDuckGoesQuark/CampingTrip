@@ -3,3 +3,12 @@ jordanscamp.site {
     try_files {path} /index.html
     file_server
 }
+
+# One canonical hostname. Serving the same site on both would give every page
+# two addresses, which splits search ranking and makes analytics lie; a 301 to
+# the apex keeps www working for anyone who types it out of habit without
+# creating a second copy of the site. Caddy gets its own certificate for this
+# name automatically over HTTP-01.
+www.jordanscamp.site {
+    redir https://jordanscamp.site{uri} permanent
+}

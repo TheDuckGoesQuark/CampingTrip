@@ -4,6 +4,44 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## DNS cleanup — www now works, orphaned hosted zone removed
+
+**Date**: 2026-08-26
+
+**What was done**:
+
+- **`www.jordanscamp.site` now resolves.** It previously returned NXDOMAIN: the
+  only `www` record anywhere in the account was a stale CNAME to
+  `TheDuckGoesQuark.github.io`, sitting in a hosted zone nothing delegated to.
+  Added as a CNAME to the apex in `infra/route53.tf`, with Caddy issuing a 301 to
+  the apex (`infra/Caddyfile` plus the bootstrap copy in
+  `infra/templates/user_data.sh`).
+- **Deleted the orphaned `jordanscamp.site` hosted zone `Z0321657TI5MQR8EEVXL`.**
+  It was created automatically by Route53 Registrar at domain registration
+  (22 Feb 2026) and still held the pre-Terraform GitHub Pages configuration —
+  `A` to `185.199.108-111.153`, `AAAA` to `2606:50c0:800x::153`, and the `www`
+  CNAME. Terraform later built its own zone for the same domain and the
+  registrar's delegation was repointed, leaving this one stranded.
+
+**Key decisions**:
+
+- **Redirect www to the apex rather than serving both.** Two hostnames serving
+  the same content gives every page two addresses, which splits search ranking
+  and double-counts analytics. One line in `infra/Caddyfile` to reverse.
+- **A CNAME for www, not a second A record**, so exactly one record decides where
+  the domain points. If the apex ever stops being a bare IP, www follows.
+- **Verified the orphan by delegation set, not by name or record count**, which
+  is what made it safe: the registrar's four nameservers matched the live zone
+  and none of the orphan's. Counting records would have picked the wrong one —
+  the dead zone held 5 (GitHub Pages needs A + AAAA + www) against the live
+  zone's 3.
+
+**Deferred**:
+
+- `terraform.yml` still does not run on stacked PRs — see TODO.md. Ironically the
+  www change, being a single PR based on `main`, is the only infra change in this
+  sequence that got a real CI plan.
+
 ## Account isolation — scope the Terraform apply role away from CatMap
 
 **Date**: 2026-08-26
