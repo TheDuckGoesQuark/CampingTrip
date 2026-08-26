@@ -353,26 +353,227 @@ resource "aws_iam_role_policy" "github_terraform_resources" {
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
+      # --- EC2 and VPC -----------------------------------------------------
+      #
+      # This was one statement: eleven `ec2:*Thing*` wildcards on
+      # `Resource = "*"`. That is `ec2:TerminateInstances` and `ec2:DeleteVpc`
+      # against everything in a shared account, and as of today that is not
+      # theoretical — CatMap has live infrastructure here:
+      # vpc-0a814667fb5f091ae, subnet-0b9789ac400ecb0a2,
+      # sg-0e47f26a28d19bc34, igw-040c6fb9c92414de2, rtb-0ce1cac69606ef287,
+      # all tagged `Project=catmap`. A CI compromise, or a bad `destroy`
+      # pointed at the wrong state, could take their whole network.
+      #
+      # The `Project` tag from the provider's default_tags is the boundary.
+      # Splitting on it needs three different condition strategies, because a
+      # resource that does not exist yet has no tags to test:
+      #
+      #   reads          → no condition (and mostly unscopable anyway)
+      #   existing thing → aws:ResourceTag/Project  (the tag it already has)
+      #   new thing      → aws:RequestTag/Project   (the tag being applied)
+      #
+      # The actions are enumerated rather than left as `ec2:*Instance*`
+      # wildcards. That is deliberate and it is the whole trick: `*Instance*`
+      # spans both `RunInstances` (a create, needs RequestTag) and
+      # `TerminateInstances` (a mutation, needs ResourceTag), so no single
+      # condition can be correct for it. A wildcard here would either deny
+      # every create or fail to constrain any delete.
       {
-        Sid    = "EC2andVPC"
+        # Reads. Most `ec2:Describe*` calls do not support resource-level
+        # permissions at all, and narrowing them would buy nothing — knowing
+        # CatMap's VPC exists is not a capability worth removing.
+        Sid      = "EC2Read"
+        Effect   = "Allow"
+        Action   = "ec2:Describe*"
+        Resource = "*"
+      },
+      {
+        # Mutations on resources that already exist. This is the statement that
+        # actually closes the hole: every one of these is denied against
+        # anything tagged `Project=catmap`.
+        #
+        # `CreateRoute`/`DeleteRoute`/`ReplaceRoute` and the `Associate*` pairs
+        # live here rather than in the create statement below, despite the
+        # name: routes and associations are not taggable resources, so they are
+        # authorised against the existing route table, subnet or address they
+        # act on — all of which are tagged.
+        Sid    = "EC2MutateThisProjectsResources"
         Effect = "Allow"
         Action = [
-          "ec2:Describe*",
-          "ec2:CreateTags",
-          "ec2:*SecurityGroup*",
-          "ec2:*Subnet*",
-          "ec2:*Vpc*",
-          "ec2:*InternetGateway*",
-          "ec2:*RouteTable*",
-          "ec2:*Address*",
-          "ec2:*Instance*",
-          "ec2:*Volume*",
-          "ec2:*NetworkInterface*",
-          "ec2:ModifyInstanceAttribute",
-          "ec2:RunInstances",
           "ec2:TerminateInstances",
+          "ec2:StartInstances",
+          "ec2:StopInstances",
+          "ec2:ModifyInstanceAttribute",
+          "ec2:DeleteVpc",
+          "ec2:ModifyVpcAttribute",
+          "ec2:DeleteSubnet",
+          "ec2:ModifySubnetAttribute",
+          "ec2:DeleteSecurityGroup",
+          "ec2:AuthorizeSecurityGroupIngress",
+          "ec2:AuthorizeSecurityGroupEgress",
+          "ec2:RevokeSecurityGroupIngress",
+          "ec2:RevokeSecurityGroupEgress",
+          "ec2:ModifySecurityGroupRules",
+          "ec2:UpdateSecurityGroupRuleDescriptionsIngress",
+          "ec2:UpdateSecurityGroupRuleDescriptionsEgress",
+          "ec2:DeleteInternetGateway",
+          "ec2:AttachInternetGateway",
+          "ec2:DetachInternetGateway",
+          "ec2:DeleteRouteTable",
+          "ec2:CreateRoute",
+          "ec2:DeleteRoute",
+          "ec2:ReplaceRoute",
+          "ec2:AssociateRouteTable",
+          "ec2:DisassociateRouteTable",
+          "ec2:ReplaceRouteTableAssociation",
+          "ec2:ReleaseAddress",
+          "ec2:AssociateAddress",
+          "ec2:DisassociateAddress",
+          "ec2:DeleteVolume",
+          "ec2:AttachVolume",
+          "ec2:DetachVolume",
+          "ec2:ModifyVolume",
+          "ec2:DeleteTags",
         ]
         Resource = "*"
+        Condition = {
+          StringEquals = {
+            "aws:ResourceTag/Project" = "jordanscamp"
+          }
+        }
+      },
+      {
+        # Network interfaces are the exception the plan's §3.4 predicted: the
+        # provider does not tag them. Verified on the live ENI behind
+        # i-04768a73967de4c04 — eni-0a9713ee64a568cd2 has an EMPTY tag set,
+        # because the ENI is created implicitly by `RunInstances` and the
+        # provider requests TagSpecifications for `instance` and `volume` but
+        # not for `network-interface`. A `Project` tag condition here would
+        # therefore deny this project's own instance rebuild.
+        #
+        # So the boundary is drawn on the VPC instead, which is just as tight
+        # for the threat that matters: an ENI in our VPC cannot be CatMap's,
+        # because their resources are in vpc-0a814667fb5f091ae.
+        Sid    = "EC2NetworkInterfacesInThisVpcOnly"
+        Effect = "Allow"
+        Action = [
+          "ec2:CreateNetworkInterface",
+          "ec2:DeleteNetworkInterface",
+          "ec2:AttachNetworkInterface",
+          "ec2:DetachNetworkInterface",
+          "ec2:ModifyNetworkInterfaceAttribute",
+        ]
+        Resource = "*"
+        Condition = {
+          StringEquals = {
+            "ec2:Vpc" = aws_vpc.main.arn
+          }
+        }
+      },
+      {
+        # Creates. The resource does not exist, so there is no `ResourceTag` to
+        # test — `RequestTag` tests the tags being applied in the call itself.
+        # This works only because the provider passes `TagSpecifications`
+        # inline on these APIs; where it instead tags with a follow-up
+        # `CreateTags`, `RequestTag` is absent and the create is denied. The
+        # live estate confirms the inline path for what we actually use: the
+        # VPC, subnet, security group, IGW, route table, EIP and root volume
+        # all carry `Project` (the ENI above is the one that does not).
+        Sid    = "EC2CreateTaggedAsThisProject"
+        Effect = "Allow"
+        Action = [
+          "ec2:CreateVpc",
+          "ec2:CreateSubnet",
+          "ec2:CreateSecurityGroup",
+          "ec2:CreateInternetGateway",
+          "ec2:CreateRouteTable",
+          "ec2:AllocateAddress",
+          "ec2:CreateVolume",
+        ]
+        Resource = "*"
+        Condition = {
+          StringEquals = {
+            "aws:RequestTag/Project" = "jordanscamp"
+          }
+        }
+      },
+      # `ec2:RunInstances` gets three statements to itself, because it
+      # authorises every resource it touches separately and they need different
+      # conditions. All must pass for a launch to succeed. Miss one and the
+      # error names a sub-resource type you were not thinking about.
+      {
+        # The things being created. Both are tagged inline by the provider.
+        Sid    = "RunInstancesCreatesTaggedResources"
+        Effect = "Allow"
+        Action = "ec2:RunInstances"
+        Resource = [
+          "arn:aws:ec2:${var.aws_region}:${data.aws_caller_identity.current.account_id}:instance/*",
+          "arn:aws:ec2:${var.aws_region}:${data.aws_caller_identity.current.account_id}:volume/*",
+        ]
+        Condition = {
+          StringEquals = {
+            "aws:RequestTag/Project" = "jordanscamp"
+          }
+        }
+      },
+      {
+        # The things being referenced. The subnet and security group already
+        # exist and are tagged; the implicitly-created ENI is not, so it takes
+        # the VPC condition for the reason given above.
+        Sid      = "RunInstancesReferencesThisProjectsNetwork"
+        Effect   = "Allow"
+        Action   = "ec2:RunInstances"
+        Resource = "*"
+        Condition = {
+          StringEquals = {
+            "ec2:Vpc" = aws_vpc.main.arn
+          }
+        }
+      },
+      {
+        # The AMI, and a key pair if one is ever attached. Neither can carry a
+        # `Project` tag condition: an AL2023 AMI is owned by Amazon, not by
+        # this account, so it has none of our tags and never will. This is the
+        # one genuinely unconditioned grant in the split, and it is safe
+        # because `RunInstances` on an image confers nothing but the ability to
+        # boot it — the instance it would boot is gated by the two statements
+        # above.
+        Sid    = "RunInstancesReadsAwsOwnedImages"
+        Effect = "Allow"
+        Action = "ec2:RunInstances"
+        Resource = [
+          "arn:aws:ec2:${var.aws_region}::image/*",
+          "arn:aws:ec2:${var.aws_region}:${data.aws_caller_identity.current.account_id}:key-pair/*",
+        ]
+      },
+      {
+        # `ec2:CreateTags` on `"*"` is not the harmless-sounding grant it looks
+        # like: tags are the boundary in every statement above, so the ability
+        # to tag arbitrary resources is the ability to move that boundary — tag
+        # CatMap's instance `Project=jordanscamp` and you may now terminate it.
+        #
+        # `ec2:CreateAction` restricts tagging to the tag-on-create path, so
+        # tags can only be set as part of a create this role was already
+        # allowed to make, never applied to a resource that already exists.
+        Sid      = "EC2TagOnlyDuringCreate"
+        Effect   = "Allow"
+        Action   = "ec2:CreateTags"
+        Resource = "*"
+        Condition = {
+          StringEquals = {
+            "ec2:CreateAction" = [
+              "RunInstances",
+              "CreateVpc",
+              "CreateSubnet",
+              "CreateSecurityGroup",
+              "CreateInternetGateway",
+              "CreateRouteTable",
+              "AllocateAddress",
+              "CreateVolume",
+              "CreateNetworkInterface",
+            ]
+          }
+        }
       },
       {
         # Reads. `ListHostedZones` and `GetChange` take no resource at all, and
