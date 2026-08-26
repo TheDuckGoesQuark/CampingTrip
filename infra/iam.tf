@@ -375,20 +375,52 @@ resource "aws_iam_role_policy" "github_terraform_resources" {
         Resource = "*"
       },
       {
-        Sid    = "Route53"
+        # Reads. `ListHostedZones` and `GetChange` take no resource at all, and
+        # the rest buy nothing from being narrowed — knowing that catmaps.me
+        # exists is not the capability anyone is worried about.
+        Sid    = "Route53Read"
         Effect = "Allow"
         Action = [
           "route53:GetHostedZone",
           "route53:ListHostedZones",
           "route53:ListResourceRecordSets",
-          "route53:ChangeResourceRecordSets",
           "route53:GetChange",
-          "route53:CreateHostedZone",
           "route53:ListTagsForResource",
-          "route53:ChangeTagsForResource",
         ]
         Resource = "*"
       },
+      {
+        # The capability anyone *is* worried about. On `"*"` this granted the
+        # deploy role authority to rewrite every hosted zone in a shared
+        # account, catmaps.me included — a CI compromise here could have
+        # repointed the sibling project's domain. Record changes are scopable to
+        # a hosted zone ARN, so scope them.
+        #
+        # The zone id is taken as a reference rather than written literally
+        # (the plan's §3.1 spells out Z094957516GTOTOWK1PS3). Both work, and the
+        # reference is known at plan time with no dependency cycle — the zone
+        # does not depend on IAM. It avoids a second copy of an identifier that
+        # already has a source of truth twelve lines away in route53.tf, and if
+        # the zone is ever legitimately rebuilt the policy follows it instead of
+        # silently authorising a zone that no longer exists.
+        Sid    = "Route53WriteThisZoneOnly"
+        Effect = "Allow"
+        Action = [
+          "route53:ChangeResourceRecordSets",
+          "route53:ChangeTagsForResource",
+        ]
+        Resource = "arn:aws:route53:::hostedzone/${aws_route53_zone.main.zone_id}"
+      },
+      # `route53:CreateHostedZone` is deleted rather than narrowed. It cannot be
+      # scoped — there is no resource yet to name — and there is no legitimate
+      # caller: the one zone this project needs already exists, is managed here,
+      # and now carries `prevent_destroy`. A CI job creating a second
+      # `jordanscamp.site` zone is not a feature; this account already contains
+      # one such orphan (Z0321657TI5MQR8EEVXL, see route53.tf) and it is a trap.
+      #
+      # If the zone ever genuinely needs rebuilding, that is a laptop apply with
+      # terraform-user credentials followed by a registrar visit — deliberate,
+      # not something a merge should be able to do.
       {
         # Read-only introspection — harmless, and some (GetPolicy on AWS-managed
         # policies) legitimately need account-wide scope.
