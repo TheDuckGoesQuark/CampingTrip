@@ -68,6 +68,13 @@ ${domain_name} {
     try_files {path} /index.html
     file_server
 }
+
+# Keep this in step with infra/Caddyfile. This copy is what a freshly built
+# instance serves until the next deploy.yml run replaces it from S3; if they
+# drift, a rebuild silently changes behaviour until someone happens to deploy.
+www.${domain_name} {
+    redir https://${domain_name}{uri} permanent
+}
 CADDYEOF
 
 # Caddy systemd service (if not installed via package manager)
