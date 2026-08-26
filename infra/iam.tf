@@ -59,10 +59,34 @@ resource "aws_iam_role_policy_attachment" "ec2_cloudwatch" {
 
 # --- GitHub Actions OIDC ---
 
-resource "aws_iam_openid_connect_provider" "github" {
-  url             = "https://token.actions.githubusercontent.com"
-  client_id_list  = ["sts.amazonaws.com"]
-  thumbprint_list = ["6938fd4d98bab03faadb97b34396831e3780aea1", "1c58a3a8518e8759bf075b76b750d4f2df264fcd"]
+# Read, not declared. This fixes a real outage, so it is worth the paragraph.
+#
+# `aws_iam_openid_connect_provider` for token.actions.githubusercontent.com is
+# an **account-level singleton**. This configuration declared it as a resource,
+# and so did a sibling project sharing the account (CatMap). Two configurations,
+# one AWS resource, and whichever applied last owned it. On 18 Aug 2026 CatMap's
+# `terraform destroy` deleted it, and with it this repo's ability to assume any
+# deploy role. The site never noticed — Caddy was already serving static files
+# from disk — but every workflow here failed at "configure AWS credentials" from
+# that day on.
+#
+# It exists again, recreated 26 Aug 2026 under `catmap/infra/shared/`: a state
+# holding nothing else, precisely so that a destroy aimed at an application
+# cannot reach it. That makes this repo's claim stale but *accidentally true*,
+# which is the worst kind of stale — everything works, and the next teardown in
+# either project repeats the outage.
+#
+# It was still actively fighting. Today's plan wanted to retag the provider
+# `Project=jordanscamp`, over the `Project=shared` that `catmap/infra/shared/`
+# sets: two owners flipping one resource's tags on every apply.
+#
+# So: exactly one owner, and it is neither project's application config. The
+# accompanying `terraform state rm` dropped the claim without touching the live
+# resource, and was run *before* this change reached main. The reverse order is
+# a config that omits a resource still present in state, which plans as a
+# destroy — reproducing the original incident precisely.
+data "aws_iam_openid_connect_provider" "github" {
+  url = "https://token.actions.githubusercontent.com"
 }
 
 resource "aws_iam_role" "github_actions" {
@@ -72,7 +96,7 @@ resource "aws_iam_role" "github_actions" {
     Version = "2012-10-17"
     Statement = [{
       Effect    = "Allow"
-      Principal = { Federated = aws_iam_openid_connect_provider.github.arn }
+      Principal = { Federated = data.aws_iam_openid_connect_provider.github.arn }
       Action    = "sts:AssumeRoleWithWebIdentity"
       Condition = {
         StringEquals = {
@@ -104,7 +128,7 @@ resource "aws_iam_role" "github_actions_plan" {
     Version = "2012-10-17"
     Statement = [{
       Effect    = "Allow"
-      Principal = { Federated = aws_iam_openid_connect_provider.github.arn }
+      Principal = { Federated = data.aws_iam_openid_connect_provider.github.arn }
       Action    = "sts:AssumeRoleWithWebIdentity"
       Condition = {
         StringEquals = {
@@ -141,6 +165,14 @@ resource "aws_iam_role_policy" "github_plan_readonly" {
           "iam:GetRolePolicy",
           "iam:GetInstanceProfile",
           "iam:GetOpenIDConnectProvider",
+          # Required by the `data "aws_iam_openid_connect_provider"` lookup,
+          # which resolves by URL and therefore *lists* before it gets. Without
+          # it the data source fails with AccessDenied on
+          # `iam:ListOpenIDConnectProviders` and no plan can be produced at all.
+          # It takes no resource scope — the error names `oidc-provider/*` even
+          # when one ARN is requested — and it returns nothing but a list of
+          # provider ARNs.
+          "iam:ListOpenIDConnectProviders",
           "iam:ListRolePolicies",
           "iam:ListAttachedRolePolicies",
           "iam:ListInstanceProfilesForRole",
@@ -175,21 +207,58 @@ resource "aws_iam_role_policy" "github_plan_readonly" {
 }
 
 # GitHub Actions: SSM Run Command on EC2 for deploys
+#
+# This held `ssm:SendCommand` on `"*"`, which in a *shared* account is root
+# shell on every managed node in it — not just this project's. That is fine
+# right up to the moment a second project puts an instance here, which CatMap is
+# about to do. Same finding, same fix as `catmap/infra/iam.tf`.
+#
+# SendCommand authorises the document and the target separately, so both need
+# granting; the tag condition on the instance statement is what narrows the
+# target. `ssm:resourceTag/`, not `aws:ResourceTag/`, because the SSM guide
+# notes that a *global* condition key on SendCommand additionally requires an
+# `aws:ViaAWSService` condition.
 resource "aws_iam_role_policy" "github_ssm" {
   name = "ssm-deploy"
   role = aws_iam_role.github_actions.id
 
   policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [{
-      Effect = "Allow"
-      Action = [
-        "ssm:SendCommand",
-        "ssm:GetCommandInvocation",
-        "ssm:DescribeInstanceInformation",
-      ]
-      Resource = "*"
-    }]
+    Statement = [
+      {
+        # The only document deploy.yml sends. AWS-owned, so the ARN carries no
+        # account id — the empty field is correct, not a missing interpolation.
+        Sid      = "RunShellScriptDocumentOnly"
+        Effect   = "Allow"
+        Action   = "ssm:SendCommand"
+        Resource = "arn:aws:ssm:${var.aws_region}::document/AWS-RunShellScript"
+      },
+      {
+        # `Project` comes from the provider's default_tags, so every instance
+        # this configuration creates carries it and CatMap's do not.
+        Sid      = "TargetOnlyThisProjectsInstances"
+        Effect   = "Allow"
+        Action   = "ssm:SendCommand"
+        Resource = "arn:aws:ec2:${var.aws_region}:${data.aws_caller_identity.current.account_id}:instance/*"
+        Condition = {
+          StringEquals = {
+            "ssm:resourceTag/Project" = "jordanscamp"
+          }
+        }
+      },
+      {
+        # Reads, to poll the command to completion. Neither supports
+        # resource-level permissions, and the authorisation that matters already
+        # happened on SendCommand above.
+        Sid    = "PollTheResult"
+        Effect = "Allow"
+        Action = [
+          "ssm:GetCommandInvocation",
+          "ssm:DescribeInstanceInformation",
+        ]
+        Resource = "*"
+      },
+    ]
   })
 }
 
@@ -332,6 +401,14 @@ resource "aws_iam_role_policy" "github_terraform_resources" {
           "iam:GetRolePolicy",
           "iam:GetInstanceProfile",
           "iam:GetOpenIDConnectProvider",
+          # Required by the `data "aws_iam_openid_connect_provider"` lookup,
+          # which resolves by URL and therefore *lists* before it gets. Without
+          # it the data source fails with AccessDenied on
+          # `iam:ListOpenIDConnectProviders` and no plan can be produced at all.
+          # It takes no resource scope — the error names `oidc-provider/*` even
+          # when one ARN is requested — and it returns nothing but a list of
+          # provider ARNs.
+          "iam:ListOpenIDConnectProviders",
           "iam:ListRolePolicies",
           "iam:ListAttachedRolePolicies",
           "iam:ListInstanceProfilesForRole",
@@ -363,18 +440,16 @@ resource "aws_iam_role_policy" "github_terraform_resources" {
           "arn:aws:iam::${data.aws_caller_identity.current.account_id}:instance-profile/${local.name_prefix}-*",
         ]
       },
-      {
-        # Only the GitHub Actions OIDC provider.
-        Sid    = "IAMManageOIDCProvider"
-        Effect = "Allow"
-        Action = [
-          "iam:CreateOpenIDConnectProvider",
-          "iam:DeleteOpenIDConnectProvider",
-          "iam:UpdateOpenIDConnectProviderThumbprint",
-          "iam:TagOpenIDConnectProvider",
-        ]
-        Resource = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/token.actions.githubusercontent.com"
-      },
+      # The `IAMManageOIDCProvider` statement that was here is deleted, not
+      # narrowed. It granted `iam:DeleteOpenIDConnectProvider` on the shared
+      # provider — which is the precise capability that caused the 18 Aug
+      # outage, and nothing in this configuration manages that resource any
+      # more: it is a `data` source now. Leaving the grant would mean CI could
+      # still delete it while Terraform no longer even knows it is there, which
+      # is a worse position than before, not a better one.
+      #
+      # `iam:GetOpenIDConnectProvider` stays, in `IAMRead` above — the data
+      # source needs it.
       {
         Sid    = "S3"
         Effect = "Allow"
