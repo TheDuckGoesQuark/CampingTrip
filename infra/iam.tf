@@ -513,18 +513,43 @@ resource "aws_iam_role_policy" "github_terraform_resources" {
         Resource = "*"
       },
       {
-        Sid    = "CloudWatch"
+        # `logs:DescribeLogGroups` does not support resource-level permissions —
+        # it is the *enumeration* call, so there is no single resource to
+        # authorise against, and AWS rejects a policy that tries. It has to stay
+        # on `"*"`, and it is the one that has to: without it no plan can
+        # refresh the log group at all.
+        Sid      = "CloudWatchLogsEnumerate"
+        Effect   = "Allow"
+        Action   = "logs:DescribeLogGroups"
+        Resource = "*"
+      },
+      {
+        # Everything that touches a specific log group, scoped by name prefix.
+        # On `"*"` this included `logs:DeleteLogGroup`, i.e. authority to delete
+        # CatMap's logs — quietly destructive in a way nobody would notice until
+        # they went looking for them.
+        #
+        # Both ARN forms are listed deliberately. CloudWatch Logs is
+        # inconsistent about it: some actions authorise against the bare
+        # log-group ARN, others against the `:*` suffixed form that notionally
+        # covers the log *streams* underneath. Granting one and not the other
+        # produces an AccessDenied that names an ARN differing from the policy
+        # only by two characters, which is a genuinely unpleasant hour. The
+        # suffixed form adds no reach here — it is the same log groups.
+        Sid    = "CloudWatchLogsThisProjectOnly"
         Effect = "Allow"
         Action = [
           "logs:CreateLogGroup",
           "logs:DeleteLogGroup",
-          "logs:DescribeLogGroups",
           "logs:PutRetentionPolicy",
           "logs:TagResource",
           "logs:ListTagsForResource",
           "logs:ListTagsLogGroup",
         ]
-        Resource = "*"
+        Resource = [
+          "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:${local.name_prefix}/*",
+          "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:${local.name_prefix}/*:*",
+        ]
       },
       {
         Sid    = "SSMParameters"
