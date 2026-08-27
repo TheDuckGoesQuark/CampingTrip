@@ -21,11 +21,18 @@ const REST_ROT: [number, number, number] = [-0.2, Math.PI * 0.3, 0.15];
 const REST_SCALE: [number, number, number] = [0.045, 0.045, 0.045];
 
 /**
- * Where the logo sits on the screen panel, in group-local units. Hand-tuned, and
- * deliberately not measured: the model's screen is a sub-node scaled ~100x, so a
- * bounding-box centre for it lands off the panel rather than on it.
+ * Where the logo sits on the screen panel, in group-local units — the panel's own
+ * centre, a hair in front of its front face. Derived from laptop.glb rather than
+ * measured at runtime: the screen is a sub-node carrying both a ~100x scale and a
+ * 180-degree Y rotation, so its extent works out at x -15.2..15.2, y 0.46..20.56,
+ * front face z -9.89.
+ *
+ * The depth matters more than it looks. REST_ROT turns the group 54 degrees about
+ * Y, which maps local +Z onto world (0.81, 0, 0.59) — so any gap between the logo
+ * and the panel projects sideways, and reads as the icon drifting right rather
+ * than as it floating forward.
  */
-const LOGO_POS: [number, number, number] = [0, 12, -1];
+const LOGO_POS: [number, number, number] = [0, 10.5, -9.8];
 
 // Focused transform (screen fills camera view — lower and further from camera)
 const FOCUS_POS: [number, number, number] = [0, 1.7, 0.8];
