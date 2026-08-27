@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { blogPathFor, blogPaths, parseBlogPath, stripHtml, type BlogRef } from "./blogPaths";
+import {
+  blogPathFor,
+  blogPaths,
+  isBrowserPath,
+  parseBlogPath,
+  stripHtml,
+  type BlogRef,
+} from "./blogPaths";
 
 describe("blogPaths", () => {
   it("builds a directory-per-kind path with the cosmetic extension", () => {
@@ -11,6 +18,10 @@ describe("blogPaths", () => {
     expect(blogPaths.tag("music")).toBe("/blog/tags/music.html");
     expect(blogPaths.project("catmap")).toBe("/blog/projects/catmap.html");
     expect(blogPaths.tool("mynoise")).toBe("/blog/tools/mynoise.html");
+  });
+
+  it("leaves the extension off a desktop item, which has no address bar", () => {
+    expect(blogPaths.desk("notes-txt")).toBe("/blog/desk/notes-txt");
   });
 
   it("encodes a slug that would otherwise break the path", () => {
@@ -41,6 +52,7 @@ describe("parseBlogPath", () => {
       slug: "catmap",
     });
     expect(parseBlogPath("/blog/tools/mynoise.html")).toEqual({ kind: "tool", slug: "mynoise" });
+    expect(parseBlogPath("/blog/desk/notes-txt")).toEqual({ kind: "desk", slug: "notes-txt" });
   });
 
   it("treats the extension as optional, since it is decoration", () => {
@@ -67,9 +79,28 @@ describe("parseBlogPath", () => {
       { kind: "tag", tag: "music" },
       { kind: "project", slug: "catmap" },
       { kind: "tool", slug: "mynoise" },
+      { kind: "desk", slug: "notes-txt" },
     ];
     for (const ref of refs) {
       expect(parseBlogPath(blogPathFor(ref))).toEqual(ref);
     }
+  });
+});
+
+describe("isBrowserPath", () => {
+  it("accepts the pages the mock browser can hold in a tab", () => {
+    expect(isBrowserPath(blogPaths.home)).toBe(true);
+    expect(isBrowserPath(blogPaths.archive)).toBe(true);
+    expect(isBrowserPath(blogPaths.tag("music"))).toBe(true);
+    expect(isBrowserPath(blogPaths.project("catmap"))).toBe(true);
+  });
+
+  it("rejects a desktop item, which opens in a window of its own", () => {
+    expect(isBrowserPath(blogPaths.desk("notes-txt"))).toBe(false);
+  });
+
+  it("rejects the desktop itself and anything unrecognised", () => {
+    expect(isBrowserPath(blogPaths.desktop)).toBe(false);
+    expect(isBrowserPath("/blog/nowhere/x.html")).toBe(false);
   });
 });

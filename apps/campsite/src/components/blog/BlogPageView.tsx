@@ -1,4 +1,4 @@
-import type { BlogPage } from "../../data/blogPages";
+import type { BrowserPage } from "../../data/blogPages";
 import FeedPage from "./FeedPage";
 import HomePage from "./HomePage";
 import PostPage from "./PostPage";
@@ -9,7 +9,7 @@ import ToolPage from "./ToolPage";
  * Renders whichever page the browser's active tab names. The one place that maps
  * a resolved `BlogPage` onto a component, so the overlay stays about chrome.
  */
-export default function BlogPageView({ page }: { page: BlogPage }) {
+export default function BlogPageView({ page }: { page: BrowserPage }) {
   switch (page.kind) {
     case "home":
       return <HomePage />;

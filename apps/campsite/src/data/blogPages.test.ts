@@ -29,6 +29,17 @@ describe("resolveBlogPage", () => {
     expect(page.posts.every((post) => post.tags.includes("music"))).toBe(true);
   });
 
+  it("resolves a desktop item", () => {
+    const page = resolveBlogPage({ kind: "desk", slug: "notes-txt" });
+    expect(page?.kind).toBe("desk");
+    if (page?.kind !== "desk") return;
+    expect(page.item.label).toBe("notes.txt");
+  });
+
+  it("returns null for a desktop slug that names nothing", () => {
+    expect(resolveBlogPage({ kind: "desk", slug: "not-there" })).toBeNull();
+  });
+
   it("returns null for a tag nothing carries, rather than an empty page", () => {
     expect(resolveBlogPage({ kind: "tag", tag: "taxidermy" })).toBeNull();
   });

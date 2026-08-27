@@ -36,6 +36,21 @@
   box-shadow: var(--shadow-hard-1);
 }
 
+/* Matches Tile's frame, so a glyph icon and a letter icon sit on the same grid. */
+.glyph {
+  width: var(--tile-lg);
+  height: var(--tile-lg);
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--brand-border-strong);
+  border-radius: var(--radius-none);
+  box-shadow: var(--shadow-hard-1);
+  background: var(--brand-surface-raised);
+  color: var(--brand-text);
+}
+
 .badge {
   position: absolute;
   top: var(--space-xxs);

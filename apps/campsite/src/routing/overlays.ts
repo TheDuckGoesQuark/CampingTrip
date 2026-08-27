@@ -1,6 +1,7 @@
 import { musicPlayer } from "../audio/musicPlayer";
 import { useMusicStore } from "../store/musicStore";
 import { useSceneStore } from "../store/sceneStore";
+import { isBrowserPath } from "./blogPaths";
 
 /** Which overlay a route opens. Exactly one is open at a time. */
 export type OverlayKind = "laptop" | "notepad" | "music";
@@ -72,7 +73,8 @@ export function applyOverlayState(kind: OverlayKind | null, blogPath: string | n
   // Only leaving the laptop ends it; the window's close control clears explicitly.
   if (kind !== "laptop") {
     scene.closeAllBlogPaths();
-  } else if (blogPath) {
+  } else if (blogPath && isBrowserPath(blogPath)) {
+    // A desktop item gets its own window, so it never joins the tab strip.
     scene.openBlogPath(blogPath);
   }
 

@@ -1,9 +1,11 @@
 import type { IconName } from "@jordanscamp/ds";
 
 import { blogPaths, type BlogRef } from "../routing/blogPaths";
+import type { DesktopItem } from "../types/desktop";
 import type { Post } from "../types/post";
 import type { Bookmark, Project } from "../types/project";
 import { bookmarks } from "./bookmarks";
+import { findDesktopItem } from "./desktopItems";
 import { posts } from "./posts";
 import { projects } from "./projects";
 import { slugify } from "./slug";
@@ -16,7 +18,15 @@ export type BlogPage =
   | { kind: "post"; post: Post }
   | { kind: "tag"; tag: string; posts: Post[] }
   | { kind: "project"; project: Project }
-  | { kind: "tool"; bookmark: Bookmark };
+  | { kind: "tool"; bookmark: Bookmark }
+  | { kind: "desk"; item: DesktopItem };
+
+/**
+ * The pages the mock browser renders. A desktop item is a window of its own
+ * kind, never a page in a tab, so excluding it here makes the browser's own
+ * renderer exhaustive rather than quietly falling through.
+ */
+export type BrowserPage = Exclude<BlogPage, { kind: "desk" }>;
 
 const bySlug = <T extends { title: string }>(items: T[], slug: string): T | undefined =>
   items.find((item) => slugify(item.title) === slug);
@@ -44,6 +54,10 @@ export function resolveBlogPage(ref: BlogRef): BlogPage | null {
       const bookmark = bySlug(bookmarks, ref.slug);
       return bookmark ? { kind: "tool", bookmark } : null;
     }
+    case "desk": {
+      const item = findDesktopItem(ref.slug);
+      return item ? { kind: "desk", item } : null;
+    }
   }
 }
 
@@ -62,6 +76,8 @@ export function titleOfBlogPage(page: BlogPage): string {
       return page.project.title;
     case "tool":
       return page.bookmark.title;
+    case "desk":
+      return page.item.label;
   }
 }
 
@@ -80,6 +96,22 @@ export function iconOfBlogPage(page: BlogPage): IconName {
       return "globe";
     case "tool":
       return "cassette";
+    case "desk":
+      return iconOfDesktopItem(page.item);
+  }
+}
+
+/** The glyph a desktop item shows, both on the desktop and on any tab. */
+export function iconOfDesktopItem(item: DesktopItem): IconName {
+  switch (item.kind) {
+    case "app":
+      return "globe";
+    case "image":
+      return "image";
+    case "text":
+      return "document";
+    case "bin":
+      return "trash";
   }
 }
 

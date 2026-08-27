@@ -346,6 +346,15 @@ button.light:active {
   font-family: var(--font-mono);
   font-size: var(--text-label-size);
   color: var(--brand-text-muted);
+  /* One line, always: the height is fixed, so wrapped text escapes the frame. */
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.statusbar > * {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* ── Page ──────────────────────────────────────────────────── */

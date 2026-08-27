@@ -23,4 +23,15 @@ describe("DesktopIcon", () => {
     render(<DesktopIcon label="Zebra" />);
     expect(screen.getByText("Z")).toBeInTheDocument();
   });
+  it("prefers a glyph to a letter tile when there is no image", () => {
+    const { container } = render(<DesktopIcon label="notes.txt" glyph="document" />);
+    expect(container.querySelector("svg")).toBeInTheDocument();
+    expect(container.textContent).not.toContain("N");
+  });
+
+  it("falls back to the label's initial when given neither image nor glyph", () => {
+    const { container } = render(<DesktopIcon label="notes.txt" />);
+    expect(container.querySelector("svg")).toBeNull();
+    expect(container.textContent).toContain("N");
+  });
 });

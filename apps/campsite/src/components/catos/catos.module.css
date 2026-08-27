@@ -1,0 +1,136 @@
+/*
+ * The non-browser windows and the desktop rail. Inline `style` is forbidden on
+ * DOM nodes in app code (react/forbid-dom-props), so layout lives here.
+ */
+
+/* ── The desktop itself ────────────────────────────────────── */
+
+.desktop {
+  position: absolute;
+  inset: 0;
+  /* Chrome, not a document — a drag across the wallpaper should not select it. */
+  user-select: none;
+}
+
+.wallpaper {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, var(--brand-bg), var(--brand-surface));
+}
+
+.menuBrand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.menuBrandName {
+  font-weight: var(--weight-bold);
+}
+
+.menuDim {
+  opacity: 0.7;
+}
+
+.backToTent {
+  position: absolute;
+  bottom: var(--space-l);
+  right: var(--space-l);
+  z-index: 5;
+}
+
+.escHint {
+  opacity: 0.5;
+  margin-left: var(--space-xs);
+}
+
+/* A page is a document, so it opts back into selectable text. */
+.pageBody {
+  user-select: text;
+}
+
+.rail {
+  position: absolute;
+  top: 36px;
+  left: 0;
+  width: 148px;
+  bottom: 0;
+  overflow-y: auto;
+  padding: var(--space-s) var(--space-s);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xxs);
+}
+
+/* ── Plain-text window ─────────────────────────────────────── */
+
+/* A typewriter face, because the campsite's own body font is one and a text
+   file is the one place that reads as deliberate rather than unstyled. */
+.textBody {
+  margin: 0;
+  white-space: pre-wrap;
+  font-family: var(--font-mono);
+  font-size: var(--text-body-sm-size);
+  line-height: 1.7;
+  color: var(--brand-text);
+}
+
+.textSurface {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* ── Bin window ────────────────────────────────────────────── */
+
+.binList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+}
+
+.binRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-s);
+}
+
+.binNote {
+  margin-top: var(--space-m);
+}
+
+/* ── Preview window ────────────────────────────────────────── */
+
+.photoFigure {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-s);
+  max-width: 100%;
+}
+
+.photoCaption {
+  max-width: 44ch;
+}
+
+/* The bordered "print" the inset well holds. */
+.photo {
+  border: 2px solid var(--brand-border-strong);
+  box-shadow: var(--shadow-hard-2);
+  line-height: 0;
+  max-width: 100%;
+}
+
+.photoImage {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.statusSpacer {
+  margin-left: auto;
+}
