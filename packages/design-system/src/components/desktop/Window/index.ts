@@ -1,1 +1,7 @@
-export { Window, type WindowProps } from "./Window";
+export {
+  Window,
+  type WindowProps,
+  type WindowTitleBarProps,
+  type WindowTabProps,
+  type WindowAddressBarProps,
+} from "./Window";

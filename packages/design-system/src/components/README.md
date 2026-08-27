@@ -30,8 +30,15 @@ Add the named export to [`../index.ts`](../index.ts).
 - **Modal** — compound dialog on the Base UI Dialog primitive: focus trap,
   focus-return, Escape + click-outside dismissal, ARIA. `variant`
   centered / takeover / bare. Subparts `Modal.Trigger/Header/Title/Body/Footer/Close`.
-- **desktop/** — faux-desktop chrome (`Window`, `MenuBar`, `Dock`/`DockItem`/
-  `DockDivider`, `DesktopIcon`) that CatOS composes. Pure chrome, no domain.
+- **desktop/** — faux-desktop chrome that CatOS composes: `MenuBar`,
+  `DesktopIcon`, and `Window`. Boxy and
+  hard-shadowed (`--radius-none`, `--shadow-hard-*`, `--shadow-bevel-*`) over a
+  macOS-shaped layout. Pure chrome, no domain.
+  - **Window** — a compound mock browser: subparts `Window.TitleBar` (squared
+    traffic lights), `Window.Tabs` + `Window.Tab` + `Window.NewTab`,
+    `Window.AddressBar`, `Window.Body`. One fixed size; the body scrolls. It
+    floats rather than dimming, so the desktop behind it stays clickable, and
+    a control given no handler renders inert instead of dead.
 
 ## Styling
 

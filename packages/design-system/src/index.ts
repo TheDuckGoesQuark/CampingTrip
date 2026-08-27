@@ -13,13 +13,12 @@ export { Link, type LinkProps } from "./components/Link";
 export { Modal, type ModalProps, type ModalVariant, type ModalSize } from "./components/Modal";
 
 // Faux-desktop chrome
-export { Window, type WindowProps } from "./components/desktop/Window";
-export { MenuBar, type MenuBarProps } from "./components/desktop/MenuBar";
 export {
-  Dock,
-  DockItem,
-  DockDivider,
-  type DockProps,
-  type DockItemProps,
-} from "./components/desktop/Dock";
+  Window,
+  type WindowProps,
+  type WindowTitleBarProps,
+  type WindowTabProps,
+  type WindowAddressBarProps,
+} from "./components/desktop/Window";
+export { MenuBar, type MenuBarProps } from "./components/desktop/MenuBar";
 export { DesktopIcon, type DesktopIconProps } from "./components/desktop/DesktopIcon";

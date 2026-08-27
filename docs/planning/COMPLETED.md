@@ -4,6 +4,72 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## CatOS blog reskinned as a boxy 1990s mock browser
+
+**Date**: 2026-08-27
+
+**What was done**:
+
+- **`Window` became a compound mock browser.** It was a single-purpose macOS
+  panel taking `title`/`onClose`/`size`; it is now composed from
+  `Window.TitleBar`, `Window.Tabs` + `Window.Tab` + `Window.NewTab`,
+  `Window.AddressBar` and `Window.Body`. Square corners, a 2px border and a hard
+  offset shadow; the traffic lights are squared off but stay left, in brand
+  red/amber/green.
+- **The blog's windows carry a real address.** `Window.AddressBar` shows the
+  route the window is on, prefixed with the canonical public origin so the chrome
+  reads the same on localhost as in production.
+- **Posts open in tabs.** `sceneStore.openPostSlugs` holds the strip; the URL
+  still names only the active tab. Selecting, closing and neighbour-focus are all
+  navigations, so every tab stays a shareable link.
+- **The window floats instead of dimming.** Dropping the modal backdrop is what
+  lets a second tab be opened by clicking another desktop icon. The desktop icons
+  moved into a left-hand rail so a centred window cannot cover them.
+- **The desktop shell went 90s too** — opaque menu bar with a hard rule, a square
+  bevelled dock tray, square icon tiles with an inverted-block selection.
+- **New token families**: `--shadow-hard-1..3` (solid offset, no blur) and
+  `--shadow-bevel-{out,in}` (raised/recessed edges), plus
+  `--brand-control-{close,minimise,maximise,glyph}` so the traffic lights stopped
+  being hardcoded macOS hexes.
+
+**Key decisions**:
+
+- **The URL names the active tab; the strip is session state.** Putting the whole
+  strip in the URL would have made every shared link carry a stranger's open
+  tabs. A deep link to `/blog/:slug` opens exactly that one tab.
+- **The browsing session lasts as long as the visitor is inside CatOS.** Bare
+  `/blog` shows the desktop with the strip intact — the desktop _is_ CatOS's
+  new-tab page, which is what `Window.NewTab` navigates to. Leaving the laptop
+  ends the session; the red light ends it explicitly.
+- **One window size, whatever the page.** The old `size="md" | "page"` prop was
+  dropped: a strip of tabs whose frame resized as you switched between them
+  looked broken, and a real browser window does not resize to its content.
+- **Controls with no handler render inert, not dead.** A traffic light without a
+  handler is a `<span>`, not a `<button>`, and a nav arrow renders `disabled`, so
+  nothing announces itself to a screen reader as a control that does nothing.
+  Forward is therefore permanently disabled, and Back is enabled only when the
+  router actually has history behind it — a Back that left the site would break
+  the illusion harder than a greyed-out one.
+- **Reload genuinely reloads.** The body is re-keyed on a counter, so the control
+  remounts the page rather than being decoration.
+- **Tab-strip lifecycle is tested where it lives.** `applyOverlayState` owns
+  route→strip syncing (`routing/overlays.test.ts`); the overlay owns _navigating_
+  (`LaptopScreenOverlay.test.tsx` asserts the resulting path). An earlier test
+  that asserted store state after a click failed for the right reason — the
+  component was never responsible for it.
+
+**Deferred**:
+
+- Buttons and badges _inside_ a window keep their rounded brand shape. Squaring
+  them off would touch `Button`/`Badge`, which are used well outside the desktop
+  context, so it wants its own decision.
+- `Button` logs a Base UI `nativeButton` warning whenever it renders as a link
+  (pre-existing, visible on `/blog/photobroom`).
+
+**Why it mattered**: the blog already had faux-desktop chrome, but a window with
+no address bar and no tabs read as a modal dialog rather than a place you were
+browsing. Tabs are what make the URL-per-post structure legible.
+
 ## terraform.yml now runs on stacked PRs
 
 **Date**: 2026-08-26

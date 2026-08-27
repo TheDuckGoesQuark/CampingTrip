@@ -11,6 +11,22 @@
   --shadow-5: 0 28px 64px rgba(31, 41, 28, 0.26), 0 8px 18px rgba(31, 41, 28, 0.18);
 
   --shadow-focus: 0 0 0 3px var(--brand-focus);
+
+  /* Hard-edged elevation — a solid offset block, no blur. Reads as a boxy,
+     pre-antialiasing UI; pairs with --radius-none. */
+  --shadow-hard-color: rgba(43, 51, 39, 0.9);
+  --shadow-hard-1: 2px 2px 0 0 var(--shadow-hard-color);
+  --shadow-hard-2: 4px 4px 0 0 var(--shadow-hard-color);
+  --shadow-hard-3: 7px 7px 0 0 var(--shadow-hard-color);
+
+  /* Bevels — the raised/recessed edge of a boxy control. `out` for buttons and
+     trays, `in` for wells and pressed states. Two inset rings, no blur. */
+  --shadow-bevel-light: rgba(255, 255, 255, 0.85);
+  --shadow-bevel-dark: rgba(43, 51, 39, 0.35);
+  --shadow-bevel-out:
+    inset 1px 1px 0 0 var(--shadow-bevel-light), inset -1px -1px 0 0 var(--shadow-bevel-dark);
+  --shadow-bevel-in:
+    inset 1px 1px 0 0 var(--shadow-bevel-dark), inset -1px -1px 0 0 var(--shadow-bevel-light);
 }
 
 [data-theme="dark"] {
@@ -19,4 +35,8 @@
   --shadow-3: 0 6px 18px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.35);
   --shadow-4: 0 14px 36px rgba(0, 0, 0, 0.55), 0 4px 10px rgba(0, 0, 0, 0.4);
   --shadow-5: 0 28px 64px rgba(0, 0, 0, 0.6), 0 8px 18px rgba(0, 0, 0, 0.45);
+
+  --shadow-hard-color: rgba(0, 0, 0, 0.85);
+  --shadow-bevel-light: rgba(255, 255, 255, 0.14);
+  --shadow-bevel-dark: rgba(0, 0, 0, 0.55);
 }

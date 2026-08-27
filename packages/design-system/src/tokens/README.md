@@ -18,7 +18,7 @@ tokens/
 ├── semantic.css     ← adaptive semantic tokens (--brand-*); light at :root, dark under [data-theme="dark"].
 ├── dimensions.css   ← spacing (--space-*) + corner radius (--radius-*).
 ├── typography.css   ← font families (--font-*) + the type scale (--text-*, --weight-*).
-└── shadow.css       ← elevation (--shadow-1..5) + --shadow-focus.
+└── shadow.css       ← elevation (--shadow-1..5, --shadow-hard-*), bevels (--shadow-bevel-*) + --shadow-focus.
 ```
 
 ## What lives where
@@ -104,7 +104,19 @@ owned by `<Text variant="…">` — prefer composing `<Text>` over restating siz
 
 ### Shadows
 
-`--shadow-1..5` (elevation) and `--shadow-focus` (focus ring).
+`--shadow-1..5` (soft, blurred elevation) and `--shadow-focus` (focus ring).
+
+Two hard-edged families back the boxy desktop chrome, where a blurred shadow
+would read as the wrong era:
+
+| Token                | Shape                                        | Use for                                                               |
+| -------------------- | -------------------------------------------- | --------------------------------------------------------------------- |
+| `--shadow-hard-1..3` | A solid offset block, no blur                | Floating boxy surfaces — a window, a menu. Pair with `--radius-none`. |
+| `--shadow-bevel-out` | Light inset ring top-left, dark bottom-right | A raised control: button, tray, tab.                                  |
+| `--shadow-bevel-in`  | The same rings inverted                      | A recessed well or a pressed control.                                 |
+
+`--shadow-hard-color` and `--shadow-bevel-{light,dark}` are the per-theme inputs
+those compose from; override them rather than the composed tokens.
 
 ## Changing a token
 
