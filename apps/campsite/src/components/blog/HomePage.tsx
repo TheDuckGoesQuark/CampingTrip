@@ -39,7 +39,7 @@ export default function HomePage() {
             <Text>
               I write about whatever I've been fixated on lately. Sometimes that's code. Often it's
               records, or a Flash game from 2004 that taught me something about systems. The tags
-              are on the right if you'd rather skip one or the other.
+              will let you skip one or the other.
             </Text>
           </div>
         </div>
