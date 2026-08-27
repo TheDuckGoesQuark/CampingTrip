@@ -84,6 +84,19 @@ describe("applyOverlayState", () => {
 });
 
 describe("OVERLAY_LINKS", () => {
+  it("promotes the blog and the music to the tab bar, but not the notepad", () => {
+    const promoted = OVERLAY_LINKS.filter((l) => l.inTabBar).map((l) => l.label);
+    expect(promoted).toEqual(["Blog", "Music"]);
+  });
+
+  // Dropping it from the tab bar must not drop it from the shared link table —
+  // the notepad object in the tent resolves its route through here.
+  it("keeps the notepad openable by route and by its 3D object", () => {
+    const notepad = OVERLAY_LINKS.find((l) => l.kind === "notepad");
+    expect(notepad?.path).toBe("/notes");
+    expect(notepad?.objectId).toBe("notepad");
+  });
+
   it("every link points at a real overlay kind and a nested path", () => {
     for (const link of OVERLAY_LINKS) {
       expect(["laptop", "notepad", "music"]).toContain(link.kind);

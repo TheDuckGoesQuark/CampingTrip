@@ -8,7 +8,7 @@ import { useInteractionStore } from "../../store/interactionStore";
 import styles from "./OverlayTabBar.module.css";
 
 /**
- * Top-of-screen tab bar mirroring the openable overlays. Built from the DS
+ * Top-of-screen tab bar for the places worth a permanent shortcut. Built from the DS
  * Button + a token-styled pill. Hovering/focusing a tab glows its 3D object
  * (shared interaction id); activating flies in and updates the URL. Real anchors
  * (via Base UI's `render`), so they deep-link and middle-click like normal links.
@@ -22,7 +22,7 @@ export default function OverlayTabBar() {
   return (
     <nav className={styles.bar} aria-label="Places in the tent">
       <div className={styles.pill}>
-        {OVERLAY_LINKS.map((link) => {
+        {OVERLAY_LINKS.filter((link) => link.inTabBar).map((link) => {
           const active = location.pathname.startsWith(link.path);
           return (
             <Button

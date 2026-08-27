@@ -21,18 +21,46 @@ export interface OverlayLink {
    * animated ones it must sit clear of the real animation rather than match it.
    */
   commitByMs: number;
+  /**
+   * Whether the tab bar promotes this place. The notepad is still openable — by
+   * its object in the tent, and by its URL — it just isn't worth a permanent
+   * shortcut alongside the blog and the music.
+   */
+  inTabBar: boolean;
 }
 
 /**
- * The three openable places, shared by the tab bar and the 3D-object
- * activations so both drive the exact same navigation.
+ * The openable places, shared by the tab bar and the 3D-object activations so
+ * both drive the exact same navigation. Not every place is promoted to the tab
+ * bar — see `inTabBar`.
  */
 export const OVERLAY_LINKS: OverlayLink[] = [
   // Laptop and notepad fly for 1.0s and 0.9s; the music player does not move,
   // so its deadline is the whole wait rather than a fallback.
-  { path: "/blog", label: "Blog", objectId: "laptop", kind: "laptop", commitByMs: 1600 },
-  { path: "/music", label: "Music", objectId: "shure-mic", kind: "music", commitByMs: 250 },
-  { path: "/notes", label: "Notes", objectId: "notepad", kind: "notepad", commitByMs: 1500 },
+  {
+    path: "/blog",
+    label: "Blog",
+    objectId: "laptop",
+    kind: "laptop",
+    commitByMs: 1600,
+    inTabBar: true,
+  },
+  {
+    path: "/music",
+    label: "Music",
+    objectId: "shure-mic",
+    kind: "music",
+    commitByMs: 250,
+    inTabBar: true,
+  },
+  {
+    path: "/notes",
+    label: "Notes",
+    objectId: "notepad",
+    kind: "notepad",
+    commitByMs: 1500,
+    inTabBar: false,
+  },
 ];
 
 /**
