@@ -1,0 +1,292 @@
+/*
+ * Layout for the blog's pages. Inline `style` is forbidden on DOM nodes in app
+ * code (react/forbid-dom-props), so structure lives here and every value comes
+ * from a design-system token.
+ */
+
+/* ── Homepage ──────────────────────────────────────────────── */
+
+/* A reading column with the feed beside it. The widths are fixed rather than
+   fluid because the window they sit in is a fixed size too. */
+.home {
+  display: flex;
+  gap: var(--space-xl);
+  align-items: flex-start;
+}
+
+.homeMain {
+  width: 500px;
+  flex-shrink: 0;
+}
+
+.homeFeed {
+  width: 280px;
+  flex-shrink: 0;
+}
+
+.eyebrow {
+  margin-bottom: var(--space-s);
+}
+
+.pageTitle {
+  margin-bottom: 14px;
+}
+
+/* Gap above a paragraph that follows another. */
+.paragraphGap {
+  margin-top: var(--space-m);
+}
+
+.rule {
+  height: 2px;
+  border: 0;
+  background: var(--brand-border-strong);
+  margin: var(--space-l) 0 20px;
+}
+
+.sectionBody {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sectionNote {
+  margin: var(--space-xs) 0 14px;
+}
+
+.toolGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-s);
+}
+
+.toolCard {
+  display: flex;
+  gap: var(--space-s);
+  align-items: center;
+}
+
+/* ── Rows and summaries ────────────────────────────────────── */
+
+.row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-s);
+}
+
+.rowBody {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xxs);
+}
+
+.titleLine {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-s);
+  flex-wrap: wrap;
+}
+
+.tagRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+/* The date pulled out beside a card, so a run of them scans by date alone. */
+.dateGutter {
+  width: 64px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.cardInner {
+  display: flex;
+  gap: var(--space-m);
+}
+
+.cardBody {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+/* ── Feed panel ────────────────────────────────────────────── */
+
+.panel {
+  border: 2px solid var(--brand-border-strong);
+  background: var(--brand-surface-sunken);
+  box-shadow: var(--shadow-hard-2);
+}
+
+.panelHeader {
+  padding: var(--space-s) var(--space-s);
+  background: var(--brand-subtle);
+  border-bottom: 2px solid var(--brand-border-strong);
+  box-shadow: var(--shadow-bevel-out);
+}
+
+.panelRail {
+  padding: var(--space-s);
+  border-bottom: 1px solid var(--brand-border);
+}
+
+.panelList {
+  padding: var(--space-s);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Separators between entries, not after the last one. */
+.panelList > * + * {
+  padding-top: 14px;
+  border-top: 1px solid var(--brand-border);
+}
+
+.panelFooter {
+  padding: var(--space-s);
+  border-top: 2px solid var(--brand-border-strong);
+  background: var(--brand-subtle);
+}
+
+/* ── Feed page ─────────────────────────────────────────────── */
+
+.feedHeading {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-s);
+  margin: var(--space-s) 0 var(--space-m);
+}
+
+.feedRail {
+  padding-bottom: var(--space-m);
+}
+
+.feedList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+  margin-top: 20px;
+}
+
+.feedFooter {
+  margin-top: 20px;
+}
+
+/* ── Post page ─────────────────────────────────────────────── */
+
+/* A measure, not a container width: this is the one screen someone reads. */
+.post {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.postMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-s);
+  margin-bottom: var(--space-s);
+  flex-wrap: wrap;
+}
+
+.postStandfirst {
+  margin: var(--space-s) 0 20px;
+}
+
+.postBody {
+  margin-top: var(--space-l);
+}
+
+.postFooterRule {
+  height: 2px;
+  border: 0;
+  background: var(--brand-border-strong);
+  margin: var(--space-xl) 0 20px;
+}
+
+.neighbours {
+  display: flex;
+  gap: var(--space-s);
+}
+
+.neighbour {
+  flex: 1;
+}
+
+.neighbourNewer {
+  flex: 1;
+  text-align: right;
+}
+
+.neighbourTitle {
+  margin-top: var(--space-xxs);
+}
+
+.allPosts {
+  margin-top: var(--space-m);
+  display: flex;
+  justify-content: center;
+}
+
+/* ── Callout ───────────────────────────────────────────────── */
+
+.callout {
+  display: flex;
+  align-items: center;
+  gap: var(--space-m);
+}
+
+.calloutBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.calloutAction {
+  flex-shrink: 0;
+}
+
+/* ── Tool page ─────────────────────────────────────────────── */
+
+.toolHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-m);
+  margin-bottom: var(--space-m);
+}
+
+.toolIcon {
+  flex-shrink: 0;
+  object-fit: cover;
+}
+
+.toolLink {
+  margin-top: var(--space-l);
+}
+
+/* ── Project page ──────────────────────────────────────────── */
+
+.projectHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+  margin-bottom: var(--space-m);
+}
+
+.projectActions {
+  display: flex;
+  gap: var(--space-s);
+  margin-top: var(--space-l);
+  flex-wrap: wrap;
+}

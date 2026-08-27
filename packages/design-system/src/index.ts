@@ -14,6 +14,7 @@ export { Modal, type ModalProps, type ModalVariant, type ModalSize } from "./com
 export { Icon, ICON_NAMES, type IconProps, type IconName } from "./components/Icon";
 export { Card, type CardProps } from "./components/Card";
 export { Tag, type TagProps } from "./components/Tag";
+export { Tile, type TileProps } from "./components/Tile";
 
 // Faux-desktop chrome
 export {

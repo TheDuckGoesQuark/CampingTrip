@@ -11,4 +11,9 @@ describe("Link", () => {
       "https://example.com",
     );
   });
+  it("becomes the given element when passed `render`", () => {
+    render(<Link render={<button type="button" />}>Routed</Link>);
+    const routed = screen.getByRole("button", { name: "Routed" });
+    expect(routed.className.trim().length).toBeGreaterThan(0);
+  });
 });

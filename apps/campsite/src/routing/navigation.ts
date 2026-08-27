@@ -1,12 +1,15 @@
+import { blogPaths } from "./blogPaths";
 import { OVERLAY_LINKS, type OverlayKind, type OverlayLink } from "./overlays";
 
 /**
- * The single source of overlay URL strings, including path parameters. Build
- * paths here rather than sprinkling literals through components.
+ * The single source of overlay URL strings. Build paths here rather than
+ * sprinkling literals through components. The blog's own scheme — a directory
+ * and a trailing `.html` per kind of page — lives in `./blogPaths`.
  */
 export const routes = {
   tent: "/",
-  blog: (slug?: string | null) => (slug ? `/blog/${encodeURIComponent(slug)}` : "/blog"),
+  /** The CatOS desktop, with no window open. */
+  blog: blogPaths.desktop,
   music: "/music",
   notes: "/notes",
 } as const;

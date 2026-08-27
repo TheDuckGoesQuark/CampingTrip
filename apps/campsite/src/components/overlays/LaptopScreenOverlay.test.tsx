@@ -1,11 +1,16 @@
 import { BrandProvider } from "@jordanscamp/ds";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { MemoryRouter, useLocation } from "react-router-dom";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { useSceneStore } from "../../store/sceneStore";
 import LaptopScreenOverlay from "./LaptopScreenOverlay";
+
+const HOME = "/blog/index.html";
+const CAMPING_TRIP = "/blog/projects/camping-trip.html";
+const CATMAP = "/blog/projects/catmap.html";
+const MUSIC_TAG = "/blog/tags/music.html";
 
 const Wrapper = ({ children }: { children: ReactNode }) => (
   <MemoryRouter>
@@ -41,7 +46,7 @@ vi.mock("../../audio/soundEffects", () => ({
 
 describe("LaptopScreenOverlay (CatOS)", () => {
   beforeEach(() => {
-    useSceneStore.setState({ laptopFocused: false, activePostSlug: null, openPostSlugs: [] });
+    useSceneStore.setState({ laptopFocused: false, activeBlogPath: null, openBlogPaths: [] });
   });
 
   it("renders no dialog when the laptop is not focused", () => {
@@ -59,7 +64,6 @@ describe("LaptopScreenOverlay (CatOS)", () => {
     useSceneStore.setState({ laptopFocused: true });
     renderOverlay();
     expect(screen.getByText("CatOS")).toBeInTheDocument();
-    expect(screen.getByText("Finder")).toBeInTheDocument();
   });
 
   it("shows the back-to-tent button with an Esc hint", () => {
@@ -69,37 +73,38 @@ describe("LaptopScreenOverlay (CatOS)", () => {
     expect(screen.getByText("Esc")).toBeInTheDocument();
   });
 
-  it("renders project desktop icons", () => {
+  it("launches CatNav from the desktop rather than listing content there", () => {
     useSceneStore.setState({ laptopFocused: true });
-    renderOverlay();
-    expect(screen.getByText("Camping Trip")).toBeInTheDocument();
+    renderWithPath();
+    expect(screen.queryByText("Camping Trip")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: /CatNav/ }));
+    expect(currentPath()).toBe(HOME);
   });
 
   describe("the browser window", () => {
-    const openTabs = (slugs: string[], active: string) =>
+    const openTabs = (paths: string[], active: string) =>
       useSceneStore.setState({
         laptopFocused: true,
-        openPostSlugs: slugs,
-        activePostSlug: active,
+        openBlogPaths: paths,
+        activeBlogPath: active,
       });
 
-    it("stays shut while no post is open", () => {
+    it("stays shut while nothing is open", () => {
       useSceneStore.setState({ laptopFocused: true });
       renderOverlay();
       expect(screen.queryByRole("tab")).toBeNull();
     });
 
-    it("shows the active post's route as the displayed address", () => {
-      openTabs(["camping-trip"], "camping-trip");
+    it("shows the active page's route as the displayed address", () => {
+      openTabs([HOME], HOME);
       renderOverlay();
-      expect(screen.getByText("https://jordanscamp.site/blog/camping-trip")).toBeInTheDocument();
+      expect(screen.getByText(`https://jordanscamp.site${HOME}`)).toBeInTheDocument();
     });
 
-    it("renders one tab per open post, marking the active one", () => {
-      openTabs(["camping-trip", "catmap"], "catmap");
+    it("renders one tab per open page, marking the active one", () => {
+      openTabs([CAMPING_TRIP, CATMAP], CATMAP);
       renderOverlay();
-      const tabs = screen.getAllByRole("tab");
-      expect(tabs).toHaveLength(2);
+      expect(screen.getAllByRole("tab")).toHaveLength(2);
       expect(screen.getByRole("tab", { name: /CatMap/ })).toHaveAttribute("aria-selected", "true");
       expect(screen.getByRole("tab", { name: /Camping Trip/ })).toHaveAttribute(
         "aria-selected",
@@ -107,63 +112,69 @@ describe("LaptopScreenOverlay (CatOS)", () => {
       );
     });
 
-    it("skips a slug that matches no project or bookmark", () => {
-      openTabs(["catmap", "not-a-real-post"], "catmap");
+    it("titles a tag tab by its tag", () => {
+      openTabs([MUSIC_TAG], MUSIC_TAG);
+      renderOverlay();
+      expect(screen.getByRole("tab", { name: /Tag: music/ })).toBeInTheDocument();
+    });
+
+    it("skips a path that names nothing that exists", () => {
+      openTabs([CATMAP, "/blog/posts/not-a-real-post.html"], CATMAP);
       renderOverlay();
       expect(screen.getAllByRole("tab")).toHaveLength(1);
     });
 
     it("drops a background tab from the strip without changing the address", () => {
-      openTabs(["camping-trip", "catmap"], "catmap");
+      openTabs([CAMPING_TRIP, CATMAP], CATMAP);
       renderOverlay();
       fireEvent.click(screen.getByRole("button", { name: "Close Camping Trip" }));
-      expect(useSceneStore.getState().openPostSlugs).toEqual(["catmap"]);
-      expect(screen.getByText("https://jordanscamp.site/blog/catmap")).toBeInTheDocument();
+      expect(useSceneStore.getState().openBlogPaths).toEqual([CATMAP]);
+      expect(screen.getByText(`https://jordanscamp.site${CATMAP}`)).toBeInTheDocument();
     });
 
     // Discarding the strip is applyOverlayState's job, covered in
     // routing/overlays.test.ts; the window's own job is to navigate there.
     it("closing the whole window navigates back to the bare blog route", () => {
-      openTabs(["camping-trip", "catmap"], "catmap");
+      openTabs([CAMPING_TRIP, CATMAP], CATMAP);
       renderWithPath();
       fireEvent.click(screen.getByRole("button", { name: "Close" }));
       expect(currentPath()).toBe("/blog");
     });
 
     it("closing the last remaining tab navigates back to the bare blog route", () => {
-      openTabs(["catmap"], "catmap");
+      openTabs([CATMAP], CATMAP);
       renderWithPath();
       fireEvent.click(screen.getByRole("button", { name: "Close CatMap" }));
       expect(currentPath()).toBe("/blog");
     });
 
     it("closing the active tab hands focus to its neighbour", () => {
-      openTabs(["camping-trip", "catmap"], "catmap");
+      openTabs([CAMPING_TRIP, CATMAP], CATMAP);
       renderWithPath();
       fireEvent.click(screen.getByRole("button", { name: "Close CatMap" }));
-      expect(currentPath()).toBe("/blog/camping-trip");
+      expect(currentPath()).toBe(CAMPING_TRIP);
     });
 
-    it("the new-tab control shows the desktop with the strip intact", () => {
-      openTabs(["camping-trip", "catmap"], "catmap");
+    it("the new-tab control opens the homepage, keeping the strip intact", () => {
+      openTabs([CAMPING_TRIP, CATMAP], CATMAP);
       renderWithPath();
       fireEvent.click(screen.getByRole("button", { name: "New tab" }));
-      expect(currentPath()).toBe("/blog");
-      expect(useSceneStore.getState().openPostSlugs).toEqual(["camping-trip", "catmap"]);
+      expect(currentPath()).toBe(HOME);
+      expect(useSceneStore.getState().openBlogPaths).toEqual([CAMPING_TRIP, CATMAP]);
     });
 
     it("the red light discards the strip, ending the browsing session", () => {
-      openTabs(["camping-trip", "catmap"], "catmap");
+      openTabs([CAMPING_TRIP, CATMAP], CATMAP);
       renderWithPath();
       fireEvent.click(screen.getByRole("button", { name: "Close" }));
-      expect(useSceneStore.getState().openPostSlugs).toEqual([]);
+      expect(useSceneStore.getState().openBlogPaths).toEqual([]);
     });
 
     it("selecting a background tab navigates to its route", () => {
-      openTabs(["camping-trip", "catmap"], "catmap");
+      openTabs([CAMPING_TRIP, CATMAP], CATMAP);
       renderWithPath();
       fireEvent.click(screen.getByRole("tab", { name: /Camping Trip/ }));
-      expect(currentPath()).toBe("/blog/camping-trip");
+      expect(currentPath()).toBe(CAMPING_TRIP);
     });
   });
 });

@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import { Badge } from "../../Badge";
+import { Tile } from "../../Tile";
 
 import styles from "./DesktopIcon.module.css";
 
@@ -17,22 +18,17 @@ export interface DesktopIconProps {
 }
 
 /**
- * A launcher icon: image (or a generated letter tile fallback), a label, and an
- * optional "New" badge. Pure chrome — the caller decides what it opens. The
- * fallback tile colour is genuinely dynamic, so it's set via inline style (not a
- * consumer-facing escape hatch).
+ * A launcher icon: image (or a `Tile` letter fallback), a label, and an optional
+ * "New" badge. Pure chrome — the caller decides what it opens.
  */
 export function DesktopIcon({ label, icon, color, isNew, onClick }: DesktopIconProps) {
   const [imgError, setImgError] = useState(false);
   const showFallback = !icon || imgError;
-  const bg = color ?? "var(--brand-solid)";
 
   return (
     <button type="button" className={styles.button} onClick={onClick}>
       {showFallback ? (
-        <span className={styles.fallback} style={{ background: bg }}>
-          {label.charAt(0).toUpperCase()}
-        </span>
+        <Tile label={label} color={color} size="lg" />
       ) : (
         <img
           className={styles.icon}

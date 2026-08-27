@@ -21,6 +21,11 @@
   --icon-lg: 24px;
   --stroke-icon: 1.8;
 
+  /* Letter tiles — the `Tile` size scale. */
+  --tile-sm: 28px;
+  --tile-md: 52px;
+  --tile-lg: 72px;
+
   /* Corner radius (softly rounded brand) */
   --radius-none: 0px;
   --radius-s: 7px;

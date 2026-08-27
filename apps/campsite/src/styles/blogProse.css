@@ -1,0 +1,50 @@
+/*
+ * Typography for a post's body. A post is authored as plain TSX — paragraphs,
+ * headings, the odd blockquote — so the styling has to reach elements the author
+ * writes directly rather than components they compose. Hence a stylesheet and
+ * not <Text>, which cannot style what it does not wrap.
+ */
+.blog-prose {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.blog-prose p {
+  margin: 0 0 var(--space-m);
+  font-size: var(--text-body-lg-size);
+  line-height: var(--text-body-lg-lh);
+}
+
+.blog-prose p:last-child {
+  margin-bottom: 0;
+}
+
+.blog-prose h3 {
+  margin: var(--space-l) 0 var(--space-s);
+  font-size: var(--text-title-3-size);
+  line-height: var(--text-title-3-lh);
+  font-weight: var(--weight-heading);
+}
+
+/* A bordered box, not a left accent bar: a hard-edged window has no rounded,
+   left-striped card in its vocabulary. */
+.blog-prose blockquote {
+  margin: var(--space-l) 0;
+  padding: var(--space-m) var(--space-l);
+  border: 2px solid var(--brand-border-strong);
+  background: var(--brand-surface-sunken);
+  box-shadow: var(--shadow-hard-1);
+}
+
+.blog-prose blockquote p {
+  margin: 0;
+  font-weight: var(--weight-bold);
+}
+
+.blog-prose a {
+  color: var(--brand-link);
+}
+
+.blog-prose a:hover {
+  color: var(--brand-link-hover);
+}
