@@ -10,6 +10,7 @@ import {
   playPageFlip,
   playSoftClick,
 } from "../../audio/soundEffects";
+import { useIdleHint } from "../../hooks/useIdleHint";
 import { useTimeSync } from "../../hooks/useTimeSync";
 import { requestOpen } from "../../routing/navigation";
 import { useMusicStore } from "../../store/musicStore";
@@ -55,6 +56,13 @@ function TimeSync() {
   });
   return null;
 }
+/**
+ * How long the tent sits untouched before it points at the laptop. Long enough
+ * that someone still looking around is not interrupted, short enough to catch a
+ * visitor who has run out of ideas.
+ */
+const IDLE_HINT_MS = 8_000;
+
 interface Props {
   debug?: boolean;
 }
@@ -62,6 +70,20 @@ interface Props {
 export default function SceneContent({ debug = false }: Props) {
   const [laptopScreenOn, setLaptopScreenOn] = useState(false);
   const laptopFocused = useSceneStore((s) => s.laptopFocused);
+  const notepadFocused = useSceneStore((s) => s.notepadFocused);
+  const sceneReady = useSceneStore((s) => s.sceneReady);
+  const musicOpen = useMusicStore((s) => s.isOpen);
+
+  /**
+   * The laptop is the way into the blog, and it sits in the corner with a dark
+   * screen — so a visitor who runs out of things to try gets shown where to look.
+   * Armed only on the tent itself, and only while the screen is still off: once
+   * it is on, the hint has said what it had to say.
+   */
+  const hintLaptop = useIdleHint(
+    sceneReady && !laptopScreenOn && !laptopFocused && !notepadFocused && !musicOpen,
+    IDLE_HINT_MS,
+  );
 
   const toggleLaptopScreen = useCallback(() => {
     // Don't toggle while in focus mode
@@ -117,7 +139,7 @@ export default function SceneContent({ debug = false }: Props) {
         labelPosition={[-1.75, 1.75, -0.85]}
         onActivate={toggleLaptopScreen}
       >
-        <Laptop screenOn={laptopScreenOn} />
+        <Laptop screenOn={laptopScreenOn} hint={hintLaptop} />
       </InteractiveObject>
 
       {/* Laptop screen glow — always mounted to avoid light-count shader recompiles */}

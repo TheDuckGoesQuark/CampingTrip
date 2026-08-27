@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { useMusicStore } from "../store/musicStore";
 import { useSceneStore } from "../store/sceneStore";
+import { blogPaths } from "./blogPaths";
 import { BlogRoute, MusicRoute, NotesRoute } from "./OverlayRoutes";
 
 vi.mock("../audio/musicPlayer", () => ({ musicPlayer: { stop: vi.fn() } }));
@@ -44,7 +45,17 @@ describe("overlay route components declare scene state on mount", () => {
     expect(useSceneStore.getState().browserPath).toBe("/blog/tags/music.html");
   });
 
-  it("bare /blog opens the laptop on the desktop, with no page", () => {
+  it("a link straight to bare /blog opens the blog itself", () => {
+    renderAt("/blog", "/blog/*", <BlogRoute />);
+    const s = useSceneStore.getState();
+    expect(s.laptopFocused).toBe(true);
+    expect(s.browserPath).toBe(blogPaths.home);
+  });
+
+  it("bare /blog stays an empty desktop when CatOS is already open", () => {
+    // Which is how closing the last window lands here. Re-opening the browser
+    // then would make the red light look broken.
+    useSceneStore.setState({ laptopFocused: true });
     renderAt("/blog", "/blog/*", <BlogRoute />);
     const s = useSceneStore.getState();
     expect(s.laptopFocused).toBe(true);

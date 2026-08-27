@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { applyOverlayState, type OverlayLink } from "./overlays";
+import { applyOverlayState, destinationOf, type OverlayLink } from "./overlays";
 
 function prefersReducedMotion(): boolean {
   return (
@@ -43,13 +43,14 @@ export function useSceneNavigate(): (link: OverlayLink) => void {
       cancelPending();
       applyOverlayState(link.kind);
 
+      const destination = destinationOf(link);
       if (prefersReducedMotion()) {
-        navigate(link.path);
+        navigate(destination);
         return;
       }
       pending.current = window.setTimeout(() => {
         pending.current = null;
-        navigate(link.path);
+        navigate(destination);
       }, link.animMs);
     },
     [navigate, cancelPending],

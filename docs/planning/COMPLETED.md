@@ -4,6 +4,52 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## Landing on the blog, and a hint towards the laptop
+
+**Date**: 2026-08-27
+
+**What was done**: two nudges towards the blog, which was previously reachable
+only by a visitor guessing that the laptop in the corner was one.
+
+- **`/blog` opens the blog itself.** Two mechanisms, because two different
+  journeys arrive here. An in-app journey aims at `blogPaths.home` directly, via a
+  new `opens` on the overlay link; a link or a typed URL straight to bare `/blog`
+  gets a redirect in `BlogRoute`.
+- **The tent points at the laptop after 8 seconds of stillness.** A new
+  `useIdleHint(armed, delayMs)` hook, and a breath on the laptop's own emissive
+  map — the peak of the breath is exactly the look hover already gives it.
+
+**Key decisions**:
+
+- **`OverlayLink.path` and `OverlayLink.opens` are different facts.** `path` had
+  been doing two jobs: the prefix that makes a tab read as current, and the place a
+  click goes. The blog is the first case where they differ — the tab must stay
+  current on every page under `/blog`, while a click should land on the homepage.
+- **The empty desktop survives.** Closing the last window still lands on bare
+  `/blog` and leaves it empty, because re-opening the browser there would make the
+  red light look broken. The redirect is skipped whenever CatOS is already open,
+  which is exactly what tells the two arrivals apart.
+- **One effect owns the laptop's LEDs.** Hover lights them steadily and the hint
+  breathes them; two effects would fight over the same materials. Hover wins — a
+  visitor already pointing at the laptop has found it. Only the LEDs are touched,
+  and they carry `skipHighlight`, so the breath cannot collide with the warm
+  emissive `applyHighlight` puts on the body.
+- **The hint is armed, not filtered.** `useIdleHint` takes `armed` rather than the
+  caller ignoring its result, so a hint is never counting down behind a loading
+  screen or an open overlay and then firing the instant one closes.
+- **Reduced motion still gets the hint**, held steady rather than breathing. The
+  point is to say "look here", and that does not require movement.
+
+**Deferred**: the hint stops once the laptop's screen is on, but the blog opens
+from the logo _on_ that screen — so the second step of the journey still has no
+hint. In `TODO.md`.
+
+**Not verified**: the breath's appearance. The tent scene renders blank in the
+Claude Code browser pane (pre-existing — confirmed by stashing the change and
+reloading), so the hint's timing is covered by tests and its look needs a human.
+
+---
+
 ## Stacking windows by z-index, not by DOM order
 
 **Date**: 2026-08-27

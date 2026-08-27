@@ -3,6 +3,7 @@ import gsap from "gsap";
 import { useEffect, useRef, useCallback } from "react";
 import * as THREE from "three";
 
+import { useReducedMotion } from "../../../hooks/useReducedMotion";
 import { requestOpen } from "../../../routing/navigation";
 import { useInteractionStore } from "../../../store/interactionStore";
 import { useSceneStore } from "../../../store/sceneStore";
@@ -39,11 +40,16 @@ const FOCUS_POS: [number, number, number] = [0, 1.7, 0.8];
 const FOCUS_ROT: [number, number, number] = [-0.1, 0, 0];
 const FOCUS_SCALE: [number, number, number] = [0.08, 0.08, 0.08];
 
+/** One in-and-out of the idle hint's breath, in seconds. */
+const BREATH_SECONDS = 1.6;
+
 interface Props {
   screenOn: boolean;
+  /** Draw attention to the laptop: the visitor has gone still without finding it. */
+  hint?: boolean;
 }
 
-export default function Laptop({ screenOn }: Props) {
+export default function Laptop({ screenOn, hint = false }: Props) {
   const { scene } = useGLTF(asset("models/laptop.glb"), DRACO_PATH);
   const logoTexture = useTexture(asset("images/logo.webp"));
   const groupRef = useRef<THREE.Group>(null);
@@ -60,6 +66,7 @@ export default function Laptop({ screenOn }: Props) {
   const setHovered = useInteractionStore((s) => s.setHovered);
   const isLogoHighlighted = hoveredId === "projects" || focusedId === "projects";
   const isLaptopHighlighted = hoveredId === "laptop" || focusedId === "laptop";
+  const reducedMotion = useReducedMotion();
 
   // Initial setup: find screen meshes and emissive lights, configure materials
   useEffect(() => {
@@ -124,17 +131,63 @@ export default function Laptop({ screenOn }: Props) {
     lightMeshes.current = lights;
   }, [scene]);
 
-  // Toggle emissive lights (LEDs, indicators) on hover — same pattern as Scarlett Solo / MPK
+  /**
+   * The laptop's own indicator LEDs. One effect owns them, because the two things
+   * that want to would otherwise fight: hover lights them steadily (the pattern
+   * the Scarlett Solo and the MPK also use), and the idle hint breathes them the
+   * way a sleeping machine does. Hover wins — a visitor already pointing at the
+   * laptop has found it, and does not need telling.
+   *
+   * Only the LEDs, which carry `skipHighlight`, so nothing here can collide with
+   * the warm emissive `applyHighlight` puts on the body meshes.
+   */
   useEffect(() => {
-    lightMeshes.current.forEach(({ mat, color, intensity }) => {
-      if (isLaptopHighlighted) {
+    const lights = lightMeshes.current;
+    const dark = () => {
+      lights.forEach(({ mat }) => {
+        mat.emissiveIntensity = 0;
+      });
+    };
+    const steady = () => {
+      lights.forEach(({ mat, color, intensity }) => {
         mat.emissive.copy(color);
         mat.emissiveIntensity = intensity;
-      } else {
-        mat.emissiveIntensity = 0;
-      }
+      });
+    };
+
+    if (isLaptopHighlighted) {
+      steady();
+      return dark;
+    }
+    if (!hint) {
+      dark();
+      return;
+    }
+    // Reduced motion still gets the hint, just without the breathing.
+    if (reducedMotion) {
+      steady();
+      return dark;
+    }
+
+    const breath = { level: 0 };
+    lights.forEach(({ mat, color }) => mat.emissive.copy(color));
+    const tween = gsap.to(breath, {
+      level: 1,
+      duration: BREATH_SECONDS,
+      ease: "sine.inOut",
+      repeat: -1,
+      yoyo: true,
+      onUpdate: () => {
+        lights.forEach(({ mat, intensity }) => {
+          mat.emissiveIntensity = breath.level * intensity;
+        });
+      },
     });
-  }, [isLaptopHighlighted]);
+    return () => {
+      tween.kill();
+      dark();
+    };
+  }, [hint, isLaptopHighlighted, reducedMotion]);
 
   // Set initial transform imperatively (so GSAP can animate without React overriding)
   useEffect(() => {

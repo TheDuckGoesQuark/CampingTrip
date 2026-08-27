@@ -1,15 +1,25 @@
 import { musicPlayer } from "../audio/musicPlayer";
 import { useMusicStore } from "../store/musicStore";
 import { useSceneStore } from "../store/sceneStore";
-import { isBrowserPath } from "./blogPaths";
+import { blogPaths, isBrowserPath } from "./blogPaths";
 import { windowIdFor } from "./windows";
 
 /** Which overlay a route opens. Exactly one is open at a time. */
 export type OverlayKind = "laptop" | "notepad" | "music";
 
 export interface OverlayLink {
-  /** URL that opens this overlay — the tab links here and deep links land here. */
+  /**
+   * The URL that identifies this overlay — the prefix that makes its tab current,
+   * and where deep links land.
+   */
   path: string;
+  /**
+   * Where opening it lands, when that is not `path` itself. Only the blog needs
+   * it: the laptop *is* a blog, so dropping a visitor on the bare icon rail
+   * makes them guess, while `path` still has to stay `/blog` for the tab to read
+   * as current on every page under it.
+   */
+  opens?: string;
   /** Tab-bar text (and the tab's accessible name). */
   label: string;
   /** interactionStore id of the 3D object this belongs to — glows on tab hover/focus. */
@@ -32,7 +42,15 @@ export interface OverlayLink {
  * bar — see `inTabBar`.
  */
 export const OVERLAY_LINKS: OverlayLink[] = [
-  { path: "/blog", label: "Blog", objectId: "laptop", kind: "laptop", animMs: 900, inTabBar: true },
+  {
+    path: "/blog",
+    opens: blogPaths.home,
+    label: "Blog",
+    objectId: "laptop",
+    kind: "laptop",
+    animMs: 900,
+    inTabBar: true,
+  },
   {
     path: "/music",
     label: "Music",
@@ -50,6 +68,11 @@ export const OVERLAY_LINKS: OverlayLink[] = [
     inTabBar: false,
   },
 ];
+
+/** Where activating a link goes, which is `path` unless it names somewhere else. */
+export function destinationOf(link: OverlayLink): string {
+  return link.opens ?? link.path;
+}
 
 /**
  * Declare the scene's complete overlay state. Opens `kind` and closes the rest,

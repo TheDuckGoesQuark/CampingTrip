@@ -1,7 +1,7 @@
 import { Button } from "@jordanscamp/ds";
 import { useLocation } from "react-router-dom";
 
-import { OVERLAY_LINKS } from "../../routing/overlays";
+import { destinationOf, OVERLAY_LINKS } from "../../routing/overlays";
 import { useSceneNavigate } from "../../routing/useSceneNavigate";
 import { useInteractionStore } from "../../store/interactionStore";
 
@@ -27,7 +27,7 @@ export default function OverlayTabBar() {
           return (
             <Button
               key={link.path}
-              render={<a href={link.path} />}
+              render={<a href={destinationOf(link)} />}
               size="sm"
               variant={active ? "subtle" : "ghost"}
               aria-current={active ? "page" : undefined}

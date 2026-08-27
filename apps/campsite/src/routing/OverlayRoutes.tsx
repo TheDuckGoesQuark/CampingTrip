@@ -3,8 +3,9 @@ import { Navigate, useLocation } from "react-router-dom";
 
 import WelcomeScreen from "../components/WelcomeScreen/WelcomeScreen";
 import { pathForLegacySlug } from "../data/blogPages";
+import { useSceneStore } from "../store/sceneStore";
 import { useSessionStore } from "../store/sessionStore";
-import { blogPathFor, parseBlogPath, stripHtml } from "./blogPaths";
+import { blogPaths, blogPathFor, parseBlogPath, stripHtml } from "./blogPaths";
 import { applyOverlayState, closeOverlays } from "./overlays";
 
 /**
@@ -44,6 +45,12 @@ function legacyTargetFor(pathname: string): string | null {
   return pathForLegacySlug(stripHtml(decodeURIComponent(segments[1])));
 }
 
+/** True for `/blog` itself, trailing slash or not — the bare desktop. */
+function isBareDesktop(pathname: string): boolean {
+  const segments = pathname.split("/").filter(Boolean);
+  return segments.length === 1 && segments[0] === "blog";
+}
+
 /**
  * Everything under `/blog` — the CatOS desktop, and whichever page the path
  * names. Matched as a splat and read back with `parseBlogPath` rather than as a
@@ -54,19 +61,32 @@ function legacyTargetFor(pathname: string): string | null {
  */
 export function BlogRoute() {
   const { pathname } = useLocation();
+  const laptopFocused = useSceneStore((s) => s.laptopFocused);
   const ref = parseBlogPath(pathname);
   // Canonicalised, so `/blog/posts/x` and `/blog/posts/x.html` are one tab and
   // the address bar always shows the form with the extension.
   const canonical = ref ? blogPathFor(ref) : null;
   const legacy = ref ? null : legacyTargetFor(pathname);
+  /*
+   * A link straight to `/blog` opens the blog itself rather than a bare icon
+   * rail, which makes a visitor guess that the laptop is one. Only when CatOS is
+   * not already open, though: closing the last window also lands here, and
+   * re-opening the browser then would make the red light look broken.
+   *
+   * In-app journeys never reach this — they aim at `blogPaths.home` directly (see
+   * `opens` on the overlay link), and by the time their URL commits CatOS is
+   * already open anyway.
+   */
+  const openBlog = !ref && !legacy && !laptopFocused && isBareDesktop(pathname);
+  const target = legacy ?? (openBlog ? blogPaths.home : null);
 
   useEffect(() => {
     // Skip the state change on a path we are about to leave.
-    if (legacy) return;
+    if (target) return;
     applyOverlayState("laptop", canonical);
-  }, [canonical, legacy]);
+  }, [canonical, target]);
 
-  return legacy ? <Navigate to={legacy} replace /> : null;
+  return target ? <Navigate to={target} replace /> : null;
 }
 
 /** /notes — the notepad journal. */
