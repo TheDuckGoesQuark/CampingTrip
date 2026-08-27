@@ -15,6 +15,14 @@ All planned and deferred work, organised by priority.
   icon raises it, which works but is not discoverable. A dock, or windows that
   cascade further, would both fix it.
 
+### Tent — the second step into the blog has no hint
+
+The idle hint points at the laptop, and stops once its screen is on. But turning
+the screen on is only step one: the blog opens from the _logo_ on that screen, and
+nothing points at it. A visitor who takes the hint, turns the laptop on and then
+stalls is stuck one click short. The same `useIdleHint` would drive it — the logo
+already scales up on hover, so a slow breath on its scale is the obvious move.
+
 ### CatOS desktop — a minigame
 
 "Cat Sweeper" is in the design and is the one desktop item that needs logic

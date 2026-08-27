@@ -2,6 +2,7 @@ import { act, render } from "@testing-library/react";
 import { MemoryRouter, useLocation } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { blogPaths } from "./blogPaths";
 import { linkFor } from "./navigation";
 import { useSceneNavigate } from "./useSceneNavigate";
 
@@ -48,7 +49,7 @@ describe("useSceneNavigate", () => {
     mount();
     flush(() => go(linkFor("laptop")));
     flush(() => vi.advanceTimersByTime(linkFor("laptop").animMs));
-    expect(path).toBe("/blog");
+    expect(path).toBe(blogPaths.home);
   });
 
   it("abandons a superseded flight rather than landing on its URL", () => {
@@ -79,6 +80,6 @@ describe("useSceneNavigate", () => {
       }) as unknown as MediaQueryList) as typeof window.matchMedia;
     mount();
     flush(() => go(linkFor("laptop")));
-    expect(path).toBe("/blog");
+    expect(path).toBe(blogPaths.home);
   });
 });
