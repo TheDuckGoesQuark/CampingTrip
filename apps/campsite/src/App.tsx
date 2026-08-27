@@ -13,7 +13,7 @@ export default function App() {
     <Routes>
       <Route path="/" element={<SceneRoot />}>
         <Route index element={<Landing />} />
-        <Route path="blog/:slug?" element={<BlogRoute />} />
+        <Route path="blog/*" element={<BlogRoute />} />
         <Route path="music" element={<MusicRoute />} />
         <Route path="notes" element={<NotesRoute />} />
         <Route path="*" element={<Navigate to="/" replace />} />

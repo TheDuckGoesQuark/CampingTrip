@@ -11,59 +11,65 @@ describe("applyOverlayState", () => {
     useSceneStore.setState({
       laptopFocused: false,
       notepadFocused: false,
-      activePostSlug: null,
-      openPostSlugs: [],
+      activeBlogPath: null,
+      openBlogPaths: [],
       focusTarget: "default",
     });
     useMusicStore.setState({ isOpen: false });
   });
 
-  it("opens the laptop for the blog and carries the slug from the URL", () => {
-    applyOverlayState("laptop", "camping-trip");
+  it("opens the laptop for the blog and carries the path from the URL", () => {
+    applyOverlayState("laptop", "/blog/posts/what-vibe-coding-actually-changed.html");
     const s = useSceneStore.getState();
     expect(s.laptopFocused).toBe(true);
     expect(s.notepadFocused).toBe(false);
-    expect(s.activePostSlug).toBe("camping-trip");
+    expect(s.activeBlogPath).toBe("/blog/posts/what-vibe-coding-actually-changed.html");
     expect(useMusicStore.getState().isOpen).toBe(false);
   });
 
   it("switching overlays closes the previous one (only one open at a time)", () => {
-    applyOverlayState("laptop", "x");
+    applyOverlayState("laptop", "/blog/index.html");
     applyOverlayState("notepad");
     const s = useSceneStore.getState();
     expect(s.notepadFocused).toBe(true);
     expect(s.laptopFocused).toBe(false);
-    expect(s.activePostSlug).toBeNull();
+    expect(s.activeBlogPath).toBeNull();
   });
 
-  it("gives the routed slug a tab, so a deep link arrives with one open", () => {
-    applyOverlayState("laptop", "camping-trip");
-    expect(useSceneStore.getState().openPostSlugs).toEqual(["camping-trip"]);
+  it("gives the routed path a tab, so a deep link arrives with one open", () => {
+    applyOverlayState("laptop", "/blog/index.html");
+    expect(useSceneStore.getState().openBlogPaths).toEqual(["/blog/index.html"]);
   });
 
-  it("keeps tabs already open when a second post is routed to", () => {
-    applyOverlayState("laptop", "camping-trip");
-    applyOverlayState("laptop", "catmap");
-    expect(useSceneStore.getState().openPostSlugs).toEqual(["camping-trip", "catmap"]);
+  it("keeps tabs already open when a second page is routed to", () => {
+    applyOverlayState("laptop", "/blog/index.html");
+    applyOverlayState("laptop", "/blog/tags/music.html");
+    expect(useSceneStore.getState().openBlogPaths).toEqual([
+      "/blog/index.html",
+      "/blog/tags/music.html",
+    ]);
   });
 
   it("re-routing to an open tab does not duplicate it", () => {
-    applyOverlayState("laptop", "catmap");
-    applyOverlayState("laptop", "camping-trip");
-    applyOverlayState("laptop", "catmap");
-    expect(useSceneStore.getState().openPostSlugs).toEqual(["catmap", "camping-trip"]);
+    applyOverlayState("laptop", "/blog/tags/music.html");
+    applyOverlayState("laptop", "/blog/index.html");
+    applyOverlayState("laptop", "/blog/tags/music.html");
+    expect(useSceneStore.getState().openBlogPaths).toEqual([
+      "/blog/tags/music.html",
+      "/blog/index.html",
+    ]);
   });
 
-  it("bare /blog keeps the strip — the desktop is CatOS's new-tab page", () => {
-    applyOverlayState("laptop", "catmap");
+  it("bare /blog keeps the strip — the browser session outlasts one page", () => {
+    applyOverlayState("laptop", "/blog/tags/music.html");
     applyOverlayState("laptop", null);
-    expect(useSceneStore.getState().openPostSlugs).toEqual(["catmap"]);
+    expect(useSceneStore.getState().openBlogPaths).toEqual(["/blog/tags/music.html"]);
   });
 
   it("leaving the blog entirely discards the strip", () => {
-    applyOverlayState("laptop", "catmap");
+    applyOverlayState("laptop", "/blog/tags/music.html");
     applyOverlayState("notepad");
-    expect(useSceneStore.getState().openPostSlugs).toEqual([]);
+    expect(useSceneStore.getState().openBlogPaths).toEqual([]);
   });
 
   it("opens the music player", () => {

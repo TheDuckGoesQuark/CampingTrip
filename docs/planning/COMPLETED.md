@@ -4,6 +4,74 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## The browser gets a homepage, posts, tags and a 90s URL scheme
+
+**Date**: 2026-08-27
+
+**What was done**:
+
+- **The desktop stopped being the content index.** The rail launches CatNav and
+  nothing else; projects, tools and posts all live inside the browser now.
+- **CatNav opens a homepage** (`/blog/index.html`): about, projects, favourite
+  tools, and the blog feed as a sunken panel down the right.
+- **Posts exist.** `types/post.ts` plus one file per post under `data/posts/`,
+  barrelled newest-first. Bodies are TSX. Three are seeded, each with a real
+  standfirst and opening and a bracketed `[DRAFT — …]` beat to finish.
+- **Tags are pages**, not a sidebar filter: `/blog/tags/<tag>.html`, with counts
+  derived from the posts. `/blog/posts/index.html` is the whole archive.
+- **The URL scheme is a directory per kind with a trailing `.html`**, defined
+  once in `routing/blogPaths.ts` alongside the parser that reads it back.
+- **`Window` grew a `Tile`-based letter fallback** — extracted from
+  `DesktopIcon`, now shared with the homepage's project rows and tool cards.
+- **`Button` no longer takes an anchor's semantics** when given `render`.
+
+**Key decisions**:
+
+- **Tabs are paths, not slugs.** A tab can be a post, a tag, a project, a tool or
+  the archive; a path already says which, and the flat slug namespace it replaces
+  could silently resolve a post and a project with the same title to whichever
+  list was searched first.
+- **One splat route, `blog/*`, read back with `parseBlogPath`** rather than a
+  route per kind, so the scheme is defined in exactly one place. `blogPathFor` is
+  its inverse, and the route canonicalises through it — so `/blog/tags/music` and
+  `/blog/tags/music.html` are one tab, displayed with the extension.
+- **`/blog/<slug>` still resolves.** `projects.ts` publishes a link to
+  `/blog/photobroom`, so flat slugs redirect to whichever directory now holds
+  them. Covered by a test naming that reason.
+- **An unrecognised blog path lands on the desktop**, not back at the tent — a
+  gentler 404 that keeps the visitor inside CatOS.
+- **`Modal`'s popup now sets `font-family` as well as `color`.** Base UI portals
+  it to `<body>`, outside `BrandProvider`'s wrapper, so it inherited the
+  campsite's Courier New. `<Text>` was unaffected because it sets its own family;
+  raw markup a caller passes in was not, which is what a post body is.
+- **`Button` with `render` bypasses Base UI's Button entirely.** Base UI's job
+  there is to make a _non_-button act like one, and it does that by stamping
+  `role="button"` on what it is given — stripping an anchor of the link semantics
+  a reader needs, to replace keyboard behaviour the anchor already had. Setting
+  `nativeButton={false}` makes that worse, not better. This also clears the
+  console error the planning notes had recorded, including in `OverlayTabBar`.
+- **New app UI uses CSS Modules, not inline `style`.** `react/forbid-dom-props`
+  is enforced for every app file outside the grandfathered list, and that list is
+  meant to shrink. `Tile` exists partly because a per-item colour cannot be
+  expressed in an app file under that rule.
+- **A feed shows what a post says, not an image.** No post carries a hero image,
+  and the projects' `icon` paths are not in the repo, so the letter tile is the
+  real presentation rather than a fallback waiting to be replaced.
+- **Dates format in UTC.** They are authored as `YYYY-MM-DD`, which parses as UTC
+  midnight; formatting locally would show every post a day early west of
+  Greenwich.
+
+**Deferred**:
+
+- The desktop's gimmicks — a minesweeper, a stray JPEG opening in Preview, a
+  text file, a bin. The `Window` chrome for them is in place; nothing launches
+  them yet.
+- `data/tags.ts` and `data/posts/index.ts` sort with `.sort()` on a defensive
+  copy, which oxlint flags in favour of `toSorted`. That needs the app's TS `lib`
+  moved to ES2023, which is a browser-support call worth making deliberately.
+
+---
+
 ## Design-system pieces for the CatOS blog: Icon, Card, Tag, and window kinds
 
 **Date**: 2026-08-27

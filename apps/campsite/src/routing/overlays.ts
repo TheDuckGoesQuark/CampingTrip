@@ -58,22 +58,22 @@ export const OVERLAY_LINKS: OverlayLink[] = [
  * All overlays keep the default camera framing: the laptop/notepad "open" look is
  * driven by their own model/overlay animation, not a camera preset.
  */
-export function applyOverlayState(kind: OverlayKind | null, slug: string | null = null): void {
+export function applyOverlayState(kind: OverlayKind | null, blogPath: string | null = null): void {
   const scene = useSceneStore.getState();
   const music = useMusicStore.getState();
 
   scene.setLaptopFocused(kind === "laptop");
   scene.setNotepadFocused(kind === "notepad");
-  scene.setActivePostSlug(kind === "laptop" ? slug : null);
+  scene.setActiveBlogPath(kind === "laptop" ? blogPath : null);
   scene.setFocusTarget("default");
 
   // The browser session lasts as long as the visitor is inside CatOS, so bare
   // /blog keeps the strip — it is the desktop, which is CatOS's new-tab page.
   // Only leaving the laptop ends it; the window's close control clears explicitly.
   if (kind !== "laptop") {
-    scene.closeAllPosts();
-  } else if (slug) {
-    scene.openPost(slug);
+    scene.closeAllBlogPaths();
+  } else if (blogPath) {
+    scene.openBlogPath(blogPath);
   }
 
   if (kind === "music") {

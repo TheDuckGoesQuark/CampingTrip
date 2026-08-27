@@ -10,14 +10,15 @@ interface SceneState {
   lanternOn: boolean;
   laptopFocused: boolean;
   notepadFocused: boolean;
-  /** Slug of the open blog post/window, or null. Mirrors /blog/:slug. */
-  activePostSlug: string | null;
+  /** Path of the page in the blog's browser window, or null. Mirrors the URL. */
+  activeBlogPath: string | null;
   /**
-   * Open tabs in the blog's browser window, in tab order. Deliberately absent
-   * from the URL, which names only the *active* tab — otherwise a shared
-   * /blog/:slug link would resurrect a stranger's open tabs.
+   * Open tabs in the blog's browser window, in tab order. Paths rather than
+   * slugs, because a tab can be a post, a tag, a project or a tool, and a path
+   * already says which. Deliberately absent from the URL, which names only the
+   * *active* tab — otherwise a shared link would resurrect a stranger's tabs.
    */
-  openPostSlugs: string[];
+  openBlogPaths: string[];
   currentScene: SceneName;
   focusTarget: FocusTarget;
   setWakeUpDone: () => void;
@@ -26,11 +27,11 @@ interface SceneState {
   toggleLantern: () => void;
   setLaptopFocused: (f: boolean) => void;
   setNotepadFocused: (f: boolean) => void;
-  setActivePostSlug: (s: string | null) => void;
+  setActiveBlogPath: (p: string | null) => void;
   /** Idempotent — `applyOverlayState` calls it on every route change. */
-  openPost: (slug: string) => void;
-  closePost: (slug: string) => void;
-  closeAllPosts: () => void;
+  openBlogPath: (path: string) => void;
+  closeBlogPath: (path: string) => void;
+  closeAllBlogPaths: () => void;
   setCurrentScene: (s: SceneName) => void;
   setFocusTarget: (t: FocusTarget) => void;
 }
@@ -42,8 +43,8 @@ export const useSceneStore = create<SceneState>()((set) => ({
   lanternOn: true,
   laptopFocused: false,
   notepadFocused: false,
-  activePostSlug: null,
-  openPostSlugs: [],
+  activeBlogPath: null,
+  openBlogPaths: [],
   currentScene: "tent",
   focusTarget: "default",
   setWakeUpDone: () => set({ wakeUpDone: true }),
@@ -52,16 +53,16 @@ export const useSceneStore = create<SceneState>()((set) => ({
   toggleLantern: () => set((state) => ({ lanternOn: !state.lanternOn })),
   setLaptopFocused: (f) => set({ laptopFocused: f }),
   setNotepadFocused: (f) => set({ notepadFocused: f }),
-  setActivePostSlug: (s) => set({ activePostSlug: s }),
-  openPost: (slug) =>
+  setActiveBlogPath: (p) => set({ activeBlogPath: p }),
+  openBlogPath: (path) =>
     set((state) =>
-      state.openPostSlugs.includes(slug)
+      state.openBlogPaths.includes(path)
         ? state
-        : { openPostSlugs: [...state.openPostSlugs, slug] },
+        : { openBlogPaths: [...state.openBlogPaths, path] },
     ),
-  closePost: (slug) =>
-    set((state) => ({ openPostSlugs: state.openPostSlugs.filter((s) => s !== slug) })),
-  closeAllPosts: () => set({ openPostSlugs: [] }),
+  closeBlogPath: (path) =>
+    set((state) => ({ openBlogPaths: state.openBlogPaths.filter((p) => p !== path) })),
+  closeAllBlogPaths: () => set({ openBlogPaths: [] }),
   setCurrentScene: (s) => set({ currentScene: s }),
   setFocusTarget: (t) => set({ focusTarget: t }),
 }));

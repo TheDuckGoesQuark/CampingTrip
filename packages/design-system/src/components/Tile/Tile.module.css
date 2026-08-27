@@ -1,0 +1,29 @@
+.base {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--brand-border-strong);
+  border-radius: var(--radius-none);
+  box-shadow: var(--shadow-hard-1);
+  color: var(--brand-text-on-brand);
+  font-family: var(--font-sans);
+  font-weight: var(--weight-heading);
+  line-height: 1;
+}
+
+.sm {
+  width: var(--tile-sm);
+  height: var(--tile-sm);
+  font-size: var(--text-label-size);
+}
+.md {
+  width: var(--tile-md);
+  height: var(--tile-md);
+  font-size: var(--text-title-3-size);
+}
+.lg {
+  width: var(--tile-lg);
+  height: var(--tile-lg);
+  font-size: var(--text-title-1-size);
+}
