@@ -1,0 +1,47 @@
+.base {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xxs);
+  font-family: var(--font-sans);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-label-size);
+  line-height: 1.4;
+  padding: var(--space-xxs) var(--space-xs);
+  border: 1px solid var(--brand-border-strong);
+  /* Squares off on its own inside the desktop chrome, which scopes the radius
+     tokens — see Window.module.css. */
+  border-radius: var(--radius-s);
+  background: var(--brand-subtle);
+  color: var(--brand-text);
+  white-space: nowrap;
+}
+
+.selected {
+  background: var(--brand-solid);
+  color: var(--brand-text-on-brand);
+  border-color: var(--brand-solid-active);
+}
+
+/* Tabular so a rail of counts doesn't jitter between one and two digits. */
+.count {
+  font-family: var(--font-mono);
+  font-weight: var(--weight-regular);
+  font-variant-numeric: tabular-nums;
+  opacity: 0.75;
+}
+
+.base:is(a, button) {
+  cursor: pointer;
+  font: inherit;
+  text-decoration: none;
+}
+.base:is(a, button):hover {
+  background: var(--brand-subtle-hover);
+}
+.selected:is(a, button):hover {
+  background: var(--brand-solid-hover);
+}
+.base:is(a, button):focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}

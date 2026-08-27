@@ -14,6 +14,13 @@
   --space-xl: 32px;
   --space-xxl: 48px;
 
+  /* Icon glyphs — the `Icon` size scale. Stroke is in viewBox user units, so
+     one value holds an even optical weight across the three sizes. */
+  --icon-sm: 12px;
+  --icon-md: 16px;
+  --icon-lg: 24px;
+  --stroke-icon: 1.8;
+
   /* Corner radius (softly rounded brand) */
   --radius-none: 0px;
   --radius-s: 7px;

@@ -4,6 +4,66 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## Design-system pieces for the CatOS blog: Icon, Card, Tag, and window kinds
+
+**Date**: 2026-08-27
+
+**What was done**:
+
+- **`Icon`** — a closed set of stroked glyphs on a 24-unit viewBox, sized
+  `sm`/`md`/`lg` from new `--icon-*` tokens and coloured by `currentColor`.
+  Names describe the shape (`globe`, `document`, `cassette`), never a use, so the
+  DS stays ignorant of what a caller has behind them. An unlabelled icon is
+  `aria-hidden`; `label` promotes it to `role="img"`.
+- **`Card`** — a boxy bordered surface: `tone` × `elevation` × `padding`.
+- **`Tag`** — a topic label with `selected`, an optional `count`, and `render`.
+- **`Window` grew the chrome a non-browser window needs**: `Window.Toolbar`,
+  `Window.ToolButton`, `Window.Separator`, `Window.StatusBar`, a `size` axis
+  (`sm`/`md`/`lg`) and `Window.Body inset`. The traffic lights, tab close,
+  new-tab, address-bar navigation and padlock all draw from `Icon`.
+- **`primitives/useRender.ts`** — the Base UI shim that gives `Card` and `Tag`
+  a `render` prop without either importing Base UI directly.
+
+**Key decisions**:
+
+- **A window's kind is which subparts it is given, not a `kind` prop.** Tabs plus
+  an address bar make a browser; a toolbar plus a status bar make a viewer. This
+  keeps one frame component instead of a discriminated union whose arms each want
+  different chrome, and it means a new kind of window needs no DS change at all.
+- **The window frame scopes the radius tokens to `--radius-none`.** This settles
+  the open question of whether `Button` and `Badge` should square off inside
+  CatOS. A `shape` variant on each rounded component would have spread one
+  decision across three APIs and required every call site to opt in; scoping the
+  tokens on `.window` states the rule once — everything inside a window is
+  hard-edged — and future components inherit it. `--radius-full` is left alone,
+  so genuinely circular things stay circular.
+- **`Tag` is parallel to `Badge`, not a variant of it.** The rubric's own answer:
+  a Tag is routinely a link and carries a selected state, which is a different
+  element and different ARIA, not a different colour.
+- **`Card`'s hover and focus affordances key off the rendered element**
+  (`.base:is(a, button)`), not an `interactive` prop, so the styling and the
+  semantics cannot disagree.
+- **`elevation` moves border weight and hard shadow together** rather than
+  exposing them as two axes — a 1px border under a 4px drop shadow never reads as
+  one object.
+- **`Window.Toolbar` deliberately does not claim `role="toolbar"`.** That role
+  promises arrow-key navigation between its controls, which it does not
+  implement; each button is tabbable instead. Covered by a test so the role
+  cannot be added without the behaviour.
+- **The mockup's eyeballed 10px and 12px paddings snapped to the token scale**
+  (`--space-s`, `--space-m`) rather than earning new tokens.
+
+**Deferred**:
+
+- Multiple windows on screen at once. The design shows a Preview window
+  overlapping a text window, but `Window` centres itself in its layer, so two
+  would stack exactly. Needs a placement or window-manager concern.
+- A bevelled 90s `Button` face. Scoping the radius squares the corners, but the
+  mockup's in-window buttons also carry a 1px border and `--shadow-bevel-out`,
+  which `Button`'s `subtle` variant does not.
+
+---
+
 ## Notes dropped from the tab bar; URL-hold mechanism tried and reverted
 
 **Date**: 2026-08-27

@@ -1,0 +1,62 @@
+.base {
+  display: block;
+  border-style: solid;
+  border-color: var(--brand-border-strong);
+  border-radius: var(--radius-none);
+  color: var(--brand-text);
+}
+
+/* Fills */
+.surface {
+  background: var(--brand-surface);
+}
+.sunken {
+  background: var(--brand-surface-sunken);
+}
+.subtle {
+  background: var(--brand-subtle);
+}
+
+/* Border weight and drop shadow move together — see the component doc. */
+.flat {
+  border-width: 1px;
+}
+.raised {
+  border-width: 2px;
+  box-shadow: var(--shadow-hard-1);
+}
+.floating {
+  border-width: 2px;
+  box-shadow: var(--shadow-hard-2);
+}
+
+.padSm {
+  padding: var(--space-s);
+}
+.padMd {
+  padding: var(--space-m);
+}
+
+/* Only a card that really is a control gets control affordances. Selecting on
+   the element rather than a prop means the two can never disagree. */
+.base:is(a, button) {
+  cursor: pointer;
+  text-align: inherit;
+  font: inherit;
+  text-decoration: none;
+}
+.base:is(a, button):focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
+/* Hover steps one rung down the surface ramp, so it composes with every tone. */
+.surface:is(a, button):hover {
+  background: var(--brand-surface-sunken);
+}
+.sunken:is(a, button):hover {
+  background: var(--brand-subtle);
+}
+.subtle:is(a, button):hover {
+  background: var(--brand-subtle-hover);
+}

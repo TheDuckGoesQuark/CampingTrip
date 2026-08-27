@@ -8,13 +8,20 @@ All planned and deferred work, organised by priority.
 
 ### Design system — boxy pass on in-window content
 
-- Decide whether `Button` and `Badge` should square off inside a CatOS window.
-  They are shared components used outside the desktop chrome, so this needs a
-  call on scope: a `shape` variant, a desktop-scoped wrapper, or leave the
-  rounded brand shape as deliberate contrast.
+- Give `Button` a bevelled face for in-window use. The window frame squares its
+  corners, but the design's in-window buttons also carry a 1px
+  `--brand-border-strong` and `--shadow-bevel-out`, which no `Button` variant
+  has. Decide whether that is a new variant or a scoped override like the radius.
 - `Button` logs a Base UI `nativeButton` console error when given
   `render={<a href=… />}`. Reproduce on `/blog/photobroom`. Fix belongs in
   `src/primitives/Button` (components may not import Base UI directly).
+
+### Design system — more than one window on screen
+
+`Window` centres itself in a full-bleed layer, so two rendered together stack
+exactly on top of each other. The CatOS design wants a Preview window
+overlapping a text window. Needs a call on where placement lives: a `placement`
+variant on `Window`, or an app-level window manager owning position and z-order.
 
 ### Campsite — an environment that can actually run the 3D scene
 

@@ -21,12 +21,35 @@
   border-radius: var(--radius-none);
   box-shadow: var(--shadow-hard-3);
   animation: windowIn 0.12s steps(3, end);
-  /* Proportional rather than viewport-locked, so the centred frame always leaves
-     the surrounding desktop chrome visible above and below it. */
+
+  /* Everything inside a window is hard-edged, so the brand's rounded components
+     square off here without each call site opting in. A 7px pill beside a 2px
+     hairline border reads as a mistake rather than as contrast. */
+  --radius-s: var(--radius-none);
+  --radius-m: var(--radius-none);
+  --radius-l: var(--radius-none);
+  --radius-xl: var(--radius-none);
+}
+
+/* Proportional rather than viewport-locked, so a centred frame always leaves the
+   surrounding desktop chrome visible above and below it. */
+.lg {
   width: 92%;
   max-width: 880px;
   height: 78%;
   max-height: 660px;
+}
+.md {
+  width: 92%;
+  max-width: 600px;
+  height: 70%;
+  max-height: 500px;
+}
+.sm {
+  width: 88%;
+  max-width: 420px;
+  height: 52%;
+  max-height: 320px;
 }
 
 /* ── Title bar ─────────────────────────────────────────────── */
@@ -197,12 +220,13 @@ button.light:active {
   outline: none;
 }
 
-.newTab {
+/* The one bevelled square control, shared by the tab strip's new-tab button,
+   the address bar's navigation and any toolbar. */
+.chromeButton {
   flex-shrink: 0;
   align-self: center;
   width: 22px;
   height: 22px;
-  margin-left: var(--space-xxs);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -211,20 +235,29 @@ button.light:active {
   border-radius: var(--radius-none);
   background: var(--brand-surface-raised);
   color: var(--brand-text);
-  font-size: var(--text-body-sm-size);
   line-height: 1;
   cursor: pointer;
   box-shadow: var(--shadow-bevel-out);
 }
-.newTab:hover {
+.chromeButton:hover:not(:disabled) {
   background: var(--brand-subtle-hover);
 }
-.newTab:active {
+.chromeButton:active:not(:disabled) {
   box-shadow: var(--shadow-bevel-in);
 }
-.newTab:focus-visible {
+.chromeButton:focus-visible {
   outline: none;
   box-shadow: var(--shadow-focus);
+}
+.chromeButton:disabled {
+  color: var(--brand-text-disabled);
+  cursor: default;
+  box-shadow: none;
+}
+
+/* Sits in the tab strip rather than a bar, so it needs its own gutter. */
+.tabs .chromeButton {
+  margin-left: var(--space-xxs);
 }
 
 /* ── Address bar ───────────────────────────────────────────── */
@@ -244,38 +277,6 @@ button.light:active {
   display: flex;
   gap: var(--space-xxs);
   flex-shrink: 0;
-}
-
-.navButton {
-  width: 22px;
-  height: 22px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  border: 1px solid var(--brand-border-strong);
-  border-radius: var(--radius-none);
-  background: var(--brand-surface-raised);
-  color: var(--brand-text);
-  font-size: var(--text-label-size);
-  line-height: 1;
-  cursor: pointer;
-  box-shadow: var(--shadow-bevel-out);
-}
-.navButton:hover:not(:disabled) {
-  background: var(--brand-subtle-hover);
-}
-.navButton:active:not(:disabled) {
-  box-shadow: var(--shadow-bevel-in);
-}
-.navButton:focus-visible {
-  outline: none;
-  box-shadow: var(--shadow-focus);
-}
-.navButton:disabled {
-  color: var(--brand-text-disabled);
-  cursor: default;
-  box-shadow: none;
 }
 
 .addressWell {
@@ -309,12 +310,63 @@ button.light:active {
   user-select: text;
 }
 
+/* ── Toolbar ───────────────────────────────────────────────── */
+
+/* Occupies the same band a browser gives its tabs and address bar. */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-s);
+  height: 30px;
+  padding: 0 var(--space-s);
+  flex-shrink: 0;
+  background: var(--brand-subtle);
+  border-bottom: 2px solid var(--brand-border-strong);
+  font-size: var(--text-body-sm-size);
+}
+
+.separator {
+  flex-shrink: 0;
+  width: 1px;
+  height: var(--space-m);
+  background: var(--brand-border-strong);
+}
+
+/* ── Status bar ────────────────────────────────────────────── */
+
+.statusbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-s);
+  height: 24px;
+  padding: 0 var(--space-s);
+  flex-shrink: 0;
+  background: var(--brand-subtle);
+  border-top: 2px solid var(--brand-border-strong);
+  font-family: var(--font-mono);
+  font-size: var(--text-label-size);
+  color: var(--brand-text-muted);
+}
+
 /* ── Page ──────────────────────────────────────────────────── */
 
 .body {
   flex: 1;
   overflow-y: auto;
   padding: var(--space-l) var(--space-xl);
+}
+
+/* One object on display rather than a document: no reading gutter, and the same
+   inset bevel the address well uses, so the object reads as sitting *in* the
+   window rather than being part of it. */
+.bodyInset {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: var(--space-m);
+  background: var(--brand-surface-sunken);
+  box-shadow: var(--shadow-bevel-in);
 }
 
 /* Stepped rather than eased — an instant, unanimated era. */
