@@ -1,9 +1,9 @@
 import { useGLTF, useTexture } from "@react-three/drei";
 import gsap from "gsap";
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import * as THREE from "three";
 
-import { overlayFlight, requestOpen } from "../../../routing/navigation";
+import { requestOpen } from "../../../routing/navigation";
 import { useInteractionStore } from "../../../store/interactionStore";
 import { useSceneStore } from "../../../store/sceneStore";
 import { asset, DRACO_PATH } from "../../../utils/assetPath";
@@ -19,6 +19,20 @@ useTexture.preload(asset("images/logo.webp"));
 const REST_POS: [number, number, number] = [-1.6, 0.67, -0.85];
 const REST_ROT: [number, number, number] = [-0.2, Math.PI * 0.3, 0.15];
 const REST_SCALE: [number, number, number] = [0.045, 0.045, 0.045];
+
+/**
+ * Where the logo sits on the screen panel, in group-local units — the panel's own
+ * centre, a hair in front of its front face. Derived from laptop.glb rather than
+ * measured at runtime: the screen is a sub-node carrying both a ~100x scale and a
+ * 180-degree Y rotation, so its extent works out at x -15.2..15.2, y 0.46..20.56,
+ * front face z -9.89.
+ *
+ * The depth matters more than it looks. REST_ROT turns the group 54 degrees about
+ * Y, which maps local +Z onto world (0.81, 0, 0.59) — so any gap between the logo
+ * and the panel projects sideways, and reads as the icon drifting right rather
+ * than as it floating forward.
+ */
+const LOGO_POS: [number, number, number] = [0, 10.5, -9.8];
 
 // Focused transform (screen fills camera view — lower and further from camera)
 const FOCUS_POS: [number, number, number] = [0, 1.7, 0.8];
@@ -38,12 +52,6 @@ export default function Laptop({ screenOn }: Props) {
   const lightMeshes = useRef<
     { mat: THREE.MeshStandardMaterial; color: THREE.Color; intensity: number }[]
   >([]);
-  // State, not a ref: the logo's position is read during render, so the measured
-  // centre has to schedule one. As a ref it only landed when some unrelated
-  // re-render happened to follow (hovering the laptop), which made the icon's
-  // placement depend on luck.
-  const [screenCenter, setScreenCenter] = useState<[number, number, number]>([0, 12, -3]);
-
   const laptopFocused = useSceneStore((s) => s.laptopFocused);
 
   // Interaction store for "projects" logo hover/focus/label
@@ -114,26 +122,6 @@ export default function Laptop({ screenOn }: Props) {
 
     screenMeshes.current = screens;
     lightMeshes.current = lights;
-
-    // Compute screen center for logo placement.
-    // Force GLTF internal transforms to resolve first — on first load,
-    // Three.js hasn't rendered yet so matrixWorld values are stale.
-    // Then convert from world space → group-local space so the result
-    // is consistent regardless of the group's current position.
-    if (screens.length > 0) {
-      scene.updateMatrixWorld(true);
-      const box = new THREE.Box3();
-      screens.forEach((m) => box.expandByObject(m));
-      const worldCenter = box.getCenter(new THREE.Vector3());
-
-      // The group is still at its default transform here, so world coordinates and
-      // group-local ones coincide; worldToLocal keeps that true if it ever moves.
-      if (groupRef.current) {
-        groupRef.current.updateMatrixWorld(true);
-        groupRef.current.worldToLocal(worldCenter);
-      }
-      setScreenCenter([worldCenter.x, worldCenter.y, worldCenter.z]);
-    }
   }, [scene]);
 
   // Toggle emissive lights (LEDs, indicators) on hover — same pattern as Scarlett Solo / MPK
@@ -185,10 +173,6 @@ export default function Laptop({ screenOn }: Props) {
         z: FOCUS_POS[2],
         duration: 1,
         ease: "power2.inOut",
-        // The three tweens share a duration, so position landing is the flight
-        // landing. useSceneNavigate commits the URL off this rather than a timer
-        // of its own; an interrupted flight never reports, which is the point.
-        onComplete: () => overlayFlight.landed("laptop"),
       });
       gsap.to(g.rotation, {
         x: FOCUS_ROT[0],
@@ -251,7 +235,7 @@ export default function Laptop({ screenOn }: Props) {
 
       {/* Logo icon on screen — always mounted to avoid geometry/material
           creation at toggle time; visibility toggled instead */}
-      <group visible={screenOn} position={[screenCenter[0], screenCenter[1], screenCenter[2] + 2]}>
+      <group visible={screenOn} position={LOGO_POS}>
         <mesh
           ref={logoMeshRef}
           onClick={handleLogoClick}

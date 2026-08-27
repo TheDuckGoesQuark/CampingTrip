@@ -14,13 +14,8 @@ export interface OverlayLink {
   objectId: string;
   /** The overlay this route opens. */
   kind: OverlayKind;
-  /**
-   * Latest an in-app click may hold the URL, in ms. Normally unused — the URL
-   * commits when the object's flight reports landing. It carries the wait only
-   * for an overlay with no flight to report (the music player), so for the
-   * animated ones it must sit clear of the real animation rather than match it.
-   */
-  commitByMs: number;
+  /** How long an in-app click holds the URL, in ms — roughly the open animation. */
+  animMs: number;
   /**
    * Whether the tab bar promotes this place. The notepad is still openable — by
    * its object in the tent, and by its URL — it just isn't worth a permanent
@@ -35,22 +30,13 @@ export interface OverlayLink {
  * bar — see `inTabBar`.
  */
 export const OVERLAY_LINKS: OverlayLink[] = [
-  // Laptop and notepad fly for 1.0s and 0.9s; the music player does not move,
-  // so its deadline is the whole wait rather than a fallback.
-  {
-    path: "/blog",
-    label: "Blog",
-    objectId: "laptop",
-    kind: "laptop",
-    commitByMs: 1600,
-    inTabBar: true,
-  },
+  { path: "/blog", label: "Blog", objectId: "laptop", kind: "laptop", animMs: 900, inTabBar: true },
   {
     path: "/music",
     label: "Music",
     objectId: "shure-mic",
     kind: "music",
-    commitByMs: 250,
+    animMs: 250,
     inTabBar: true,
   },
   {
@@ -58,7 +44,7 @@ export const OVERLAY_LINKS: OverlayLink[] = [
     label: "Notes",
     objectId: "notepad",
     kind: "notepad",
-    commitByMs: 1500,
+    animMs: 600,
     inTabBar: false,
   },
 ];

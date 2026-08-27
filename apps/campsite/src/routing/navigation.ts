@@ -45,33 +45,6 @@ function createOverlayNavigation() {
 export const overlayNavigation = createOverlayNavigation();
 
 /**
- * The other direction: a 3D object announcing that its open flight has landed,
- * so `useSceneNavigate` can commit the URL on arrival instead of guessing with a
- * timer. Same reason for an emitter as above — the animation runs inside the
- * Canvas, and the router lives outside it.
- *
- * Not every overlay has a flight (the music player has no 3D move), and the tent
- * may not be mounted at all, so a caller must keep its own deadline rather than
- * assume this fires.
- */
-function createOverlayFlight() {
-  const listeners = new Set<(kind: OverlayKind) => void>();
-  return {
-    landed(kind: OverlayKind): void {
-      for (const listener of listeners) listener(kind);
-    },
-    subscribe(listener: (kind: OverlayKind) => void): () => void {
-      listeners.add(listener);
-      return () => {
-        listeners.delete(listener);
-      };
-    },
-  };
-}
-
-export const overlayFlight = createOverlayFlight();
-
-/**
  * Convenience callers for the 3D objects — request opening an overlay by intent,
  * with no path strings or event names at the call site.
  */
