@@ -1,20 +1,128 @@
-import { cva, type VariantProps } from "class-variance-authority";
-import type { ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type PointerEvent as ReactPointerEvent,
+  type MouseEvent as ReactMouseEvent,
+  type ReactNode,
+} from "react";
 
 import { cn } from "../../../utils/cn";
 import { Icon, type IconName } from "../../Icon";
+import {
+  centre,
+  maximised,
+  movedBy,
+  refit,
+  resizedBy,
+  type Box,
+  type Size,
+  type WindowSize,
+} from "./geometry";
 
 import styles from "./Window.module.css";
 
-const frame = cva(styles.window, {
-  variants: {
-    size: { sm: styles.sm, md: styles.md, lg: styles.lg },
-  },
-  defaultVariants: { size: "lg" },
-});
+/**
+ * How the frame is presented. One value rather than a `maximised` and a
+ * `minimised` flag, because the three are mutually exclusive and two booleans
+ * would admit a fourth state that means nothing.
+ *
+ * `shaded` is what the amber light does: the window rolls up into its own title
+ * bar. There is no dock or taskbar to minimise *to*, and a window that vanished
+ * with no way back would be a trap.
+ */
+export type WindowDisplay = "normal" | "maximised" | "shaded";
 
-export interface WindowProps extends VariantProps<typeof frame> {
+interface DragHandlers {
+  onPointerDown: (event: ReactPointerEvent<HTMLElement>) => void;
+  onPointerMove: (event: ReactPointerEvent<HTMLElement>) => void;
+  onPointerUp: (event: ReactPointerEvent<HTMLElement>) => void;
+  onPointerCancel: (event: ReactPointerEvent<HTMLElement>) => void;
+}
+
+interface WindowFrame {
+  display: WindowDisplay;
+  toggleMaximised: () => void;
+  toggleShaded: () => void;
+  moveHandlers: DragHandlers;
+  onTitleBarDoubleClick: (event: ReactMouseEvent<HTMLElement>) => void;
+}
+
+const WindowFrameContext = createContext<WindowFrame | null>(null);
+
+/** Throws outside a `<Window>`, so a stray subpart fails loudly rather than silently. */
+function useWindowFrame(): WindowFrame {
+  const frame = useContext(WindowFrameContext);
+  if (!frame) throw new Error("Window subparts must be rendered inside a <Window>.");
+  return frame;
+}
+
+/**
+ * Pointer capture keeps a drag tracking once the pointer leaves the element it
+ * started on. It is an enhancement, not a requirement — without it a drag simply
+ * stops at the edge — and jsdom implements neither call, so both are optional.
+ */
+function capturePointer(element: HTMLElement, pointerId: number): void {
+  element.setPointerCapture?.(pointerId);
+}
+
+function releasePointer(element: HTMLElement, pointerId: number): void {
+  if (element.hasPointerCapture?.(pointerId)) element.releasePointerCapture?.(pointerId);
+}
+
+/**
+ * Turns a pointer drag into a stream of deltas. Deltas rather than an origin
+ * offset, so a clamped edge does not build up a debt the window pays back the
+ * moment the pointer turns around.
+ */
+function usePointerDrag(onDelta: (dx: number, dy: number) => void, enabled: boolean): DragHandlers {
+  const origin = useRef<{ x: number; y: number } | null>(null);
+
+  const release = useCallback((event: ReactPointerEvent<HTMLElement>) => {
+    origin.current = null;
+    releasePointer(event.currentTarget, event.pointerId);
+  }, []);
+
+  return {
+    onPointerDown: useCallback(
+      (event: ReactPointerEvent<HTMLElement>) => {
+        // Left button only, and never from a control sitting on the drag surface.
+        if (!enabled || event.button !== 0) return;
+        if ((event.target as HTMLElement).closest("button")) return;
+        event.preventDefault();
+        capturePointer(event.currentTarget, event.pointerId);
+        origin.current = { x: event.clientX, y: event.clientY };
+      },
+      [enabled],
+    ),
+    onPointerMove: useCallback(
+      (event: ReactPointerEvent<HTMLElement>) => {
+        const from = origin.current;
+        if (!from) return;
+        origin.current = { x: event.clientX, y: event.clientY };
+        onDelta(event.clientX - from.x, event.clientY - from.y);
+      },
+      [onDelta],
+    ),
+    onPointerUp: release,
+    onPointerCancel: release,
+  };
+}
+
+export interface WindowProps {
   children: ReactNode;
+  /** The size the frame opens at, and returns to from maximised. */
+  size?: WindowSize;
+  /** Controlled presentation. Pair with `onDisplayChange`. */
+  display?: WindowDisplay;
+  /** Uncontrolled starting presentation. */
+  defaultDisplay?: WindowDisplay;
+  onDisplayChange?: (display: WindowDisplay) => void;
 }
 
 /**
@@ -25,36 +133,169 @@ export interface WindowProps extends VariantProps<typeof frame> {
  * `Window.Separator`) / `Window.Body` / `Window.StatusBar`, in any order.
  *
  * Which subparts a caller picks is what makes a window a browser or a viewer:
- * tabs plus an address bar, or a toolbar plus a status bar. `size` belongs to
- * that same choice and is fixed for the life of the window — a frame that
- * resized as its contents changed read as broken.
+ * tabs plus an address bar, or a toolbar plus a status bar.
+ *
+ * The frame owns its own geometry. It opens centred at `size`, and from there
+ * the title bar drags it, the corner grow box resizes it, the green light and a
+ * double-click on the title bar maximise it, and the amber light rolls it up
+ * into its title bar. Every one of those states is reachable from the two
+ * lights, which are ordinary buttons — dragging is a pointer refinement, not
+ * the only way in.
  *
  * It never dims what it floats over, so the desktop behind stays clickable —
  * that is how a second tab gets opened.
  */
-function Root({ children, size }: WindowProps) {
+function Root({
+  children,
+  size = "lg",
+  display,
+  defaultDisplay = "normal",
+  onDisplayChange,
+}: WindowProps) {
+  const layerRef = useRef<HTMLDivElement>(null);
+  const [layer, setLayer] = useState<Size | null>(null);
+  const [box, setBox] = useState<Box | null>(null);
+  const [ownDisplay, setOwnDisplay] = useState<WindowDisplay>(defaultDisplay);
+  const current = display ?? ownDisplay;
+
+  const setDisplay = useCallback(
+    (next: WindowDisplay) => {
+      if (display === undefined) setOwnDisplay(next);
+      onDisplayChange?.(next);
+    },
+    [display, onDisplayChange],
+  );
+
+  /**
+   * Measured in a layout effect, so the first paint already has geometry and the
+   * frame never flashes at one size before settling at another.
+   */
+  useLayoutEffect(() => {
+    const element = layerRef.current;
+    if (!element) return;
+
+    const measure = () => {
+      const { width, height } = element.getBoundingClientRect();
+      if (width === 0 || height === 0) return;
+      setLayer((prev) =>
+        prev?.width === width && prev?.height === height ? prev : { width, height },
+      );
+    };
+
+    measure();
+    // Absent in jsdom, where there is no layout to observe in the first place.
+    if (typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+
+  // Centre on first measurement; afterwards only rescue a frame the layer has
+  // outgrown, so a resized viewport never throws away where the user put it.
+  useLayoutEffect(() => {
+    if (!layer) return;
+    setBox((prev) => (prev ? refit(prev, layer) : centre(size, layer)));
+  }, [layer, size]);
+
+  const onMoveDelta = useCallback(
+    (dx: number, dy: number) => {
+      if (!layer) return;
+      setBox((prev) => (prev ? movedBy(prev, dx, dy, layer) : prev));
+    },
+    [layer],
+  );
+
+  const onResizeDelta = useCallback(
+    (dx: number, dy: number) => {
+      if (!layer) return;
+      setBox((prev) => (prev ? resizedBy(prev, dx, dy, layer) : prev));
+    },
+    [layer],
+  );
+
+  // A maximised window is pinned; a shaded one can still be dragged out of the way.
+  const moveHandlers = usePointerDrag(onMoveDelta, current !== "maximised");
+  const resizeHandlers = usePointerDrag(onResizeDelta, current === "normal");
+
+  const frame = useMemo<WindowFrame>(
+    () => ({
+      display: current,
+      toggleMaximised: () => setDisplay(current === "maximised" ? "normal" : "maximised"),
+      toggleShaded: () => setDisplay(current === "shaded" ? "normal" : "shaded"),
+      moveHandlers,
+      onTitleBarDoubleClick: (event) => {
+        if ((event.target as HTMLElement).closest("button")) return;
+        setDisplay(current === "maximised" ? "normal" : "maximised");
+      },
+    }),
+    [current, moveHandlers, setDisplay],
+  );
+
+  const rendered = current === "maximised" && layer ? maximised(layer) : box;
+  const style: CSSProperties | undefined = rendered
+    ? {
+        position: "absolute",
+        left: rendered.x,
+        top: rendered.y,
+        width: rendered.width,
+        // Shaded: let the title bar decide, rather than guessing its height.
+        height: current === "shaded" ? "auto" : rendered.height,
+      }
+    : undefined;
+
   return (
-    <div className={styles.layer}>
-      <div className={frame({ size })}>{children}</div>
+    <div className={styles.layer} ref={layerRef}>
+      <div
+        className={cn(
+          styles.window,
+          // Only until the layer has been measured; geometry takes over after.
+          !rendered && styles[size],
+          current === "shaded" && styles.shaded,
+        )}
+        style={style}
+      >
+        <WindowFrameContext.Provider value={frame}>{children}</WindowFrameContext.Provider>
+        {current === "normal" && <span className={styles.growBox} {...resizeHandlers} />}
+      </div>
     </div>
   );
 }
 
 export interface WindowTitleBarProps {
   title?: string;
+  /**
+   * The red light. Only the caller knows what closing means, so it stays a prop
+   * and renders inert without one — unlike amber and green, which the frame
+   * drives itself.
+   */
   onClose?: () => void;
-  /** Amber and green lights render inert unless given a handler. */
-  onMinimise?: () => void;
-  onMaximise?: () => void;
 }
 
-function TitleBar({ title, onClose, onMinimise, onMaximise }: WindowTitleBarProps) {
+function TitleBar({ title, onClose }: WindowTitleBarProps) {
+  const frame = useWindowFrame();
+
   return (
-    <div className={styles.titlebar}>
+    <div
+      className={styles.titlebar}
+      onDoubleClick={frame.onTitleBarDoubleClick}
+      {...frame.moveHandlers}
+    >
       <div className={styles.lights}>
         <Light label="Close" tone="close" glyph="close" onClick={onClose} />
-        <Light label="Minimise" tone="minimise" glyph="minus" onClick={onMinimise} />
-        <Light label="Maximise" tone="maximise" glyph="plus" onClick={onMaximise} />
+        <Light
+          label="Minimise"
+          tone="minimise"
+          glyph="minus"
+          pressed={frame.display === "shaded"}
+          onClick={frame.toggleShaded}
+        />
+        <Light
+          label="Maximise"
+          tone="maximise"
+          glyph="plus"
+          pressed={frame.display === "maximised"}
+          onClick={frame.toggleMaximised}
+        />
       </div>
       <span className={styles.title}>{title}</span>
       <span className={styles.titleSpacer} />
@@ -70,17 +311,26 @@ function Light({
   label,
   tone,
   glyph,
+  pressed,
   onClick,
 }: {
   label: string;
   tone: "close" | "minimise" | "maximise";
   glyph: IconName;
+  /** Set on the two lights that toggle, so their name can stay constant. */
+  pressed?: boolean;
   onClick?: () => void;
 }) {
   const className = cn(styles.light, styles[tone]);
   if (!onClick) return <span className={className} aria-hidden="true" />;
   return (
-    <button type="button" aria-label={label} className={className} onClick={onClick}>
+    <button
+      type="button"
+      aria-label={label}
+      aria-pressed={pressed}
+      className={className}
+      onClick={onClick}
+    >
       <Icon name={glyph} size="sm" />
     </button>
   );

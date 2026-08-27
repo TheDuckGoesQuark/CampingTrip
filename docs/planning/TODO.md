@@ -6,20 +6,15 @@ All planned and deferred work, organised by priority.
 
 ## Next Up
 
-### CatOS — window geometry
+### CatOS — more than one window at once
 
-Make the window behave like a window. All of this belongs in the DS `Window`,
-which currently centres itself at a fixed `size`:
+The frame now carries a real position, which is what this was waiting on. What is
+still missing is z-order and focus: which window is in front, what clicking a
+window behind does, and whether the browser stays open underneath a Preview
+rather than being replaced by it.
 
-- Maximise: fill the desktop, from the green light and from a double-click on the
-  title bar.
-- Minimise: collapse to the title bar and back, from the amber light. There is no
-  dock or taskbar to minimise _to_, so a window shade is the behaviour that fits.
-- Resize by dragging. This needs the frame to carry a real position rather than
-  being flex-centred, since growing a centred frame slides it out from under the
-  cursor — which drags to move it comes along with.
-- Two windows on screen at once, which the position work unlocks. Until then a
-  gimmick replaces the browser rather than floating over it.
+Keyboard resize is the other gap. The amber and green lights cover shade and
+maximise, but dragging to an arbitrary size has no keyboard equivalent.
 
 ### CatOS desktop — a minigame
 
