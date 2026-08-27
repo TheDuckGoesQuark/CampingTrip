@@ -4,6 +4,27 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## The homepage fills the window it is in
+
+**Date**: 2026-08-27
+
+**What was done**: the homepage's reading column takes whatever width is left
+instead of a fixed 500px, so a resized or maximised window no longer leaves dead
+space down the right. The feed keeps its 280px, and the tools grid gains columns
+as the window widens.
+
+**Key decisions**:
+
+- **The feed does not grow.** It is an index of short lines; a wider one would
+  stretch the same content and read worse.
+- **Prose keeps a measure even though its column does not** (`68ch`). Past
+  roughly 75 characters a line is hard to track back from, so a maximised window
+  would otherwise make the intro wider without making it more readable. This is
+  the one part of "grow to fill" that is deliberately not followed — pull the
+  `.intro` cap if the full width is wanted.
+
+---
+
 ## Windows behave like windows: maximise, window shade, drag to move and resize
 
 **Date**: 2026-08-27

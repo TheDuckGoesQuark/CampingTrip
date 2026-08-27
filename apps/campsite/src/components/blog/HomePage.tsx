@@ -28,18 +28,20 @@ export default function HomePage() {
           <Text variant="title-1">Hello, you found the laptop.</Text>
         </div>
 
-        <Text>
-          I'm Jordan. I build software for a living and make odd little things for the fun of it —
-          this site being the oddest of them. There's a tent out there with a cat in it, and in here
-          there's a browser, because I couldn't resist putting a computer inside a campsite inside a
-          computer.
-        </Text>
-        <div className={styles.paragraphGap}>
+        <div className={styles.intro}>
           <Text>
-            I write about whatever I've been fixated on lately. Sometimes that's code. Often it's
-            records, or a Flash game from 2004 that taught me something about systems. The tags are
-            on the right if you'd rather skip one or the other.
+            I'm Jordan. I build software for a living and make odd little things for the fun of it —
+            this site being the oddest of them. There's a tent out there with a cat in it, and in
+            here there's a browser, because I couldn't resist putting a computer inside a campsite
+            inside a computer.
           </Text>
+          <div className={styles.paragraphGap}>
+            <Text>
+              I write about whatever I've been fixated on lately. Sometimes that's code. Often it's
+              records, or a Flash game from 2004 that taught me something about systems. The tags
+              are on the right if you'd rather skip one or the other.
+            </Text>
+          </div>
         </div>
 
         <hr className={styles.rule} />

@@ -6,8 +6,9 @@
 
 /* ── Homepage ──────────────────────────────────────────────── */
 
-/* A reading column with the feed beside it. The widths are fixed rather than
-   fluid because the window they sit in is a fixed size too. */
+/* A reading column with the feed beside it. The window is resizable, so the
+   reading column takes whatever is left rather than the pair sitting in a fixed
+   block with dead space beside it. */
 .home {
   display: flex;
   gap: var(--space-xl);
@@ -15,13 +16,22 @@
 }
 
 .homeMain {
-  width: 500px;
-  flex-shrink: 0;
+  flex: 1;
+  min-width: 0;
 }
 
+/* The feed keeps its width at every window size: it is an index, and a wider one
+   would only stretch the same short lines. */
 .homeFeed {
   width: 280px;
   flex-shrink: 0;
+}
+
+/* Prose gets a measure even though its column does not. Past roughly 75
+   characters a line is hard to track back from, so a maximised window makes the
+   intro wider without making it more readable. */
+.intro {
+  max-width: 68ch;
 }
 
 .eyebrow {
@@ -55,9 +65,11 @@
   margin: var(--space-xs) 0 14px;
 }
 
+/* Two cards in a narrow window, more as it widens — these are chips, not prose,
+   so they genuinely benefit from the room. */
 .toolGrid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
   gap: var(--space-s);
 }
 
