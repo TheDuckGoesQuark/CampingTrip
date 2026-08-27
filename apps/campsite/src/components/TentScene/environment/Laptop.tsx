@@ -1,6 +1,6 @@
 import { useGLTF, useTexture } from "@react-three/drei";
 import gsap from "gsap";
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import * as THREE from "three";
 
 import { requestOpen } from "../../../routing/navigation";
@@ -38,7 +38,11 @@ export default function Laptop({ screenOn }: Props) {
   const lightMeshes = useRef<
     { mat: THREE.MeshStandardMaterial; color: THREE.Color; intensity: number }[]
   >([]);
-  const screenCenter = useRef(new THREE.Vector3(0, 12, -3));
+  // State, not a ref: the logo's position is read during render, so the measured
+  // centre has to schedule one. As a ref it only landed when some unrelated
+  // re-render happened to follow (hovering the laptop), which made the icon's
+  // placement depend on luck.
+  const [screenCenter, setScreenCenter] = useState<[number, number, number]>([0, 12, -3]);
 
   const laptopFocused = useSceneStore((s) => s.laptopFocused);
 
@@ -122,13 +126,13 @@ export default function Laptop({ screenOn }: Props) {
       screens.forEach((m) => box.expandByObject(m));
       const worldCenter = box.getCenter(new THREE.Vector3());
 
+      // The group is still at its default transform here, so world coordinates and
+      // group-local ones coincide; worldToLocal keeps that true if it ever moves.
       if (groupRef.current) {
         groupRef.current.updateMatrixWorld(true);
-        screenCenter.current.copy(worldCenter);
-        groupRef.current.worldToLocal(screenCenter.current);
-      } else {
-        screenCenter.current.copy(worldCenter);
+        groupRef.current.worldToLocal(worldCenter);
       }
+      setScreenCenter([worldCenter.x, worldCenter.y, worldCenter.z]);
     }
   }, [scene]);
 
@@ -243,10 +247,7 @@ export default function Laptop({ screenOn }: Props) {
 
       {/* Logo icon on screen — always mounted to avoid geometry/material
           creation at toggle time; visibility toggled instead */}
-      <group
-        visible={screenOn}
-        position={[screenCenter.current.x, screenCenter.current.y, screenCenter.current.z + 2]}
-      >
+      <group visible={screenOn} position={[screenCenter[0], screenCenter[1], screenCenter[2] + 2]}>
         <mesh
           ref={logoMeshRef}
           onClick={handleLogoClick}
