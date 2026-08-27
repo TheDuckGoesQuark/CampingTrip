@@ -7,17 +7,21 @@ import styles from "./catos.module.css";
 export interface BinWindowProps {
   item: Extract<DesktopItem, { kind: "bin" }>;
   onClose: () => void;
+  /** Place in the stack, so a new window does not open on top of the last. */
+  cascade?: number;
+  /** Raise this window — a press anywhere in its frame. */
+  onFocus?: () => void;
 }
 
 /**
  * The bin, as a listing. Emptying it is not offered: the joke is the contents,
  * and a working Empty control would delete them for everyone who visits next.
  */
-export default function BinWindow({ item, onClose }: BinWindowProps) {
+export default function BinWindow({ item, onClose, cascade, onFocus }: BinWindowProps) {
   const { contents } = item;
 
   return (
-    <Window size="md">
+    <Window size="md" cascade={cascade} onFocus={onFocus}>
       <Window.TitleBar title={item.label} onClose={onClose} />
       <Window.Toolbar>
         <Text variant="label" tone="muted" as="span">

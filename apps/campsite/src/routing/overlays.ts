@@ -2,6 +2,7 @@ import { musicPlayer } from "../audio/musicPlayer";
 import { useMusicStore } from "../store/musicStore";
 import { useSceneStore } from "../store/sceneStore";
 import { isBrowserPath } from "./blogPaths";
+import { windowIdFor } from "./windows";
 
 /** Which overlay a route opens. Exactly one is open at a time. */
 export type OverlayKind = "laptop" | "notepad" | "music";
@@ -61,23 +62,39 @@ export const OVERLAY_LINKS: OverlayLink[] = [
  */
 export function applyOverlayState(kind: OverlayKind | null, blogPath: string | null = null): void {
   const scene = useSceneStore.getState();
-  const music = useMusicStore.getState();
 
   scene.setLaptopFocused(kind === "laptop");
   scene.setNotepadFocused(kind === "notepad");
-  scene.setActiveBlogPath(kind === "laptop" ? blogPath : null);
   scene.setFocusTarget("default");
+  applyMusic(kind);
 
-  // The browser session lasts as long as the visitor is inside CatOS, so bare
-  // /blog keeps the strip — it is the desktop, which is CatOS's new-tab page.
-  // Only leaving the laptop ends it; the window's close control clears explicitly.
   if (kind !== "laptop") {
+    // Leaving the laptop ends the session outright.
+    scene.closeAllWindows();
     scene.closeAllBlogPaths();
-  } else if (blogPath && isBrowserPath(blogPath)) {
-    // A desktop item gets its own window, so it never joins the tab strip.
-    scene.openBlogPath(blogPath);
+    scene.setBrowserPath(null);
+    return;
   }
 
+  if (!blogPath) {
+    // Bare /blog is the empty desktop. The tab strip survives, because the
+    // browser session lasts as long as the visitor is inside CatOS.
+    scene.closeAllWindows();
+    return;
+  }
+
+  // Raise the window the URL names and leave any others where they are: the set
+  // of open windows is session state that one URL cannot describe.
+  if (isBrowserPath(blogPath)) {
+    scene.setBrowserPath(blogPath);
+    scene.openBlogPath(blogPath);
+  }
+  scene.raiseWindow(windowIdFor(blogPath));
+}
+
+/** The music player is the one overlay that owns hardware, so it is set apart. */
+function applyMusic(kind: OverlayKind | null): void {
+  const music = useMusicStore.getState();
   if (kind === "music") {
     music.open();
   } else if (music.isOpen) {

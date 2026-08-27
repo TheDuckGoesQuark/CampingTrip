@@ -130,6 +130,17 @@ export interface WindowProps {
   /** Uncontrolled starting presentation. */
   defaultDisplay?: WindowDisplay;
   onDisplayChange?: (display: WindowDisplay) => void;
+  /**
+   * This window's place in a stack of them, stepping its opening position down
+   * and right so a new window does not land exactly on the one behind it.
+   */
+  cascade?: number;
+  /**
+   * Fired on a pointer press anywhere in the frame. A caller managing several
+   * windows uses it to raise this one; it says nothing about DOM focus, which
+   * the browser handles on its own.
+   */
+  onFocus?: () => void;
 }
 
 /**
@@ -155,7 +166,9 @@ export interface WindowProps {
  * widening the viewport hands the window back exactly as it was.
  *
  * It never dims what it floats over, so the desktop behind stays clickable —
- * that is how a second tab gets opened.
+ * that is how a second tab gets opened. Several windows can be rendered at once;
+ * each gets its own full-bleed layer, so paint order is DOM order and a caller
+ * raises one by moving it last. `onFocus` reports the press that should do that.
  */
 function Root({
   children,
@@ -163,6 +176,8 @@ function Root({
   display,
   defaultDisplay = "normal",
   onDisplayChange,
+  cascade = 0,
+  onFocus,
 }: WindowProps) {
   const layerRef = useRef<HTMLDivElement>(null);
   const [layer, setLayer] = useState<Size | null>(null);
@@ -219,7 +234,10 @@ function Root({
   // outgrown, so a resized viewport never throws away where the user put it.
   useLayoutEffect(() => {
     if (!layer) return;
-    setBox((prev) => (prev ? refit(prev, layer) : centre(size, layer)));
+    setBox((prev) => (prev ? refit(prev, layer) : centre(size, layer, cascade)));
+    // `cascade` is deliberately absent: it positions a window when it opens, and
+    // re-running on a later change would jump one already on screen.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [layer, size]);
 
   const onMoveDelta = useCallback(
@@ -289,6 +307,8 @@ function Root({
           locked && styles.locked,
         )}
         style={style}
+        // Capture, so raising the window beats anything inside it handling the press.
+        onPointerDownCapture={onFocus}
       >
         <WindowFrameContext.Provider value={frame}>{children}</WindowFrameContext.Provider>
         {!locked && presented === "normal" && (

@@ -24,7 +24,8 @@ describe("overlay route components declare scene state on mount", () => {
     useSceneStore.setState({
       laptopFocused: false,
       notepadFocused: false,
-      activeBlogPath: null,
+      openWindows: [],
+      browserPath: null,
       openBlogPaths: [],
       focusTarget: "default",
     });
@@ -35,26 +36,26 @@ describe("overlay route components declare scene state on mount", () => {
     renderAt("/blog/tags/music.html", "/blog/*", <BlogRoute />);
     const s = useSceneStore.getState();
     expect(s.laptopFocused).toBe(true);
-    expect(s.activeBlogPath).toBe("/blog/tags/music.html");
+    expect(s.browserPath).toBe("/blog/tags/music.html");
   });
 
   it("BlogRoute canonicalises a path missing the extension", () => {
     renderAt("/blog/tags/music", "/blog/*", <BlogRoute />);
-    expect(useSceneStore.getState().activeBlogPath).toBe("/blog/tags/music.html");
+    expect(useSceneStore.getState().browserPath).toBe("/blog/tags/music.html");
   });
 
   it("bare /blog opens the laptop on the desktop, with no page", () => {
     renderAt("/blog", "/blog/*", <BlogRoute />);
     const s = useSceneStore.getState();
     expect(s.laptopFocused).toBe(true);
-    expect(s.activeBlogPath).toBeNull();
+    expect(s.browserPath).toBeNull();
   });
 
   it("an unrecognised blog path lands on the desktop rather than the tent", () => {
     renderAt("/blog/nothing/here.html", "/blog/*", <BlogRoute />);
     const s = useSceneStore.getState();
     expect(s.laptopFocused).toBe(true);
-    expect(s.activeBlogPath).toBeNull();
+    expect(s.browserPath).toBeNull();
   });
 
   it("redirects a flat legacy slug to its namespaced path", () => {
@@ -62,7 +63,7 @@ describe("overlay route components declare scene state on mount", () => {
     renderAt("/blog/photobroom", "/blog/*", <BlogRoute />);
     const s = useSceneStore.getState();
     expect(s.laptopFocused).toBe(true);
-    expect(s.activeBlogPath).toBe("/blog/projects/photobroom.html");
+    expect(s.browserPath).toBe("/blog/projects/photobroom.html");
   });
 
   it("NotesRoute opens the notepad", () => {

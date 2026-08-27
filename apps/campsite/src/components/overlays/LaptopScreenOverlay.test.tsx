@@ -5,6 +5,7 @@ import { MemoryRouter, useLocation } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { applyOverlayState } from "../../routing/overlays";
+import { WINDOW_BROWSER } from "../../routing/windows";
 import { useSceneStore } from "../../store/sceneStore";
 import LaptopScreenOverlay from "./LaptopScreenOverlay";
 
@@ -47,7 +48,12 @@ vi.mock("../../audio/soundEffects", () => ({
 
 describe("LaptopScreenOverlay (CatOS)", () => {
   beforeEach(() => {
-    useSceneStore.setState({ laptopFocused: false, activeBlogPath: null, openBlogPaths: [] });
+    useSceneStore.setState({
+      laptopFocused: false,
+      openWindows: [],
+      browserPath: null,
+      openBlogPaths: [],
+    });
   });
 
   it("renders no dialog when the laptop is not focused", () => {
@@ -93,7 +99,7 @@ describe("LaptopScreenOverlay (CatOS)", () => {
     it("shows a desktop item in a window with no browser chrome", () => {
       useSceneStore.setState({
         laptopFocused: true,
-        activeBlogPath: "/blog/desk/notes-txt",
+        openWindows: ["/blog/desk/notes-txt"],
       });
       renderOverlay();
       expect(screen.getByText(/oat milk/)).toBeInTheDocument();
@@ -103,8 +109,9 @@ describe("LaptopScreenOverlay (CatOS)", () => {
     it("keeps a desktop item out of the browser's tab strip", () => {
       useSceneStore.setState({
         laptopFocused: true,
+        openWindows: [WINDOW_BROWSER],
         openBlogPaths: [HOME],
-        activeBlogPath: HOME,
+        browserPath: HOME,
       });
       renderOverlay();
       applyOverlayState("laptop", "/blog/desk/bin");
@@ -116,8 +123,9 @@ describe("LaptopScreenOverlay (CatOS)", () => {
     const openTabs = (paths: string[], active: string) =>
       useSceneStore.setState({
         laptopFocused: true,
+        openWindows: [WINDOW_BROWSER],
         openBlogPaths: paths,
-        activeBlogPath: active,
+        browserPath: active,
       });
 
     it("stays shut while nothing is open", () => {
@@ -206,6 +214,87 @@ describe("LaptopScreenOverlay (CatOS)", () => {
       renderWithPath();
       fireEvent.click(screen.getByRole("tab", { name: /Camping Trip/ }));
       expect(currentPath()).toBe(CAMPING_TRIP);
+    });
+  });
+  describe("several windows at once", () => {
+    const NOTES = "/blog/desk/notes-txt";
+    const BIN = "/blog/desk/bin";
+
+    const openStack = (ids: string[], browserPath: string | null = null) =>
+      useSceneStore.setState({
+        laptopFocused: true,
+        openWindows: ids,
+        browserPath,
+        openBlogPaths: browserPath ? [browserPath] : [],
+      });
+
+    it("renders every open window", () => {
+      openStack([WINDOW_BROWSER, NOTES], HOME);
+      renderOverlay();
+      expect(screen.getByRole("tablist")).toBeInTheDocument();
+      expect(screen.getByText(/oat milk/)).toBeInTheDocument();
+    });
+
+    it("paints them back to front, so the last one is on top", () => {
+      openStack([NOTES, BIN]);
+      renderOverlay();
+      // Queried from the document: the takeover is portalled out of the container.
+      const titles = Array.from(document.querySelectorAll('[class*="_title_"]')).map(
+        (el) => el.textContent,
+      );
+      expect(titles).toEqual(["notes.txt", "Bin"]);
+    });
+
+    it("skips a window whose content no longer resolves", () => {
+      openStack([NOTES, "/blog/desk/not-a-thing"]);
+      renderOverlay();
+      expect(screen.getAllByRole("button", { name: "Close" })).toHaveLength(1);
+    });
+
+    it("closing the front window hands the address to the one behind it", () => {
+      openStack([NOTES, BIN]);
+      renderWithPath();
+      // Two windows, so two red lights; the front one is last in the DOM.
+      const lights = screen.getAllByRole("button", { name: "Close" });
+      fireEvent.click(lights[lights.length - 1]);
+      expect(useSceneStore.getState().openWindows).toEqual([NOTES]);
+      expect(currentPath()).toBe(NOTES);
+    });
+
+    it("closing the last window returns to the empty desktop", () => {
+      openStack([NOTES]);
+      renderWithPath();
+      fireEvent.click(screen.getByRole("button", { name: "Close" }));
+      expect(currentPath()).toBe("/blog");
+    });
+
+    it("closing the browser ends the browsing session, tab strip included", () => {
+      openStack([WINDOW_BROWSER, NOTES], HOME);
+      renderWithPath();
+      const lights = screen.getAllByRole("button", { name: "Close" });
+      fireEvent.click(lights[0]);
+      const state = useSceneStore.getState();
+      expect(state.openWindows).toEqual([NOTES]);
+      expect(state.openBlogPaths).toEqual([]);
+      expect(state.browserPath).toBeNull();
+    });
+
+    it("a press on a window behind raises it, without adding to history", () => {
+      openStack([NOTES, BIN]);
+      renderWithPath();
+      // The rearmost window's title bar; a press anywhere in the frame raises it.
+      const titleBars = screen.getAllByRole("button", { name: "Close" });
+      fireEvent.pointerDown(titleBars[0]);
+      expect(currentPath()).toBe(NOTES);
+    });
+
+    it("a press on the front window changes nothing", () => {
+      openStack([NOTES, BIN]);
+      renderWithPath();
+      const before = currentPath();
+      const lights = screen.getAllByRole("button", { name: "Close" });
+      fireEvent.pointerDown(lights[lights.length - 1]);
+      expect(currentPath()).toBe(before);
     });
   });
 });

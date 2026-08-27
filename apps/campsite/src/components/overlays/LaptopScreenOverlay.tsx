@@ -7,6 +7,7 @@ import { iconOfDesktopItem, resolveBlogPage, type BlogPage } from "../../data/bl
 import { desktopItems, desktopItemSlug } from "../../data/desktopItems";
 import { blogPaths, parseBlogPath } from "../../routing/blogPaths";
 import { routes } from "../../routing/navigation";
+import { frontWindow, isBrowserWindow, pathForWindow } from "../../routing/windows";
 import { useSceneStore } from "../../store/sceneStore";
 import { useSessionStore } from "../../store/sessionStore";
 import type { DesktopItem } from "../../types/desktop";
@@ -34,17 +35,28 @@ function pathFor(item: DesktopItem): string {
  * everything else. So the rail launches CatNav and a junk drawer, and CatNav
  * opens a homepage rather than treating the desktop as its new-tab page.
  *
- * One window at a time, browser included. Which window is open is URL-driven;
- * the *set* of open browser tabs is session state in the scene store.
+ * Several windows can be open together. They render back to front, so paint
+ * order is DOM order and raising one means moving it last. The URL names the
+ * front window; which others are open is session state, since one URL cannot
+ * describe a desktop.
  */
 export default function LaptopScreenOverlay() {
   const navigate = useNavigate();
   const laptopFocused = useSceneStore((s) => s.laptopFocused);
-  const activeBlogPath = useSceneStore((s) => s.activeBlogPath);
+  const openWindows = useSceneStore((s) => s.openWindows);
+  const browserPath = useSceneStore((s) => s.browserPath);
   const [clock, setClock] = useState("");
   const prevFocused = useRef(false);
 
-  const activePage = useMemo(() => pageAt(activeBlogPath), [activeBlogPath]);
+  /** Back to front, skipping any window whose content no longer resolves. */
+  const stack = useMemo(
+    () =>
+      openWindows
+        .map((id) => ({ id, page: pageAt(isBrowserWindow(id) ? browserPath : id) }))
+        .filter((w): w is { id: string; page: BlogPage } => w.page !== null),
+    [openWindows, browserPath],
+  );
+  const anyOpen = stack.length > 0;
 
   // Update lastVisitedAt when leaving CatOS.
   useEffect(() => {
@@ -64,12 +76,6 @@ export default function LaptopScreenOverlay() {
     return () => clearInterval(id);
   }, [laptopFocused]);
 
-  /** The red light: back to the desktop, ending the browsing session. */
-  const closeWindow = useCallback(() => {
-    useSceneStore.getState().closeAllBlogPaths();
-    navigate(routes.blog);
-  }, [navigate]);
-
   const open = useCallback(
     (path: string) => {
       navigate(path);
@@ -78,15 +84,53 @@ export default function LaptopScreenOverlay() {
     [navigate],
   );
 
-  // Base UI reports close intent (Escape). Close the open window first, else the
+  /**
+   * The red light. Closing the front window hands the address bar to whatever is
+   * behind it, and only an empty desktop goes back to bare /blog. Closing the
+   * browser ends the browsing session, tab strip included.
+   */
+  const closeWindow = useCallback(
+    (id: string) => {
+      const scene = useSceneStore.getState();
+      const remaining = scene.openWindows.filter((w) => w !== id);
+      playSoftClick();
+      scene.closeWindow(id);
+      if (isBrowserWindow(id)) {
+        scene.closeAllBlogPaths();
+        scene.setBrowserPath(null);
+      }
+      const next = frontWindow(remaining);
+      const nextPath = next ? pathForWindow(next, scene.browserPath) : null;
+      navigate(nextPath ?? routes.blog);
+    },
+    [navigate],
+  );
+
+  /** Raising a window is not a new place, so it replaces rather than pushes. */
+  const raise = useCallback(
+    (id: string) => {
+      const scene = useSceneStore.getState();
+      if (frontWindow(scene.openWindows) === id) return;
+      const path = pathForWindow(id, scene.browserPath);
+      if (path) navigate(path, { replace: true });
+    },
+    [navigate],
+  );
+
+  // Base UI reports close intent (Escape). Close the front window first, else the
   // whole takeover — mirrors the layered Escape behaviour, no manual keydown.
   const onOpenChange = useCallback(
     (isOpen: boolean) => {
       if (isOpen) return;
       playSoftClick();
-      navigate(activePage ? routes.blog : routes.tent);
+      const front = frontWindow(useSceneStore.getState().openWindows);
+      if (front) {
+        closeWindow(front);
+        return;
+      }
+      navigate(routes.tent);
     },
-    [activePage, navigate],
+    [closeWindow, navigate],
   );
 
   return (
@@ -124,9 +168,17 @@ export default function LaptopScreenOverlay() {
           ))}
         </div>
 
-        {activePage && <CatosWindow page={activePage} onClose={closeWindow} />}
+        {stack.map((window, index) => (
+          <CatosWindow
+            key={window.id}
+            page={window.page}
+            cascade={index}
+            onFocus={() => raise(window.id)}
+            onClose={() => closeWindow(window.id)}
+          />
+        ))}
 
-        {!activePage && (
+        {!anyOpen && (
           <div className={styles.backToTent}>
             <Button variant="ghost" size="sm" onClick={() => navigate(routes.tent)}>
               Back to tent

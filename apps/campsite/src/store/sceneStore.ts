@@ -1,5 +1,6 @@
 import { create } from "zustand";
 
+import { frontWindow } from "../routing/windows";
 import type { TentDoorState, SceneName, FocusTarget } from "../types/scene";
 
 interface SceneState {
@@ -10,13 +11,21 @@ interface SceneState {
   lanternOn: boolean;
   laptopFocused: boolean;
   notepadFocused: boolean;
-  /** Path of the page in the blog's browser window, or null. Mirrors the URL. */
-  activeBlogPath: string | null;
   /**
-   * Open tabs in the blog's browser window, in tab order. Paths rather than
-   * slugs, because a tab can be a post, a tag, a project or a tool, and a path
-   * already says which. Deliberately absent from the URL, which names only the
-   * *active* tab — otherwise a shared link would resurrect a stranger's tabs.
+   * Open windows on the CatOS desktop, back to front — the last is in front, and
+   * the URL names it. Ids are `WINDOW_BROWSER` or a desktop item's own path.
+   *
+   * Session state, not URL state, for the same reason the tab strip is: one URL
+   * can only name one window, and a shared link should not resurrect a
+   * stranger's desktop.
+   */
+  openWindows: string[];
+  /** Page shown in the browser window, or null when it holds nothing yet. */
+  browserPath: string | null;
+  /**
+   * Open tabs in the browser window, in tab order. Paths rather than slugs,
+   * because a tab can be a post, a tag, a project or a tool, and a path already
+   * says which.
    */
   openBlogPaths: string[];
   currentScene: SceneName;
@@ -27,7 +36,11 @@ interface SceneState {
   toggleLantern: () => void;
   setLaptopFocused: (f: boolean) => void;
   setNotepadFocused: (f: boolean) => void;
-  setActiveBlogPath: (p: string | null) => void;
+  setBrowserPath: (p: string | null) => void;
+  /** Opens a window if absent, and raises it either way. Idempotent. */
+  raiseWindow: (id: string) => void;
+  closeWindow: (id: string) => void;
+  closeAllWindows: () => void;
   /** Idempotent — `applyOverlayState` calls it on every route change. */
   openBlogPath: (path: string) => void;
   closeBlogPath: (path: string) => void;
@@ -43,7 +56,8 @@ export const useSceneStore = create<SceneState>()((set) => ({
   lanternOn: true,
   laptopFocused: false,
   notepadFocused: false,
-  activeBlogPath: null,
+  openWindows: [],
+  browserPath: null,
   openBlogPaths: [],
   currentScene: "tent",
   focusTarget: "default",
@@ -53,7 +67,15 @@ export const useSceneStore = create<SceneState>()((set) => ({
   toggleLantern: () => set((state) => ({ lanternOn: !state.lanternOn })),
   setLaptopFocused: (f) => set({ laptopFocused: f }),
   setNotepadFocused: (f) => set({ notepadFocused: f }),
-  setActiveBlogPath: (p) => set({ activeBlogPath: p }),
+  setBrowserPath: (p) => set({ browserPath: p }),
+  raiseWindow: (id) =>
+    set((state) =>
+      frontWindow(state.openWindows) === id
+        ? state
+        : { openWindows: [...state.openWindows.filter((w) => w !== id), id] },
+    ),
+  closeWindow: (id) => set((state) => ({ openWindows: state.openWindows.filter((w) => w !== id) })),
+  closeAllWindows: () => set({ openWindows: [] }),
   openBlogPath: (path) =>
     set((state) =>
       state.openBlogPaths.includes(path)

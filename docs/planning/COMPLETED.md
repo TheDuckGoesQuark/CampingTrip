@@ -4,6 +4,52 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## More than one window at a time
+
+**Date**: 2026-08-27
+
+**What was done**: the CatOS desktop holds a stack of windows instead of one. New
+windows cascade so they do not land on top of each other, a press anywhere in a
+frame raises it, and closing the front one hands the address bar to whatever was
+behind it.
+
+- **`sceneStore`** gained `openWindows` (window ids, back to front) and traded
+  `activeBlogPath` for `browserPath`, since "the page the browser holds" and
+  "which window is in front" stopped being the same thing.
+- **`routing/windows.ts`** holds the window-identity rules: the browser is one
+  window whatever page it shows, so it needs an id that is not a path
+  (`WINDOW_BROWSER`); everything else _is_ its path.
+- **`Window`** gained `cascade` and `onFocus`.
+
+**Key decisions**:
+
+- **Paint order is DOM order.** Each `Window` already renders its own full-bleed,
+  click-through layer, so rendering the stack back to front gives correct z-order
+  with no z-index bookkeeping. Raising a window means moving it last.
+- **The URL names the front window; the rest is session state.** One URL cannot
+  describe a desktop, and a shared link should not resurrect a stranger's — the
+  same reasoning the tab strip already used. So `applyOverlayState` raises the
+  window the URL names and leaves the others exactly where they are.
+- **Raising replaces rather than pushes history.** Bringing a window forward is
+  not going somewhere new, and a back button that walked through raise events
+  would be useless.
+- **Closing the front window navigates to the one behind it**, and only an empty
+  desktop goes back to bare `/blog`. Closing the browser also ends the browsing
+  session, tab strip included, since that window _is_ the session.
+- **`frontWindow()` rather than `at(-1)`.** The app's TS lib target is ES2020, and
+  naming the concept beats index arithmetic at four call sites.
+- **The browser can completely cover a smaller window.** It is the widest frame
+  and it centres, so a cascaded viewer lands inside its bounds. Clicking the
+  desktop icon again raises the hidden window, which is the recovery path; moving
+  the browser aside is the other. Left as is — this is how desktops behave.
+
+**Verified in a browser**: three windows open at once, each cascaded and
+reachable; raising by clicking a frame behind; raising by re-clicking a desktop
+icon without duplicating the window; closing the front window handing the address
+back. None of which jsdom can show.
+
+---
+
 ## On a phone, a window is the screen
 
 **Date**: 2026-08-27

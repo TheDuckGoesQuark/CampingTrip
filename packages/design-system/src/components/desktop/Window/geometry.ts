@@ -75,15 +75,27 @@ export function sizeFor(size: WindowSize, layer: Size): Size {
   };
 }
 
-/** A window's opening position: centred, which is where a new window belongs. */
-export function centre(size: WindowSize, layer: Size): Box {
+/** How far each successive window steps down and right of the one before it. */
+export const CASCADE_STEP = 28;
+
+/**
+ * A window's opening position: centred, which is where a single window belongs.
+ * `cascade` steps later windows down and right so a new one does not land
+ * exactly on top of the one it was opened from, then clamps — so a long-lived
+ * session cannot walk a window off the edge.
+ */
+export function centre(size: WindowSize, layer: Size, cascade = 0): Box {
   const { width, height } = sizeFor(size, layer);
-  return {
-    x: Math.round((layer.width - width) / 2),
-    y: Math.round((layer.height - height) / 2),
-    width,
-    height,
-  };
+  const step = cascade * CASCADE_STEP;
+  return clamp(
+    {
+      x: Math.round((layer.width - width) / 2) + step,
+      y: Math.round((layer.height - height) / 2) + step,
+      width,
+      height,
+    },
+    layer,
+  );
 }
 
 /** The box a maximised window fills. */

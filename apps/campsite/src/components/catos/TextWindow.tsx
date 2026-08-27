@@ -7,6 +7,10 @@ import styles from "./catos.module.css";
 export interface TextWindowProps {
   item: Extract<DesktopItem, { kind: "text" }>;
   onClose: () => void;
+  /** Place in the stack, so a new window does not open on top of the last. */
+  cascade?: number;
+  /** Raise this window — a press anywhere in its frame. */
+  onFocus?: () => void;
 }
 
 /**
@@ -14,9 +18,9 @@ export interface TextWindowProps {
  * Wide enough that a line of notes does not soft-wrap mid-phrase, which reads as
  * a layout fault rather than as a text file.
  */
-export default function TextWindow({ item, onClose }: TextWindowProps) {
+export default function TextWindow({ item, onClose, cascade, onFocus }: TextWindowProps) {
   return (
-    <Window size="md">
+    <Window size="md" cascade={cascade} onFocus={onFocus}>
       <Window.TitleBar title={item.label} onClose={onClose} />
       <Window.Toolbar>
         <Text variant="label" tone="muted" as="span">
