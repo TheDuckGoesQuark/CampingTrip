@@ -182,3 +182,34 @@ export const Shaded: Story = {
     </Window>
   ),
 };
+
+/**
+ * Two frames sharing a desktop. `stackOrder` decides which covers which, so a
+ * press raises a window without its node moving in the DOM — a moved node drops
+ * the click or the drag that asked for the raise.
+ */
+export const Stacked: Story = {
+  render: () => {
+    const [front, setFront] = useState("Behind");
+    const order = (name: string) => (front === name ? 1 : 0);
+
+    return (
+      <>
+        {["Behind", "In front"].map((name, index) => (
+          <Window
+            key={name}
+            size="sm"
+            cascade={index}
+            stackOrder={order(name)}
+            onFocus={() => setFront(name)}
+          >
+            <Window.TitleBar title={name} onClose={() => {}} />
+            <Window.Body>
+              <Text>Press either frame to bring it forward.</Text>
+            </Window.Body>
+          </Window>
+        ))}
+      </>
+    );
+  },
+};

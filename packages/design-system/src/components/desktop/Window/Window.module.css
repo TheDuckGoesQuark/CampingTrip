@@ -3,7 +3,9 @@
 .layer {
   position: absolute;
   inset: 0;
-  z-index: 20;
+  /* Which window covers which is `stackOrder`, not DOM order — the frame sets
+     the custom property, and this keeps the base above the desktop in one place. */
+  z-index: calc(20 + var(--window-stack-order, 0));
   display: flex;
   align-items: center;
   justify-content: center;

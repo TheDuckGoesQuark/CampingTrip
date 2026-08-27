@@ -3,15 +3,12 @@ import BinWindow from "./BinWindow";
 import BrowserWindow from "./BrowserWindow";
 import PreviewWindow from "./PreviewWindow";
 import TextWindow from "./TextWindow";
+import type { WindowFrameProps } from "./windowFrame";
 
-export interface CatosWindowProps {
+export interface CatosWindowProps extends WindowFrameProps {
   page: BlogPage;
   /** Where each window's red light goes. */
   onClose: () => void;
-  /** Place in the stack, so a new window does not open on top of the last. */
-  cascade?: number;
-  /** Raise this window — a press anywhere in its frame. */
-  onFocus?: () => void;
 }
 
 /**
@@ -19,9 +16,7 @@ export interface CatosWindowProps {
  * its kind from its subparts rather than a prop: adding a kind of window means
  * adding a case here and a component, and nothing in the design system moves.
  */
-export default function CatosWindow({ page, onClose, cascade, onFocus }: CatosWindowProps) {
-  const frame = { cascade, onFocus };
-
+export default function CatosWindow({ page, onClose, ...frame }: CatosWindowProps) {
   if (page.kind !== "desk") return <BrowserWindow page={page} onClose={onClose} {...frame} />;
 
   const { item } = page;

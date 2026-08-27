@@ -4,6 +4,49 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## Stacking windows by z-index, not by DOM order
+
+**Date**: 2026-08-27
+
+**What was done**: fixed two bugs in the multi-window desktop, both from one
+cause. On a window behind the front one, the red light only raised the window
+instead of closing it, and dragging its title bar was erratic.
+
+The cause: raising moved the window's id to the end of `openWindows`, the overlay
+mapped that array to children, so React raised a window by **moving its DOM
+node**. A node detached and re-attached mid-gesture loses the pending `click`
+(the browser only synthesises one when press and release share a still-attached
+target) and its pointer capture. Raising happens on press — so the raise ate the
+very gesture that asked for it.
+
+- **`Window`** gained `stackOrder`, which sets `--window-stack-order` on the
+  frame's layer; the layer's `z-index` is `calc(20 + var(--window-stack-order))`.
+- **`LaptopScreenOverlay`** renders the frames in a fixed order — by id — and
+  passes each window's place in the stack as that number instead.
+- **`components/catos/windowFrame.ts`** holds the frame props every window
+  forwards untouched, so a third one did not get re-declared in five files.
+
+**Key decisions**:
+
+- **Supersedes "paint order is DOM order"** from the entry below. DOM order is
+  the cheaper mechanism and it was the wrong one: it makes raising a structural
+  change to the tree, and the tree is what the in-flight gesture is anchored to.
+  Stacking is a paint concern, so z-index is where it belongs.
+- **DOM order fixed by sorting on id.** Arbitrary, and that is the point — it has
+  to be something the stack cannot perturb. Nothing reads it any more.
+- **`cascade` and `stackOrder` both come from the stack index.** Not a
+  coincidence worth hiding: a window opens on the end of the stack, so its index
+  there is also how many windows it must step down and right of. `cascade` is
+  still read once at mount, so a later raise never moves a window on screen.
+- **Verified by the invariant, not the timing.** The bug needed a human-paced
+  press — automation fires press and release inside one frame, before React
+  commits, so a synthetic click passed even while the bug was live. The test
+  asserts the thing that actually broke: a raise leaves the rendered order
+  untouched. Confirmed in the browser too, with a `MutationObserver` recording
+  zero child-list changes across raises and drags.
+
+---
+
 ## More than one window at a time
 
 **Date**: 2026-08-27
@@ -26,6 +69,7 @@ behind it.
 - **Paint order is DOM order.** Each `Window` already renders its own full-bleed,
   click-through layer, so rendering the stack back to front gives correct z-order
   with no z-index bookkeeping. Raising a window means moving it last.
+  _Superseded — see "Stacking windows by z-index, not by DOM order" above._
 - **The URL names the front window; the rest is session state.** One URL cannot
   describe a desktop, and a shared link should not resurrect a stranger's — the
   same reasoning the tab strip already used. So `applyOverlayState` raises the

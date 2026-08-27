@@ -13,6 +13,7 @@ import { blogPaths, parseBlogPath } from "../../routing/blogPaths";
 import { routes } from "../../routing/navigation";
 import { useSceneStore } from "../../store/sceneStore";
 import BlogPageView from "../blog/BlogPageView";
+import type { WindowFrameProps } from "./windowFrame";
 
 import styles from "./catos.module.css";
 
@@ -27,20 +28,16 @@ function browserPageAt(path: string): BrowserPage | null {
   return page && page.kind !== "desk" ? page : null;
 }
 
-export interface BrowserWindowProps {
+export interface BrowserWindowProps extends WindowFrameProps {
   page: BrowserPage;
   onClose: () => void;
-  /** Place in the stack, so a new window does not open on top of the last. */
-  cascade?: number;
-  /** Raise this window — a press anywhere in its frame. */
-  onFocus?: () => void;
 }
 
 /**
  * CatNav — the mock browser. Owns the tab strip and the address bar, which is
  * what distinguishes it from the desktop's other windows.
  */
-export default function BrowserWindow({ page, onClose, cascade, onFocus }: BrowserWindowProps) {
+export default function BrowserWindow({ page, onClose, ...frame }: BrowserWindowProps) {
   const navigate = useNavigate();
   const { key: locationKey } = useLocation();
   const browserPath = useSceneStore((s) => s.browserPath);
@@ -87,7 +84,7 @@ export default function BrowserWindow({ page, onClose, cascade, onFocus }: Brows
   }, [locationKey]);
 
   return (
-    <Window cascade={cascade} onFocus={onFocus}>
+    <Window {...frame}>
       <Window.TitleBar title={`${titleOfBlogPage(page)} — CatNav`} onClose={onClose} />
       <Window.Tabs>
         {openTabs.map((tab) => (

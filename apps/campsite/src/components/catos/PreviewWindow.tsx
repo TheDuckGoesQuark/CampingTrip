@@ -2,16 +2,13 @@ import { Text, Window } from "@jordanscamp/ds";
 
 import type { DesktopItem } from "../../types/desktop";
 import SmittensPhoto from "./SmittensPhoto";
+import type { WindowFrameProps } from "./windowFrame";
 
 import styles from "./catos.module.css";
 
-export interface PreviewWindowProps {
+export interface PreviewWindowProps extends WindowFrameProps {
   item: Extract<DesktopItem, { kind: "image" }>;
   onClose: () => void;
-  /** Place in the stack, so a new window does not open on top of the last. */
-  cascade?: number;
-  /** Raise this window — a press anywhere in its frame. */
-  onFocus?: () => void;
 }
 
 /**
@@ -22,9 +19,9 @@ export interface PreviewWindowProps {
  * render disabled rather than being omitted, because a viewer without them reads
  * as unfinished, and a control that lies about working is worse than a grey one.
  */
-export default function PreviewWindow({ item, onClose, cascade, onFocus }: PreviewWindowProps) {
+export default function PreviewWindow({ item, onClose, ...frame }: PreviewWindowProps) {
   return (
-    <Window size="md" cascade={cascade} onFocus={onFocus}>
+    <Window size="md" {...frame}>
       <Window.TitleBar title={`${item.label} — Preview`} onClose={onClose} />
       <Window.Toolbar>
         <Window.ToolButton label="Zoom out" icon="minus" />
