@@ -15,10 +15,11 @@ thin re-export shim over `@base-ui/react` — one line per primitive.
 
 ## What lives here
 
-| File         | Role                                                                                                                                                                        |
-| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Dialog.tsx` | Re-exports the `Dialog` namespace from `@base-ui/react/dialog` (`.Root`, `.Trigger`, `.Portal`, `.Backdrop`, `.Popup`, `.Title`, `.Close`, …). Backs `../components/Modal`. |
-| `Button.tsx` | Re-exports `Button` from `@base-ui/react/button` (native button behaviour + `render` polymorphism). Backs `../components/Button`.                                           |
+| File           | Role                                                                                                                                                                                  |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Dialog.tsx`   | Re-exports the `Dialog` namespace from `@base-ui/react/dialog` (`.Root`, `.Trigger`, `.Portal`, `.Backdrop`, `.Popup`, `.Title`, `.Close`, …). Backs `../components/Modal`.           |
+| `Button.tsx`   | Re-exports `Button` from `@base-ui/react/button` (native button behaviour + `render` polymorphism). Backs `../components/Button`.                                                     |
+| `useRender.ts` | Re-exports `useRender` from `@base-ui/react/use-render`. Lets a component take a `render` prop without being a Base UI component. Backs `../components/Card` and `../components/Tag`. |
 
 If you reach for a Base UI primitive that isn't here, **add a shim file first**,
 then import it from a component.

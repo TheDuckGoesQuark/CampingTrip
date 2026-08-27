@@ -123,4 +123,63 @@ describe("Window", () => {
     expect(screen.getByRole("button", { name: "Back" })).toBeEnabled();
     expect(screen.getByRole("button", { name: "Forward" })).toBeDisabled();
   });
+  it("fires a toolbar button and disables one with no handler", async () => {
+    const onZoomIn = vi.fn();
+    render(
+      <Window size="md">
+        <Window.Toolbar>
+          <Window.ToolButton label="Zoom in" icon="plus" onClick={onZoomIn} />
+          <Window.Separator />
+          <Window.ToolButton label="Zoom out" icon="minus" />
+        </Window.Toolbar>
+      </Window>,
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Zoom in" }));
+    expect(onZoomIn).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole("button", { name: "Zoom out" })).toBeDisabled();
+  });
+
+  it("does not claim the toolbar role it has no keyboard behaviour for", () => {
+    render(
+      <Window>
+        <Window.Toolbar>
+          <Window.ToolButton label="Zoom in" icon="plus" onClick={() => {}} />
+        </Window.Toolbar>
+      </Window>,
+    );
+    expect(screen.queryByRole("toolbar")).toBeNull();
+  });
+
+  it("renders status bar facts", () => {
+    render(
+      <Window size="md">
+        <Window.Body inset>image</Window.Body>
+        <Window.StatusBar>smittens_047.jpg</Window.StatusBar>
+      </Window>,
+    );
+    expect(screen.getByText("smittens_047.jpg")).toBeInTheDocument();
+  });
+
+  it("applies a distinct frame class per size", () => {
+    const { container: small } = render(<Window size="sm">a</Window>);
+    const { container: large } = render(<Window size="lg">b</Window>);
+    const classOf = (c: HTMLElement) => c.firstElementChild?.firstElementChild?.className;
+    expect(classOf(small)).not.toEqual(classOf(large));
+  });
+
+  it("insets the body only when asked", () => {
+    const { container: plain } = render(
+      <Window>
+        <Window.Body>a</Window.Body>
+      </Window>,
+    );
+    const { container: inset } = render(
+      <Window>
+        <Window.Body inset>b</Window.Body>
+      </Window>,
+    );
+    expect(screen.getByText("a").className).not.toEqual(screen.getByText("b").className);
+    expect(plain).toBeTruthy();
+    expect(inset).toBeTruthy();
+  });
 });

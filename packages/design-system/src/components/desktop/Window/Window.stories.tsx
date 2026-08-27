@@ -114,3 +114,44 @@ export const Interactive: Story = {
     );
   },
 };
+
+/**
+ * The same frame as a browser, minus the tab strip and address bar and plus a
+ * toolbar and status bar. Which subparts a caller picks is what makes a window
+ * a viewer rather than a browser.
+ */
+export const ImageViewer: Story = {
+  render: () => (
+    <Window size="md">
+      <Window.TitleBar title="smittens_047.jpg — Preview" onClose={() => {}} />
+      <Window.Toolbar>
+        <Window.ToolButton label="Zoom out" icon="minus" onClick={() => {}} />
+        <Window.ToolButton label="Zoom in" icon="plus" onClick={() => {}} />
+        <Window.Separator />
+        <Window.ToolButton label="Previous" icon="chevron-left" onClick={() => {}} />
+        <Window.ToolButton label="Next" icon="chevron-right" onClick={() => {}} />
+      </Window.Toolbar>
+      <Window.Body inset>
+        <Text>The object on display sits in an inset well.</Text>
+      </Window.Body>
+      <Window.StatusBar>2048 × 1365 · 1.4 MB · 100%</Window.StatusBar>
+    </Window>
+  ),
+};
+
+/** The smallest frame, for a utility window like a plain-text note. */
+export const TextViewer: Story = {
+  render: () => (
+    <Window size="sm">
+      <Window.TitleBar title="notes.txt" onClose={() => {}} />
+      <Window.Toolbar>
+        <Text variant="label" tone="muted">
+          Plain text
+        </Text>
+      </Window.Toolbar>
+      <Window.Body>
+        <Text variant="body-sm">buy oat milk</Text>
+      </Window.Body>
+    </Window>
+  ),
+};
