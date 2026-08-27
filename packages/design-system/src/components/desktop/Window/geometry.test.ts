@@ -3,6 +3,8 @@ import { describe, expect, it } from "vitest";
 import {
   centre,
   clamp,
+  FIXED_BELOW,
+  isFixedLayer,
   KEEP_VISIBLE,
   MENU_BAR_HEIGHT,
   maximised,
@@ -125,5 +127,21 @@ describe("refit", () => {
 
   it("leaves a window that still fits alone", () => {
     expect(refit(box(), LAYER)).toEqual(box());
+  });
+});
+
+describe("isFixedLayer", () => {
+  it("treats a phone-width layer as too narrow for a movable frame", () => {
+    expect(isFixedLayer({ width: 390, height: 844 })).toBe(true);
+    expect(isFixedLayer({ width: FIXED_BELOW - 1, height: 800 })).toBe(true);
+  });
+
+  it("leaves a frame movable from the boundary upwards", () => {
+    expect(isFixedLayer({ width: FIXED_BELOW, height: 800 })).toBe(false);
+    expect(isFixedLayer(LAYER)).toBe(false);
+  });
+
+  it("keys off width alone — a short laptop still gets a window", () => {
+    expect(isFixedLayer({ width: 1280, height: 400 })).toBe(false);
   });
 });

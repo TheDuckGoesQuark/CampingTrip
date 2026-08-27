@@ -4,6 +4,46 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## On a phone, a window is the screen
+
+**Date**: 2026-08-27
+
+**What was done**: below 768px of layer width a `Window` fills the space, the
+drag surfaces go dead, the grow box is gone and the amber and green lights render
+inert. The homepage stacks its two columns at the same sort of width, via a
+container query.
+
+**Key decisions**:
+
+- **The stored `display` is left untouched while the frame is locked.** The
+  full-screen presentation is computed, not assigned, so widening the viewport
+  hands the window back exactly as the visitor left it.
+- **The geometry controls go inert rather than missing.** A light that vanished
+  would reshuffle the chrome as a viewport crossed the boundary; `Light` already
+  renders a plain span when given no handler, so this is the existing pattern.
+- **The homepage stacks on a container query, not a media query.** A window can
+  be dragged narrow on a wide screen, and it is the window the content has to
+  fit — so `Window.Body` is now a named container (`window-page`) and the page
+  responds to that. This is what makes the same layout correct for a resized
+  window and for a phone, with one rule.
+- **Both a `resize` listener and a `ResizeObserver`.** Neither covers the other:
+  the layer fills its takeover, so a viewport resize is the change that actually
+  happens, while the observer catches the layer being resized by something else.
+- **The desktop rail is unreachable while a phone-sized window is open**, since
+  the window covers it. Closing the window is the way back, which is how a phone
+  behaves anyway.
+- **One line of copy stopped naming a side.** The intro said the tags were "on
+  the right", which stops being true the moment the feed moves underneath.
+
+**Not verified here**: the live switch between the two states. The browser pane
+used for checking changes viewport metrics without notifying the page — measured
+directly, `innerWidth` went 400 to 1000 with neither a `resize` event nor a
+ResizeObserver callback firing. Both are spec-guaranteed in a real browser, and
+each state was verified on a fresh load at 375px and at 900/1000/1100px, but the
+transition itself wants a hand on a real window edge.
+
+---
+
 ## The homepage fills the window it is in
 
 **Date**: 2026-08-27

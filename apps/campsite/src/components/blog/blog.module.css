@@ -27,6 +27,23 @@
   flex-shrink: 0;
 }
 
+/* Below this the two columns cannot both hold their content: the feed's 280px
+   leaves the reading column less than one heading's worth of room, and text will
+   not shrink past its longest word. Stack instead, with the feed underneath.
+
+   A container query, not a media query — a window can be dragged narrow on a
+   wide screen, and it is the window the content has to fit. */
+@container window-page (max-width: 620px) {
+  .home {
+    flex-direction: column;
+    gap: var(--space-l);
+  }
+
+  .homeFeed {
+    width: 100%;
+  }
+}
+
 /* Prose gets a measure even though its column does not. Past roughly 75
    characters a line is hard to track back from, so a maximised window makes the
    intro wider without making it more readable. */

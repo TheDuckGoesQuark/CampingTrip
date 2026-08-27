@@ -16,6 +16,7 @@ import { cn } from "../../../utils/cn";
 import { Icon, type IconName } from "../../Icon";
 import {
   centre,
+  isFixedLayer,
   maximised,
   movedBy,
   refit,
@@ -47,6 +48,12 @@ interface DragHandlers {
 
 interface WindowFrame {
   display: WindowDisplay;
+  /**
+   * True where the frame has no geometry to offer — a layer too narrow to float
+   * a window in. The controls that would change it go inert rather than missing,
+   * so the chrome does not reshuffle when a viewport crosses the boundary.
+   */
+  geometryLocked: boolean;
   toggleMaximised: () => void;
   toggleShaded: () => void;
   moveHandlers: DragHandlers;
@@ -142,6 +149,11 @@ export interface WindowProps {
  * lights, which are ordinary buttons — dragging is a pointer refinement, not
  * the only way in.
  *
+ * On a layer too narrow to float a frame in — a phone — none of that applies:
+ * the window fills the space, the drag surfaces are dead and the amber and green
+ * lights render inert. The stored `display` is left alone while that holds, so
+ * widening the viewport hands the window back exactly as it was.
+ *
  * It never dims what it floats over, so the desktop behind stays clickable —
  * that is how a second tab gets opened.
  */
@@ -183,11 +195,24 @@ function Root({
     };
 
     measure();
+
+    /*
+     * Two signals, because neither covers the other. The layer fills its
+     * takeover, so a viewport resize is the change that actually happens here —
+     * and a ResizeObserver on an element sized purely by the viewport is not
+     * dependable, observed not firing at all across a 400px-to-900px change. The
+     * observer stays for the case the event cannot see: the layer being resized
+     * by something other than the viewport.
+     */
+    window.addEventListener("resize", measure);
     // Absent in jsdom, where there is no layout to observe in the first place.
-    if (typeof ResizeObserver === "undefined") return;
-    const observer = new ResizeObserver(measure);
-    observer.observe(element);
-    return () => observer.disconnect();
+    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(measure);
+    observer?.observe(element);
+
+    return () => {
+      window.removeEventListener("resize", measure);
+      observer?.disconnect();
+    };
   }, []);
 
   // Centre on first measurement; afterwards only rescue a frame the layer has
@@ -213,25 +238,35 @@ function Root({
     [layer],
   );
 
+  /**
+   * On a narrow layer the frame is presented full-screen without its stored
+   * display being touched, so widening the viewport hands the window back
+   * exactly where it was — the two states are switchable in both directions.
+   */
+  const locked = layer ? isFixedLayer(layer) : false;
+  const presented: WindowDisplay = locked ? "maximised" : current;
+
   // A maximised window is pinned; a shaded one can still be dragged out of the way.
-  const moveHandlers = usePointerDrag(onMoveDelta, current !== "maximised");
-  const resizeHandlers = usePointerDrag(onResizeDelta, current === "normal");
+  const moveHandlers = usePointerDrag(onMoveDelta, !locked && presented !== "maximised");
+  const resizeHandlers = usePointerDrag(onResizeDelta, !locked && presented === "normal");
 
   const frame = useMemo<WindowFrame>(
     () => ({
-      display: current,
+      display: presented,
+      geometryLocked: locked,
       toggleMaximised: () => setDisplay(current === "maximised" ? "normal" : "maximised"),
       toggleShaded: () => setDisplay(current === "shaded" ? "normal" : "shaded"),
       moveHandlers,
       onTitleBarDoubleClick: (event) => {
+        if (locked) return;
         if ((event.target as HTMLElement).closest("button")) return;
         setDisplay(current === "maximised" ? "normal" : "maximised");
       },
     }),
-    [current, moveHandlers, setDisplay],
+    [current, locked, moveHandlers, presented, setDisplay],
   );
 
-  const rendered = current === "maximised" && layer ? maximised(layer) : box;
+  const rendered = presented === "maximised" && layer ? maximised(layer) : box;
   const style: CSSProperties | undefined = rendered
     ? {
         position: "absolute",
@@ -239,7 +274,7 @@ function Root({
         top: rendered.y,
         width: rendered.width,
         // Shaded: let the title bar decide, rather than guessing its height.
-        height: current === "shaded" ? "auto" : rendered.height,
+        height: presented === "shaded" ? "auto" : rendered.height,
       }
     : undefined;
 
@@ -250,12 +285,15 @@ function Root({
           styles.window,
           // Only until the layer has been measured; geometry takes over after.
           !rendered && styles[size],
-          current === "shaded" && styles.shaded,
+          presented === "shaded" && styles.shaded,
+          locked && styles.locked,
         )}
         style={style}
       >
         <WindowFrameContext.Provider value={frame}>{children}</WindowFrameContext.Provider>
-        {current === "normal" && <span className={styles.growBox} {...resizeHandlers} />}
+        {!locked && presented === "normal" && (
+          <span className={styles.growBox} {...resizeHandlers} />
+        )}
       </div>
     </div>
   );
@@ -287,14 +325,14 @@ function TitleBar({ title, onClose }: WindowTitleBarProps) {
           tone="minimise"
           glyph="minus"
           pressed={frame.display === "shaded"}
-          onClick={frame.toggleShaded}
+          onClick={frame.geometryLocked ? undefined : frame.toggleShaded}
         />
         <Light
           label="Maximise"
           tone="maximise"
           glyph="plus"
           pressed={frame.display === "maximised"}
-          onClick={frame.toggleMaximised}
+          onClick={frame.geometryLocked ? undefined : frame.toggleMaximised}
         />
       </div>
       <span className={styles.title}>{title}</span>

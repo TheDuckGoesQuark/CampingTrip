@@ -57,6 +57,12 @@
 
 /* ── Title bar ─────────────────────────────────────────────── */
 
+/* Too narrow for a movable frame: nothing here invites a drag. */
+.locked .titlebar,
+.locked .titlebar:active {
+  cursor: default;
+}
+
 /* Rolled up: the title bar is all that is left, and it is still draggable. */
 .shaded > *:not(.titlebar) {
   display: none;
@@ -399,6 +405,11 @@ button.light:active {
   flex: 1;
   overflow-y: auto;
   padding: var(--space-l) var(--space-xl);
+  /* A window is resized independently of the viewport, so its content has to
+     respond to the window rather than the screen. Named, so a container query
+     inside cannot accidentally resolve against some other ancestor. */
+  container-type: inline-size;
+  container-name: window-page;
 }
 
 /* One object on display rather than a document: no reading gutter, and the same

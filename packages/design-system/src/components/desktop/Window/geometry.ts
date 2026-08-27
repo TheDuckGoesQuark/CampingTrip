@@ -44,6 +44,22 @@ export const MIN_HEIGHT = 140;
 export const KEEP_VISIBLE = 96;
 
 /**
+ * Below this width a window stops being a window: there is not enough room for a
+ * frame to float in, and dragging one around a phone screen is fiddly rather
+ * than fun. 768px is the usual phone/tablet boundary.
+ */
+export const FIXED_BELOW = 768;
+
+/**
+ * Whether the layer is too narrow for a movable frame. Read from the measured
+ * layer rather than a media query, so the frame follows the space it actually
+ * has — which here is a window inside a takeover, not the viewport.
+ */
+export function isFixedLayer(layer: Size): boolean {
+  return layer.width < FIXED_BELOW;
+}
+
+/**
  * Room left above a maximised window, so the menu bar is never covered. Mirrors
  * the `--menubar-height` token, which `MenuBar` sizes itself from — the maths
  * here cannot read a CSS variable, so the two are kept equal by hand.
