@@ -12,15 +12,19 @@
   cursor: pointer;
 }
 
-.button:hover,
-.button:focus-visible {
+.button:hover {
   border-color: var(--brand-border-strong);
   background: var(--brand-solid);
-  outline: none;
 }
-.button:hover .label,
-.button:focus-visible .label {
+.button:hover .label {
   color: var(--brand-text-on-brand);
+}
+
+/* Focus is a ring, not the selection block: a takeover autofocuses its first
+   tabbable child, and a filled launcher there reads as an item already chosen. */
+.button:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
 }
 
 .icon {
