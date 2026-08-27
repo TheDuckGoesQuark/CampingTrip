@@ -36,20 +36,6 @@
   box-shadow: var(--shadow-hard-1);
 }
 
-.fallback {
-  width: 72px;
-  height: 72px;
-  border-radius: var(--radius-none);
-  border: 2px solid var(--brand-border-strong);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 28px;
-  font-weight: var(--weight-heading);
-  color: var(--brand-text-on-brand);
-  box-shadow: var(--shadow-hard-1);
-}
-
 .badge {
   position: absolute;
   top: var(--space-xxs);

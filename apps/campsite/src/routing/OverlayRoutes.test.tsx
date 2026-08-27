@@ -24,24 +24,45 @@ describe("overlay route components declare scene state on mount", () => {
     useSceneStore.setState({
       laptopFocused: false,
       notepadFocused: false,
-      activePostSlug: null,
+      activeBlogPath: null,
+      openBlogPaths: [],
       focusTarget: "default",
     });
     useMusicStore.setState({ isOpen: false });
   });
 
-  it("BlogRoute opens the laptop and reads the slug from the URL", () => {
-    renderAt("/blog/camping-trip", "/blog/:slug?", <BlogRoute />);
+  it("BlogRoute opens the laptop and reads the page from the URL", () => {
+    renderAt("/blog/tags/music.html", "/blog/*", <BlogRoute />);
     const s = useSceneStore.getState();
     expect(s.laptopFocused).toBe(true);
-    expect(s.activePostSlug).toBe("camping-trip");
+    expect(s.activeBlogPath).toBe("/blog/tags/music.html");
   });
 
-  it("BlogRoute with no slug opens the laptop with no post", () => {
-    renderAt("/blog", "/blog/:slug?", <BlogRoute />);
+  it("BlogRoute canonicalises a path missing the extension", () => {
+    renderAt("/blog/tags/music", "/blog/*", <BlogRoute />);
+    expect(useSceneStore.getState().activeBlogPath).toBe("/blog/tags/music.html");
+  });
+
+  it("bare /blog opens the laptop on the desktop, with no page", () => {
+    renderAt("/blog", "/blog/*", <BlogRoute />);
     const s = useSceneStore.getState();
     expect(s.laptopFocused).toBe(true);
-    expect(s.activePostSlug).toBeNull();
+    expect(s.activeBlogPath).toBeNull();
+  });
+
+  it("an unrecognised blog path lands on the desktop rather than the tent", () => {
+    renderAt("/blog/nothing/here.html", "/blog/*", <BlogRoute />);
+    const s = useSceneStore.getState();
+    expect(s.laptopFocused).toBe(true);
+    expect(s.activeBlogPath).toBeNull();
+  });
+
+  it("redirects a flat legacy slug to its namespaced path", () => {
+    // The link in projects.ts still points at the flat form, so it has to land.
+    renderAt("/blog/photobroom", "/blog/*", <BlogRoute />);
+    const s = useSceneStore.getState();
+    expect(s.laptopFocused).toBe(true);
+    expect(s.activeBlogPath).toBe("/blog/projects/photobroom.html");
   });
 
   it("NotesRoute opens the notepad", () => {

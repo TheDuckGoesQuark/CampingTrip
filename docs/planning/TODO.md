@@ -6,6 +6,31 @@ All planned and deferred work, organised by priority.
 
 ## Next Up
 
+### CatOS desktop — the gimmicks
+
+The desktop is now free of content, which is what it was cleared for. Nothing
+occupies it yet but CatNav. The window chrome each of these needs already exists
+(`Window.Toolbar`, `Window.StatusBar`, `Window.Body inset`, `size`):
+
+- A stray JPEG that opens in a Preview window.
+- A text file or two that open in a plain-text window — the funny, faintly
+  incriminating kind.
+- A bin with things in it.
+- A minesweeper, if it turns out to be fun rather than just a nice idea.
+
+Note the rail is 148px wide and icons are 120px, so about five fit before it
+scrolls. More than that wants icons scattered across the wallpaper instead, which
+is a placement question the rail does not currently answer.
+
+### Blog — content to write
+
+- Three posts are seeded with a real standfirst and opening paragraph and a
+  bracketed `[DRAFT — …]` beat to finish. They are placeholders for Jordan's
+  words, not content.
+- `Favourite Tools` on the homepage is fed from `bookmarks.ts`, which mixes two
+  things: tools (myNoise) and things loved (Eyezmaze). Decide whether those want
+  to be two homepage sections or one.
+
 ### Design system — boxy pass on in-window content
 
 - Give `Button` a bevelled face for in-window use. The window frame squares its

@@ -3,14 +3,9 @@ import { describe, expect, it, vi } from "vitest";
 import { linkFor, overlayNavigation, requestOpen, routes } from "./navigation";
 
 describe("routes", () => {
-  it("builds blog paths with and without a slug", () => {
-    expect(routes.blog()).toBe("/blog");
-    expect(routes.blog(null)).toBe("/blog");
-    expect(routes.blog("camping-trip")).toBe("/blog/camping-trip");
-  });
-
   it("exposes the static overlay paths", () => {
     expect(routes.tent).toBe("/");
+    expect(routes.blog).toBe("/blog");
     expect(routes.music).toBe("/music");
     expect(routes.notes).toBe("/notes");
   });

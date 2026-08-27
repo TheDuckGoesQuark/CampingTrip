@@ -15,6 +15,11 @@
   z-index: 201;
   display: flex;
   flex-direction: column;
+  /* Base UI portals the popup to <body>, so it lands outside BrandProvider's
+     wrapper and inherits the host page's typography and colour instead of the
+     brand's. Components that set their own font are fine either way; raw markup
+     a caller puts in the body is not. Hence both are re-established here. */
+  font-family: var(--font-sans);
   color: var(--brand-text);
   outline: none;
   transition:
