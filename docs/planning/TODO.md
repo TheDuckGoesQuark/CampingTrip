@@ -6,21 +6,25 @@ All planned and deferred work, organised by priority.
 
 ## Next Up
 
-### CatOS desktop — the gimmicks
+### CatOS — window geometry
 
-The desktop is now free of content, which is what it was cleared for. Nothing
-occupies it yet but CatNav. The window chrome each of these needs already exists
-(`Window.Toolbar`, `Window.StatusBar`, `Window.Body inset`, `size`):
+Make the window behave like a window. All of this belongs in the DS `Window`,
+which currently centres itself at a fixed `size`:
 
-- A stray JPEG that opens in a Preview window.
-- A text file or two that open in a plain-text window — the funny, faintly
-  incriminating kind.
-- A bin with things in it.
-- A minesweeper, if it turns out to be fun rather than just a nice idea.
+- Maximise: fill the desktop, from the green light and from a double-click on the
+  title bar.
+- Minimise: collapse to the title bar and back, from the amber light. There is no
+  dock or taskbar to minimise _to_, so a window shade is the behaviour that fits.
+- Resize by dragging. This needs the frame to carry a real position rather than
+  being flex-centred, since growing a centred frame slides it out from under the
+  cursor — which drags to move it comes along with.
+- Two windows on screen at once, which the position work unlocks. Until then a
+  gimmick replaces the browser rather than floating over it.
 
-Note the rail is 148px wide and icons are 120px, so about five fit before it
-scrolls. More than that wants icons scattered across the wallpaper instead, which
-is a placement question the rail does not currently answer.
+### CatOS desktop — a minigame
+
+"Cat Sweeper" is in the design and is the one desktop item that needs logic
+rather than content. Everything else in the junk drawer is built.
 
 ### Blog — content to write
 

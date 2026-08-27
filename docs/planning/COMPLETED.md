@@ -4,6 +4,61 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## The desktop gets its junk drawer
+
+**Date**: 2026-08-27
+
+**What was done**:
+
+- **Four things on the desktop besides CatNav**: `smittens_047.jpg` in a Preview
+  window, `notes.txt` and `DO_NOT_OPEN.txt` in plain-text windows, and a Bin that
+  lists what's in it. Each is a `DesktopItem` in `data/desktopItems.ts`.
+- **`components/catos/`** holds one component per window kind — `BrowserWindow`,
+  `PreviewWindow`, `TextWindow`, `BinWindow` — and `CatosWindow` picks between
+  them. The browser chrome moved out of `LaptopScreenOverlay`, which is now just
+  the desktop.
+- **`DesktopIcon` takes a `glyph`**, so an icon can be a drawn `Icon` rather than
+  an initial. Preference order: image, glyph, letter tile.
+- **The "New" badge found a real home** on the homepage feed: a post published
+  since the visitor's last session. It was previously wired to desktop icons,
+  which carry no dates, so it could never fire.
+- **`LaptopScreenOverlay` came off the `react/forbid-dom-props` grandfathered
+  list** — its inline styles are now in `catos.module.css`.
+
+**Key decisions**:
+
+- **Desktop items are URLs too** (`/blog/desk/<slug>`), because the URL is this
+  app's source of truth for what's open and a window with no URL would be the one
+  piece of state that isn't. They carry no `.html`: the extension exists to be
+  _seen_ in an address bar, and none of these windows has one.
+- **A desktop item never joins the browser's tab strip.** `isBrowserPath` gates
+  it, and `BrowserPage` excludes the desk kind so the browser's own renderer is
+  exhaustive rather than quietly falling through.
+- **One window at a time, browser included.** The design shows a Preview
+  overlapping a text window, but that needs a window manager owning position and
+  z-order. Opening a gimmick therefore replaces the browser rather than floating
+  over it, and closing it returns to the desktop with the tab strip intact.
+- **Preview's zoom and paging controls render disabled rather than being
+  omitted.** There is one image and it fits. A viewer missing them reads as
+  unfinished, and a control that lies about working is worse than a grey one.
+- **The Bin offers no Empty.** The joke is the contents, and a working control
+  would delete them for whoever visits next.
+- **The photograph is drawn, not shipped.** The repo carries no cat photo.
+  `SmittensPhoto` is one component, so an `<img>` can replace it without
+  `PreviewWindow` changing.
+- **Text windows are `md`, not `sm`.** At 420px a line of notes soft-wraps
+  mid-phrase, which reads as a layout fault rather than as a text file.
+- **A status bar is a single line.** Its height is fixed, so wrapped content
+  escaped the frame — found by looking at it. The caption moved under the photo
+  as a `figcaption`, where a caption belongs.
+
+**Deferred**:
+
+- A minigame. "Cat Sweeper" was drawn in the design and is the one desktop item
+  that needs real logic rather than content.
+
+---
+
 ## The browser gets a homepage, posts, tags and a 90s URL scheme
 
 **Date**: 2026-08-27

@@ -19,6 +19,11 @@ export const blogPaths = {
   tag: (tag: string) => `${ROOT}/tags/${encodeURIComponent(tag)}.html`,
   project: (slug: string) => `${ROOT}/projects/${encodeURIComponent(slug)}.html`,
   tool: (slug: string) => `${ROOT}/tools/${encodeURIComponent(slug)}.html`,
+  /**
+   * Desktop items. No `.html`: the extension is there to be *seen* in the
+   * address bar, and none of these windows has one.
+   */
+  desk: (slug: string) => `${ROOT}/desk/${encodeURIComponent(slug)}`,
 } as const;
 
 /** What a blog URL names, before any lookup against content. */
@@ -28,7 +33,8 @@ export type BlogRef =
   | { kind: "post"; slug: string }
   | { kind: "tag"; tag: string }
   | { kind: "project"; slug: string }
-  | { kind: "tool"; slug: string };
+  | { kind: "tool"; slug: string }
+  | { kind: "desk"; slug: string };
 
 /** Strips the cosmetic extension. Absent is fine; canonical links carry it. */
 export function stripHtml(segment: string): string {
@@ -42,6 +48,7 @@ const DIRECTORIES: Record<string, (slug: string) => BlogRef> = {
   tags: (slug) => ({ kind: "tag", tag: slug }),
   projects: (slug) => ({ kind: "project", slug }),
   tools: (slug) => ({ kind: "tool", slug }),
+  desk: (slug) => ({ kind: "desk", slug }),
 };
 
 /**
@@ -59,6 +66,15 @@ export function parseBlogPath(path: string): BlogRef | null {
   return build(decodeURIComponent(stripHtml(file)));
 }
 
+/**
+ * Whether a path names something the mock browser can hold in a tab. Desktop
+ * items open in windows of their own, so they must not join the tab strip.
+ */
+export function isBrowserPath(path: string): boolean {
+  const ref = parseBlogPath(path);
+  return ref !== null && ref.kind !== "desk";
+}
+
 /** The canonical path for a ref — the inverse of `parseBlogPath`. */
 export function blogPathFor(ref: BlogRef): string {
   switch (ref.kind) {
@@ -74,5 +90,7 @@ export function blogPathFor(ref: BlogRef): string {
       return blogPaths.project(ref.slug);
     case "tool":
       return blogPaths.tool(ref.slug);
+    case "desk":
+      return blogPaths.desk(ref.slug);
   }
 }

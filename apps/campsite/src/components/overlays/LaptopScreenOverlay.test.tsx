@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { MemoryRouter, useLocation } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { applyOverlayState } from "../../routing/overlays";
 import { useSceneStore } from "../../store/sceneStore";
 import LaptopScreenOverlay from "./LaptopScreenOverlay";
 
@@ -79,6 +80,36 @@ describe("LaptopScreenOverlay (CatOS)", () => {
     expect(screen.queryByText("Camping Trip")).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: /CatNav/ }));
     expect(currentPath()).toBe(HOME);
+  });
+
+  describe("the desktop's junk drawer", () => {
+    it("opens a desktop item at its own URL", () => {
+      useSceneStore.setState({ laptopFocused: true });
+      renderWithPath();
+      fireEvent.click(screen.getByRole("button", { name: /notes\.txt/ }));
+      expect(currentPath()).toBe("/blog/desk/notes-txt");
+    });
+
+    it("shows a desktop item in a window with no browser chrome", () => {
+      useSceneStore.setState({
+        laptopFocused: true,
+        activeBlogPath: "/blog/desk/notes-txt",
+      });
+      renderOverlay();
+      expect(screen.getByText(/oat milk/)).toBeInTheDocument();
+      expect(screen.queryByRole("tablist")).toBeNull();
+    });
+
+    it("keeps a desktop item out of the browser's tab strip", () => {
+      useSceneStore.setState({
+        laptopFocused: true,
+        openBlogPaths: [HOME],
+        activeBlogPath: HOME,
+      });
+      renderOverlay();
+      applyOverlayState("laptop", "/blog/desk/bin");
+      expect(useSceneStore.getState().openBlogPaths).toEqual([HOME]);
+    });
   });
 
   describe("the browser window", () => {

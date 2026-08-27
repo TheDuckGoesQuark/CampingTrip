@@ -97,7 +97,6 @@
         "apps/campsite/src/components/TentScene/TentScene.tsx",
         "apps/campsite/src/components/effects/Vignette.tsx",
         "apps/campsite/src/components/overlays/BlogSettingsMenu.tsx",
-        "apps/campsite/src/components/overlays/LaptopScreenOverlay.tsx",
         "apps/campsite/src/components/overlays/MusicPlayerOverlay.tsx",
         "apps/campsite/src/components/overlays/NotepadOverlay.tsx",
         "apps/campsite/src/components/overlays/SettingsMenu.tsx",

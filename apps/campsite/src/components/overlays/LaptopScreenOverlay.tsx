@@ -1,25 +1,18 @@
-import { Button, DesktopIcon, Icon, MenuBar, Modal, Window } from "@jordanscamp/ds";
+import { Button, DesktopIcon, Icon, MenuBar, Modal } from "@jordanscamp/ds";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { playSoftClick, playWindowOpen } from "../../audio/soundEffects";
-import {
-  iconOfBlogPage,
-  resolveBlogPage,
-  titleOfBlogPage,
-  type BlogPage,
-} from "../../data/blogPages";
+import { iconOfDesktopItem, resolveBlogPage, type BlogPage } from "../../data/blogPages";
+import { desktopItems, desktopItemSlug } from "../../data/desktopItems";
 import { blogPaths, parseBlogPath } from "../../routing/blogPaths";
 import { routes } from "../../routing/navigation";
 import { useSceneStore } from "../../store/sceneStore";
 import { useSessionStore } from "../../store/sessionStore";
-import BlogPageView from "../blog/BlogPageView";
+import type { DesktopItem } from "../../types/desktop";
+import CatosWindow from "../catos/CatosWindow";
 
-/** Not `location.origin`: a `localhost:5173` address would break the illusion. */
-const SITE_ORIGIN = "https://jordanscamp.site";
-
-/** The desktop rail's width, matching the icon width plus its gutters. */
-const RAIL_WIDTH = 148;
+import styles from "../catos/catos.module.css";
 
 function pageAt(path: string | null): BlogPage | null {
   if (!path) return null;
@@ -27,35 +20,30 @@ function pageAt(path: string | null): BlogPage | null {
   return ref ? resolveBlogPage(ref) : null;
 }
 
+/** An app icon launches its target; everything else opens its own window. */
+function pathFor(item: DesktopItem): string {
+  return item.kind === "app" ? item.opens : blogPaths.desk(desktopItemSlug(item));
+}
+
 /**
  * CatOS — the laptop's desktop, a full-screen Base UI takeover (so it traps
  * focus, returns focus on close, and handles Escape). Composes the DS
- * faux-desktop chrome (MenuBar, DesktopIcon, Window) with the campsite's content.
+ * faux-desktop chrome with the campsite's content.
  *
- * The split: the browser owns everything worth reading, and the desktop owns
- * everything else. So the rail launches CatNav rather than listing content, and
- * CatNav opens a homepage instead of treating the desktop as its new-tab page.
+ * The split: the browser owns everything worth reading, the desktop owns
+ * everything else. So the rail launches CatNav and a junk drawer, and CatNav
+ * opens a homepage rather than treating the desktop as its new-tab page.
  *
- * The open page is URL-driven (the path → `activeBlogPath`); the *set* of open
- * tabs is session state in the scene store.
+ * One window at a time, browser included. Which window is open is URL-driven;
+ * the *set* of open browser tabs is session state in the scene store.
  */
 export default function LaptopScreenOverlay() {
   const navigate = useNavigate();
-  const { key: locationKey } = useLocation();
   const laptopFocused = useSceneStore((s) => s.laptopFocused);
   const activeBlogPath = useSceneStore((s) => s.activeBlogPath);
-  const openBlogPaths = useSceneStore((s) => s.openBlogPaths);
   const [clock, setClock] = useState("");
-  const [reloadCount, setReloadCount] = useState(0);
   const prevFocused = useRef(false);
 
-  const openTabs = useMemo(
-    () =>
-      openBlogPaths
-        .map((path) => ({ path, page: pageAt(path) }))
-        .filter((tab): tab is { path: string; page: BlogPage } => tab.page !== null),
-    [openBlogPaths],
-  );
   const activePage = useMemo(() => pageAt(activeBlogPath), [activeBlogPath]);
 
   // Update lastVisitedAt when leaving CatOS.
@@ -76,6 +64,7 @@ export default function LaptopScreenOverlay() {
     return () => clearInterval(id);
   }, [laptopFocused]);
 
+  /** The red light: back to the desktop, ending the browsing session. */
   const closeWindow = useCallback(() => {
     useSceneStore.getState().closeAllBlogPaths();
     navigate(routes.blog);
@@ -89,12 +78,6 @@ export default function LaptopScreenOverlay() {
     [navigate],
   );
 
-  /** A new tab lands on the homepage — the desktop holds nothing to pick from. */
-  const newTab = useCallback(() => {
-    playSoftClick();
-    navigate(blogPaths.home);
-  }, [navigate]);
-
   // Base UI reports close intent (Escape). Close the open window first, else the
   // whole takeover — mirrors the layered Escape behaviour, no manual keydown.
   const onOpenChange = useCallback(
@@ -106,31 +89,6 @@ export default function LaptopScreenOverlay() {
     [activePage, navigate],
   );
 
-  /** Only navigates if the closed tab was on screen; focus falls right, else left. */
-  const closeTab = useCallback(
-    (path: string) => {
-      const scene = useSceneStore.getState();
-      const index = scene.openBlogPaths.indexOf(path);
-      const remaining = scene.openBlogPaths.filter((p) => p !== path);
-      playSoftClick();
-      scene.closeBlogPath(path);
-      if (path !== scene.activeBlogPath) return;
-      const next = remaining[index] ?? remaining[index - 1];
-      navigate(next ?? routes.blog);
-    },
-    [navigate],
-  );
-
-  /**
-   * A visitor who deep-linked straight to a page has nothing behind them, and a
-   * Back that left the site would break the illusion worse than a greyed-out one.
-   * Read from the history entry, so it needs re-reading per navigation.
-   */
-  const [canGoBack, setCanGoBack] = useState(false);
-  useEffect(() => {
-    setCanGoBack(((window.history.state as { idx?: number } | null)?.idx ?? 0) > 0);
-  }, [locationKey]);
-
   return (
     <Modal
       variant="takeover"
@@ -138,81 +96,41 @@ export default function LaptopScreenOverlay() {
       onOpenChange={onOpenChange}
       ariaLabel="CatOS — the laptop blog"
     >
-      <div style={{ position: "absolute", inset: 0, userSelect: "none" }}>
+      <div className={styles.desktop}>
         {/* Wallpaper — soft green → ivory */}
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            background: "linear-gradient(180deg, var(--brand-bg), var(--brand-surface))",
-          }}
-        />
+        <div className={styles.wallpaper} />
 
         <MenuBar
           left={
             <>
-              <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <span className={styles.menuBrand}>
                 <Icon name="cat" size="md" />
-                <span style={{ fontWeight: 700 }}>CatOS</span>
+                <span className={styles.menuBrandName}>CatOS</span>
               </span>
-              <span style={{ opacity: 0.7 }}>CatNav</span>
+              <span className={styles.menuDim}>CatNav</span>
             </>
           }
-          right={<span style={{ opacity: 0.7 }}>{clock}</span>}
+          right={<span className={styles.menuDim}>{clock}</span>}
         />
 
-        <div
-          style={{
-            position: "absolute",
-            top: 36,
-            left: 0,
-            width: RAIL_WIDTH,
-            bottom: 0,
-            overflowY: "auto",
-            padding: "8px 12px",
-          }}
-        >
-          <DesktopIcon label="CatNav" onClick={() => open(blogPaths.home)} />
+        <div className={styles.rail}>
+          {desktopItems.map((item) => (
+            <DesktopIcon
+              key={item.label}
+              label={item.label}
+              glyph={iconOfDesktopItem(item)}
+              onClick={() => open(pathFor(item))}
+            />
+          ))}
         </div>
 
-        {activePage && activeBlogPath && (
-          <Window>
-            <Window.TitleBar
-              title={`${titleOfBlogPage(activePage)} — CatNav`}
-              onClose={closeWindow}
-            />
-            <Window.Tabs>
-              {openTabs.map(({ path, page }) => (
-                <Window.Tab
-                  key={path}
-                  label={titleOfBlogPage(page)}
-                  icon={<Icon name={iconOfBlogPage(page)} size="sm" />}
-                  active={path === activeBlogPath}
-                  onSelect={() => navigate(path)}
-                  onClose={() => closeTab(path)}
-                />
-              ))}
-              <Window.NewTab onClick={newTab} />
-            </Window.Tabs>
-            <Window.AddressBar
-              url={`${SITE_ORIGIN}${activeBlogPath}`}
-              onBack={canGoBack ? () => navigate(-1) : undefined}
-              onReload={() => setReloadCount((n) => n + 1)}
-            />
-            <Window.Body>
-              {/* Re-keyed so the reload control actually remounts the page. */}
-              <div key={`${activeBlogPath}:${reloadCount}`} style={{ userSelect: "text" }}>
-                <BlogPageView page={activePage} />
-              </div>
-            </Window.Body>
-          </Window>
-        )}
+        {activePage && <CatosWindow page={activePage} onClose={closeWindow} />}
 
         {!activePage && (
-          <div style={{ position: "absolute", bottom: 20, right: 20, zIndex: 5 }}>
+          <div className={styles.backToTent}>
             <Button variant="ghost" size="sm" onClick={() => navigate(routes.tent)}>
               Back to tent
-              <span style={{ opacity: 0.5, marginLeft: 6 }}>Esc</span>
+              <span className={styles.escHint}>Esc</span>
             </Button>
           </div>
         )}

@@ -1,10 +1,12 @@
-import { Card, Link, Tag, Text } from "@jordanscamp/ds";
+import { Badge, Card, Link, Tag, Text } from "@jordanscamp/ds";
 import { Link as RouterLink } from "react-router-dom";
 
 import { slugify } from "../../data/slug";
 import { blogPaths } from "../../routing/blogPaths";
+import { useSessionStore } from "../../store/sessionStore";
 import type { Post } from "../../types/post";
 import { dayOfMonth, formatDate, monthAndYear } from "./formatDate";
+import { isNewSince } from "./isNewSince";
 
 import styles from "./blog.module.css";
 
@@ -14,11 +16,20 @@ export interface PostSummaryProps {
 
 /** One entry in the sidebar feed: a stacked date, title, standfirst and tags. */
 export function CompactPostSummary({ post }: PostSummaryProps) {
+  const lastVisitedAt = useSessionStore((s) => s.lastVisitedAt);
+
   return (
     <div className={styles.summary}>
-      <Text variant="label" tone="muted" as="span">
-        {formatDate(post.date, "short")}
-      </Text>
+      <div className={styles.titleLine}>
+        <Text variant="label" tone="muted" as="span">
+          {formatDate(post.date, "short")}
+        </Text>
+        {isNewSince(lastVisitedAt, post.date) && (
+          <Badge tone="accent" variant="solid">
+            New
+          </Badge>
+        )}
+      </div>
       <Link render={<RouterLink to={blogPaths.post(slugify(post.title))} />}>
         <Text variant="body" as="span">
           <strong>{post.title}</strong>
