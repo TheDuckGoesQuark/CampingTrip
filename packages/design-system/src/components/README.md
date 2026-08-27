@@ -50,11 +50,19 @@ Add the named export to [`../index.ts`](../index.ts).
     `Window.ToolButton` and `Window.Separator`) and `Window.StatusBar`. Shared:
     `Window.TitleBar` (squared traffic lights) and `Window.Body`, which takes
     `inset` for a window displaying one object rather than a document. `size`
-    (sm/md/lg) belongs to the same choice and is fixed for the window's life.
-    It floats rather than dimming, so the desktop behind stays clickable, and a
-    control given no handler renders inert instead of dead. The frame scopes the
-    radius tokens to `--radius-none`, so brand components square off inside it
-    without each call site opting in.
+    (sm/md/lg) is the size it opens at, and returns to from maximised.
+    The frame owns its own geometry: the title bar drags it, the corner grow box
+    resizes it, and `display` (`normal` / `maximised` / `shaded`) is one enum
+    rather than two flags, since a window cannot be both. Maximise comes from the
+    green light or a double-click on the title bar; the amber light rolls the
+    window up into its own title bar, there being no dock to minimise _to_. Both
+    are ordinary buttons, so every state is reachable without a pointer — the
+    grow box is a pointer refinement. Controlled via `display` +
+    `onDisplayChange`, uncontrolled via `defaultDisplay`. Only the red light
+    stays a caller prop, and renders inert without one.
+    It floats rather than dimming, so the desktop behind stays clickable. The
+    frame scopes the radius tokens to `--radius-none`, so brand components square
+    off inside it without each call site opting in.
 
 ## Styling
 

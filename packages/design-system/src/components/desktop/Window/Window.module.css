@@ -12,6 +12,9 @@
 
 .window {
   pointer-events: auto;
+  position: relative;
+  /* Geometry is set inline in px, so the 2px border has to be inside it. */
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -31,8 +34,8 @@
   --radius-xl: var(--radius-none);
 }
 
-/* Proportional rather than viewport-locked, so a centred frame always leaves the
-   surrounding desktop chrome visible above and below it. */
+/* Only until the layer has been measured — `geometry.ts` takes over after that,
+   and holds the same proportions and ceilings. */
 .lg {
   width: 92%;
   max-width: 880px;
@@ -54,10 +57,39 @@
 
 /* ── Title bar ─────────────────────────────────────────────── */
 
+/* Rolled up: the title bar is all that is left, and it is still draggable. */
+.shaded > *:not(.titlebar) {
+  display: none;
+}
+
+/* The classic grow box. A pointer affordance only — every state it can reach is
+   also reachable from the amber and green lights, which are ordinary buttons. */
+.growBox {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: var(--space-m);
+  height: var(--space-m);
+  cursor: nwse-resize;
+  background: linear-gradient(
+    135deg,
+    transparent 0 40%,
+    var(--brand-border-strong) 40% 50%,
+    transparent 50% 65%,
+    var(--brand-border-strong) 65% 75%,
+    transparent 75%
+  );
+  touch-action: none;
+}
+
 .titlebar {
   display: flex;
   align-items: center;
   height: 30px;
+  cursor: grab;
+  /* Or a drag scrolls the page on a touch screen instead of moving the window. */
+  touch-action: none;
+  user-select: none;
   padding: 0 var(--space-s);
   flex-shrink: 0;
   background: var(--brand-subtle);
@@ -105,6 +137,10 @@ button.light:active {
 }
 .maximise {
   background: var(--brand-control-maximise);
+}
+
+.titlebar:active {
+  cursor: grabbing;
 }
 
 .title {

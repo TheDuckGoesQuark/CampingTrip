@@ -27,15 +27,23 @@ describe("Window", () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it("renders a handler-less traffic light as decoration, not a button", () => {
+  it("renders the red light as decoration when closing means nothing", () => {
     render(
       <Window>
-        <Window.TitleBar title="About" onClose={() => {}} />
+        <Window.TitleBar title="About" />
       </Window>,
     );
-    expect(screen.getByRole("button", { name: "Close" })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Minimise" })).toBeNull();
-    expect(screen.queryByRole("button", { name: "Maximise" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Close" })).toBeNull();
+  });
+
+  it("keeps amber and green live, because the frame drives them itself", () => {
+    render(
+      <Window>
+        <Window.TitleBar title="About" />
+      </Window>,
+    );
+    expect(screen.getByRole("button", { name: "Minimise" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Maximise" })).toBeInTheDocument();
   });
 
   it("marks only the active tab as selected", () => {
@@ -181,5 +189,137 @@ describe("Window", () => {
     expect(screen.getByText("a").className).not.toEqual(screen.getByText("b").className);
     expect(plain).toBeTruthy();
     expect(inset).toBeTruthy();
+  });
+  describe("geometry", () => {
+    const titleBarOf = (container: HTMLElement) =>
+      container.querySelector("[class*=titlebar]") as HTMLElement;
+
+    it("starts normal, with both toggles unpressed", () => {
+      render(
+        <Window>
+          <Window.TitleBar title="About" />
+        </Window>,
+      );
+      expect(screen.getByRole("button", { name: "Maximise" })).toHaveAttribute(
+        "aria-pressed",
+        "false",
+      );
+      expect(screen.getByRole("button", { name: "Minimise" })).toHaveAttribute(
+        "aria-pressed",
+        "false",
+      );
+    });
+
+    it("maximises from the green light and restores from it", async () => {
+      render(
+        <Window>
+          <Window.TitleBar title="About" />
+        </Window>,
+      );
+      const green = screen.getByRole("button", { name: "Maximise" });
+      await userEvent.click(green);
+      expect(green).toHaveAttribute("aria-pressed", "true");
+      await userEvent.click(green);
+      expect(green).toHaveAttribute("aria-pressed", "false");
+    });
+
+    it("maximises on a double-click of the title bar", async () => {
+      const { container } = render(
+        <Window>
+          <Window.TitleBar title="About" />
+        </Window>,
+      );
+      await userEvent.dblClick(titleBarOf(container));
+      expect(screen.getByRole("button", { name: "Maximise" })).toHaveAttribute(
+        "aria-pressed",
+        "true",
+      );
+    });
+
+    it("ignores a double-click that landed on a light", async () => {
+      render(
+        <Window>
+          <Window.TitleBar title="About" onClose={() => {}} />
+        </Window>,
+      );
+      await userEvent.dblClick(screen.getByRole("button", { name: "Close" }));
+      expect(screen.getByRole("button", { name: "Maximise" })).toHaveAttribute(
+        "aria-pressed",
+        "false",
+      );
+    });
+
+    it("rolls up from the amber light, hiding everything but the title bar", async () => {
+      render(
+        <Window>
+          <Window.TitleBar title="About" />
+          <Window.Body>page contents</Window.Body>
+        </Window>,
+      );
+      await userEvent.click(screen.getByRole("button", { name: "Minimise" }));
+      expect(screen.getByRole("button", { name: "Minimise" })).toHaveAttribute(
+        "aria-pressed",
+        "true",
+      );
+      // The title stays reachable, so the window can always be unrolled.
+      expect(screen.getByText("About")).toBeInTheDocument();
+    });
+
+    it("maximising leaves a shaded window, since the two are one state", async () => {
+      render(
+        <Window>
+          <Window.TitleBar title="About" />
+        </Window>,
+      );
+      await userEvent.click(screen.getByRole("button", { name: "Minimise" }));
+      await userEvent.click(screen.getByRole("button", { name: "Maximise" }));
+      expect(screen.getByRole("button", { name: "Minimise" })).toHaveAttribute(
+        "aria-pressed",
+        "false",
+      );
+      expect(screen.getByRole("button", { name: "Maximise" })).toHaveAttribute(
+        "aria-pressed",
+        "true",
+      );
+    });
+
+    it("opens in the state a caller asks for", () => {
+      render(
+        <Window defaultDisplay="maximised">
+          <Window.TitleBar title="About" />
+        </Window>,
+      );
+      expect(screen.getByRole("button", { name: "Maximise" })).toHaveAttribute(
+        "aria-pressed",
+        "true",
+      );
+    });
+
+    it("reports changes and defers to the caller when controlled", async () => {
+      const onDisplayChange = vi.fn();
+      render(
+        <Window display="normal" onDisplayChange={onDisplayChange}>
+          <Window.TitleBar title="About" />
+        </Window>,
+      );
+      const green = screen.getByRole("button", { name: "Maximise" });
+      await userEvent.click(green);
+      expect(onDisplayChange).toHaveBeenCalledWith("maximised");
+      // Controlled: the prop still says normal, so nothing moved on its own.
+      expect(green).toHaveAttribute("aria-pressed", "false");
+    });
+
+    it("offers the grow box only while the frame is resizable", async () => {
+      const { container } = render(
+        <Window>
+          <Window.TitleBar title="About" />
+        </Window>,
+      );
+      const growBox = () => container.querySelector("[class*=growBox]");
+      expect(growBox()).toBeInTheDocument();
+
+      await userEvent.click(screen.getByRole("button", { name: "Maximise" }));
+      expect(growBox()).toBeNull();
+    });
   });
 });

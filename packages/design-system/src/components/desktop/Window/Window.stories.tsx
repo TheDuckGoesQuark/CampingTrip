@@ -37,12 +37,7 @@ export const Default: Story = {
 export const AllVariants: Story = {
   render: () => (
     <Window>
-      <Window.TitleBar
-        title="PhotoBroom — CatNav"
-        onClose={() => {}}
-        onMinimise={() => {}}
-        onMaximise={() => {}}
-      />
+      <Window.TitleBar title="PhotoBroom — CatNav" onClose={() => {}} />
       <Window.Tabs>
         <Window.Tab label="PhotoBroom" icon="🧹" active onSelect={() => {}} onClose={() => {}} />
         <Window.Tab label="CatMap" icon="🗺️" onSelect={() => {}} onClose={() => {}} />
@@ -151,6 +146,38 @@ export const TextViewer: Story = {
       </Window.Toolbar>
       <Window.Body>
         <Text variant="body-sm">buy oat milk</Text>
+      </Window.Body>
+    </Window>
+  ),
+};
+
+/**
+ * The frame owns its geometry: drag the title bar to move it, the corner to
+ * resize it, double-click the title bar or press the green light to maximise,
+ * and the amber light to roll it up into its own title bar.
+ */
+export const Geometry: Story = {
+  render: () => (
+    <Window size="md">
+      <Window.TitleBar title="Drag me, or my corner" onClose={() => {}} />
+      <Window.Body>
+        <Text>
+          The amber and green lights are ordinary buttons, so every state this window can be in is
+          reachable without a pointer.
+        </Text>
+      </Window.Body>
+      <Window.StatusBar>Try a double-click on the title bar.</Window.StatusBar>
+    </Window>
+  ),
+};
+
+/** Opens rolled up, to show the state a caller can start a window in. */
+export const Shaded: Story = {
+  render: () => (
+    <Window size="md" defaultDisplay="shaded">
+      <Window.TitleBar title="Rolled up — press amber to unroll" onClose={() => {}} />
+      <Window.Body>
+        <Text>Hidden until the amber light is pressed.</Text>
       </Window.Body>
     </Window>
   ),

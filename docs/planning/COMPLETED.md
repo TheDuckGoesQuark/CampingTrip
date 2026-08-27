@@ -4,6 +4,67 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## Windows behave like windows: maximise, window shade, drag to move and resize
+
+**Date**: 2026-08-27
+
+**What was done**:
+
+- **`Window` owns its geometry.** It opens centred at `size`, and from there the
+  title bar drags it, a corner grow box resizes it, the green light and a
+  double-click on the title bar maximise it, and the amber light rolls it up into
+  its own title bar.
+- **`geometry.ts`** holds the sizing, clamping, move and resize maths as pure
+  functions, with the bulk of the new tests against it.
+- **`display` is one enum** — `normal` / `maximised` / `shaded` — controlled via
+  `display` + `onDisplayChange`, uncontrolled via `defaultDisplay`.
+- **The amber and green lights are always live**, driven by the frame through a
+  context. Only the red light stays a caller prop.
+- **`--menubar-height`** is now a token, which `MenuBar` sizes itself from and a
+  maximised window leaves clear.
+
+**Key decisions**:
+
+- **Minimise is a window shade, not a disappearance.** There is no dock or
+  taskbar to minimise _to_, so a window that vanished would be a trap. Rolling up
+  into the title bar is the classic behaviour, needs no new chrome, and leaves the
+  way back exactly where the way in was.
+- **One enum, not two booleans.** `maximised` and `minimised` flags would admit a
+  fourth state that means nothing.
+- **Move came along with resize, not as a separate feature.** Growing a
+  flex-centred frame re-centres it, sliding the window out from under the cursor,
+  so resize needs a real position — and once the frame has one, being unable to
+  move it is the odd behaviour.
+- **Both drag surfaces are refinements, not the only way in.** Every state the
+  frame can be in is reachable from the two lights, which are ordinary buttons
+  with `aria-pressed`. Fine-grained resize is pointer-only, which is a real gap,
+  but not one that locks anyone out of the big view.
+- **Geometry is measured in a layout effect** so the first paint already has it,
+  with the CSS size classes kept as the pre-measurement fallback. A viewport
+  resize only _rescues_ a frame the layer has outgrown rather than re-centring it,
+  so it never throws away where the user put the window.
+- **Drags are applied as deltas, not as an offset from a grabbed origin.** An
+  origin-based drag builds up a debt while clamped at an edge and then pays it
+  back the instant the pointer turns around.
+- **Pointer capture is treated as optional.** It is an enhancement — without it a
+  drag stops at the element's edge — and calling it unguarded threw on every
+  title-bar click under jsdom.
+
+**Also fixed**:
+
+- **The campsite's `ResizeObserver` test stub was not constructible.** It was
+  `vi.fn().mockImplementation(() => ({…}))`, so `new ResizeObserver(…)` threw for
+  any component that used one.
+
+**Deferred**:
+
+- Two windows on screen at once. The frame now carries a position, which is what
+  that needed, but z-order and focus between windows is still nobody's job.
+- Keyboard resize. The lights cover maximise and shade; dragging to an arbitrary
+  size has no keyboard equivalent.
+
+---
+
 ## The desktop gets its junk drawer
 
 **Date**: 2026-08-27

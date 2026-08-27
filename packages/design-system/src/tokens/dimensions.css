@@ -14,6 +14,10 @@
   --space-xl: 32px;
   --space-xxl: 48px;
 
+  /* Desktop chrome. `Window`'s geometry mirrors --menubar-height in
+     components/desktop/Window/geometry.ts; the two must agree. */
+  --menubar-height: 26px;
+
   /* Icon glyphs — the `Icon` size scale. Stroke is in viewBox user units, so
      one value holds an even optical weight across the three sizes. */
   --icon-sm: 12px;

@@ -202,11 +202,13 @@ Object.defineProperty(window, "matchMedia", {
 });
 
 // ─── Mock ResizeObserver ─────────────────────────────────────────
-globalThis.ResizeObserver = vi.fn().mockImplementation(() => ({
-  observe: vi.fn(),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-}));
+// A class, not a mock returning an object: callers use `new ResizeObserver(…)`,
+// and vi.fn() with an arrow implementation is not constructible.
+globalThis.ResizeObserver = class implements ResizeObserver {
+  observe(): void {}
+  unobserve(): void {}
+  disconnect(): void {}
+};
 
 // ─── Mock HTMLMediaElement ───────────────────────────────────────
 HTMLMediaElement.prototype.play = vi.fn().mockResolvedValue(undefined);
