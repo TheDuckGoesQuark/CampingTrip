@@ -8,6 +8,10 @@ import styles from "./catos.module.css";
 export interface PreviewWindowProps {
   item: Extract<DesktopItem, { kind: "image" }>;
   onClose: () => void;
+  /** Place in the stack, so a new window does not open on top of the last. */
+  cascade?: number;
+  /** Raise this window — a press anywhere in its frame. */
+  onFocus?: () => void;
 }
 
 /**
@@ -18,9 +22,9 @@ export interface PreviewWindowProps {
  * render disabled rather than being omitted, because a viewer without them reads
  * as unfinished, and a control that lies about working is worse than a grey one.
  */
-export default function PreviewWindow({ item, onClose }: PreviewWindowProps) {
+export default function PreviewWindow({ item, onClose, cascade, onFocus }: PreviewWindowProps) {
   return (
-    <Window size="md">
+    <Window size="md" cascade={cascade} onFocus={onFocus}>
       <Window.TitleBar title={`${item.label} — Preview`} onClose={onClose} />
       <Window.Toolbar>
         <Window.ToolButton label="Zoom out" icon="minus" />

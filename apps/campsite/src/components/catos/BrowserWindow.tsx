@@ -30,16 +30,20 @@ function browserPageAt(path: string): BrowserPage | null {
 export interface BrowserWindowProps {
   page: BrowserPage;
   onClose: () => void;
+  /** Place in the stack, so a new window does not open on top of the last. */
+  cascade?: number;
+  /** Raise this window — a press anywhere in its frame. */
+  onFocus?: () => void;
 }
 
 /**
  * CatNav — the mock browser. Owns the tab strip and the address bar, which is
  * what distinguishes it from the desktop's other windows.
  */
-export default function BrowserWindow({ page, onClose }: BrowserWindowProps) {
+export default function BrowserWindow({ page, onClose, cascade, onFocus }: BrowserWindowProps) {
   const navigate = useNavigate();
   const { key: locationKey } = useLocation();
-  const activeBlogPath = useSceneStore((s) => s.activeBlogPath);
+  const browserPath = useSceneStore((s) => s.browserPath);
   const openBlogPaths = useSceneStore((s) => s.openBlogPaths);
   const [reloadCount, setReloadCount] = useState(0);
 
@@ -65,7 +69,7 @@ export default function BrowserWindow({ page, onClose }: BrowserWindowProps) {
       const remaining = scene.openBlogPaths.filter((p) => p !== path);
       playSoftClick();
       scene.closeBlogPath(path);
-      if (path !== scene.activeBlogPath) return;
+      if (path !== scene.browserPath) return;
       const next = remaining[index] ?? remaining[index - 1];
       navigate(next ?? routes.blog);
     },
@@ -83,7 +87,7 @@ export default function BrowserWindow({ page, onClose }: BrowserWindowProps) {
   }, [locationKey]);
 
   return (
-    <Window>
+    <Window cascade={cascade} onFocus={onFocus}>
       <Window.TitleBar title={`${titleOfBlogPage(page)} — CatNav`} onClose={onClose} />
       <Window.Tabs>
         {openTabs.map((tab) => (
@@ -91,7 +95,7 @@ export default function BrowserWindow({ page, onClose }: BrowserWindowProps) {
             key={tab.path}
             label={titleOfBlogPage(tab.page)}
             icon={<Icon name={iconOfBlogPage(tab.page)} size="sm" />}
-            active={tab.path === activeBlogPath}
+            active={tab.path === browserPath}
             onSelect={() => navigate(tab.path)}
             onClose={() => closeTab(tab.path)}
           />
@@ -99,13 +103,13 @@ export default function BrowserWindow({ page, onClose }: BrowserWindowProps) {
         <Window.NewTab onClick={newTab} />
       </Window.Tabs>
       <Window.AddressBar
-        url={`${SITE_ORIGIN}${activeBlogPath ?? ""}`}
+        url={`${SITE_ORIGIN}${browserPath ?? ""}`}
         onBack={canGoBack ? () => navigate(-1) : undefined}
         onReload={() => setReloadCount((n) => n + 1)}
       />
       <Window.Body>
         {/* Re-keyed so the reload control actually remounts the page. */}
-        <div key={`${activeBlogPath}:${reloadCount}`} className={styles.pageBody}>
+        <div key={`${browserPath}:${reloadCount}`} className={styles.pageBody}>
           <BlogPageView page={page} />
         </div>
       </Window.Body>

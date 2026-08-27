@@ -6,15 +6,14 @@ All planned and deferred work, organised by priority.
 
 ## Next Up
 
-### CatOS — more than one window at once
+### CatOS — window polish left over
 
-The frame now carries a real position, which is what this was waiting on. What is
-still missing is z-order and focus: which window is in front, what clicking a
-window behind does, and whether the browser stays open underneath a Preview
-rather than being replaced by it.
-
-Keyboard resize is the other gap. The amber and green lights cover shade and
-maximise, but dragging to an arbitrary size has no keyboard equivalent.
+- **Keyboard resize.** The amber and green lights cover shade and maximise, but
+  dragging to an arbitrary size has no keyboard equivalent.
+- **A window can be completely hidden.** The browser is the widest frame and it
+  centres, so a cascaded viewer lands inside its bounds. Re-clicking the desktop
+  icon raises it, which works but is not discoverable. A dock, or windows that
+  cascade further, would both fix it.
 
 ### CatOS desktop — a minigame
 

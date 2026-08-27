@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useMusicStore } from "../store/musicStore";
 import { useSceneStore } from "../store/sceneStore";
 import { applyOverlayState, closeOverlays, OVERLAY_LINKS } from "./overlays";
+import { WINDOW_BROWSER } from "./windows";
 
 vi.mock("../audio/musicPlayer", () => ({ musicPlayer: { stop: vi.fn() } }));
 
@@ -11,7 +12,8 @@ describe("applyOverlayState", () => {
     useSceneStore.setState({
       laptopFocused: false,
       notepadFocused: false,
-      activeBlogPath: null,
+      openWindows: [],
+      browserPath: null,
       openBlogPaths: [],
       focusTarget: "default",
     });
@@ -23,7 +25,8 @@ describe("applyOverlayState", () => {
     const s = useSceneStore.getState();
     expect(s.laptopFocused).toBe(true);
     expect(s.notepadFocused).toBe(false);
-    expect(s.activeBlogPath).toBe("/blog/posts/what-vibe-coding-actually-changed.html");
+    expect(s.browserPath).toBe("/blog/posts/what-vibe-coding-actually-changed.html");
+    expect(s.openWindows).toEqual([WINDOW_BROWSER]);
     expect(useMusicStore.getState().isOpen).toBe(false);
   });
 
@@ -33,7 +36,8 @@ describe("applyOverlayState", () => {
     const s = useSceneStore.getState();
     expect(s.notepadFocused).toBe(true);
     expect(s.laptopFocused).toBe(false);
-    expect(s.activeBlogPath).toBeNull();
+    expect(s.browserPath).toBeNull();
+    expect(s.openWindows).toEqual([]);
   });
 
   it("gives the routed path a tab, so a deep link arrives with one open", () => {
@@ -64,6 +68,53 @@ describe("applyOverlayState", () => {
     applyOverlayState("laptop", "/blog/tags/music.html");
     applyOverlayState("laptop", null);
     expect(useSceneStore.getState().openBlogPaths).toEqual(["/blog/tags/music.html"]);
+  });
+
+  it("bare /blog closes every window, leaving the empty desktop", () => {
+    applyOverlayState("laptop", "/blog/tags/music.html");
+    applyOverlayState("laptop", "/blog/desk/notes-txt");
+    applyOverlayState("laptop", null);
+    expect(useSceneStore.getState().openWindows).toEqual([]);
+  });
+
+  describe("the window stack", () => {
+    const NOTES = "/blog/desk/notes-txt";
+    const BIN = "/blog/desk/bin";
+
+    it("gives a desktop item a window of its own, not a browser tab", () => {
+      applyOverlayState("laptop", NOTES);
+      const s = useSceneStore.getState();
+      expect(s.openWindows).toEqual([NOTES]);
+      expect(s.openBlogPaths).toEqual([]);
+      expect(s.browserPath).toBeNull();
+    });
+
+    it("keeps windows already open when another is routed to", () => {
+      applyOverlayState("laptop", "/blog/index.html");
+      applyOverlayState("laptop", NOTES);
+      expect(useSceneStore.getState().openWindows).toEqual([WINDOW_BROWSER, NOTES]);
+    });
+
+    it("raises rather than duplicates a window already open", () => {
+      applyOverlayState("laptop", "/blog/index.html");
+      applyOverlayState("laptop", NOTES);
+      applyOverlayState("laptop", "/blog/tags/music.html");
+      // The browser moves to the front; it does not appear twice.
+      expect(useSceneStore.getState().openWindows).toEqual([NOTES, WINDOW_BROWSER]);
+    });
+
+    it("keeps the browser's page as its own, unchanged by another window opening", () => {
+      applyOverlayState("laptop", "/blog/tags/music.html");
+      applyOverlayState("laptop", NOTES);
+      expect(useSceneStore.getState().browserPath).toBe("/blog/tags/music.html");
+    });
+
+    it("orders the stack by when each window was last routed to", () => {
+      applyOverlayState("laptop", NOTES);
+      applyOverlayState("laptop", BIN);
+      applyOverlayState("laptop", NOTES);
+      expect(useSceneStore.getState().openWindows).toEqual([BIN, NOTES]);
+    });
   });
 
   it("leaving the blog entirely discards the strip", () => {
