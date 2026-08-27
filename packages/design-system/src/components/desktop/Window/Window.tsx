@@ -136,6 +136,17 @@ export interface WindowProps {
    */
   cascade?: number;
   /**
+   * Which frame covers which, where higher is nearer the front. A caller raises
+   * a window by handing it a bigger number.
+   *
+   * Deliberately not DOM order, which would be the obvious way to do this: React
+   * re-orders siblings by moving the existing node, and a node detached and
+   * re-attached mid-gesture drops the click and the pointer capture running
+   * through it. Raising on press is exactly that gesture, so the raise would eat
+   * the interaction that asked for it.
+   */
+  stackOrder?: number;
+  /**
    * Fired on a pointer press anywhere in the frame. A caller managing several
    * windows uses it to raise this one; it says nothing about DOM focus, which
    * the browser handles on its own.
@@ -167,8 +178,8 @@ export interface WindowProps {
  *
  * It never dims what it floats over, so the desktop behind stays clickable —
  * that is how a second tab gets opened. Several windows can be rendered at once;
- * each gets its own full-bleed layer, so paint order is DOM order and a caller
- * raises one by moving it last. `onFocus` reports the press that should do that.
+ * each gets its own full-bleed layer, and `stackOrder` decides which covers
+ * which. `onFocus` reports the press that should raise one.
  */
 function Root({
   children,
@@ -177,6 +188,7 @@ function Root({
   defaultDisplay = "normal",
   onDisplayChange,
   cascade = 0,
+  stackOrder = 0,
   onFocus,
 }: WindowProps) {
   const layerRef = useRef<HTMLDivElement>(null);
@@ -297,7 +309,11 @@ function Root({
     : undefined;
 
   return (
-    <div className={styles.layer} ref={layerRef}>
+    <div
+      className={styles.layer}
+      ref={layerRef}
+      style={{ "--window-stack-order": stackOrder } as CSSProperties}
+    >
       <div
         className={cn(
           styles.window,

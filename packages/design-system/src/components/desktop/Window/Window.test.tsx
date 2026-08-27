@@ -175,6 +175,12 @@ describe("Window", () => {
     expect(classOf(small)).not.toEqual(classOf(large));
   });
 
+  it("carries its stack order on the layer, so raising one never moves a node", () => {
+    const { container } = render(<Window stackOrder={3}>a</Window>);
+    const layer = container.firstElementChild as HTMLElement;
+    expect(layer.style.getPropertyValue("--window-stack-order")).toBe("3");
+  });
+
   it("insets the body only when asked", () => {
     const { container: plain } = render(
       <Window>

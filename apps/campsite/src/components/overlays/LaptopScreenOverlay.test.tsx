@@ -1,5 +1,5 @@
 import { BrandProvider } from "@jordanscamp/ds";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { MemoryRouter, useLocation } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -220,6 +220,27 @@ describe("LaptopScreenOverlay (CatOS)", () => {
     const NOTES = "/blog/desk/notes-txt";
     const BIN = "/blog/desk/bin";
 
+    /**
+     * The frame titled `title`. Selected by title rather than by DOM position,
+     * because DOM order is deliberately fixed while the stack order changes —
+     * the nth node is not the nth window in the stack.
+     */
+    const frameTitled = (title: string) => {
+      const label = Array.from(document.querySelectorAll('[class*="_title_"]')).find(
+        (el) => el.textContent === title,
+      );
+      if (!label) throw new Error(`No window titled "${title}"`);
+      return label.closest('[class*="_layer_"]') as HTMLElement;
+    };
+    const stackOrderOf = (title: string) =>
+      frameTitled(title).style.getPropertyValue("--window-stack-order");
+    const closeLightOf = (title: string) =>
+      within(frameTitled(title)).getByRole("button", { name: "Close" });
+    const titleBarOf = (title: string) =>
+      frameTitled(title).querySelector('[class*="_titlebar_"]') as HTMLElement;
+    const renderedTitles = () =>
+      Array.from(document.querySelectorAll('[class*="_title_"]')).map((el) => el.textContent);
+
     const openStack = (ids: string[], browserPath: string | null = null) =>
       useSceneStore.setState({
         laptopFocused: true,
@@ -235,14 +256,26 @@ describe("LaptopScreenOverlay (CatOS)", () => {
       expect(screen.getByText(/oat milk/)).toBeInTheDocument();
     });
 
-    it("paints them back to front, so the last one is on top", () => {
+    it("stacks them back to front, so the last one is on top", () => {
       openStack([NOTES, BIN]);
       renderOverlay();
-      // Queried from the document: the takeover is portalled out of the container.
-      const titles = Array.from(document.querySelectorAll('[class*="_title_"]')).map(
-        (el) => el.textContent,
-      );
-      expect(titles).toEqual(["notes.txt", "Bin"]);
+      expect(stackOrderOf("notes.txt")).toBe("0");
+      expect(stackOrderOf("Bin")).toBe("1");
+    });
+
+    it("keeps the frames where they are in the DOM when one is raised", () => {
+      openStack([NOTES, BIN]);
+      renderOverlay();
+      const before = renderedTitles();
+
+      act(() => useSceneStore.getState().raiseWindow(NOTES));
+
+      // A raise must not move a node: a node detached and re-attached drops the
+      // click or the pointer capture mid-flight through it, which is the very
+      // gesture that asked for the raise.
+      expect(renderedTitles()).toEqual(before);
+      expect(stackOrderOf("notes.txt")).toBe("1");
+      expect(stackOrderOf("Bin")).toBe("0");
     });
 
     it("skips a window whose content no longer resolves", () => {
@@ -254,11 +287,20 @@ describe("LaptopScreenOverlay (CatOS)", () => {
     it("closing the front window hands the address to the one behind it", () => {
       openStack([NOTES, BIN]);
       renderWithPath();
-      // Two windows, so two red lights; the front one is last in the DOM.
-      const lights = screen.getAllByRole("button", { name: "Close" });
-      fireEvent.click(lights[lights.length - 1]);
+      fireEvent.click(closeLightOf("Bin"));
       expect(useSceneStore.getState().openWindows).toEqual([NOTES]);
       expect(currentPath()).toBe(NOTES);
+    });
+
+    it("closing a window behind closes it rather than raising it", () => {
+      openStack([NOTES, BIN]);
+      renderWithPath();
+      const light = closeLightOf("notes.txt");
+      // The press raises, and the click that follows must still land on the light
+      // it started on — the two halves of one real click on a background window.
+      fireEvent.pointerDown(light);
+      fireEvent.click(light);
+      expect(useSceneStore.getState().openWindows).toEqual([BIN]);
     });
 
     it("closing the last window returns to the empty desktop", () => {
@@ -271,8 +313,7 @@ describe("LaptopScreenOverlay (CatOS)", () => {
     it("closing the browser ends the browsing session, tab strip included", () => {
       openStack([WINDOW_BROWSER, NOTES], HOME);
       renderWithPath();
-      const lights = screen.getAllByRole("button", { name: "Close" });
-      fireEvent.click(lights[0]);
+      fireEvent.click(closeLightOf("Jordan's Camp — CatNav"));
       const state = useSceneStore.getState();
       expect(state.openWindows).toEqual([NOTES]);
       expect(state.openBlogPaths).toEqual([]);
@@ -282,9 +323,8 @@ describe("LaptopScreenOverlay (CatOS)", () => {
     it("a press on a window behind raises it, without adding to history", () => {
       openStack([NOTES, BIN]);
       renderWithPath();
-      // The rearmost window's title bar; a press anywhere in the frame raises it.
-      const titleBars = screen.getAllByRole("button", { name: "Close" });
-      fireEvent.pointerDown(titleBars[0]);
+      // A press anywhere in the frame raises it.
+      fireEvent.pointerDown(titleBarOf("notes.txt"));
       expect(currentPath()).toBe(NOTES);
     });
 
@@ -292,8 +332,7 @@ describe("LaptopScreenOverlay (CatOS)", () => {
       openStack([NOTES, BIN]);
       renderWithPath();
       const before = currentPath();
-      const lights = screen.getAllByRole("button", { name: "Close" });
-      fireEvent.pointerDown(lights[lights.length - 1]);
+      fireEvent.pointerDown(titleBarOf("Bin"));
       expect(currentPath()).toBe(before);
     });
   });

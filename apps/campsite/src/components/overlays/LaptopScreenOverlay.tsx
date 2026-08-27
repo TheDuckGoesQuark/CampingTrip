@@ -15,6 +15,13 @@ import CatosWindow from "../catos/CatosWindow";
 
 import styles from "../catos/catos.module.css";
 
+interface OpenWindow {
+  id: string;
+  /** Place in the stack: 0 is the backmost window. */
+  stackOrder: number;
+  page: BlogPage;
+}
+
 function pageAt(path: string | null): BlogPage | null {
   if (!path) return null;
   const ref = parseBlogPath(path);
@@ -35,10 +42,9 @@ function pathFor(item: DesktopItem): string {
  * everything else. So the rail launches CatNav and a junk drawer, and CatNav
  * opens a homepage rather than treating the desktop as its new-tab page.
  *
- * Several windows can be open together. They render back to front, so paint
- * order is DOM order and raising one means moving it last. The URL names the
- * front window; which others are open is session state, since one URL cannot
- * describe a desktop.
+ * Several windows can be open together, stacked by `stackOrder` rather than by
+ * DOM order. The URL names the front window; which others are open is session
+ * state, since one URL cannot describe a desktop.
  */
 export default function LaptopScreenOverlay() {
   const navigate = useNavigate();
@@ -48,15 +54,24 @@ export default function LaptopScreenOverlay() {
   const [clock, setClock] = useState("");
   const prevFocused = useRef(false);
 
-  /** Back to front, skipping any window whose content no longer resolves. */
-  const stack = useMemo(
+  /**
+   * The open windows, skipping any whose content no longer resolves. Rendered in
+   * a fixed order — by id — with each window's place in the stack carried as a
+   * number instead, so raising one never moves its node. See `stackOrder`.
+   */
+  const windows = useMemo(
     () =>
       openWindows
-        .map((id) => ({ id, page: pageAt(isBrowserWindow(id) ? browserPath : id) }))
-        .filter((w): w is { id: string; page: BlogPage } => w.page !== null),
+        .map((id, stackOrder) => ({
+          id,
+          stackOrder,
+          page: pageAt(isBrowserWindow(id) ? browserPath : id),
+        }))
+        .filter((w): w is OpenWindow => w.page !== null)
+        .sort((a, b) => a.id.localeCompare(b.id)),
     [openWindows, browserPath],
   );
-  const anyOpen = stack.length > 0;
+  const anyOpen = windows.length > 0;
 
   // Update lastVisitedAt when leaving CatOS.
   useEffect(() => {
@@ -168,11 +183,15 @@ export default function LaptopScreenOverlay() {
           ))}
         </div>
 
-        {stack.map((window, index) => (
+        {windows.map((window) => (
           <CatosWindow
             key={window.id}
             page={window.page}
-            cascade={index}
+            // Both from the stack index, which is not a coincidence worth hiding:
+            // a window opens on the end of the stack, so its index there is also
+            // how many windows it has to step down and right of.
+            cascade={window.stackOrder}
+            stackOrder={window.stackOrder}
             onFocus={() => raise(window.id)}
             onClose={() => closeWindow(window.id)}
           />
