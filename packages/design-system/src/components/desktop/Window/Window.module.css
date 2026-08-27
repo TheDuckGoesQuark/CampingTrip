@@ -1,90 +1,315 @@
-.backdrop {
+/* Positioning layer. Transparent and click-through, so the desktop behind the
+   window keeps receiving clicks — the window is floating, not modal. */
+.layer {
   position: absolute;
   inset: 0;
   z-index: 20;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.3);
+  pointer-events: none;
 }
 
 .window {
+  pointer-events: auto;
   display: flex;
   flex-direction: column;
-  width: 90%;
-  max-width: 520px;
-  min-height: 300px;
-  max-height: 85vh;
   overflow: hidden;
   background: var(--brand-surface-raised);
   color: var(--brand-text);
-  border: 1px solid var(--brand-border);
-  border-radius: var(--radius-l);
-  box-shadow: var(--shadow-4);
-  animation: windowIn 0.25s ease-out;
+  border: 2px solid var(--brand-border-strong);
+  border-radius: var(--radius-none);
+  box-shadow: var(--shadow-hard-3);
+  animation: windowIn 0.12s steps(3, end);
+  /* Proportional rather than viewport-locked, so the centred frame always leaves
+     the surrounding desktop chrome visible above and below it. */
+  width: 92%;
+  max-width: 880px;
+  height: 78%;
+  max-height: 660px;
 }
 
-/* Wide "page" window for a full content page. */
-.page {
-  max-width: 880px;
-  width: 92%;
-  max-height: 90vh;
-}
+/* ── Title bar ─────────────────────────────────────────────── */
 
 .titlebar {
   display: flex;
   align-items: center;
-  height: 38px;
-  padding: 0 var(--space-m);
-  background: rgba(0, 0, 0, 0.22);
-  border-bottom: 1px solid var(--brand-border-subtle);
+  height: 30px;
+  padding: 0 var(--space-s);
   flex-shrink: 0;
+  background: var(--brand-subtle);
+  border-bottom: 2px solid var(--brand-border-strong);
+  box-shadow: var(--shadow-bevel-out);
 }
 
 .lights {
   display: flex;
-  gap: var(--space-xs);
+  gap: var(--space-xxs);
 }
 
 .light {
-  width: 12px;
-  height: 12px;
-  border: none;
-  border-radius: var(--radius-full);
+  width: 14px;
+  height: 14px;
   padding: 0;
-}
-
-.lightClose {
-  background: #ff5f57;
-  cursor: pointer;
+  border: 1px solid var(--brand-border-strong);
+  border-radius: var(--radius-none);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 8px;
+  font-size: var(--text-label-size);
   line-height: 1;
   color: transparent;
+  box-shadow: var(--shadow-bevel-out);
 }
-.lightClose:hover,
-.lightClose:focus-visible {
-  color: rgba(0, 0, 0, 0.5);
+
+button.light {
+  cursor: pointer;
+}
+button.light:hover,
+button.light:focus-visible {
+  color: var(--brand-control-glyph);
   outline: none;
 }
-.lightAmber {
-  background: #febc2e;
+button.light:active {
+  box-shadow: var(--shadow-bevel-in);
 }
-.lightGreen {
-  background: #28c840;
+
+.close {
+  background: var(--brand-control-close);
+}
+.minimise {
+  background: var(--brand-control-minimise);
+}
+.maximise {
+  background: var(--brand-control-maximise);
 }
 
 .title {
   flex: 1;
   text-align: center;
   font-size: var(--text-body-sm-size);
-  color: var(--brand-text-muted);
+  font-weight: var(--weight-bold);
+  color: var(--brand-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+
+/* Balances the lights so the title reads as centred in the bar. */
 .titleSpacer {
-  width: 52px;
+  width: 54px;
+  flex-shrink: 0;
 }
+
+/* ── Tab strip ─────────────────────────────────────────────── */
+
+.tabs {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-xxxs);
+  padding: var(--space-xxs) var(--space-xxs) 0;
+  flex-shrink: 0;
+  overflow-x: auto;
+  background: var(--brand-surface-sunken);
+  border-bottom: 2px solid var(--brand-border-strong);
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  max-width: 180px;
+  padding-right: var(--space-xxs);
+  background: var(--brand-subtle);
+  border: 1px solid var(--brand-border-strong);
+  border-bottom: none;
+  border-radius: var(--radius-none);
+  box-shadow: var(--shadow-bevel-out);
+}
+.tab:hover {
+  background: var(--brand-subtle-hover);
+}
+
+/* The active tab sits proud of the strip and merges into the page below it. */
+.tabActive {
+  background: var(--brand-surface-raised);
+  margin-bottom: -2px;
+  padding-bottom: 2px;
+}
+.tabActive:hover {
+  background: var(--brand-surface-raised);
+}
+
+.tabButton {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  min-width: 0;
+  padding: var(--space-xs) var(--space-s);
+  border: none;
+  background: transparent;
+  color: var(--brand-text);
+  font: inherit;
+  font-size: var(--text-body-sm-size);
+  cursor: pointer;
+}
+.tabButton:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
+.tabIcon {
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.tabLabel {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tabActive .tabLabel {
+  font-weight: var(--weight-bold);
+}
+
+.tabClose {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-none);
+  background: transparent;
+  color: var(--brand-text-muted);
+  font-size: var(--text-label-size);
+  line-height: 1;
+  cursor: pointer;
+}
+.tabClose:hover,
+.tabClose:focus-visible {
+  border-color: var(--brand-border-strong);
+  background: var(--brand-danger-subtle);
+  color: var(--brand-text);
+  outline: none;
+}
+
+.newTab {
+  flex-shrink: 0;
+  align-self: center;
+  width: 22px;
+  height: 22px;
+  margin-left: var(--space-xxs);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid var(--brand-border-strong);
+  border-radius: var(--radius-none);
+  background: var(--brand-surface-raised);
+  color: var(--brand-text);
+  font-size: var(--text-body-sm-size);
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: var(--shadow-bevel-out);
+}
+.newTab:hover {
+  background: var(--brand-subtle-hover);
+}
+.newTab:active {
+  box-shadow: var(--shadow-bevel-in);
+}
+.newTab:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
+/* ── Address bar ───────────────────────────────────────────── */
+
+.addressbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-s);
+  height: 34px;
+  padding: 0 var(--space-s);
+  flex-shrink: 0;
+  background: var(--brand-subtle);
+  border-bottom: 2px solid var(--brand-border-strong);
+}
+
+.navGroup {
+  display: flex;
+  gap: var(--space-xxs);
+  flex-shrink: 0;
+}
+
+.navButton {
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid var(--brand-border-strong);
+  border-radius: var(--radius-none);
+  background: var(--brand-surface-raised);
+  color: var(--brand-text);
+  font-size: var(--text-label-size);
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: var(--shadow-bevel-out);
+}
+.navButton:hover:not(:disabled) {
+  background: var(--brand-subtle-hover);
+}
+.navButton:active:not(:disabled) {
+  box-shadow: var(--shadow-bevel-in);
+}
+.navButton:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+.navButton:disabled {
+  color: var(--brand-text-disabled);
+  cursor: default;
+  box-shadow: none;
+}
+
+.addressWell {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  height: 22px;
+  padding: 0 var(--space-xs);
+  background: var(--brand-surface-raised);
+  border: 1px solid var(--brand-border-strong);
+  border-radius: var(--radius-none);
+  box-shadow: var(--shadow-bevel-in);
+}
+
+.lock {
+  flex-shrink: 0;
+  font-size: var(--text-label-size);
+  line-height: 1;
+}
+
+.url {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: var(--text-label-size);
+  color: var(--brand-text-muted);
+  user-select: text;
+}
+
+/* ── Page ──────────────────────────────────────────────────── */
 
 .body {
   flex: 1;
@@ -92,13 +317,14 @@
   padding: var(--space-l) var(--space-xl);
 }
 
+/* Stepped rather than eased — an instant, unanimated era. */
 @keyframes windowIn {
   from {
-    transform: scale(0.92);
+    transform: translate(-4px, -4px);
     opacity: 0;
   }
   to {
-    transform: scale(1);
+    transform: translate(0, 0);
     opacity: 1;
   }
 }

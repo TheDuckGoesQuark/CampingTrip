@@ -6,7 +6,15 @@ All planned and deferred work, organised by priority.
 
 ## Next Up
 
-_(nothing queued)_
+### Design system — boxy pass on in-window content
+
+- Decide whether `Button` and `Badge` should square off inside a CatOS window.
+  They are shared components used outside the desktop chrome, so this needs a
+  call on scope: a `shape` variant, a desktop-scoped wrapper, or leave the
+  rounded brand shape as deliberate contrast.
+- `Button` logs a Base UI `nativeButton` console error when given
+  `render={<a href=… />}`. Reproduce on `/blog/photobroom`. Fix belongs in
+  `src/primitives/Button` (components may not import Base UI directly).
 
 ---
 

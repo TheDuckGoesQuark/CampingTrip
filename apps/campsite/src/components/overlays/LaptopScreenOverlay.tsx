@@ -1,18 +1,6 @@
-import {
-  Badge,
-  Button,
-  DesktopIcon,
-  Dock,
-  DockDivider,
-  DockItem,
-  Link,
-  MenuBar,
-  Modal,
-  Text,
-  Window,
-} from "@jordanscamp/ds";
+import { Badge, Button, DesktopIcon, Link, MenuBar, Modal, Text, Window } from "@jordanscamp/ds";
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import { playWindowOpen, playSoftClick } from "../../audio/soundEffects";
 import { bookmarks } from "../../data/bookmarks";
@@ -25,9 +13,11 @@ import type { Project, Bookmark } from "../../types/project";
 import { asset } from "../../utils/assetPath";
 import PhotoBroomPage from "./PhotoBroomPage";
 
+/** Not `location.origin`: a `localhost:5173` address would break the illusion. */
+const SITE_ORIGIN = "https://jordanscamp.site";
+
 type OpenItem = { kind: "project"; data: Project } | { kind: "bookmark"; data: Bookmark };
 
-/** Resolve the open window from the URL-backed slug (single source of truth). */
 function resolveOpenItem(slug: string | null): OpenItem | null {
   if (!slug) return null;
   const project = projects.find((p) => slugify(p.title) === slug);
@@ -37,24 +27,37 @@ function resolveOpenItem(slug: string | null): OpenItem | null {
   return null;
 }
 
+function titleOf(item: OpenItem): string {
+  return item.data.title;
+}
+
 /**
  * CatOS — the laptop's blog, a full-screen Base UI takeover (so it traps focus,
  * returns focus on close, and handles Escape). Composes the DS faux-desktop
- * chrome (MenuBar, DesktopIcon, Dock, Window) with the campsite's own content.
- * Open state is URL-driven (`laptopFocused`); Escape/close navigate.
+ * chrome (MenuBar, DesktopIcon, Window) with the campsite's own content.
+ *
+ * The open post is URL-driven (`/blog/:slug` → `activePostSlug`); the *set* of
+ * open tabs is session state in the scene store.
  */
 export default function LaptopScreenOverlay() {
   const navigate = useNavigate();
+  const { key: locationKey } = useLocation();
   const laptopFocused = useSceneStore((s) => s.laptopFocused);
   const activePostSlug = useSceneStore((s) => s.activePostSlug);
+  const openPostSlugs = useSceneStore((s) => s.openPostSlugs);
   const lastVisitedAt = useSessionStore((s) => s.lastVisitedAt);
   const [clock, setClock] = useState("");
+  const [reloadCount, setReloadCount] = useState(0);
   const prevFocused = useRef(false);
 
-  // The open window is URL-backed, so closing/opening a post is a navigation:
-  // BlogRoute maps /blog/:slug back onto activePostSlug.
-  const openItem = useMemo(() => resolveOpenItem(activePostSlug), [activePostSlug]);
-  const closeWindow = useCallback(() => navigate(routes.blog()), [navigate]);
+  const openTabs = useMemo(
+    () =>
+      openPostSlugs
+        .map((slug) => ({ slug, item: resolveOpenItem(slug) }))
+        .filter((t): t is { slug: string; item: OpenItem } => t.item !== null),
+    [openPostSlugs],
+  );
+  const activeItem = useMemo(() => resolveOpenItem(activePostSlug), [activePostSlug]);
 
   // Update lastVisitedAt when leaving CatOS.
   useEffect(() => {
@@ -74,32 +77,60 @@ export default function LaptopScreenOverlay() {
     return () => clearInterval(id);
   }, [laptopFocused]);
 
-  // Base UI reports close intent (Escape). Close the open post first, else the
+  const closeWindow = useCallback(() => {
+    useSceneStore.getState().closeAllPosts();
+    navigate(routes.blog());
+  }, [navigate]);
+
+  /** CatOS has no new-tab page of its own — the desktop is the one you pick from. */
+  const showDesktop = useCallback(() => {
+    playSoftClick();
+    navigate(routes.blog());
+  }, [navigate]);
+
+  // Base UI reports close intent (Escape). Close the open window first, else the
   // whole takeover — mirrors the layered Escape behaviour, no manual keydown.
   const onOpenChange = useCallback(
     (open: boolean) => {
       if (open) return;
       playSoftClick();
-      navigate(openItem ? routes.blog() : routes.tent);
+      navigate(activeItem ? routes.blog() : routes.tent);
     },
-    [openItem, navigate],
+    [activeItem, navigate],
   );
 
-  const handleProjectClick = useCallback(
-    (project: Project) => {
-      navigate(routes.blog(slugify(project.title)));
+  const openSlug = useCallback(
+    (slug: string) => {
+      navigate(routes.blog(slug));
       playWindowOpen();
     },
     [navigate],
   );
 
-  const handleBookmarkClick = useCallback(
-    (bookmark: Bookmark) => {
-      navigate(routes.blog(slugify(bookmark.title)));
-      playWindowOpen();
+  /** Only navigates if the closed tab was on screen; focus falls right, else left. */
+  const closeTab = useCallback(
+    (slug: string) => {
+      const scene = useSceneStore.getState();
+      const index = scene.openPostSlugs.indexOf(slug);
+      const remaining = scene.openPostSlugs.filter((s) => s !== slug);
+      playSoftClick();
+      scene.closePost(slug);
+      if (slug !== scene.activePostSlug) return;
+      const next = remaining[index] ?? remaining[index - 1];
+      navigate(next ? routes.blog(next) : routes.blog());
     },
     [navigate],
   );
+
+  /**
+   * A visitor who deep-linked straight to a post has nothing behind them, and a
+   * Back that left the site would break the illusion worse than a greyed-out one.
+   * Read from the history entry, so it needs re-reading per navigation.
+   */
+  const [canGoBack, setCanGoBack] = useState(false);
+  useEffect(() => {
+    setCanGoBack(((window.history.state as { idx?: number } | null)?.idx ?? 0) > 0);
+  }, [locationKey]);
 
   const hasBookmarks = bookmarks.length > 0;
 
@@ -139,20 +170,19 @@ export default function LaptopScreenOverlay() {
             position: "absolute",
             top: 36,
             left: 0,
-            right: 0,
-            bottom: 72,
+            width: 148,
+            bottom: 0,
             overflowY: "auto",
-            padding: "24px 32px",
+            padding: "8px 12px",
           }}
         >
           <SectionHeader label="My Projects" />
           <div
             style={{
               display: "flex",
-              flexWrap: "wrap",
-              justifyContent: "center",
-              gap: 24,
-              marginBottom: hasBookmarks ? 32 : 0,
+              flexDirection: "column",
+              gap: 4,
+              marginBottom: hasBookmarks ? 24 : 0,
             }}
           >
             {projects.map((p) => (
@@ -162,7 +192,7 @@ export default function LaptopScreenOverlay() {
                 icon={asset(p.icon)}
                 color={p.color}
                 isNew={isNewSince(p.addedAt, p.updatedAt, lastVisitedAt)}
-                onClick={() => handleProjectClick(p)}
+                onClick={() => openSlug(slugify(p.title))}
               />
             ))}
           </div>
@@ -170,7 +200,7 @@ export default function LaptopScreenOverlay() {
           {hasBookmarks && (
             <>
               <SectionHeader label="Bookmarks" />
-              <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 24 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                 {bookmarks.map((b) => (
                   <DesktopIcon
                     key={b.title}
@@ -178,7 +208,7 @@ export default function LaptopScreenOverlay() {
                     icon={asset(b.icon)}
                     color={b.color}
                     isNew={isNewSince(b.addedAt, undefined, lastVisitedAt)}
-                    onClick={() => handleBookmarkClick(b)}
+                    onClick={() => openSlug(slugify(b.title))}
                   />
                 ))}
               </div>
@@ -186,23 +216,42 @@ export default function LaptopScreenOverlay() {
           )}
         </div>
 
-        <Dock>
-          <DockItem label="Finder">📁</DockItem>
-          <DockItem label="Terminal">🖥️</DockItem>
-          <DockItem label="Notes">📝</DockItem>
-          <DockDivider />
-          <DockItem label="Trash">🗑️</DockItem>
-        </Dock>
-
-        {openItem?.kind === "project" && (
-          <ProjectWindow project={openItem.data} onClose={closeWindow} />
+        {activeItem && activePostSlug && (
+          <Window>
+            <Window.TitleBar title={`${titleOf(activeItem)} — CatNav`} onClose={closeWindow} />
+            <Window.Tabs>
+              {openTabs.map(({ slug, item }) => (
+                <Window.Tab
+                  key={slug}
+                  label={titleOf(item)}
+                  icon={<img src={asset(item.data.icon)} alt="" width={14} height={14} />}
+                  active={slug === activePostSlug}
+                  onSelect={() => navigate(routes.blog(slug))}
+                  onClose={() => closeTab(slug)}
+                />
+              ))}
+              <Window.NewTab onClick={showDesktop} />
+            </Window.Tabs>
+            <Window.AddressBar
+              url={`${SITE_ORIGIN}${routes.blog(activePostSlug)}`}
+              onBack={canGoBack ? () => navigate(-1) : undefined}
+              onReload={() => setReloadCount((n) => n + 1)}
+            />
+            <Window.Body>
+              {/* Re-keyed so the reload control actually remounts the page. */}
+              <div key={`${activePostSlug}:${reloadCount}`} style={{ userSelect: "text" }}>
+                {activeItem.kind === "project" ? (
+                  <ProjectPage project={activeItem.data} />
+                ) : (
+                  <BookmarkPage bookmark={activeItem.data} />
+                )}
+              </div>
+            </Window.Body>
+          </Window>
         )}
-        {openItem?.kind === "bookmark" && (
-          <BookmarkWindow bookmark={openItem.data} onClose={closeWindow} />
-        )}
 
-        {!openItem && (
-          <div style={{ position: "absolute", bottom: 84, right: 20, zIndex: 5 }}>
+        {!activeItem && (
+          <div style={{ position: "absolute", bottom: 20, right: 20, zIndex: 5 }}>
             <Button variant="ghost" size="sm" onClick={() => navigate(routes.tent)}>
               Back to tent
               <span style={{ opacity: 0.5, marginLeft: 6 }}>Esc</span>
@@ -232,25 +281,19 @@ function isNewSince(
 
 function SectionHeader({ label }: { label: string }) {
   return (
-    <div style={{ marginBottom: 16 }}>
-      <Text variant="label" tone="muted" align="center">
+    <div style={{ marginBottom: 12 }}>
+      <Text variant="label" tone="muted">
         {label}
       </Text>
     </div>
   );
 }
 
-/* ─── Windows ─────────────────────────────────────────────────── */
+/* ─── Pages ───────────────────────────────────────────────────── */
 
-function ProjectWindow({ project, onClose }: { project: Project; onClose: () => void }) {
+function ProjectPage({ project }: { project: Project }) {
   // PhotoBroom has a full landing page (folded in from its old subdomain).
-  if (slugify(project.title) === "photobroom") {
-    return (
-      <Window size="page" title="PhotoBroom" onClose={onClose}>
-        <PhotoBroomPage />
-      </Window>
-    );
-  }
+  if (slugify(project.title) === "photobroom") return <PhotoBroomPage />;
 
   const body =
     typeof project.description === "string"
@@ -258,7 +301,7 @@ function ProjectWindow({ project, onClose }: { project: Project; onClose: () => 
       : project.description;
 
   return (
-    <Window title={project.title} onClose={onClose}>
+    <>
       <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
         <Text variant="title-2">{project.title}</Text>
         <Text variant="body-sm" tone="muted">
@@ -291,15 +334,15 @@ function ProjectWindow({ project, onClose }: { project: Project; onClose: () => 
           </Button>
         )}
       </div>
-    </Window>
+    </>
   );
 }
 
-function BookmarkWindow({ bookmark, onClose }: { bookmark: Bookmark; onClose: () => void }) {
+function BookmarkPage({ bookmark }: { bookmark: Bookmark }) {
   const [imgError, setImgError] = useState(false);
 
   return (
-    <Window title={bookmark.title} onClose={onClose}>
+    <>
       <div style={{ display: "flex", alignItems: "flex-start", gap: 16, marginBottom: 16 }}>
         {!imgError && (
           <img
@@ -307,7 +350,7 @@ function BookmarkWindow({ bookmark, onClose }: { bookmark: Bookmark; onClose: ()
             alt=""
             width={64}
             height={64}
-            style={{ borderRadius: 12, objectFit: "cover", flexShrink: 0 }}
+            style={{ objectFit: "cover", flexShrink: 0 }}
             onError={() => setImgError(true)}
           />
         )}
@@ -323,6 +366,6 @@ function BookmarkWindow({ bookmark, onClose }: { bookmark: Bookmark; onClose: ()
           Check it out →
         </Link>
       </div>
-    </Window>
+    </>
   );
 }

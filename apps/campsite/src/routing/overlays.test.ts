@@ -12,6 +12,7 @@ describe("applyOverlayState", () => {
       laptopFocused: false,
       notepadFocused: false,
       activePostSlug: null,
+      openPostSlugs: [],
       focusTarget: "default",
     });
     useMusicStore.setState({ isOpen: false });
@@ -33,6 +34,36 @@ describe("applyOverlayState", () => {
     expect(s.notepadFocused).toBe(true);
     expect(s.laptopFocused).toBe(false);
     expect(s.activePostSlug).toBeNull();
+  });
+
+  it("gives the routed slug a tab, so a deep link arrives with one open", () => {
+    applyOverlayState("laptop", "camping-trip");
+    expect(useSceneStore.getState().openPostSlugs).toEqual(["camping-trip"]);
+  });
+
+  it("keeps tabs already open when a second post is routed to", () => {
+    applyOverlayState("laptop", "camping-trip");
+    applyOverlayState("laptop", "catmap");
+    expect(useSceneStore.getState().openPostSlugs).toEqual(["camping-trip", "catmap"]);
+  });
+
+  it("re-routing to an open tab does not duplicate it", () => {
+    applyOverlayState("laptop", "catmap");
+    applyOverlayState("laptop", "camping-trip");
+    applyOverlayState("laptop", "catmap");
+    expect(useSceneStore.getState().openPostSlugs).toEqual(["catmap", "camping-trip"]);
+  });
+
+  it("bare /blog keeps the strip — the desktop is CatOS's new-tab page", () => {
+    applyOverlayState("laptop", "catmap");
+    applyOverlayState("laptop", null);
+    expect(useSceneStore.getState().openPostSlugs).toEqual(["catmap"]);
+  });
+
+  it("leaving the blog entirely discards the strip", () => {
+    applyOverlayState("laptop", "catmap");
+    applyOverlayState("notepad");
+    expect(useSceneStore.getState().openPostSlugs).toEqual([]);
   });
 
   it("opens the music player", () => {

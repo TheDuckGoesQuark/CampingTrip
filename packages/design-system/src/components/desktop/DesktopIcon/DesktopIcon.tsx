@@ -25,15 +25,12 @@ export interface DesktopIconProps {
 export function DesktopIcon({ label, icon, color, isNew, onClick }: DesktopIconProps) {
   const [imgError, setImgError] = useState(false);
   const showFallback = !icon || imgError;
-  const bg = color ?? "#4a9eff";
+  const bg = color ?? "var(--brand-solid)";
 
   return (
     <button type="button" className={styles.button} onClick={onClick}>
       {showFallback ? (
-        <span
-          className={styles.fallback}
-          style={{ background: `linear-gradient(135deg, ${bg}, ${bg}88)` }}
-        >
+        <span className={styles.fallback} style={{ background: bg }}>
           {label.charAt(0).toUpperCase()}
         </span>
       ) : (

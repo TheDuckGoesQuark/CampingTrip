@@ -50,6 +50,13 @@
   --brand-danger: #c0492f;
   --brand-danger-subtle: #f7e2dc;
 
+  /* Window controls — the traffic lights, in brand red/amber/green rather than
+     the macOS system hexes. */
+  --brand-control-close: var(--brand-danger);
+  --brand-control-minimise: var(--amber-6);
+  --brand-control-maximise: var(--sage-6);
+  --brand-control-glyph: rgba(43, 51, 39, 0.65);
+
   /* Kept for existing consumers (CatOS wallpaper glow). */
   --brand-accent-rgb: 90, 147, 103;
   --brand-glow: 0 0 0 3px rgba(90, 147, 103, 0.5);
@@ -92,6 +99,11 @@
 
   --brand-danger: #e8836b;
   --brand-danger-subtle: #3a201a;
+
+  --brand-control-close: #d95f43;
+  --brand-control-minimise: var(--amber-5);
+  --brand-control-maximise: var(--sage-4);
+  --brand-control-glyph: rgba(0, 0, 0, 0.7);
 
   --brand-accent-rgb: 122, 171, 104;
   --brand-glow: 0 0 0 3px rgba(122, 171, 104, 0.5);
