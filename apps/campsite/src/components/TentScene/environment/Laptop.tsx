@@ -1,6 +1,6 @@
 import { useGLTF, useTexture } from "@react-three/drei";
 import gsap from "gsap";
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import * as THREE from "three";
 
 import { requestOpen } from "../../../routing/navigation";
@@ -20,6 +20,13 @@ const REST_POS: [number, number, number] = [-1.6, 0.67, -0.85];
 const REST_ROT: [number, number, number] = [-0.2, Math.PI * 0.3, 0.15];
 const REST_SCALE: [number, number, number] = [0.045, 0.045, 0.045];
 
+/**
+ * Where the logo sits on the screen panel, in group-local units. Hand-tuned, and
+ * deliberately not measured: the model's screen is a sub-node scaled ~100x, so a
+ * bounding-box centre for it lands off the panel rather than on it.
+ */
+const LOGO_POS: [number, number, number] = [0, 12, -1];
+
 // Focused transform (screen fills camera view — lower and further from camera)
 const FOCUS_POS: [number, number, number] = [0, 1.7, 0.8];
 const FOCUS_ROT: [number, number, number] = [-0.1, 0, 0];
@@ -38,12 +45,6 @@ export default function Laptop({ screenOn }: Props) {
   const lightMeshes = useRef<
     { mat: THREE.MeshStandardMaterial; color: THREE.Color; intensity: number }[]
   >([]);
-  // State, not a ref: the logo's position is read during render, so the measured
-  // centre has to schedule one. As a ref it only landed when some unrelated
-  // re-render happened to follow (hovering the laptop), which made the icon's
-  // placement depend on luck.
-  const [screenCenter, setScreenCenter] = useState<[number, number, number]>([0, 12, -3]);
-
   const laptopFocused = useSceneStore((s) => s.laptopFocused);
 
   // Interaction store for "projects" logo hover/focus/label
@@ -114,26 +115,6 @@ export default function Laptop({ screenOn }: Props) {
 
     screenMeshes.current = screens;
     lightMeshes.current = lights;
-
-    // Compute screen center for logo placement.
-    // Force GLTF internal transforms to resolve first — on first load,
-    // Three.js hasn't rendered yet so matrixWorld values are stale.
-    // Then convert from world space → group-local space so the result
-    // is consistent regardless of the group's current position.
-    if (screens.length > 0) {
-      scene.updateMatrixWorld(true);
-      const box = new THREE.Box3();
-      screens.forEach((m) => box.expandByObject(m));
-      const worldCenter = box.getCenter(new THREE.Vector3());
-
-      // The group is still at its default transform here, so world coordinates and
-      // group-local ones coincide; worldToLocal keeps that true if it ever moves.
-      if (groupRef.current) {
-        groupRef.current.updateMatrixWorld(true);
-        groupRef.current.worldToLocal(worldCenter);
-      }
-      setScreenCenter([worldCenter.x, worldCenter.y, worldCenter.z]);
-    }
   }, [scene]);
 
   // Toggle emissive lights (LEDs, indicators) on hover — same pattern as Scarlett Solo / MPK
@@ -247,7 +228,7 @@ export default function Laptop({ screenOn }: Props) {
 
       {/* Logo icon on screen — always mounted to avoid geometry/material
           creation at toggle time; visibility toggled instead */}
-      <group visible={screenOn} position={[screenCenter[0], screenCenter[1], screenCenter[2] + 2]}>
+      <group visible={screenOn} position={LOGO_POS}>
         <mesh
           ref={logoMeshRef}
           onClick={handleLogoClick}
