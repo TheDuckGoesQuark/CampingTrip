@@ -16,6 +16,19 @@ All planned and deferred work, organised by priority.
   `render={<a href=… />}`. Reproduce on `/blog/photobroom`. Fix belongs in
   `src/primitives/Button` (components may not import Base UI directly).
 
+### Campsite — an environment that can actually run the 3D scene
+
+Two changes shipped this session that could not be verified before merging,
+because the preview pane keeps the page hidden and a hidden page pauses
+`requestAnimationFrame`, so R3F stops rendering and GSAP stops advancing. One of
+them was broken and had to be reverted. Worth solving before the next change
+inside the Canvas:
+
+- Find a way to drive the tent scene with a live rAF for verification, or
+- Add coverage with `@react-three/test-renderer` (already a devDependency, and
+  the vitest config already inlines it) so scene-graph assertions — a mesh's
+  resolved position, whether a tween's completion is wired — can run headlessly.
+
 ---
 
 ## Backlog

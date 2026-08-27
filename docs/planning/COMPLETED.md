@@ -4,6 +4,59 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## Notes dropped from the tab bar; URL-hold mechanism tried and reverted
+
+**Date**: 2026-08-27
+
+**What was done**:
+
+- **The tab bar promotes only the blog and the music.** `OverlayLink` gained
+  `inTabBar`; the notepad is marked `false` rather than removed from
+  `OVERLAY_LINKS`, because the notepad object in the tent resolves its route
+  through that same table via `linkFor("notepad")`. It stays openable by its
+  object and by `/notes`.
+- **The laptop's logo sits on the screen panel.** Its position is now derived
+  from `laptop.glb`: the screen sub-node carries a ~100x scale and a
+  180-degree Y rotation, giving a panel of x -15.2..15.2, y 0.46..20.56 with its
+  front face at z -9.89. The logo takes that centre.
+- **The URL hold stayed a timer.** An attempt to commit on the GSAP flight's
+  `onComplete` was merged and then reverted; the abandoned-flight cancellation it
+  introduced was kept.
+
+**Key decisions**:
+
+- **Committing the URL on animation completion does not work here, and the
+  reason is worth keeping.** For the completion signal to ever be the one that
+  fires, the fallback deadline has to sit clear of the animation, so it went
+  900ms to 1600ms. But the objects animate inside the Canvas off
+  `requestAnimationFrame`, which a hidden tab pauses outright — measured at 0
+  ticks per second — so a flight can simply never report. The deadline therefore
+  did all the work, 700ms slower than the timer it replaced. Anyone reaching for
+  this again needs a completion source that fires without rAF, not a longer
+  deadline.
+- **A flight that is abandoned no longer lands its URL.** Clicking the laptop and
+  then the notepad used to fire the laptop's `navigate("/blog")` a second later,
+  over the top of `/notes`.
+- **The logo's placement is a derived constant, not a runtime measurement.** The
+  runtime `Box3` version was the original source of the icon vanishing: it wrote
+  to a ref, which schedules no render, so the seeded position is what actually
+  drew and the measured value only took effect when an unrelated re-render
+  followed. Moving the seed to state made the measured value win every time.
+- **Depth reads as horizontal drift on this model.** `REST_ROT` turns the group
+  54 degrees about Y, mapping local +Z onto world (0.81, 0, 0.59), so a logo
+  floating 8.9 units toward the viewer appears about 7.2 units to the right.
+  Worth remembering before nudging x on anything parented to that group.
+
+**Deferred**:
+
+- `Button` and `Badge` keep their rounded brand shape inside the boxy window.
+- `Button` logs a Base UI `nativeButton` console error when rendered as a link.
+
+**Why it mattered**: the URL-hold attempt is the useful part of this entry. It
+was a reasonable idea, it passed its tests, and it shipped broken because the
+tests exercised the emitter directly and never GSAP reaching it. The verification
+gap was known and written down at merge time, which is not the same as closed.
+
 ## CatOS blog reskinned as a boxy 1990s mock browser
 
 **Date**: 2026-08-27
