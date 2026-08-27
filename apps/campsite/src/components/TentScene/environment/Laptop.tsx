@@ -3,7 +3,7 @@ import gsap from "gsap";
 import { useEffect, useRef, useState, useCallback } from "react";
 import * as THREE from "three";
 
-import { requestOpen } from "../../../routing/navigation";
+import { overlayFlight, requestOpen } from "../../../routing/navigation";
 import { useInteractionStore } from "../../../store/interactionStore";
 import { useSceneStore } from "../../../store/sceneStore";
 import { asset, DRACO_PATH } from "../../../utils/assetPath";
@@ -185,6 +185,10 @@ export default function Laptop({ screenOn }: Props) {
         z: FOCUS_POS[2],
         duration: 1,
         ease: "power2.inOut",
+        // The three tweens share a duration, so position landing is the flight
+        // landing. useSceneNavigate commits the URL off this rather than a timer
+        // of its own; an interrupted flight never reports, which is the point.
+        onComplete: () => overlayFlight.landed("laptop"),
       });
       gsap.to(g.rotation, {
         x: FOCUS_ROT[0],

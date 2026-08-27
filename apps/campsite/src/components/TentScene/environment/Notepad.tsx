@@ -3,6 +3,7 @@ import gsap from "gsap";
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 
+import { overlayFlight } from "../../../routing/navigation";
 import { useSceneStore } from "../../../store/sceneStore";
 import { asset, DRACO_PATH } from "../../../utils/assetPath";
 
@@ -55,6 +56,8 @@ export default function Notepad() {
         z: FOCUS_POS[2],
         duration: 0.9,
         ease: "power2.inOut",
+        // See Laptop: the URL commits off this landing, not a parallel timer.
+        onComplete: () => overlayFlight.landed("notepad"),
       });
       gsap.to(g.rotation, {
         x: FOCUS_ROT[0],

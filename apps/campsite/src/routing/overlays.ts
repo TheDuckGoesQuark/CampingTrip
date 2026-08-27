@@ -14,8 +14,13 @@ export interface OverlayLink {
   objectId: string;
   /** The overlay this route opens. */
   kind: OverlayKind;
-  /** Rough open-animation length; an in-app click holds the URL update this long. */
-  animMs: number;
+  /**
+   * Latest an in-app click may hold the URL, in ms. Normally unused — the URL
+   * commits when the object's flight reports landing. It carries the wait only
+   * for an overlay with no flight to report (the music player), so for the
+   * animated ones it must sit clear of the real animation rather than match it.
+   */
+  commitByMs: number;
 }
 
 /**
@@ -23,9 +28,11 @@ export interface OverlayLink {
  * activations so both drive the exact same navigation.
  */
 export const OVERLAY_LINKS: OverlayLink[] = [
-  { path: "/blog", label: "Blog", objectId: "laptop", kind: "laptop", animMs: 900 },
-  { path: "/music", label: "Music", objectId: "shure-mic", kind: "music", animMs: 250 },
-  { path: "/notes", label: "Notes", objectId: "notepad", kind: "notepad", animMs: 600 },
+  // Laptop and notepad fly for 1.0s and 0.9s; the music player does not move,
+  // so its deadline is the whole wait rather than a fallback.
+  { path: "/blog", label: "Blog", objectId: "laptop", kind: "laptop", commitByMs: 1600 },
+  { path: "/music", label: "Music", objectId: "shure-mic", kind: "music", commitByMs: 250 },
+  { path: "/notes", label: "Notes", objectId: "notepad", kind: "notepad", commitByMs: 1500 },
 ];
 
 /**
