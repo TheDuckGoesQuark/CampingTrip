@@ -7,6 +7,8 @@ interface SceneState {
   wakeUpDone: boolean;
   /** True once the loading screen has finished — i.e. the user is on the tent view. */
   sceneReady: boolean;
+  /** 0–100, pushed by the scene chunk — see TentScene/loadProgress.ts. */
+  loadProgress: number;
   tentDoorState: TentDoorState;
   lanternOn: boolean;
   laptopFocused: boolean;
@@ -32,6 +34,7 @@ interface SceneState {
   focusTarget: FocusTarget;
   setWakeUpDone: () => void;
   setSceneReady: (v: boolean) => void;
+  setLoadProgress: (p: number) => void;
   setTentDoorState: (s: TentDoorState) => void;
   toggleLantern: () => void;
   setLaptopFocused: (f: boolean) => void;
@@ -52,6 +55,7 @@ interface SceneState {
 export const useSceneStore = create<SceneState>()((set) => ({
   wakeUpDone: false,
   sceneReady: false,
+  loadProgress: 0,
   tentDoorState: "open",
   lanternOn: true,
   laptopFocused: false,
@@ -63,6 +67,7 @@ export const useSceneStore = create<SceneState>()((set) => ({
   focusTarget: "default",
   setWakeUpDone: () => set({ wakeUpDone: true }),
   setSceneReady: (v) => set({ sceneReady: v }),
+  setLoadProgress: (p) => set({ loadProgress: p }),
   setTentDoorState: (s) => set({ tentDoorState: s }),
   toggleLantern: () => set((state) => ({ lanternOn: !state.lanternOn })),
   setLaptopFocused: (f) => set({ laptopFocused: f }),

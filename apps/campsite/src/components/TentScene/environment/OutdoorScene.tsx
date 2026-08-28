@@ -2,8 +2,9 @@ import { useFrame } from "@react-three/fiber";
 import { useRef, useMemo } from "react";
 import * as THREE from "three";
 
-import { useTimeStore, lerpColorKeyframes, getNightFactor } from "../../../store/timeStore";
+import { useTimeStore, getNightFactor } from "../../../store/timeStore";
 import { isMobile } from "../../../utils/deviceDetect";
+import { lerpColorKeyframes } from "../colorKeyframes";
 
 // ─── Sky gradient keyframes ──────────────────────────────────────
 // progress: 0.00 = 6 AM (dawn), 0.25 = noon, 0.50 = 6 PM, 0.75 = midnight

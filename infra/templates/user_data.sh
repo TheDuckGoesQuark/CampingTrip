@@ -65,6 +65,18 @@ fi
 cat > /etc/caddy/Caddyfile <<'CADDYEOF'
 ${domain_name} {
     root * /opt/jordanscamp/webapp
+
+    encode zstd gzip
+
+    @immutable path /assets/*
+    header @immutable Cache-Control "public, max-age=31536000, immutable"
+
+    @media path /models/* /images/* /draco/*
+    header @media Cache-Control "public, max-age=604800"
+
+    @shell path /index.html /
+    header @shell Cache-Control "no-cache"
+
     try_files {path} /index.html
     file_server
 }

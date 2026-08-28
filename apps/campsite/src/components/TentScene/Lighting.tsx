@@ -3,13 +3,9 @@ import { useRef } from "react";
 import * as THREE from "three";
 
 import { useSceneStore } from "../../store/sceneStore";
-import {
-  useTimeStore,
-  lerpKeyframes,
-  lerpColorKeyframes,
-  getNightFactor,
-} from "../../store/timeStore";
+import { useTimeStore, lerpKeyframes, getNightFactor } from "../../store/timeStore";
 import { isMobile } from "../../utils/deviceDetect";
+import { lerpColorKeyframes } from "./colorKeyframes";
 
 // ─── Keyframe stops ──────────────────────────────────────────────
 // progress: 0.00 = 6 AM (dawn), 0.25 = noon, 0.50 = 6 PM, 0.75 = midnight

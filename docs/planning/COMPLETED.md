@@ -4,6 +4,68 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## A performance pass over the whole site
+
+**Date**: 2026-08-27
+
+**What was done**: a cold load of `/blog` transferred 32.7 MB and blocked on
+1.5 MB of WebGL the page never used. It now blocks on 443 kB, and a whole visit
+including the background warm-up is 5.4 MB. Four independent causes:
+
+- **Nothing was compressed.** Caddy's `encode` is opt-in and had never been
+  enabled, so every byte of JS and CSS went out raw. `infra/Caddyfile` now sets
+  `encode zstd gzip` and adds `Cache-Control` — a year, immutable, for the
+  fingerprinted `/assets/*`, a revalidating week for models and images, and
+  `no-cache` for the shell that names them. The bootstrap copy in
+  `infra/templates/user_data.sh` mirrors it.
+- **Three.js was on the blog's critical path** despite `TentScene` being a lazy
+  chunk. Two edges pulled it into the entry graph — `CampfireLoadingScreen`
+  importing drei's `useProgress`, and `timeStore` importing `THREE.MathUtils`
+  — and the object form of `manualChunks` added a third that no import
+  explained. Progress now reaches the loading screen through `sceneStore`,
+  pushed by `TentScene/loadProgress.ts` inside the lazy chunk; the store's math
+  is local; `lerpColorKeyframes` moved to `TentScene/colorKeyframes.ts`, the only
+  place THREE.Color was needed.
+- **30 MB of models.** Sketchfab exports carry 1024² PNGs and unquantised
+  geometry. WebP at quality 80 plus Draco takes them to 3.8 MB with no change in
+  texture resolution. `scripts/optimise-models.mjs` (`pnpm --filter campsite
+models:optimise`) does it and skips anything already carrying
+  `EXT_texture_webp`, so a re-run can't stack lossy passes.
+- **A third-party fetch that was failing.** `<Environment preset="night">`
+  pulled its HDRI from `raw.githack.com`, which answers 403 — the metallics have
+  had no environment map for some time. Replaced with two `<Lightformer>`s at
+  64px, which needs no network.
+
+Screenshots on `/blog/photobroom` went to WebP (1.3 MB → 488 kB) and now carry
+`loading="lazy"`.
+
+**Key decisions**:
+
+- **No `manualChunks` at all**, rather than a tidier one. Splitting three into a
+  named vendor chunk is the obvious move and it back-fires: the scene chunk and
+  the entry chunk share the stores, which makes them mutually dependent, and
+  Rollup resolves the cycle by hoisting the shared vendor chunks into the
+  entry's static imports. Vite's own chunking keeps three inside the lazy chunk,
+  which is the only place it is used. The reason is written into `vite.config.ts`
+  because the fix looks like an omission.
+- **Texture resolution left at 1024².** Halving it saved another ~0.5 MB across
+  the set, which is not worth a visible drop in fidelity once WebP and Draco
+  have already done 8×.
+- **The idle warm-up still fetches the models**, so closing the laptop lands on
+  a scene that is already there — that was the complaint that started this. It
+  is now 3.8 MB rather than 30 MB, and it is skipped entirely when the browser
+  reports `saveData` or a 2G-class connection.
+- **Draco over meshopt.** The decoder was already deployed at `/draco` and wired
+  through `DRACO_PATH`; meshopt would have meant shipping a second decoder for
+  no measured gain.
+
+**Deferred**: the warm-up's 3.8 MB is still unasked-for on a blog visit, and the
+campfire is 1.4 MB of it — see the outdoor-model lazy-loading item in TODO.
+Nothing was done about font subsetting or about `howler` sitting on the blog's
+critical path.
+
+---
+
 ## Landing on the blog, and a hint towards the laptop
 
 **Date**: 2026-08-27

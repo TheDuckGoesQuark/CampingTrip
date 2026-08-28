@@ -7,7 +7,12 @@ import Vignette from "../effects/Vignette";
 import VirtualJoystick from "../VirtualJoystick";
 import DebugControls from "./DebugControls";
 import InteractionOverlay from "./InteractionOverlay";
+import { mirrorLoadProgress } from "./loadProgress";
 import SceneContent from "./SceneContent";
+
+// Module scope, not an effect: this chunk's `useGLTF.preload` calls fire as it
+// evaluates, before React renders anything.
+mirrorLoadProgress();
 
 interface TentSceneProps {
   visible: boolean;

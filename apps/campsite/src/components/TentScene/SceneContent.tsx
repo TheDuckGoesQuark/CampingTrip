@@ -1,4 +1,4 @@
-import { Environment } from "@react-three/drei";
+import { Environment, Lightformer } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useState, useCallback } from "react";
 
@@ -116,8 +116,17 @@ export default function SceneContent({ debug = false }: Props) {
       <Lighting debug={debug} />
       <TimeSync />
 
-      {/* Subtle env map so metallic objects (moka pot, scarlett) catch light */}
-      <Environment preset="night" environmentIntensity={0.3} />
+      {/* Subtle env map so metallic objects (moka pot, scarlett) catch light.
+          Lightformers rather than a `preset`, because a preset fetches its HDRI
+          from raw.githack.com — a third-party round trip on the scene's
+          critical path, and one that answers 403. */}
+      <Environment resolution={64} environmentIntensity={0.3}>
+        <color attach="background" args={["#05060a"]} />
+        {/* Cool moonlight from above and behind */}
+        <Lightformer intensity={0.9} color="#8fa4c8" position={[0, 5, -4]} scale={[10, 6, 1]} />
+        {/* Warm bounce from the campfire, low and to the front */}
+        <Lightformer intensity={1.4} color="#ff9d4f" position={[0, 0.5, 5]} scale={[8, 3, 1]} />
+      </Environment>
 
       {/* Non-interactive environment */}
       <TentInterior />
