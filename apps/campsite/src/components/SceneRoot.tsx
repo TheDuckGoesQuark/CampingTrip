@@ -59,10 +59,13 @@ export default function SceneRoot() {
   // the overlayNavigation emitter to open something; we turn that into a route change.
   useEffect(() => overlayNavigation.subscribe(navigateWithFocus), [navigateWithFocus]);
 
-  // Cold-loaded into a covering route → warm the tent chunk while idle, so the
-  // first trip back to the tent doesn't wait on the Three.js bundle.
+  // Importing the chunk starts the models too — the `useGLTF.preload` calls sit
+  // at its module scope — so a metered connection opts out.
   useEffect(() => {
     if (sceneActivated) return;
+    const link = (navigator as { connection?: { saveData?: boolean; effectiveType?: string } })
+      .connection;
+    if (link?.saveData || /^(slow-)?2g$/.test(link?.effectiveType ?? "")) return;
     const prefetch = () => void import("./TentScene/TentScene");
     const ric = window.requestIdleCallback;
     if (ric) {

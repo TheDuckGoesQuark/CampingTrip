@@ -1,4 +1,3 @@
-import { useProgress } from "@react-three/drei";
 import { useEffect, useRef, useState } from "react";
 
 import { startCampfire, stopCampfire } from "../audio/campfireSynth";
@@ -39,7 +38,7 @@ const FIRE_STAGES = [
 const MIN_DISPLAY_MS = 2000;
 
 export default function CampfireLoadingScreen() {
-  const { progress } = useProgress();
+  const progress = useSceneStore((s) => s.loadProgress);
   const soundEnabled = useSessionStore((s) => s.soundEnabled);
   const hasCompletedWelcome = useSessionStore((s) => s.hasCompletedWelcome);
 

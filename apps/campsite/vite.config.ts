@@ -4,17 +4,9 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   plugins: [react()],
   base: "/",
-  build: {
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          three: ["three"],
-          r3f: ["@react-three/fiber", "@react-three/drei"],
-          vendor: ["react", "react-dom", "zustand", "gsap"],
-        },
-      },
-    },
-  },
+  // No `manualChunks`, deliberately: naming three/r3f as vendor chunks makes
+  // Rollup hoist them into the entry's static imports, off the back of the
+  // entry↔scene cycle the shared stores create.
   test: {
     globals: true,
     environment: "jsdom",

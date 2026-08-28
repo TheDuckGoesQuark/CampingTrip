@@ -1,4 +1,3 @@
-import * as THREE from "three";
 import { create } from "zustand";
 
 /**
@@ -26,6 +25,18 @@ export const useTimeStore = create<TimeState>()((set) => ({
   setProgress: (p) => set({ progress: ((p % 1) + 1) % 1 }), // wrap to 0–1
   setManual: (v) => set({ isManual: v }),
 }));
+
+// Hand-rolled rather than THREE.MathUtils: this store is read outside the
+// Canvas, and importing three puts the 3D bundle on the blog's critical path.
+export function smoothstep(t: number): number {
+  if (t <= 0) return 0;
+  if (t >= 1) return 1;
+  return t * t * (3 - 2 * t);
+}
+
+export function lerp(a: number, b: number, t: number): number {
+  return a + (b - a) * t;
+}
 
 // ─── Derived helpers (call outside React or inside selectors) ────
 
@@ -57,13 +68,13 @@ export function getNightFactor(progress: number): number {
   // Dusk transition: day→night around progress 0.46–0.54 (5 PM – 7 PM)
   if (progress < 0.06) {
     // Dawn: fading from night
-    return THREE.MathUtils.smoothstep(1 - progress / 0.06, 0, 1);
+    return smoothstep(1 - progress / 0.06);
   } else if (progress < 0.46) {
     // Full day
     return 0;
   } else if (progress < 0.54) {
     // Dusk: transitioning to night
-    return THREE.MathUtils.smoothstep((progress - 0.46) / 0.08, 0, 1);
+    return smoothstep((progress - 0.46) / 0.08);
   } else {
     // Full night
     return 1;
@@ -80,33 +91,9 @@ export function lerpKeyframes(stops: { t: number; value: number }[], t: number):
   for (let i = 0; i < stops.length - 1; i++) {
     if (t >= stops[i].t && t <= stops[i + 1].t) {
       const frac = (t - stops[i].t) / (stops[i + 1].t - stops[i].t);
-      const smooth = THREE.MathUtils.smoothstep(frac, 0, 1);
-      return THREE.MathUtils.lerp(stops[i].value, stops[i + 1].value, smooth);
+      const smooth = smoothstep(frac);
+      return lerp(stops[i].value, stops[i + 1].value, smooth);
     }
   }
   return stops[stops.length - 1].value;
-}
-
-/**
- * Same as lerpKeyframes but for THREE.Color objects.
- *
- * Pass a `target` Color to avoid per-frame allocations in render loops.
- * If no target is given a new Color is returned (convenience for one-off use).
- */
-export function lerpColorKeyframes(
-  stops: { t: number; color: THREE.Color }[],
-  t: number,
-  target?: THREE.Color,
-): THREE.Color {
-  const out = target ?? new THREE.Color();
-  if (t <= stops[0].t) return out.copy(stops[0].color);
-  if (t >= stops[stops.length - 1].t) return out.copy(stops[stops.length - 1].color);
-  for (let i = 0; i < stops.length - 1; i++) {
-    if (t >= stops[i].t && t <= stops[i + 1].t) {
-      const frac = (t - stops[i].t) / (stops[i + 1].t - stops[i].t);
-      const smooth = THREE.MathUtils.smoothstep(frac, 0, 1);
-      return out.copy(stops[i].color).lerp(stops[i + 1].color, smooth);
-    }
-  }
-  return out.copy(stops[stops.length - 1].color);
 }

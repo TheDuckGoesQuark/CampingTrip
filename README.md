@@ -24,6 +24,7 @@ See [docs/architecture.md](docs/architecture.md) for how everything fits togethe
 pnpm install                    # install all workspace dependencies
 pnpm --filter campsite dev            # run campsite locally
 pnpm --filter photobroom build:overlay  # build the PhotoBroom extension bundle
+pnpm --filter campsite models:optimise  # recompress public/models after adding one
 ```
 
 ## Workspace commands
@@ -37,6 +38,9 @@ pnpm -r exec tsc -b   # typecheck all apps
 ## Tech stack
 
 - **Frontend**: React + TypeScript + Vite, managed as a pnpm workspace
+- **3D assets**: GLB with WebP textures and Draco-compressed geometry; the
+  decoder is served from `apps/campsite/public/draco`. A newly added model is
+  put through `pnpm --filter campsite models:optimise` before it is committed.
 - **Hosting**: Caddy (auto-TLS static file server) on a single EC2 instance
 - **Infrastructure**: Terraform on AWS (EC2, S3, Route53)
 - **CI/CD**: GitHub Actions — lint, test, build, deploy on push to main

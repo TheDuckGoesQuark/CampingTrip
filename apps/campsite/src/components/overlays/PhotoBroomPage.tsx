@@ -34,19 +34,19 @@ export default function PhotoBroomPage() {
       <Section title="See it in action">
         <div className={styles.shotGrid}>
           <Shot
-            src="images/screenshots/sweep.jpg"
+            src="images/screenshots/sweep.webp"
             caption="1. Search a date, then hit “Sweep this search”."
           />
           <Shot
-            src="images/screenshots/review.jpg"
+            src="images/screenshots/review.webp"
             caption="2. Review each photo with the arrow keys — bin, skip, or keep."
           />
           <Shot
-            src="images/screenshots/confirm.jpg"
+            src="images/screenshots/confirm.webp"
             caption="3. Check the tally, then move the binned ones in one go."
           />
           <Shot
-            src="images/screenshots/done.jpg"
+            src="images/screenshots/done.webp"
             caption="4. Done — and re-reviewed photos are remembered next time."
           />
         </div>
@@ -240,6 +240,8 @@ function Shot({ src, caption }: { src: string; caption: string }) {
             className={styles.shotImg}
             src={asset(src)}
             alt={caption}
+            loading="lazy"
+            decoding="async"
             onError={() => setOk(false)}
           />
         ) : (
