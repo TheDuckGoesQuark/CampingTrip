@@ -41,14 +41,14 @@ export default function CvPage({ cv }: CvPageProps) {
               {link.label}
             </Link>
           ))}
+          <Text variant="label" tone="muted" as="span">
+            Updated {formatDate(cv.updated)}
+          </Text>
         </div>
         <div className={styles.cvActions}>
           <Button variant="default" size="sm" render={<a href={blogPaths.cvPdf} download />}>
             Download PDF
           </Button>
-          <Text variant="label" tone="muted" as="span">
-            Updated {formatDate(cv.updated)}
-          </Text>
         </div>
       </header>
 

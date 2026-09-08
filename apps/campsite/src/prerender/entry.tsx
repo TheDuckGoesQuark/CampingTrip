@@ -5,6 +5,7 @@ import { StaticRouter } from "react-router-dom";
 
 import BlogPageView from "../components/blog/BlogPageView";
 import { metaOfBlogPage, resolveBlogPage } from "../data/blogPages";
+import { cv } from "../data/cv";
 import { published } from "../data/posts";
 import { slugify } from "../data/slug";
 import { blogPaths, parseBlogPath } from "../routing/blogPaths";
@@ -15,7 +16,8 @@ import { RenderTargetContext } from "./renderTarget";
 
 import "../styles/blogProse.css";
 
-export { blogUrls, FEED_PATH, ORIGIN };
+export { blogUrls, cv, FEED_PATH, ORIGIN };
+export const CV_PATH = blogPaths.cv;
 export const CV_PDF_PATH = blogPaths.cvPdf;
 
 export interface RenderedPage {

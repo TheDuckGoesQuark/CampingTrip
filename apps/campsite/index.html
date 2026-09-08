@@ -39,7 +39,9 @@
           size: A4;
           margin: 16mm;
         }
-        body > :not(#reader) {
+        /* The reader sits inside the brand provider's wrapper, so keep the
+           branch that holds it and drop the rest: the app root, and any portal. */
+        body > :not(:has(#reader)) {
           display: none;
         }
         html.js #reader {
@@ -48,6 +50,13 @@
         #reader {
           max-width: none;
           padding: 0;
+        }
+        /* One paper-coloured page, not the site's layered greens: every box
+           around the reader goes white. `:has` carries the id's weight, so this
+           outranks a wrapper's own class. */
+        html,
+        :has(#reader) {
+          background: #fff;
         }
       }
     </style>
