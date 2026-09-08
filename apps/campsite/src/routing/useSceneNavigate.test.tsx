@@ -95,6 +95,15 @@ describe("useSceneNavigate", () => {
     expect(path).toBe("/");
   });
 
+  it("puts a flying object back rather than stranding it in the visitor's face", () => {
+    const view = mount();
+    flush(() => go(linkFor("laptop")));
+    expect(useSceneStore.getState().flyingTo).toBe("laptop");
+
+    view.unmount();
+    expect(useSceneStore.getState().flyingTo).toBeNull();
+  });
+
   it("skips the flight and commits straight away under reduced motion", () => {
     window.matchMedia = ((q: string) =>
       ({

@@ -46,6 +46,17 @@ runs 1000ms.
 - **Selectors, not three copies of the expression.** `laptopUp` is read by
   `Laptop`, `CameraController` and the tests; a flight only some of them knew
   about would tear.
+- **Write order is load-bearing in `applyOverlayState`.** Focus lands before the
+  flight clears. Clearing first leaves one frame where the object is neither
+  flying nor focused, and the mobile camera treats that frame as the laptop
+  returning to the desk — it fires its restore tween, and the focus write
+  immediately after saves the half-restored angle over the real one, so leaving
+  CatOS put the visitor back facing the middle of the tent rather than the
+  laptop. Covered by a test that records `laptopUp` across an arrival and
+  rejects any `false`.
+- **An abandoned flight is put back.** `cancelPending` clears `flyingTo`, so a
+  flight that is superseded or unmounted cannot leave its object in the
+  visitor's face with no overlay to explain it.
 - **Clearing the desktop on exit is what made the exit ugly.** The takeover fades
   over 150ms with its children still mounted, so the window vanishing was the
   store emptying underneath a frame still on screen.

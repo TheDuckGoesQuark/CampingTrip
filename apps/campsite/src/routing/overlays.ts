@@ -99,10 +99,13 @@ export function applyOverlayState(kind: OverlayKind | null, blogPath: string | n
   const scene = useSceneStore.getState();
   const wasInCatos = scene.laptopFocused;
 
-  // Arriving is the end of any flight, including one aimed somewhere else.
-  scene.setFlyingTo(null);
+  // Focus first, flight second. Between the two writes every subscriber sees a
+  // state, and clearing the flight before the focus lands would show one where
+  // the object is neither flying nor focused — a frame in which anything reading
+  // `laptopUp` believes it has been put back on the desk.
   scene.setLaptopFocused(kind === "laptop");
   scene.setNotepadFocused(kind === "notepad");
+  scene.setFlyingTo(null);
   scene.setFocusTarget("default");
   applyMusic(kind);
 

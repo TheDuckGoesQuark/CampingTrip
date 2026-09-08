@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { useMusicStore } from "../store/musicStore";
-import { useSceneStore } from "../store/sceneStore";
+import { laptopUp, useSceneStore } from "../store/sceneStore";
 import { applyOverlayState, closeOverlays, OVERLAY_LINKS } from "./overlays";
 import { WINDOW_BROWSER } from "./windows";
 
@@ -36,6 +36,23 @@ describe("applyOverlayState", () => {
     const s = useSceneStore.getState();
     expect(s.notepadFocused).toBe(true);
     expect(s.laptopFocused).toBe(false);
+  });
+
+  it("never lets a landing laptop look like it went back to the desk", () => {
+    // The camera saves where the visitor was looking when the laptop leaves the
+    // desk and restores it when the laptop returns. A single frame of "neither
+    // flying nor focused" during arrival would fire that restore, and the save
+    // that follows would overwrite the real angle with a centred one.
+    useSceneStore.setState({ flyingTo: "laptop", laptopFocused: false });
+    const seen: boolean[] = [];
+    const stop = useSceneStore.subscribe((st) => seen.push(laptopUp(st)));
+
+    applyOverlayState("laptop", "/blog/index.html");
+    stop();
+
+    expect(seen).not.toContain(false);
+    expect(useSceneStore.getState().flyingTo).toBeNull();
+    expect(useSceneStore.getState().laptopFocused).toBe(true);
   });
 
   it("leaves the desktop standing on the way out, so the fade has something to fade", () => {

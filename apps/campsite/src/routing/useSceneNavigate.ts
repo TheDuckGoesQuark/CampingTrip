@@ -35,6 +35,9 @@ export function useSceneNavigate(): (link: OverlayLink) => void {
       window.clearTimeout(pending.current);
       pending.current = null;
     }
+    // A flight nobody is going to land has to be put back, or its object stays
+    // in the visitor's face with no overlay to explain why.
+    useSceneStore.getState().setFlyingTo(null);
   }, []);
 
   useEffect(() => cancelPending, [cancelPending]);
