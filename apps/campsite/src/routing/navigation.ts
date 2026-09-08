@@ -1,5 +1,6 @@
+import type { OverlayKind } from "../types/scene";
 import { blogPaths } from "./blogPaths";
-import { OVERLAY_LINKS, type OverlayKind, type OverlayLink } from "./overlays";
+import { OVERLAY_LINKS, type OverlayLink } from "./overlays";
 
 /**
  * The single source of overlay URL strings. Build paths here rather than

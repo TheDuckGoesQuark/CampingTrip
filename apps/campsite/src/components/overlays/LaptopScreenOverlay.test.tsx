@@ -61,6 +61,12 @@ describe("LaptopScreenOverlay (CatOS)", () => {
     expect(screen.queryByRole("dialog")).toBeNull();
   });
 
+  it("stays off screen while the laptop is still flying, so the flight shows", () => {
+    useSceneStore.setState({ flyingTo: "laptop" });
+    renderOverlay();
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
+
   it("mounts the CatOS takeover dialog when focused", () => {
     useSceneStore.setState({ laptopFocused: true });
     renderOverlay();

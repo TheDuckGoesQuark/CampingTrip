@@ -1,11 +1,9 @@
 import { musicPlayer } from "../audio/musicPlayer";
 import { useMusicStore } from "../store/musicStore";
 import { useSceneStore } from "../store/sceneStore";
+import type { OverlayKind } from "../types/scene";
 import { blogPaths, isBrowserPath } from "./blogPaths";
 import { windowIdFor } from "./windows";
-
-/** Which overlay a route opens. Exactly one is open at a time. */
-export type OverlayKind = "laptop" | "notepad" | "music";
 
 export interface OverlayLink {
   /**
@@ -26,8 +24,15 @@ export interface OverlayLink {
   objectId: string;
   /** The overlay this route opens. */
   kind: OverlayKind;
-  /** How long an in-app click holds the URL, in ms — roughly the open animation. */
+  /** How long the object's flight takes, in ms — see `coversScene`. */
   animMs: number;
+  /**
+   * Whether opening this hides the tent behind it. A covering overlay has to
+   * wait out the flight before it appears, or it draws over the animation it
+   * was opened by; one that leaves the tent visible opens at once and holds the
+   * URL instead, so the address bar still reads as arrival.
+   */
+  coversScene: boolean;
   /**
    * Whether the tab bar promotes this place. The notepad is still openable — by
    * its object in the tent, and by its URL — it just isn't worth a permanent
@@ -48,7 +53,8 @@ export const OVERLAY_LINKS: OverlayLink[] = [
     label: "Blog",
     objectId: "laptop",
     kind: "laptop",
-    animMs: 900,
+    animMs: 1000,
+    coversScene: true,
     inTabBar: true,
   },
   {
@@ -57,6 +63,7 @@ export const OVERLAY_LINKS: OverlayLink[] = [
     objectId: "shure-mic",
     kind: "music",
     animMs: 250,
+    coversScene: false,
     inTabBar: true,
   },
   {
@@ -64,7 +71,8 @@ export const OVERLAY_LINKS: OverlayLink[] = [
     label: "Notes",
     objectId: "notepad",
     kind: "notepad",
-    animMs: 600,
+    animMs: 900,
+    coversScene: true,
     inTabBar: false,
   },
 ];
@@ -78,25 +86,34 @@ export function destinationOf(link: OverlayLink): string {
  * Declare the scene's complete overlay state. Opens `kind` and closes the rest,
  * so it fully describes "what a route means". Idempotent — routes call it on
  * mount (URL is the source of truth), and an in-app click calls it once up front
- * to start the open animation before the URL commits. `null` closes everything.
+ * to start the open animation before the URL commits. `null` closes every overlay.
+ *
+ * A browsing session is discarded when the next one starts, not when the last
+ * one ends: CatOS fades out over its own transition, and clearing its windows on
+ * the way out would empty the desktop in front of the visitor.
  *
  * All overlays keep the default camera framing: the laptop/notepad "open" look is
  * driven by their own model/overlay animation, not a camera preset.
  */
 export function applyOverlayState(kind: OverlayKind | null, blogPath: string | null = null): void {
   const scene = useSceneStore.getState();
+  const wasInCatos = scene.laptopFocused;
 
+  // Arriving is the end of any flight, including one aimed somewhere else.
+  scene.setFlyingTo(null);
   scene.setLaptopFocused(kind === "laptop");
   scene.setNotepadFocused(kind === "notepad");
   scene.setFocusTarget("default");
   applyMusic(kind);
 
-  if (kind !== "laptop") {
-    // Leaving the laptop ends the session outright.
+  if (kind !== "laptop") return;
+
+  if (!wasInCatos) {
+    // Arriving from outside CatOS starts a new session, so whatever the last one
+    // left on the desktop does not come back with it.
     scene.closeAllWindows();
     scene.closeAllBlogPaths();
     scene.setBrowserPath(null);
-    return;
   }
 
   if (!blogPath) {

@@ -4,6 +4,65 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## The laptop flies to the viewer before CatOS covers it
+
+**Date**: 2026-09-08
+
+**What was done**: opening the blog landed on an empty CatOS desktop a beat
+before it filled, and the laptop's flight to the camera was never visible at all.
+Both came from `laptopFocused` doing two jobs — driving the GSAP flight and being
+the takeover's `open` — so the overlay was opaque within 150ms of a flight that
+runs 1000ms.
+
+- **`flyingTo` splits the two.** A new scene-store field naming the object on its
+  way to the viewer, with `laptopUp` / `notepadUp` selectors for "in its focus
+  pose, or heading there". The 3D objects and the mobile camera centring read the
+  selector; the takeover still reads `laptopFocused` alone.
+- **`OverlayLink.coversScene` decides which wait applies.** A covering overlay
+  flies first and opens on arrival; one that leaves the tent visible opens at once
+  and holds the URL, as the music player does. `animMs` is the flight's own
+  length again — 1000 for the laptop, 900 for the notepad, both read off the
+  GSAP tweens.
+- **The window is up the moment CatOS is**, because the URL commits before the
+  overlay rather than after it.
+- **A browsing session is discarded on the way in, not on the way out**, so the
+  desktop is still standing while the takeover fades out.
+- **"Back to tent" moved into the menu bar**, since it was gated on an empty
+  desktop and a window is now always open. Its Esc hint renders only on an empty
+  desktop, which is when Escape leaves rather than closing a window.
+
+**Key decisions**:
+
+- **A completion callback would lose to the timer it was meant to replace.** The
+  hold is set to the flight's own length, so `onComplete` could at best tie with
+  it on a visible tab, and in a backgrounded one it never fires at all — the
+  ticker driving it is rAF, which the browser pauses. The earlier attempt only
+  looked slower because the deadline had been pushed clear of the animation so
+  the callback could win a race that does not need winning.
+- **`OverlayKind` moved to `types/scene.ts`.** The store needs it to type
+  `flyingTo`, and importing it from `routing/overlays` — even as a type — is a
+  cycle `depcruise` rejects. It sits beside `FocusTarget`, which is the same kind
+  of fact.
+- **Selectors, not three copies of the expression.** `laptopUp` is read by
+  `Laptop`, `CameraController` and the tests; a flight only some of them knew
+  about would tear.
+- **Clearing the desktop on exit is what made the exit ugly.** The takeover fades
+  over 150ms with its children still mounted, so the window vanishing was the
+  store emptying underneath a frame still on screen.
+
+**Deferred**: camera input is not frozen during the flight, so mouse parallax
+still moves the tent under a laptop on its way up. Left alone deliberately — it
+reads as alive rather than wrong.
+
+**Verification**: the look was confirmed by hand. It could not be confirmed any
+other way — the tent renders blank in the Claude Code browser pane (pre-existing)
+and the tab bar gates on `sceneReady`, so the in-app journey cannot be driven
+there at all. What is covered by tests is the state machine
+(`useSceneNavigate.test.tsx`), the takeover staying down mid-flight
+(`LaptopScreenOverlay.test.tsx`) and the session reset (`overlays.test.ts`).
+
+---
+
 ## The rain became opt-in, and lost its second owner
 
 **Date**: 2026-09-08

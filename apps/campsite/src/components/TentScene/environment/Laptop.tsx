@@ -6,7 +6,7 @@ import * as THREE from "three";
 import { useReducedMotion } from "../../../hooks/useReducedMotion";
 import { requestOpen } from "../../../routing/navigation";
 import { useInteractionStore } from "../../../store/interactionStore";
-import { useSceneStore } from "../../../store/sceneStore";
+import { laptopUp, useSceneStore } from "../../../store/sceneStore";
 import { asset, DRACO_PATH } from "../../../utils/assetPath";
 import SceneLabel from "../SceneLabel";
 
@@ -59,6 +59,7 @@ export default function Laptop({ screenOn, hint = false }: Props) {
     { mat: THREE.MeshStandardMaterial; color: THREE.Color; intensity: number }[]
   >([]);
   const laptopFocused = useSceneStore((s) => s.laptopFocused);
+  const isUp = useSceneStore(laptopUp);
 
   // Interaction store for "projects" logo hover/focus/label
   const hoveredId = useInteractionStore((s) => s.hoveredId);
@@ -219,7 +220,7 @@ export default function Laptop({ screenOn, hint = false }: Props) {
     if (!groupRef.current) return;
     const g = groupRef.current;
 
-    if (laptopFocused) {
+    if (isUp) {
       gsap.to(g.position, {
         x: FOCUS_POS[0],
         y: FOCUS_POS[1],
@@ -264,7 +265,7 @@ export default function Laptop({ screenOn, hint = false }: Props) {
         ease: "power2.inOut",
       });
     }
-  }, [laptopFocused]);
+  }, [isUp]);
 
   // Opening the blog is a navigation, not a direct state change. The laptop lives
   // inside the R3F Canvas (no router access), so it asks to open the blog through

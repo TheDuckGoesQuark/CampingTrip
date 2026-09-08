@@ -36,8 +36,14 @@ describe("applyOverlayState", () => {
     const s = useSceneStore.getState();
     expect(s.notepadFocused).toBe(true);
     expect(s.laptopFocused).toBe(false);
-    expect(s.browserPath).toBeNull();
-    expect(s.openWindows).toEqual([]);
+  });
+
+  it("leaves the desktop standing on the way out, so the fade has something to fade", () => {
+    applyOverlayState("laptop", "/blog/index.html");
+    applyOverlayState(null);
+    const s = useSceneStore.getState();
+    expect(s.browserPath).toBe("/blog/index.html");
+    expect(s.openWindows).toEqual([WINDOW_BROWSER]);
   });
 
   it("gives the routed path a tab, so a deep link arrives with one open", () => {
@@ -117,10 +123,13 @@ describe("applyOverlayState", () => {
     });
   });
 
-  it("leaving the blog entirely discards the strip", () => {
+  it("discards the strip when the next visit starts, not when the last one ends", () => {
     applyOverlayState("laptop", "/blog/tags/music.html");
     applyOverlayState("notepad");
-    expect(useSceneStore.getState().openBlogPaths).toEqual([]);
+    expect(useSceneStore.getState().openBlogPaths).toEqual(["/blog/tags/music.html"]);
+
+    applyOverlayState("laptop", "/blog/index.html");
+    expect(useSceneStore.getState().openBlogPaths).toEqual(["/blog/index.html"]);
   });
 
   it("opens the music player", () => {

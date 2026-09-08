@@ -1,9 +1,9 @@
 import { create } from "zustand";
 
 import { frontWindow } from "../routing/windows";
-import type { TentDoorState, SceneName, FocusTarget } from "../types/scene";
+import type { TentDoorState, SceneName, FocusTarget, OverlayKind } from "../types/scene";
 
-interface SceneState {
+export interface SceneState {
   wakeUpDone: boolean;
   /** True once the loading screen has finished — i.e. the user is on the tent view. */
   sceneReady: boolean;
@@ -13,6 +13,13 @@ interface SceneState {
   lanternOn: boolean;
   laptopFocused: boolean;
   notepadFocused: boolean;
+  /**
+   * The object flying towards the viewer, before its overlay is on screen. An
+   * overlay that covers the tent has to wait for its object to land, or the
+   * flight happens behind it; `laptopFocused` alone cannot say "moving, but not
+   * yet arrived".
+   */
+  flyingTo: OverlayKind | null;
   /**
    * Open windows on the CatOS desktop, back to front — the last is in front, and
    * the URL names it. Ids are `WINDOW_BROWSER` or a desktop item's own path.
@@ -39,6 +46,7 @@ interface SceneState {
   toggleLantern: () => void;
   setLaptopFocused: (f: boolean) => void;
   setNotepadFocused: (f: boolean) => void;
+  setFlyingTo: (k: OverlayKind | null) => void;
   setBrowserPath: (p: string | null) => void;
   /** Opens a window if absent, and raises it either way. Idempotent. */
   raiseWindow: (id: string) => void;
@@ -52,6 +60,15 @@ interface SceneState {
   setFocusTarget: (t: FocusTarget) => void;
 }
 
+/**
+ * Whether the laptop belongs in its focus pose — already there, or on its way.
+ * Selectors rather than the raw flags because three places drive the same pose
+ * off it, and a flight that only some of them knew about would tear.
+ */
+export const laptopUp = (s: SceneState): boolean => s.laptopFocused || s.flyingTo === "laptop";
+
+export const notepadUp = (s: SceneState): boolean => s.notepadFocused || s.flyingTo === "notepad";
+
 export const useSceneStore = create<SceneState>()((set) => ({
   wakeUpDone: false,
   sceneReady: false,
@@ -60,6 +77,7 @@ export const useSceneStore = create<SceneState>()((set) => ({
   lanternOn: true,
   laptopFocused: false,
   notepadFocused: false,
+  flyingTo: null,
   openWindows: [],
   browserPath: null,
   openBlogPaths: [],
@@ -72,6 +90,7 @@ export const useSceneStore = create<SceneState>()((set) => ({
   toggleLantern: () => set((state) => ({ lanternOn: !state.lanternOn })),
   setLaptopFocused: (f) => set({ laptopFocused: f }),
   setNotepadFocused: (f) => set({ notepadFocused: f }),
+  setFlyingTo: (k) => set({ flyingTo: k }),
   setBrowserPath: (p) => set({ browserPath: p }),
   raiseWindow: (id) =>
     set((state) =>

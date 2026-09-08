@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { useSceneStore } from "../store/sceneStore";
 import { applyOverlayState, destinationOf, type OverlayLink } from "./overlays";
 
 function prefersReducedMotion(): boolean {
@@ -12,16 +13,18 @@ function prefersReducedMotion(): boolean {
 }
 
 /**
- * Fly-then-commit navigation for the overlay tabs and the 3D objects. Opens the
- * overlay right away (starting its animation), then updates the URL once the
- * animation has had time to play, so the URL reflects arrival rather than intent.
- * Reduced motion commits immediately. Deep links don't use this — the route
- * opens the overlay on mount instead.
+ * Fly-then-commit navigation for the overlay tabs and the 3D objects. Either way
+ * the URL commits once the object's flight has had time to play, so it reflects
+ * arrival rather than intent; what differs is whether the overlay waits with it.
+ * A `coversScene` overlay does, or it would draw over the flight that opened it;
+ * one that leaves the tent visible opens straight away. Reduced motion skips
+ * both waits. Deep links don't use this — the route opens the overlay on mount.
  *
- * The hold is a timer rather than the animation's own completion callback: the
+ * The wait is a timer rather than the animation's own completion callback: the
  * objects animate inside the Canvas, and a hidden tab pauses the rAF driving
- * them, so a flight can simply never report finishing. A timer is approximate
- * but it always fires.
+ * them, so a flight can simply never report finishing. Since the timer is set to
+ * the flight's own length, a callback could only ever tie with it — and would
+ * lose outright in a backgrounded tab.
  */
 export function useSceneNavigate(): (link: OverlayLink) => void {
   const navigate = useNavigate();
@@ -41,13 +44,22 @@ export function useSceneNavigate(): (link: OverlayLink) => void {
       // A second journey supersedes the first, so an abandoned flight doesn't
       // land its URL over the top of wherever the visitor actually went.
       cancelPending();
-      applyOverlayState(link.kind);
 
       const destination = destinationOf(link);
       if (prefersReducedMotion()) {
+        applyOverlayState(link.kind);
         navigate(destination);
         return;
       }
+
+      if (link.coversScene) {
+        // Only the object moves for now. The route puts the overlay up on
+        // arrival, by which time the window it holds is already open.
+        useSceneStore.getState().setFlyingTo(link.kind);
+      } else {
+        applyOverlayState(link.kind);
+      }
+
       pending.current = window.setTimeout(() => {
         pending.current = null;
         navigate(destination);

@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 
 import { mobileInput } from "../../mobileInput";
-import { useSceneStore } from "../../store/sceneStore";
+import { laptopUp, useSceneStore } from "../../store/sceneStore";
 import type { FocusTarget } from "../../types/scene";
 import { isMobile } from "../../utils/deviceDetect";
 
@@ -158,9 +158,11 @@ export default function CameraController() {
 
   // Laptop focus: animate camera to center on open, restore on close
   useEffect(() => {
-    let prev = useSceneStore.getState().laptopFocused;
+    let prev = laptopUp(useSceneStore.getState());
     return useSceneStore.subscribe((state) => {
-      const focused = state.laptopFocused;
+      // The flight, not the overlay: on mobile the laptop flies to wherever the
+      // camera is pointing, so the two have to start together.
+      const focused = laptopUp(state);
       if (focused === prev) return;
       prev = focused;
 

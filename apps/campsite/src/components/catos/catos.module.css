@@ -32,11 +32,21 @@
   opacity: 0.7;
 }
 
-.backToTent {
-  position: absolute;
-  bottom: var(--space-l);
-  right: var(--space-l);
-  z-index: 5;
+/* A menu-bar item, not a button with chrome: the bar is one line tall and its
+   other entries are bare text, so a frame would read as a foreign object. */
+.menuAction {
+  appearance: none;
+  border: 0;
+  padding: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.7;
+}
+.menuAction:hover,
+.menuAction:focus-visible {
+  opacity: 1;
 }
 
 .escHint {
