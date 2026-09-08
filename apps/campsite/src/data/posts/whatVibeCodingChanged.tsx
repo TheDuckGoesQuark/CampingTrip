@@ -1,3 +1,4 @@
+import { Island } from "../../components/blog/Island";
 import type { Post } from "../../types/post";
 
 export const whatVibeCodingChanged: Post = {
@@ -26,6 +27,15 @@ export const whatVibeCodingChanged: Post = {
         bin with incriminating things in it. None of these are good ideas by any measure I'd defend
         in a design review. All of them are the reason anyone stays longer than nine seconds.
       </p>
+      <p>Here is one that took about four minutes. It counts.</p>
+      <Island
+        load={() => import("../../components/interactive/Counter")}
+        fallback={
+          <p>
+            <em>There's a button here that counts your clicks. It only works in the tent.</em>
+          </p>
+        }
+      />
       <p>[DRAFT — the closing beat: what you'd tell someone who hasn't tried it yet.]</p>
     </>
   ),

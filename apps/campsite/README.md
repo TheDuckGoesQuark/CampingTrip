@@ -16,6 +16,27 @@ pnpm --filter campsite dev
 - Zustand — state management
 - Web Audio API — synthesised rain, campfire, and typing sounds
 
+## The blog without JavaScript
+
+The build writes one HTML file per blog URL into `dist`, rendered by the same
+components the CatOS browser uses, so the page reads without running the app.
+`scripts/prerender.mjs` does it after `vite build`, from an SSR bundle of
+`src/prerender/entry.tsx`; Caddy serves the file when it exists and the SPA
+shell otherwise. A browser with JavaScript hides the prerendered `#reader` and
+draws the same content inside the tent.
+
+Rules this puts on anything rendered inside the blog window:
+
+- It must render in Node: no `window`, `document` or `localStorage` during
+  render. Effects are fine, since a static render never runs them.
+- Something interactive goes through `Island` with a fallback that is real
+  content (a still, a caption, a sentence), because for a crawler the fallback
+  is the whole thing. The module behind it is code-split and never loaded by
+  the static render.
+- A new kind of page needs a `metaOfBlogPage` case and a `blogUrls()` entry as
+  well as its `BlogPage` variant. The test over `blogUrls()` renders every URL,
+  which catches a page that exists but cannot be prerendered.
+
 ## 3D model credits
 
 All models are used under CC-BY licenses. Attribution is required — please keep these credits intact.

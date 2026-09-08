@@ -30,6 +30,16 @@ into `extensions/photobroom/overlay.js`.
 > `api.jordanscamp.site` subdomain were torn down to cut cost. See
 > [Adding a backend later](#adding-a-backend-later).
 
+### Static SPAs, with the blog prerendered
+
+The campsite is a single-page app, and the tent itself only exists once
+JavaScript runs. Everything under `/blog`, though, is also written out at build
+time as plain HTML — one file per URL, plus a sitemap, robots and an Atom feed —
+by `apps/campsite/scripts/prerender.mjs`. Caddy's `try_files {path} {path}.html
+/index.html` serves a prerendered file when one exists and the shell otherwise,
+so search crawlers, link unfurlers and AI bots read the same content a person
+sees in the CatOS browser, without a second copy of it to keep in sync.
+
 ## Repository structure
 
 ```

@@ -4,6 +4,50 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## The blog reads without JavaScript
+
+**Date**: 2026-09-08
+
+**What was done**: every URL under `/blog` was the same SPA shell — the tent's
+title and description, an empty `#root`, and a noscript block about a cat. Google
+renders JavaScript eventually; link unfurlers and AI crawlers do not, so a shared
+post link previewed as a campsite and read as nothing. The build now writes one
+HTML file per blog URL, rendered by the same components the CatOS browser uses.
+
+- **`scripts/prerender.mjs`** runs after the client build and an SSR build of
+  `src/prerender/entry.tsx`. It uses the built `dist/index.html` as its template
+  (so the fingerprinted asset links are right), fills the `prerender:head` and
+  `prerender:html` markers per page, and also writes `sitemap.xml`, `robots.txt`
+  and an Atom `feed.xml`. The landing page at `/` gets a text version of the tent
+  in place of the old noscript block.
+- **`blogUrls()`** (`src/routing/blogUrls.ts`) enumerates every page from the data
+  modules; a test asserts each one parses, resolves and renders. A new post is in
+  the sitemap, the feed and the prerender when it is in `posts/index.ts`.
+- **`metaOfBlogPage`** sits beside `titleOfBlogPage` and gives each page its
+  description and Open Graph type; `src/prerender/head.ts` turns that into the
+  head tags plus a schema.org `BlogPosting` or `WebPage` block.
+- **`Island`** (`src/components/blog/Island.tsx`) is how a post holds something
+  interactive: a dynamic `import()` plus a fallback that is real content. The
+  static render shows the fallback and never loads the module; the live render
+  code-splits it. `Counter` in "What vibe coding actually changed" is the proof.
+- The shell hides `#reader` once JavaScript has run (`html.js`), so a browser
+  never shows the page twice. The SPA does not hydrate the reader: it mounts fresh
+  into `#root`, which sidesteps every hydration-mismatch bug at the cost of
+  shipping a post's prose twice to a JavaScript user.
+- Caddy's `try_files` also tries `{path}.html`, so a link without the extension
+  still gets the file, and the `no-cache` header covers every `*.html`.
+
+**Key decisions**: prerender rather than dynamic rendering or a framework move —
+the content was already typed data with TSX bodies and the URL scheme already
+looked like files, so the only missing piece was writing them. Humans and bots
+receive identical HTML, so this is progressive enhancement, not cloaking.
+
+**Deferred**: a `draft` flag (all three seeded posts are prerendered and indexed
+with their `[DRAFT` beats); the CV page and the "Work with me / Get to know me"
+toggle as two prerendered URLs; a PDF from the same CV data.
+
+---
+
 ## A performance pass over the whole site
 
 **Date**: 2026-08-27

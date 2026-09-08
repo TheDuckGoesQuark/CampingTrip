@@ -20,3 +20,6 @@ inspect-*.mjs
 
 # PhotoBroom built extension bundle (run: pnpm --filter photobroom build:overlay)
 extensions/photobroom/overlay.js
+
+# Prerender SSR bundle (pnpm --filter campsite build)
+dist-ssr

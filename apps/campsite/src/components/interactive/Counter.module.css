@@ -1,0 +1,10 @@
+.counter {
+  display: flex;
+  align-items: center;
+  gap: var(--space-m);
+  margin: var(--space-l) 0;
+  padding: var(--space-m) var(--space-l);
+  border: 2px solid var(--brand-border-strong);
+  background: var(--brand-surface-sunken);
+  box-shadow: var(--shadow-hard-1);
+}

@@ -126,3 +126,63 @@ export function pathForLegacySlug(slug: string): string | null {
   if (bySlug(bookmarks, slug)) return blogPaths.tool(slug);
   return null;
 }
+
+export interface PageMeta {
+  /** Without the site name; `headTags` appends it. */
+  title: string;
+  description: string;
+  kind: "article" | "website";
+  published?: string;
+}
+
+export const SITE = "Jordan's Camp";
+const MAX_DESCRIPTION = 160;
+
+function summarise(text: string): string {
+  const first = text.split("\n\n")[0].trim();
+  if (first.length <= MAX_DESCRIPTION) return first;
+  const cut = first.slice(0, MAX_DESCRIPTION - 1);
+  return `${cut.slice(0, cut.lastIndexOf(" "))}…`;
+}
+
+export function metaOfBlogPage(page: BrowserPage): PageMeta {
+  switch (page.kind) {
+    case "home":
+      return {
+        title: SITE,
+        description:
+          "Jordan Mackie's personal site: what I've built, what I use, and a blog about whatever I've been fixated on lately.",
+        kind: "website",
+      };
+    case "archive":
+      return { title: "All posts", description: "Every post, newest first.", kind: "website" };
+    case "post":
+      return {
+        title: page.post.title,
+        description: page.post.standfirst,
+        kind: "article",
+        published: page.post.date,
+      };
+    case "tag":
+      return {
+        title: `Tag: ${page.tag}`,
+        description: `Posts tagged "${page.tag}".`,
+        kind: "website",
+      };
+    case "project":
+      return {
+        title: page.project.title,
+        description:
+          typeof page.project.description === "string"
+            ? summarise(page.project.description)
+            : `${page.project.title}, a project by Jordan Mackie.`,
+        kind: "website",
+      };
+    case "tool":
+      return {
+        title: page.bookmark.title,
+        description: summarise(page.bookmark.blurb),
+        kind: "website",
+      };
+  }
+}

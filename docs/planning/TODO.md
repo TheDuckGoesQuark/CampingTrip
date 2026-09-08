@@ -28,6 +28,23 @@ already scales up on hover, so a slow breath on its scale is the obvious move.
 "Cat Sweeper" is in the design and is the one desktop item that needs logic
 rather than content. Everything else in the junk drawer is built.
 
+### Blog — the CV, and a way to land on it
+
+The blog is prerendered, so a page can now be read by a recruiter's tooling as
+well as a person. Model the CV as data (`cv.ts`: roles, dates, skills, links)
+and render it three ways from that one module: a CatOS page at its own URL, the
+prerendered HTML with a `schema.org/Person` block, and a print stylesheet for a
+PDF. The "Work with me? / Get to know me?" toggle is a navigation between that
+URL and `/blog/index.html`, not a query parameter — on a static host the query
+string cannot change which file is served, and two URLs give a shared link its
+own title and preview card for free.
+
+### Blog — a draft flag
+
+All three seeded posts are prerendered, indexed and in the feed with their
+`[DRAFT — …]` beats. A `draft: true` on `Post` should keep a post out of
+`blogUrls()` and the feed while CatOS still shows it for previewing.
+
 ### Blog — content to write
 
 - Three posts are seeded with a real standfirst and opening paragraph and a
