@@ -9,3 +9,6 @@ const authored: Post[] = [whatVibeCodingChanged, growAndSystems, recordsForBuild
 
 /** Every post, newest first — the order every feed shows them in, so no caller sorts. */
 export const posts: Post[] = [...authored].sort((a, b) => b.date.localeCompare(a.date));
+
+/** The posts the world outside the tent is told about. Same order as `posts`. */
+export const published: Post[] = posts.filter((post) => !post.draft);

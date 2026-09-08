@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import { resolveBlogPage } from "../data/blogPages";
-import { blogPathFor, parseBlogPath } from "./blogPaths";
+import { posts, published } from "../data/posts";
+import { slugify } from "../data/slug";
+import { blogPathFor, blogPaths, parseBlogPath } from "./blogPaths";
 import { blogUrls } from "./blogUrls";
 
 describe("blogUrls", () => {
@@ -16,9 +18,23 @@ describe("blogUrls", () => {
     }
   });
 
-  it("names every kind of browser page and no desktop item", () => {
+  it("names every kind of browser page that has published content, and no desktop item", () => {
     const kinds = new Set(urls.map((url) => parseBlogPath(url)!.kind));
-    expect(kinds).toEqual(new Set(["home", "archive", "post", "tag", "project", "tool"]));
+    const expected = new Set(["home", "archive", "project", "tool"]);
+    if (published.length > 0) expected.add("post").add("tag");
+    expect(kinds).toEqual(expected);
+  });
+
+  it("leaves drafts out, and any tag only drafts carry", () => {
+    const drafts = posts.filter((post) => post.draft);
+    expect(drafts.length).toBeGreaterThan(0);
+    for (const draft of drafts) {
+      expect(urls).not.toContain(blogPaths.post(slugify(draft.title)));
+    }
+    const publishedTags = new Set(published.flatMap((post) => post.tags));
+    for (const tag of drafts.flatMap((post) => post.tags)) {
+      if (!publishedTags.has(tag)) expect(urls).not.toContain(blogPaths.tag(tag));
+    }
   });
 
   it("has no duplicates", () => {
