@@ -20,6 +20,38 @@ async function textOf(pdf) {
   return collapse(contents.flatMap((content) => content.items.map((item) => item.str)).join(" "));
 }
 
+/**
+ * Without scripts the reader is a document, not a scene, so the viewport is its
+ * own: it scrolls, and it says so. A stylesheet that locks `overflow` or hides
+ * the bar leaves a reader stranded at the fold, which prints fine and so would
+ * otherwise reach a stranger's browser unnoticed.
+ */
+async function checkReaderScrolls(page) {
+  const scroller = await page.evaluate(() => {
+    const html = document.documentElement;
+    const rules = [...document.styleSheets].flatMap((sheet) => {
+      try {
+        return [...sheet.cssRules];
+      } catch {
+        return [];
+      }
+    });
+    const hidden = rules.some((rule) => {
+      const selector = rule.selectorText;
+      if (!selector?.includes("::-webkit-scrollbar")) return false;
+      const target = selector.replace(/::-webkit-scrollbar.*$/, "").trim();
+      return target === "" || html.matches(target) || document.body.matches(target);
+    });
+    const style = getComputedStyle(html);
+    return {
+      clipped: style.overflowY === "hidden",
+      barless: hidden || style.scrollbarWidth === "none",
+    };
+  });
+  if (scroller.clipped) throw new Error(`${CV_PATH} clips its own overflow without scripts`);
+  if (scroller.barless) throw new Error(`${CV_PATH} hides the document scrollbar without scripts`);
+}
+
 /** A print stylesheet change can hide the reader; fail here, not on someone's desk. */
 async function check(pdf) {
   const text = await textOf(pdf);
@@ -48,6 +80,8 @@ try {
   const url = new URL(CV_PATH, origin).href;
   const response = await page.goto(url, { waitUntil: "networkidle" });
   if (!response?.ok()) throw new Error(`${url} answered ${response?.status() ?? "nothing"}`);
+
+  await checkReaderScrolls(page);
 
   const pdf = await page.pdf({ format: "A4", printBackground: true, preferCSSPageSize: true });
   await check(pdf);

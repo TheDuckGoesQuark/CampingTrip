@@ -8,24 +8,27 @@
   padding: 0;
 }
 
-html,
-body,
-#root {
+/* The scene is a fixed viewport with everything drawn inside it. A prerendered
+   page reaching a browser that never ran the shell's marker script is an
+   ordinary document instead, so it keeps the viewport it was given: it
+   scrolls, and pull-to-refresh is its own business. */
+html.js,
+html.js body,
+html.js #root {
   width: 100%;
   height: 100%;
   overflow: hidden;
   background: #0a0612;
 }
 
+html.js body {
+  overscroll-behavior: none;
+}
+
 body {
   font-family: var(--font-body);
   color: var(--color-text);
   -webkit-font-smoothing: antialiased;
-}
-
-/* Prevent pull-to-refresh on mobile */
-body {
-  overscroll-behavior: none;
 }
 
 /* Disable blue tap highlight on mobile */
@@ -36,9 +39,4 @@ body {
 /* Allow touch-drag for camera control on the canvas */
 canvas {
   touch-action: none;
-}
-
-/* Hide scrollbar globally — everything is in-scene */
-::-webkit-scrollbar {
-  display: none;
 }

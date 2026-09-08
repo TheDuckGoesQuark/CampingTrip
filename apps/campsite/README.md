@@ -38,6 +38,15 @@ Rules this puts on anything rendered inside the blog window:
   which catches a page that exists but cannot be prerendered.
 - A post with `draft: true` is shown in CatOS but left out of `blogUrls()` and
   the feed, so nothing outside the tent indexes it.
+- The app's global stylesheet may not assume the scene. `src/styles/global.css`
+  takes the viewport — `height: 100%`, `overflow: hidden`, no pull-to-refresh —
+  only under `html.js`, the class the shell's inline script sets, so a page that
+  reaches a browser which never ran it keeps the viewport it was given and
+  scrolls. Hiding a scrollbar is per-scroller and opt-in through the design
+  system: `composes: hidden from "@jordanscamp/ds/scrollbars.module.css"`, or
+  that class through `className`. Chrome with no room for a bar takes it — an
+  icon rail, a window's tab strip, the iPod's song list; a surface holding a
+  document leaves it, so a reader can see there is more below.
 
 ### The CV, and its PDF
 
@@ -49,7 +58,9 @@ JavaScript disabled, through the print stylesheet. That is a separate command
 from `build` because it needs a Chromium (`pnpm exec playwright install
 chromium`); CI and the deploy run it after the build, a local build does not.
 The script fails if the PDF's text lacks the name, headline or first role, so a
-print stylesheet change cannot ship a blank document.
+print stylesheet change cannot ship a blank document. It also fails if that
+page clips its own overflow or hides the document scrollbar, since a stylesheet
+that strands a scriptless reader at the fold still prints perfectly.
 
 ## 3D model credits
 
