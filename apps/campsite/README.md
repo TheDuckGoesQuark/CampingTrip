@@ -36,6 +36,20 @@ Rules this puts on anything rendered inside the blog window:
 - A new kind of page needs a `metaOfBlogPage` case and a `blogUrls()` entry as
   well as its `BlogPage` variant. The test over `blogUrls()` renders every URL,
   which catches a page that exists but cannot be prerendered.
+- A post with `draft: true` is shown in CatOS but left out of `blogUrls()` and
+  the feed, so nothing outside the tent indexes it.
+
+### The CV, and its PDF
+
+`src/data/cv.tsx` is the one source for the CV. It renders as the `cv` page at
+`/blog/cv.html` (Caddy also answers `/cv`), whose prerendered head is a
+`schema.org/ProfilePage` around a `Person`, and as `dist/cv.pdf`, which
+`pnpm --filter campsite build:pdf` prints from the prerendered page with
+JavaScript disabled, through the print stylesheet. That is a separate command
+from `build` because it needs a Chromium (`pnpm exec playwright install
+chromium`); CI and the deploy run it after the build, a local build does not.
+The script fails if the PDF's text lacks the name, headline or first role, so a
+print stylesheet change cannot ship a blank document.
 
 ## 3D model credits
 
