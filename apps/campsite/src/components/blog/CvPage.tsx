@@ -103,14 +103,8 @@ function RoleEntry({ role }: { role: Role }) {
       <Text variant="body-sm" tone="muted">
         {role.location ? `${role.org}, ${role.location}` : role.org}
       </Text>
-      <Text>{role.summary}</Text>
-      <ul className={styles.cvHighlights}>
-        {role.highlights.map((highlight) => (
-          <li key={highlight}>
-            <Text as="span">{highlight}</Text>
-          </li>
-        ))}
-      </ul>
+      {role.summary && <Text>{role.summary}</Text>}
+      {role.highlights.length > 0 && <Highlights items={role.highlights} />}
       {role.tags.length > 0 && (
         <div className={styles.tagRow}>
           {role.tags.map((tag) => (
@@ -134,6 +128,19 @@ function EducationEntry({ entry }: { entry: Education }) {
       <Text variant="body-sm" tone="muted">
         {entry.institution}
       </Text>
+      {entry.highlights && entry.highlights.length > 0 && <Highlights items={entry.highlights} />}
     </div>
+  );
+}
+
+function Highlights({ items }: { items: string[] }) {
+  return (
+    <ul className={styles.cvHighlights}>
+      {items.map((item) => (
+        <li key={item}>
+          <Text as="span">{item}</Text>
+        </li>
+      ))}
+    </ul>
   );
 }

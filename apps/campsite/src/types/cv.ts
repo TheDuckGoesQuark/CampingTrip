@@ -9,7 +9,8 @@ export interface Role {
   /** ISO date. Absent while the role is current. */
   end?: string;
   location?: string;
-  summary: string;
+  /** A short role, an internship say, can go without one. */
+  summary?: string;
   highlights: string[];
   tags: string[];
 }
@@ -24,6 +25,8 @@ export interface Education {
   qualification: string;
   start: string;
   end: string;
+  /** Coursework and projects worth a line each. */
+  highlights?: string[];
 }
 
 export interface CvLink {

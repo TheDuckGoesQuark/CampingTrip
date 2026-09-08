@@ -222,14 +222,14 @@ export function metaOfBlogPage(page: BrowserPage): PageMeta {
 
 const MAILTO = "mailto:";
 
-function personOf(cv: Cv): PersonMeta {
-  const urls = cv.links.map((link) => link.url);
+function personOf(person: Cv): PersonMeta {
+  const urls = person.links.map((link) => link.url);
   return {
-    name: cv.name,
-    jobTitle: cv.experience.find((role) => !role.end)?.title,
+    name: person.name,
+    jobTitle: person.experience.find((role) => !role.end)?.title,
     sameAs: urls.filter((url) => !url.startsWith(MAILTO)),
     email: urls.find((url) => url.startsWith(MAILTO))?.slice(MAILTO.length),
-    knowsAbout: cv.skills.flatMap((group) => group.items),
-    dateModified: cv.updated,
+    knowsAbout: person.skills.flatMap((group) => group.items),
+    dateModified: person.updated,
   };
 }
