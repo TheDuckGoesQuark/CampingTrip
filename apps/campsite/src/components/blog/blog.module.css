@@ -319,3 +319,96 @@
   margin-top: var(--space-l);
   flex-wrap: wrap;
 }
+
+/* ── CV page ───────────────────────────────────────────────── */
+
+/* The same measure as a post: this is read top to bottom, and printed. */
+.cv {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.cvHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+  margin-bottom: var(--space-l);
+}
+
+.cvLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-m);
+}
+
+.cvActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-m);
+  flex-wrap: wrap;
+}
+
+.cvSection {
+  margin-top: var(--space-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-m);
+}
+
+.cvRole,
+.cvEducation {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.cvRoleHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-s);
+  flex-wrap: wrap;
+}
+
+.cvHighlights {
+  margin: 0;
+  padding-left: var(--space-l);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xxs);
+}
+
+.cvSkills {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--space-m);
+}
+
+.cvSkillGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xxs);
+}
+
+.cvSkillGroup dd {
+  margin: 0;
+}
+
+/* On paper the page is the document: no download control, and a role never
+   straddles a page break. */
+@media print {
+  .cv {
+    max-width: none;
+  }
+
+  .cvActions {
+    display: none;
+  }
+
+  .cvRole,
+  .cvEducation,
+  .cvSkillGroup {
+    break-inside: avoid;
+  }
+}

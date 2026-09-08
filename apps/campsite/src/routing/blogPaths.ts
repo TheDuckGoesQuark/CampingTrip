@@ -19,6 +19,13 @@ export const blogPaths = {
   tag: (tag: string) => `${ROOT}/tags/${encodeURIComponent(tag)}.html`,
   project: (slug: string) => `${ROOT}/projects/${encodeURIComponent(slug)}.html`,
   tool: (slug: string) => `${ROOT}/tools/${encodeURIComponent(slug)}.html`,
+  /** The CV. There is one, so it is a file beside `index.html`, not a directory. */
+  cv: `${ROOT}/cv.html`,
+  /**
+   * The CV as a file, printed from the page at build time. Off `/blog` and short
+   * enough to say aloud, because it is handed over rather than browsed to.
+   */
+  cvPdf: "/cv.pdf",
   /**
    * Desktop items. No `.html`: the extension is there to be *seen* in the
    * address bar, and none of these windows has one.
@@ -34,6 +41,7 @@ export type BlogRef =
   | { kind: "tag"; tag: string }
   | { kind: "project"; slug: string }
   | { kind: "tool"; slug: string }
+  | { kind: "cv" }
   | { kind: "desk"; slug: string };
 
 /** Strips the cosmetic extension. Absent is fine; canonical links carry it. */
@@ -59,7 +67,12 @@ export function parseBlogPath(path: string): BlogRef | null {
   // Empty segments dropped, so a leading or trailing slash does not shift them.
   const [root, directory, file] = path.split("/").filter((segment) => segment !== "");
   if (root !== "blog" || directory === undefined) return null;
-  if (file === undefined) return stripHtml(directory) === "index" ? { kind: "home" } : null;
+  if (file === undefined) {
+    const name = stripHtml(directory);
+    if (name === "index") return { kind: "home" };
+    if (name === "cv") return { kind: "cv" };
+    return null;
+  }
 
   const build = DIRECTORIES[directory];
   if (!build) return null;
@@ -90,6 +103,8 @@ export function blogPathFor(ref: BlogRef): string {
       return blogPaths.project(ref.slug);
     case "tool":
       return blogPaths.tool(ref.slug);
+    case "cv":
+      return blogPaths.cv;
     case "desk":
       return blogPaths.desk(ref.slug);
   }

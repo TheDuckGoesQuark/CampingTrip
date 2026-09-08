@@ -20,7 +20,7 @@ describe("blogUrls", () => {
 
   it("names every kind of browser page that has published content, and no desktop item", () => {
     const kinds = new Set(urls.map((url) => parseBlogPath(url)!.kind));
-    const expected = new Set(["home", "archive", "project", "tool"]);
+    const expected = new Set(["home", "archive", "cv", "project", "tool"]);
     if (published.length > 0) expected.add("post").add("tag");
     expect(kinds).toEqual(expected);
   });

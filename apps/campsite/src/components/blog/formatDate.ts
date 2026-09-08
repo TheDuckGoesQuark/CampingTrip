@@ -11,6 +11,15 @@ export function formatDate(iso: string, style: "long" | "short" = "long"): strin
   return new Date(iso).toLocaleDateString("en-GB", FORMATS[style]);
 }
 
+/** Month and year, for a span of time such as a job: "Mar 2022". */
+export function monthYear(iso: string): string {
+  return new Date(iso).toLocaleDateString("en-GB", {
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}
+
 /** Day of the month alone, for the date gutter down the side of a feed. */
 export function dayOfMonth(iso: string): string {
   return new Date(iso).toLocaleDateString("en-GB", { day: "2-digit", timeZone: "UTC" });

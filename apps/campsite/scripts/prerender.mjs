@@ -4,6 +4,7 @@ import { dirname, join } from "node:path";
 
 import {
   blogUrls,
+  CV_PDF_PATH,
   FEED_PATH,
   feedEntries,
   ORIGIN,
@@ -81,7 +82,8 @@ for (const path of blogUrls()) {
 // The shell itself, last: everything above read the template from it.
 write("index.html", fill(renderLanding()));
 
-write("sitemap.xml", sitemap(["/", ...written]));
+// The PDF is made from the CV page by `build:pdf`, a separate step of the same deploy.
+write("sitemap.xml", sitemap(["/", ...written, CV_PDF_PATH]));
 write("robots.txt", `User-agent: *\nAllow: /\nSitemap: ${ORIGIN}/sitemap.xml\n`);
 write(FEED_PATH, atom(feedEntries()));
 

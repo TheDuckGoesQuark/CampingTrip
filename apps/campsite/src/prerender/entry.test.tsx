@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 
+import { cv } from "../data/cv";
 import { posts, published } from "../data/posts";
 import { slugify } from "../data/slug";
+import { blogPaths } from "../routing/blogPaths";
 import { blogUrls, feedEntries, render, renderLanding } from "./entry";
 
 describe("prerender entry", () => {
@@ -25,6 +27,27 @@ describe("prerender entry", () => {
     );
     expect(page.head).toContain('"@type":"BlogPosting"');
     expect(page.head).toContain('"headline":"What vibe coding actually changed"');
+  });
+
+  it("gives the CV a profile head: a Person, and the PDF as an alternate form", () => {
+    const page = render(blogPaths.cv)!;
+    expect(page.head).toContain('<meta property="og:type" content="profile" />');
+    expect(page.head).toContain('"@type":"ProfilePage"');
+    expect(page.head).toContain(`"mainEntity":{"@type":"Person","name":"${cv.name}"`);
+    expect(page.head).toContain(
+      '<link rel="alternate" type="application/pdf" href="https://jordanscamp.site/cv.pdf" />',
+    );
+  });
+
+  it("puts the whole CV in the static page, so the PDF and a crawler get all of it", () => {
+    const { html } = render(blogPaths.cv)!;
+    expect(html).toContain(cv.name);
+    for (const role of cv.experience) {
+      expect(html).toContain(role.org);
+      for (const highlight of role.highlights) expect(html).toContain(highlight);
+    }
+    for (const entry of cv.education) expect(html).toContain(entry.institution);
+    expect(html).toContain(`href="${blogPaths.cvPdf}"`);
   });
 
   it("renders an island's fallback rather than its component", () => {
