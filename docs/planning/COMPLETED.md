@@ -4,6 +4,56 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## The CV: one module, three renderings
+
+**Date**: 2026-09-08
+
+**What was done**: the plan in [cv-design.md](cv-design.md), through to
+content. `src/data/cv.tsx` holds the CV as typed data with a TSX narrative, and
+three things render from it.
+
+- **A `cv` page kind** at `/blog/cv.html`, through the same exhaustive switches
+  as every other page, so the CatOS browser, the prerender, the sitemap and the
+  URL test all picked it up. `CvPage` is narrative first, then experience,
+  skills and education in plain markup. Caddy answers `/cv` with a redirect.
+- **A `profile` head.** `PageMeta` became a discriminated union; the profile
+  case emits `og:type profile`, a `schema.org/ProfilePage` wrapping a `Person`
+  (`jobTitle` from the current role, `sameAs` from the links, `knowsAbout` from
+  the skills, `dateModified` from `updated`), and a `rel="alternate"` link to
+  the PDF, which is also in the sitemap.
+- **`dist/cv.pdf`**, printed by `scripts/render-cv-pdf.mjs`: Vite's preview
+  server over `dist`, Playwright's Chromium with JavaScript disabled so the
+  reader renders and the tent never boots, `page.pdf()` at A4. The script then
+  reads the PDF's text back with pdfjs and fails unless the name, headline and
+  first role are in it. It is `build:pdf`, a separate command from `build`, run
+  in CI and the deploy after the build and cached Chromium install, so a local
+  build needs no browser.
+- **Printing any prerendered page prints the reader**, tent or no tent: the
+  shell's print stylesheet hides every `body` child that does not contain
+  `#reader`. That is what the PDF step relies on.
+- **A `draft` flag on posts**, landed first: the CV is one click from the
+  posts, and the three seeded ones are placeholders. A draft is shown in
+  CatOS, and left out of `blogUrls()`, the feed, and any tag page only drafts
+  would fill.
+- **The content**, from Jordan's document. `Role.summary` became optional and
+  `Education.highlights` was added to fit it.
+
+**Key decisions**: a build-time PDF rather than a print dialog, so a recruiter
+gets a file and an ATS gets a parseable document without a browser. The PDF
+is printed from the prerendered HTML rather than a second template, so the
+two cannot drift. `ProfilePage` rather than a bare `Person`, because
+`dateModified` belongs to the page. The reader's wrapper is the design
+system's `BrandProvider` div, so the print rule keeps the branch containing
+`#reader` rather than assuming `#reader` is a direct child of `body`; the
+first attempt assumed that and printed a blank page, which the text check
+caught.
+
+**Deferred**: the "Work with me? / Get to know me?" toggle, to the design
+cycle; the narrative's closing paragraph, to Jordan; a `location` on each
+role and any links beyond GitHub, which the document did not carry.
+
+---
+
 ## The blog reads without JavaScript
 
 **Date**: 2026-09-08

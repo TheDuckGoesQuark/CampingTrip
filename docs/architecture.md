@@ -38,7 +38,8 @@ time as plain HTML — one file per URL, plus a sitemap, robots and an Atom feed
 by `apps/campsite/scripts/prerender.mjs`. Caddy's `try_files {path} {path}.html
 /index.html` serves a prerendered file when one exists and the shell otherwise,
 so search crawlers, link unfurlers and AI bots read the same content a person
-sees in the CatOS browser, without a second copy of it to keep in sync.
+sees in the CatOS browser, without a second copy of it to keep in sync. The CV
+page is also printed to `/cv.pdf` in CI, from that same prerendered HTML.
 
 ## Repository structure
 

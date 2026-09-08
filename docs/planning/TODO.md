@@ -28,22 +28,21 @@ already scales up on hover, so a slow breath on its scale is the obvious move.
 "Cat Sweeper" is in the design and is the one desktop item that needs logic
 rather than content. Everything else in the junk drawer is built.
 
-### Blog — the CV, and a way to land on it
+### Blog — the "Work with me? / Get to know me?" toggle
 
-The blog is prerendered, so a page can now be read by a recruiter's tooling as
-well as a person. Model the CV as data (`cv.ts`: roles, dates, skills, links)
-and render it three ways from that one module: a CatOS page at its own URL, the
-prerendered HTML with a `schema.org/Person` block, and a print stylesheet for a
-PDF. The "Work with me? / Get to know me?" toggle is a navigation between that
-URL and `/blog/index.html`, not a query parameter — on a static host the query
-string cannot change which file is served, and two URLs give a shared link its
-own title and preview card for free.
+The CV is live at `/blog/cv.html` and `/cv.pdf`; what is left is the way to land
+on it. The design cycle owns the form. Three constraints hold whatever it
+becomes, recorded in [cv-design.md](cv-design.md): the two views are two URLs
+(`/blog/cv.html` and `/blog/index.html`), the toggle's state is derived from the
+URL and never stored, and the prerendered reader must not depend on it.
+Candidates: a segmented control in CatNav's header, a `CV` icon on the desktop,
+a bookmark in the browser bar, or a choice on the welcome screen at `/`.
 
-### Blog — a draft flag
+### Blog — the CV's narrative
 
-All three seeded posts are prerendered, indexed and in the feed with their
-`[DRAFT — …]` beats. A `draft: true` on `Post` should keep a post out of
-`blogUrls()` and the feed while CatOS still shows it for previewing.
+The roles, skills and education in `cv.tsx` come from Jordan's document. The
+narrative's closing paragraph is a `[DRAFT — …]` beat, and the narrative is the
+place for an `Island` if the CV wants one interactive piece.
 
 ### Blog — content to write
 
