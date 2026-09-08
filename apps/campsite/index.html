@@ -32,6 +32,24 @@
         margin: 0 auto;
         padding: 2rem 1rem;
       }
+      /* Printing gets the reader whether or not the tent is up: it is the page's
+         paper form, and what the build prints the CV's PDF from. */
+      @media print {
+        @page {
+          size: A4;
+          margin: 16mm;
+        }
+        body > :not(#reader) {
+          display: none;
+        }
+        html.js #reader {
+          display: block;
+        }
+        #reader {
+          max-width: none;
+          padding: 0;
+        }
+      }
     </style>
   </head>
   <body>

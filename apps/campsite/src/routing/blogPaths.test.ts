@@ -18,6 +18,11 @@ describe("blogPaths", () => {
     expect(blogPaths.tag("music")).toBe("/blog/tags/music.html");
     expect(blogPaths.project("catmap")).toBe("/blog/projects/catmap.html");
     expect(blogPaths.tool("mynoise")).toBe("/blog/tools/mynoise.html");
+    expect(blogPaths.cv).toBe("/blog/cv.html");
+  });
+
+  it("keeps the PDF off /blog, where it can be said aloud", () => {
+    expect(blogPaths.cvPdf).toBe("/cv.pdf");
   });
 
   it("leaves the extension off a desktop item, which has no address bar", () => {
@@ -53,11 +58,13 @@ describe("parseBlogPath", () => {
     });
     expect(parseBlogPath("/blog/tools/mynoise.html")).toEqual({ kind: "tool", slug: "mynoise" });
     expect(parseBlogPath("/blog/desk/notes-txt")).toEqual({ kind: "desk", slug: "notes-txt" });
+    expect(parseBlogPath("/blog/cv.html")).toEqual({ kind: "cv" });
   });
 
   it("treats the extension as optional, since it is decoration", () => {
     expect(parseBlogPath("/blog/tags/music")).toEqual({ kind: "tag", tag: "music" });
     expect(parseBlogPath("/blog/index")).toEqual({ kind: "home" });
+    expect(parseBlogPath("/blog/cv")).toEqual({ kind: "cv" });
   });
 
   it("decodes an encoded slug", () => {
@@ -79,6 +86,7 @@ describe("parseBlogPath", () => {
       { kind: "tag", tag: "music" },
       { kind: "project", slug: "catmap" },
       { kind: "tool", slug: "mynoise" },
+      { kind: "cv" },
       { kind: "desk", slug: "notes-txt" },
     ];
     for (const ref of refs) {
@@ -93,6 +101,7 @@ describe("isBrowserPath", () => {
     expect(isBrowserPath(blogPaths.archive)).toBe(true);
     expect(isBrowserPath(blogPaths.tag("music"))).toBe(true);
     expect(isBrowserPath(blogPaths.project("catmap"))).toBe(true);
+    expect(isBrowserPath(blogPaths.cv)).toBe(true);
   });
 
   it("rejects a desktop item, which opens in a window of its own", () => {

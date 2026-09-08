@@ -10,9 +10,13 @@ jordanscamp.site {
     @media path /models/* /images/* /draco/*
     header @media Cache-Control "public, max-age=604800"
 
-    # Caching the shell, or a prerendered page, pins visitors to a stale deploy.
-    @shell path / *.html
+    # Caching the shell, a prerendered page or the CV's PDF pins visitors to a
+    # stale deploy: none of them is fingerprinted.
+    @shell path / *.html /cv.pdf
     header @shell Cache-Control "no-cache"
+
+    # Short enough to say aloud or put on paper.
+    redir /cv /blog/cv.html permanent
 
     # A prerendered page answers its own URL; the shell is the fallback.
     try_files {path} {path}.html /index.html

@@ -16,6 +16,7 @@ import { RenderTargetContext } from "./renderTarget";
 import "../styles/blogProse.css";
 
 export { blogUrls, FEED_PATH, ORIGIN };
+export const CV_PDF_PATH = blogPaths.cvPdf;
 
 export interface RenderedPage {
   head: string;

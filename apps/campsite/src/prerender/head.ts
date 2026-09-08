@@ -13,32 +13,56 @@ export function escapeHtml(text: string): string {
     .replace(/"/g, "&quot;");
 }
 
+function jsonLd(meta: PageMeta, url: string): object {
+  const author = { "@type": "Person", name: AUTHOR, url: ORIGIN };
+  switch (meta.kind) {
+    case "article":
+      return {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        headline: meta.title,
+        description: meta.description,
+        datePublished: meta.published,
+        url,
+        author,
+      };
+    case "profile":
+      // `dateModified` belongs to the page, not the person, hence the wrapper.
+      return {
+        "@context": "https://schema.org",
+        "@type": "ProfilePage",
+        dateModified: meta.person.dateModified,
+        url,
+        mainEntity: {
+          "@type": "Person",
+          name: meta.person.name,
+          jobTitle: meta.person.jobTitle,
+          description: meta.description,
+          url,
+          sameAs: meta.person.sameAs,
+          email: meta.person.email,
+          knowsAbout: meta.person.knowsAbout,
+        },
+      };
+    case "website":
+      return {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        name: meta.title,
+        description: meta.description,
+        url,
+        author,
+      };
+  }
+}
+
 export function headTags(meta: PageMeta, path: string): string {
   const url = `${ORIGIN}${path}`;
   const fullTitle = meta.title === SITE || path === "/" ? meta.title : `${meta.title} · ${SITE}`;
   const title = escapeHtml(fullTitle);
   const description = escapeHtml(meta.description);
-  const jsonLd =
-    meta.kind === "article"
-      ? {
-          "@context": "https://schema.org",
-          "@type": "BlogPosting",
-          headline: meta.title,
-          description: meta.description,
-          datePublished: meta.published,
-          url,
-          author: { "@type": "Person", name: AUTHOR, url: ORIGIN },
-        }
-      : {
-          "@context": "https://schema.org",
-          "@type": "WebPage",
-          name: meta.title,
-          description: meta.description,
-          url,
-          author: { "@type": "Person", name: AUTHOR, url: ORIGIN },
-        };
   // `<` cannot appear inside a script element, even in a JSON string.
-  const jsonLdText = JSON.stringify(jsonLd).replace(/</g, "\\u003c");
+  const jsonLdText = JSON.stringify(jsonLd(meta, url)).replace(/</g, "\\u003c");
 
   return [
     `<title>${title}</title>`,
@@ -46,6 +70,11 @@ export function headTags(meta: PageMeta, path: string): string {
     `<meta name="author" content="${AUTHOR}" />`,
     `<link rel="canonical" href="${url}" />`,
     `<link rel="alternate" type="application/atom+xml" title="${escapeHtml(AUTHOR)}" href="${ORIGIN}${FEED_PATH}" />`,
+    ...(meta.alternate
+      ? [
+          `<link rel="alternate" type="${escapeHtml(meta.alternate.type)}" href="${ORIGIN}${meta.alternate.path}" />`,
+        ]
+      : []),
     `<meta property="og:title" content="${title}" />`,
     `<meta property="og:description" content="${description}" />`,
     `<meta property="og:type" content="${meta.kind}" />`,

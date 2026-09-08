@@ -1,10 +1,12 @@
 import type { IconName } from "@jordanscamp/ds";
 
 import { blogPaths, type BlogRef } from "../routing/blogPaths";
+import type { Cv } from "../types/cv";
 import type { DesktopItem } from "../types/desktop";
 import type { Post } from "../types/post";
 import type { Bookmark, Project } from "../types/project";
 import { bookmarks } from "./bookmarks";
+import { cv } from "./cv";
 import { findDesktopItem } from "./desktopItems";
 import { posts } from "./posts";
 import { projects } from "./projects";
@@ -19,6 +21,7 @@ export type BlogPage =
   | { kind: "tag"; tag: string; posts: Post[] }
   | { kind: "project"; project: Project }
   | { kind: "tool"; bookmark: Bookmark }
+  | { kind: "cv"; cv: Cv }
   | { kind: "desk"; item: DesktopItem };
 
 /**
@@ -54,6 +57,8 @@ export function resolveBlogPage(ref: BlogRef): BlogPage | null {
       const bookmark = bySlug(bookmarks, ref.slug);
       return bookmark ? { kind: "tool", bookmark } : null;
     }
+    case "cv":
+      return { kind: "cv", cv };
     case "desk": {
       const item = findDesktopItem(ref.slug);
       return item ? { kind: "desk", item } : null;
@@ -76,6 +81,8 @@ export function titleOfBlogPage(page: BlogPage): string {
       return page.project.title;
     case "tool":
       return page.bookmark.title;
+    case "cv":
+      return "CV";
     case "desk":
       return page.item.label;
   }
@@ -96,6 +103,8 @@ export function iconOfBlogPage(page: BlogPage): IconName {
       return "globe";
     case "tool":
       return "cassette";
+    case "cv":
+      return "document";
     case "desk":
       return iconOfDesktopItem(page.item);
   }
@@ -127,13 +136,29 @@ export function pathForLegacySlug(slug: string): string | null {
   return null;
 }
 
-export interface PageMeta {
+/** What the `schema.org/Person` in a profile page's head is built from. */
+export interface PersonMeta {
+  name: string;
+  jobTitle?: string;
+  /** Profiles elsewhere. `mailto:` links are not profiles, so they go in `email`. */
+  sameAs: string[];
+  email?: string;
+  knowsAbout: string[];
+  /** ISO date. */
+  dateModified: string;
+}
+
+export type PageMeta = {
   /** Without the site name; `headTags` appends it. */
   title: string;
   description: string;
-  kind: "article" | "website";
-  published?: string;
-}
+  /** Another form of the same page, such as a PDF. */
+  alternate?: { type: string; path: string };
+} & (
+  | { kind: "website" }
+  | { kind: "article"; published: string }
+  | { kind: "profile"; person: PersonMeta }
+);
 
 export const SITE = "Jordan's Camp";
 const MAX_DESCRIPTION = 160;
@@ -184,5 +209,27 @@ export function metaOfBlogPage(page: BrowserPage): PageMeta {
         description: summarise(page.bookmark.blurb),
         kind: "website",
       };
+    case "cv":
+      return {
+        title: page.cv.name,
+        description: page.cv.headline,
+        kind: "profile",
+        person: personOf(page.cv),
+        alternate: { type: "application/pdf", path: blogPaths.cvPdf },
+      };
   }
+}
+
+const MAILTO = "mailto:";
+
+function personOf(person: Cv): PersonMeta {
+  const urls = person.links.map((link) => link.url);
+  return {
+    name: person.name,
+    jobTitle: person.experience.find((role) => !role.end)?.title,
+    sameAs: urls.filter((url) => !url.startsWith(MAILTO)),
+    email: urls.find((url) => url.startsWith(MAILTO))?.slice(MAILTO.length),
+    knowsAbout: person.skills.flatMap((group) => group.items),
+    dateModified: person.updated,
+  };
 }

@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { iconOfBlogPage, pathForLegacySlug, resolveBlogPage, titleOfBlogPage } from "./blogPages";
+import {
+  iconOfBlogPage,
+  metaOfBlogPage,
+  pathForLegacySlug,
+  resolveBlogPage,
+  titleOfBlogPage,
+} from "./blogPages";
+import { cv } from "./cv";
 import { posts } from "./posts";
 import { slugify } from "./slug";
 
@@ -27,6 +34,10 @@ describe("resolveBlogPage", () => {
     if (page?.kind !== "tag") return;
     expect(page.posts.length).toBeGreaterThan(0);
     expect(page.posts.every((post) => post.tags.includes("music"))).toBe(true);
+  });
+
+  it("resolves the CV without a lookup", () => {
+    expect(resolveBlogPage({ kind: "cv" })).toEqual({ kind: "cv", cv });
   });
 
   it("resolves a desktop item", () => {
@@ -57,6 +68,24 @@ describe("titleOfBlogPage and iconOfBlogPage", () => {
     expect(titleOfBlogPage({ kind: "tag", tag: "music", posts: [] })).toBe("Tag: music");
     expect(iconOfBlogPage({ kind: "home" })).toBe("house");
     expect(iconOfBlogPage({ kind: "tag", tag: "music", posts: [] })).toBe("tag");
+    expect(titleOfBlogPage({ kind: "cv", cv })).toBe("CV");
+  });
+});
+
+describe("metaOfBlogPage", () => {
+  it("describes the CV as a profile of its author, with the PDF as an alternate form", () => {
+    const meta = metaOfBlogPage({ kind: "cv", cv });
+    expect(meta.title).toBe(cv.name);
+    expect(meta.description).toBe(cv.headline);
+    expect(meta.alternate).toEqual({ type: "application/pdf", path: "/cv.pdf" });
+    if (meta.kind !== "profile") throw new Error(`expected a profile, got ${meta.kind}`);
+    expect(meta.person.name).toBe(cv.name);
+    expect(meta.person.jobTitle).toBe(cv.experience.find((role) => !role.end)?.title);
+    expect(meta.person.dateModified).toBe(cv.updated);
+    for (const url of meta.person.sameAs) expect(url).not.toMatch(/^mailto:/);
+    for (const item of cv.skills.flatMap((group) => group.items)) {
+      expect(meta.person.knowsAbout).toContain(item);
+    }
   });
 });
 

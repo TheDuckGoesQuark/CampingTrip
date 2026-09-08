@@ -1,4 +1,5 @@
 import type { BrowserPage } from "../../data/blogPages";
+import CvPage from "./CvPage";
 import FeedPage from "./FeedPage";
 import HomePage from "./HomePage";
 import PostPage from "./PostPage";
@@ -23,5 +24,7 @@ export default function BlogPageView({ page }: { page: BrowserPage }) {
       return <ProjectPage project={page.project} />;
     case "tool":
       return <ToolPage bookmark={page.bookmark} />;
+    case "cv":
+      return <CvPage cv={page.cv} />;
   }
 }
