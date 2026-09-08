@@ -103,14 +103,16 @@ jobs:
               'set -e',
               'cd /opt/jordanscamp',
               'aws s3 cp s3://$S3_BUCKET/_deploy/webapp.tar.gz /tmp/webapp.tar.gz',
+              'aws s3 cp s3://$S3_BUCKET/_deploy/Caddyfile /tmp/Caddyfile',
+              'caddy validate --config /tmp/Caddyfile --adapter caddyfile',
               'mkdir -p /opt/jordanscamp/webapp',
               'rm -rf /opt/jordanscamp/webapp/*',
               'tar xzf /tmp/webapp.tar.gz -C /opt/jordanscamp/webapp/',
               'rm /tmp/webapp.tar.gz',
-              'aws s3 cp s3://$S3_BUCKET/_deploy/Caddyfile /etc/caddy/Caddyfile',
-              'systemctl restart caddy',
-              'sleep 3',
-              'systemctl is-active --quiet caddy || exit 1'
+              'install -m 644 /tmp/Caddyfile /etc/caddy/Caddyfile',
+              'for i in 1 2 3 4 5; do systemctl reload-or-restart caddy && break; [ \$i = 5 ] && exit 1; sleep 10; done',
+              'systemctl is-active --quiet caddy || exit 1',
+              'curl -fsS -o /dev/null https://jordanscamp.site/'
             ]" \
             --timeout-seconds 600 \
             --query "Command.CommandId" \
