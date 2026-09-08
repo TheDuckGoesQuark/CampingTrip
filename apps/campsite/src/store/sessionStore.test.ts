@@ -6,6 +6,7 @@ describe("useSessionStore", () => {
   beforeEach(() => {
     useSessionStore.setState({
       soundEnabled: true,
+      ambienceEnabled: false,
       effectsEnabled: true,
       hasCompletedWelcome: false,
     });
@@ -14,8 +15,13 @@ describe("useSessionStore", () => {
   it("initialises with default values", () => {
     const state = useSessionStore.getState();
     expect(state.soundEnabled).toBe(true);
+    expect(state.ambienceEnabled).toBe(false);
     expect(state.effectsEnabled).toBe(true);
     expect(state.hasCompletedWelcome).toBe(false);
+  });
+
+  it("defaults ambience off in a fresh store, so rain never plays unasked", () => {
+    expect(useSessionStore.getInitialState().ambienceEnabled).toBe(false);
   });
 
   it("toggles sound on/off", () => {
@@ -24,6 +30,15 @@ describe("useSessionStore", () => {
 
     useSessionStore.getState().setSoundEnabled(true);
     expect(useSessionStore.getState().soundEnabled).toBe(true);
+  });
+
+  it("toggles ambience independently of the one-shot sounds", () => {
+    useSessionStore.getState().setAmbienceEnabled(true);
+    expect(useSessionStore.getState().ambienceEnabled).toBe(true);
+    expect(useSessionStore.getState().soundEnabled).toBe(true);
+
+    useSessionStore.getState().setSoundEnabled(false);
+    expect(useSessionStore.getState().ambienceEnabled).toBe(true);
   });
 
   it("toggles effects on/off", () => {

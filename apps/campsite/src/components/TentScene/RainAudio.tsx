@@ -1,75 +1,73 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 
 import { startRain, setRainVolume, stopRain, isRainPlaying } from "../../audio/rainSynth";
 import { useSceneStore } from "../../store/sceneStore";
 import { useSessionStore } from "../../store/sessionStore";
 import { useTimeStore, getNightFactor } from "../../store/timeStore";
 
+/** Scaled by the night factor, so these are peaks rather than absolutes. */
+const DOOR_OPEN_VOLUME = 0.12;
+const DOOR_CLOSED_VOLUME = 0.04;
+
 /**
- * Manages rain audio — only plays at night.
- * Web Audio requires a user gesture to start, so we listen for the
- * first click/touch/keypress before initialising.
+ * Sole owner of the rain ambience. Nothing else may call `startRain` — only this
+ * component's effect drives `setRainVolume`, so a second caller gets rain whose
+ * volume never tracks the tent door or the day/night arc, and which the toggle
+ * cannot stop.
+ *
+ * Web Audio refuses to sound before a user gesture, so a start can fail and has
+ * to be retried on one.
  */
 export default function RainAudio() {
-  const soundEnabled = useSessionStore((s) => s.soundEnabled);
+  const ambienceEnabled = useSessionStore((s) => s.ambienceEnabled);
   const doorState = useSceneStore((s) => s.tentDoorState);
   const progress = useTimeStore((s) => s.progress);
-  const started = useRef(false);
+  // State rather than a ref, though nothing renders it: the volume effect
+  // below has to re-run once the rain is live, and a ref wouldn't wake it.
+  const [playing, setPlaying] = useState(false);
 
-  // Start rain on first user gesture (Web Audio policy)
   useEffect(() => {
-    if (!soundEnabled) return;
+    if (!ambienceEnabled) {
+      stopRain();
+      setPlaying(false);
+      return;
+    }
 
     function tryStart() {
-      if (started.current) return;
-      started.current = true;
-      startRain(0); // start silent — volume controlled by time/door effect
-      window.removeEventListener("click", tryStart);
-      window.removeEventListener("touchstart", tryStart);
-      window.removeEventListener("keydown", tryStart);
+      startRain(0); // silent — the volume effect takes it from here
+      if (!isRainPlaying()) return false;
+      setPlaying(true);
+      return true;
     }
 
-    // Try immediately (works if user already interacted, e.g. welcome screen click)
-    tryStart();
+    if (tryStart()) return;
 
-    // Also listen for gestures in case AudioContext was blocked
-    if (!isRainPlaying()) {
-      started.current = false;
-      window.addEventListener("click", tryStart, { once: true });
-      window.addEventListener("touchstart", tryStart, { once: true });
-      window.addEventListener("keydown", tryStart, { once: true });
+    function removeListeners() {
+      window.removeEventListener("click", onGesture);
+      window.removeEventListener("touchstart", onGesture);
+      window.removeEventListener("keydown", onGesture);
     }
+    function onGesture() {
+      if (tryStart()) removeListeners();
+    }
+    window.addEventListener("click", onGesture);
+    window.addEventListener("touchstart", onGesture);
+    window.addEventListener("keydown", onGesture);
+    return removeListeners;
+  }, [ambienceEnabled]);
 
-    return () => {
-      window.removeEventListener("click", tryStart);
-      window.removeEventListener("touchstart", tryStart);
-      window.removeEventListener("keydown", tryStart);
-    };
-  }, [soundEnabled]);
-
-  // Stop rain if sound disabled
   useEffect(() => {
-    if (!soundEnabled && started.current) {
-      stopRain();
-      started.current = false;
-    }
-  }, [soundEnabled]);
+    if (!playing) return;
 
-  // Volume responds to door state + time of day (night only)
-  useEffect(() => {
-    if (!soundEnabled || !started.current) return;
-
-    const nf = getNightFactor(progress);
-    if (nf < 0.05) {
-      // Daytime — silence rain
+    const nightFactor = getNightFactor(progress);
+    if (nightFactor < 0.05) {
       setRainVolume(0, 2.0);
       return;
     }
 
     const doorOpen = doorState === "open" || doorState === "opening";
-    const baseVol = doorOpen ? 0.22 : 0.08;
-    setRainVolume(baseVol * nf, 1.0);
-  }, [doorState, soundEnabled, progress]);
+    setRainVolume((doorOpen ? DOOR_OPEN_VOLUME : DOOR_CLOSED_VOLUME) * nightFactor, 1.0);
+  }, [doorState, playing, progress]);
 
   return null;
 }

@@ -99,7 +99,6 @@
         "apps/campsite/src/components/overlays/BlogSettingsMenu.tsx",
         "apps/campsite/src/components/overlays/MusicPlayerOverlay.tsx",
         "apps/campsite/src/components/overlays/NotepadOverlay.tsx",
-        "apps/campsite/src/components/overlays/SettingsMenu.tsx",
         "apps/campsite/src/components/overlays/TimeOfDayArc.tsx",
         "apps/photobroom/src/App.tsx",
         "apps/photobroom/src/overlay/Overlay.tsx",

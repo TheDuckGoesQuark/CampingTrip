@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
 import { startCampfire, stopCampfire } from "../audio/campfireSynth";
-import { startRain } from "../audio/rainSynth";
 import { useSceneStore } from "../store/sceneStore";
 import { useSessionStore } from "../store/sessionStore";
 
@@ -39,7 +38,7 @@ const MIN_DISPLAY_MS = 2000;
 
 export default function CampfireLoadingScreen() {
   const progress = useSceneStore((s) => s.loadProgress);
-  const soundEnabled = useSessionStore((s) => s.soundEnabled);
+  const ambienceEnabled = useSessionStore((s) => s.ambienceEnabled);
   const hasCompletedWelcome = useSessionStore((s) => s.hasCompletedWelcome);
 
   const [visible, setVisible] = useState(true);
@@ -103,14 +102,14 @@ export default function CampfireLoadingScreen() {
 
   // Start campfire audio once welcome is done (user gesture unlocks AudioContext)
   useEffect(() => {
-    if (!hasCompletedWelcome || !soundEnabled || audioStarted.current) return;
+    if (!hasCompletedWelcome || !ambienceEnabled || audioStarted.current) return;
     startCampfire(0.15);
     audioStarted.current = true;
-  }, [hasCompletedWelcome, soundEnabled]);
+  }, [hasCompletedWelcome, ambienceEnabled]);
 
   // Returning users: no prior gesture → unlock AudioContext on first touch/click
   useEffect(() => {
-    if (!hasCompletedWelcome || !soundEnabled) return;
+    if (!hasCompletedWelcome || !ambienceEnabled) return;
     if (audioStarted.current) return;
     const unlock = () => {
       if (!audioStarted.current) {
@@ -124,7 +123,7 @@ export default function CampfireLoadingScreen() {
       window.removeEventListener("touchstart", unlock);
       window.removeEventListener("click", unlock);
     };
-  }, [hasCompletedWelcome, soundEnabled]);
+  }, [hasCompletedWelcome, ambienceEnabled]);
 
   // Fade out when loading completes + min time elapsed + welcome done
   useEffect(() => {
@@ -135,16 +134,14 @@ export default function CampfireLoadingScreen() {
     const remaining = Math.max(0, MIN_DISPLAY_MS - elapsed);
 
     const timer = setTimeout(() => {
-      // Cross-fade audio: campfire out, rain in
       if (audioStarted.current) stopCampfire(1.5);
-      if (soundEnabled) startRain(0.12);
 
       setFadingOut(true);
       setTimeout(() => setVisible(false), 1800);
     }, remaining);
 
     return () => clearTimeout(timer);
-  }, [progress, hasCompletedWelcome, soundEnabled, fadingOut]);
+  }, [progress, hasCompletedWelcome, fadingOut]);
 
   if (!visible) return null;
 

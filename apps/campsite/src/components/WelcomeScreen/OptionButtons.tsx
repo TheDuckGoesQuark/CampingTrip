@@ -7,10 +7,12 @@ interface OptionButtonsProps {
 }
 
 export default function OptionButtons({ visible }: OptionButtonsProps) {
-  const { setSoundEnabled, setEffectsEnabled, completeWelcome } = useSessionStore();
+  const { setSoundEnabled, setAmbienceEnabled, setEffectsEnabled, completeWelcome } =
+    useSessionStore();
 
   async function handleFullExperience() {
     setSoundEnabled(true);
+    setAmbienceEnabled(true);
     setEffectsEnabled(true);
 
     // Request iOS DeviceOrientation permission from a user gesture
@@ -32,6 +34,7 @@ export default function OptionButtons({ visible }: OptionButtonsProps) {
 
   function handleJustBrowsing() {
     setSoundEnabled(false);
+    setAmbienceEnabled(false);
     setEffectsEnabled(false);
     completeWelcome();
   }

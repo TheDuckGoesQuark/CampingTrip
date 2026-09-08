@@ -16,6 +16,24 @@ pnpm --filter campsite dev
 - Zustand — state management
 - Web Audio API — synthesised rain, campfire, and typing sounds
 
+## Audio: two preferences, not one
+
+Sound is split by how intrusive it is, and the split is load-bearing for anyone
+adding a new noise:
+
+- `soundEnabled` (default **on**) — one-shots fired by something the visitor
+  just did: laptop bleeps, MIDI notes, guitar, the cat, page flips. Everything
+  in `src/audio/soundEffects.ts` self-gates on it.
+- `ambienceEnabled` (default **off**) — the looping beds, rain and campfire.
+  A continuous noise is something you consent to rather than something you
+  triggered, so it needs an explicit yes: either the scene control, or the
+  welcome screen's "full experience".
+
+`RainAudio` is the sole owner of the rain: it alone may call `startRain`, and it
+alone drives `setRainVolume` from the tent door and the day/night arc. A second
+caller gets rain at a fixed volume that no longer tracks either, and that
+neither the toggle nor the arc can reach.
+
 ## The blog without JavaScript
 
 The build writes one HTML file per blog URL into `dist`, rendered by the same
