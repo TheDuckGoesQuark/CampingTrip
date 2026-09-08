@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import { posts, published } from "../data/posts";
+import { slugify } from "../data/slug";
 import { blogUrls, feedEntries, render, renderLanding } from "./entry";
 
 describe("prerender entry", () => {
@@ -44,13 +46,28 @@ describe("prerender entry", () => {
     expect(page.html).toContain('href="/blog/posts/index.html"');
   });
 
-  it("feeds every post, newest first, with its body as HTML", () => {
+  it("feeds every published post, newest first, with its body as HTML", () => {
     const entries = feedEntries();
-    expect(entries.length).toBeGreaterThan(0);
+    expect(entries.length).toBe(published.length);
     for (let i = 1; i < entries.length; i++) {
       expect(entries[i - 1].date >= entries[i].date).toBe(true);
     }
-    expect(entries[0].html).toContain("<p>");
-    expect(entries[0].path).toMatch(/^\/blog\/posts\/.+\.html$/);
+    for (const entry of entries) {
+      expect(entry.html).toContain("<p>");
+      expect(entry.path).toMatch(/^\/blog\/posts\/.+\.html$/);
+    }
+  });
+
+  it("keeps drafts out of the feed", () => {
+    const titles = feedEntries().map((entry) => entry.title);
+    for (const draft of posts.filter((post) => post.draft)) {
+      expect(titles).not.toContain(draft.title);
+    }
+  });
+
+  it("still renders a draft when asked for it directly, for previewing in CatOS", () => {
+    const draft = posts.find((post) => post.draft)!;
+    const page = render(`/blog/posts/${slugify(draft.title)}.html`);
+    expect(page).not.toBeNull();
   });
 });

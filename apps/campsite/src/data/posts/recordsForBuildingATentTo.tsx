@@ -5,6 +5,7 @@ export const recordsForBuildingATentTo: Post = {
   date: "2026-07-02",
   standfirst: "Eight months of one project, and what was on while I did it.",
   tags: ["music"],
+  draft: true,
   body: (
     <>
       <p>

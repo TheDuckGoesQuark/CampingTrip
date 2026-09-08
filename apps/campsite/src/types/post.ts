@@ -13,4 +13,9 @@ export interface Post {
   /** Topic tags. Lower-case, hyphenated — they become `/blog/tags/<tag>.html`. */
   tags: string[];
   body: ReactNode;
+  /**
+   * Visible in CatOS for previewing, but given no prerendered file, sitemap
+   * entry or feed item, so nothing outside the tent indexes it.
+   */
+  draft?: boolean;
 }

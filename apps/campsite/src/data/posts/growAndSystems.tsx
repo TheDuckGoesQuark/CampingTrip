@@ -5,6 +5,7 @@ export const growAndSystems: Post = {
   date: "2026-07-28",
   standfirst: "A windmill does nothing until you add a river three clicks later.",
   tags: ["games", "making"],
+  draft: true,
   body: (
     <>
       <p>

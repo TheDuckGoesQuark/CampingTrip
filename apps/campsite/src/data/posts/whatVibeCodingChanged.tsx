@@ -6,6 +6,7 @@ export const whatVibeCodingChanged: Post = {
   date: "2026-08-14",
   standfirst: "I expected to miss trawling the docs. Reader, I do not.",
   tags: ["code", "making"],
+  draft: true,
   body: (
     <>
       <p>

@@ -5,7 +5,7 @@ import { StaticRouter } from "react-router-dom";
 
 import BlogPageView from "../components/blog/BlogPageView";
 import { metaOfBlogPage, resolveBlogPage } from "../data/blogPages";
-import { posts } from "../data/posts";
+import { published } from "../data/posts";
 import { slugify } from "../data/slug";
 import { blogPaths, parseBlogPath } from "../routing/blogPaths";
 import { blogUrls } from "../routing/blogUrls";
@@ -63,7 +63,7 @@ export interface FeedEntry {
 }
 
 export function feedEntries(): FeedEntry[] {
-  return posts.map((post) => ({
+  return published.map((post) => ({
     title: post.title,
     path: blogPaths.post(slugify(post.title)),
     date: post.date,
