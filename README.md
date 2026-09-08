@@ -41,6 +41,11 @@ pnpm -r exec tsc -b   # typecheck all apps
 - **3D assets**: GLB with WebP textures and Draco-compressed geometry; the
   decoder is served from `apps/campsite/public/draco`. A newly added model is
   put through `pnpm --filter campsite models:optimise` before it is committed.
+- **Prerendered blog**: `pnpm --filter campsite build` also renders every blog
+  URL to a static HTML file, plus `sitemap.xml`, `robots.txt` and `feed.xml`, so
+  crawlers and link unfurlers that never run JavaScript still get the page. The
+  same React components render both the file and the CatOS window. See
+  [apps/campsite/README.md](apps/campsite/README.md#the-blog-without-javascript).
 - **Hosting**: Caddy (auto-TLS static file server) on a single EC2 instance
 - **Infrastructure**: Terraform on AWS (EC2, S3, Route53)
 - **CI/CD**: GitHub Actions — lint, test, build, deploy on push to main

@@ -74,10 +74,10 @@ ${domain_name} {
     @media path /models/* /images/* /draco/*
     header @media Cache-Control "public, max-age=604800"
 
-    @shell path /index.html /
+    @shell path / *.html
     header @shell Cache-Control "no-cache"
 
-    try_files {path} /index.html
+    try_files {path} {path}.html /index.html
     file_server
 }
 
