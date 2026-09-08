@@ -124,7 +124,7 @@ Push to main
 **Deploy flow**:
 
 1. Frontend apps are built into tarballs and uploaded to S3
-2. SSM sends commands to the EC2 instance to extract the frontend bundles and the Caddyfile, then restart Caddy
+2. SSM sends commands to the EC2 instance to extract the frontend bundles and the Caddyfile, validates the Caddyfile, then reloads Caddy and checks the site answers
 
 **PR flow**:
 
