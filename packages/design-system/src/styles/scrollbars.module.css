@@ -1,0 +1,11 @@
+/* Hiding a scrollbar is per-scroller and deliberate. A skinned surface — an
+   iPod screen, a rail of icons — has no room to draw one; a document surface
+   keeps its bar, because a reader needs to see that there is more below.
+   Blink/WebKit and Firefox expose unrelated mechanisms, so both are stated. */
+.hidden {
+  scrollbar-width: none;
+}
+
+.hidden::-webkit-scrollbar {
+  display: none;
+}

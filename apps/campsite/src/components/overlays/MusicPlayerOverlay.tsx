@@ -8,6 +8,8 @@ import { songs } from "../../data/songs";
 import { routes } from "../../routing/navigation";
 import { useMusicStore } from "../../store/musicStore";
 
+import scrollbars from "@jordanscamp/ds/scrollbars.module.css";
+
 /**
  * iPod Nano-style floating music player.
  * Opens when clicking the microphone in the tent scene.
@@ -164,7 +166,7 @@ function SongList({ onSelect }: { onSelect: (index: number) => void }) {
       </div>
 
       {/* List */}
-      <div style={{ flex: 1, overflowY: "auto" }}>
+      <div className={scrollbars.hidden} style={{ flex: 1, overflowY: "auto" }}>
         {songs.length === 0 ? (
           <div
             style={{

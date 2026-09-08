@@ -4,6 +4,47 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## Scrollbars: hidden by opt-in, not by default
+
+**Date**: 2026-09-08
+
+**What was done**: `/blog/cv.html` read well with JavaScript off and printed
+fine, but a reader could not tell it scrolled — `global.css` hid every scrollbar
+on the site, and that stylesheet reaches a prerendered page because Vite hoists
+it into a `<link>`. The default is now inverted.
+
+- **The viewport lock is the scene's**, not the site's: `height: 100%`,
+  `overflow: hidden` and `overscroll-behavior: none` hang off `html.js`, the
+  class the shell's inline script sets before first paint. A prerendered page
+  is an ordinary document, so the shell's `html:not(.js)` block no longer has to
+  hand back the overflow it never should have lost.
+- **Hiding a scrollbar is a per-scroller opt-in** through the design system's
+  `scrollbars.module.css`, exported as `@jordanscamp/ds/scrollbars.module.css`
+  and composed by both packages. It states both mechanisms (`scrollbar-width`
+  for Firefox, `::-webkit-scrollbar` for Blink and WebKit — the old global rule
+  stated only the second, so Firefox always drew the bars the scene meant to
+  hide). Chrome takes it: the CatOS rail, the `Window` tab strip, the iPod's
+  song list, the notebook page.
+- **`build:pdf` guards it.** It already loads the CV in a Chromium with scripts
+  off, so it now also fails if that page clips its overflow or hides the
+  document scrollbar. Confirmed by putting the old rule back: the step fails
+  with `/blog/cv.html hides the document scrollbar without scripts`.
+
+**Key decisions**: opt-in rather than an exception for the reader, because a
+global rule with one carve-out is a trap for the next prerendered page — the
+site's default now matches what a browser does unasked. The DS `Window` and
+`Modal` bodies were deliberately _not_ opted in: they show their scrollbars in
+the scene now, which is what they already did in Storybook, and the window body
+is where a long document renders. Same reasoning left the plain-text window's
+surface and PhotoBroom's code blocks with theirs. The tab strip went the other
+way once it was visible: it is a row of chrome that overflows whenever the tabs
+outgrow the frame, and a bar under them reads as damage.
+
+**Deferred**: the desktop's scrollbars are now the OS's, unstyled. Styling them
+to fit CatOS is in TODO.
+
+---
+
 ## The CV: one module, three renderings
 
 **Date**: 2026-09-08

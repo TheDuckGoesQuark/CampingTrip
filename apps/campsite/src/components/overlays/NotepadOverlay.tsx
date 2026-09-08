@@ -7,6 +7,8 @@ import { notebookEntries } from "../../data/notebook";
 import { routes } from "../../routing/navigation";
 import { useSceneStore } from "../../store/sceneStore";
 
+import scrollbars from "@jordanscamp/ds/scrollbars.module.css";
+
 /**
  * Full-screen journal overlay — a Base UI takeover (focus trapped, focus
  * returned, Escape handled) styled like an open notebook with page-flip nav.
@@ -191,6 +193,7 @@ export default function NotepadOverlay() {
               </h2>
 
               <div
+                className={scrollbars.hidden}
                 style={{
                   flex: 1,
                   fontFamily: '"Georgia", "Times New Roman", serif',

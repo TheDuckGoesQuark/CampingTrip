@@ -50,6 +50,7 @@
 }
 
 .rail {
+  composes: hidden from "@jordanscamp/ds/scrollbars.module.css";
   position: absolute;
   top: 36px;
   left: 0;

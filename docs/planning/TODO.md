@@ -10,6 +10,11 @@ All planned and deferred work, organised by priority.
 
 - **Keyboard resize.** The amber and green lights cover shade and maximise, but
   dragging to an arbitrary size has no keyboard equivalent.
+- **The scrollbars are the platform's.** A window body, the plain-text surface
+  and a modal draw whatever the OS draws, now that hiding one is opt-in rather
+  than sitewide. A brand-styled thumb and track (`::-webkit-scrollbar-thumb`,
+  `scrollbar-color` for Firefox) would sit better in a stylised desktop than
+  macOS grey — and unlike hiding them, it keeps the affordance.
 - **A window can be completely hidden.** The browser is the widest frame and it
   centres, so a cascaded viewer lands inside its bounds. Re-clicking the desktop
   icon raises it, which works but is not discoverable. A dock, or windows that
