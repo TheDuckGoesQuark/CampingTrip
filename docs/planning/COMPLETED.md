@@ -4,6 +4,57 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## The rain became opt-in, and lost its second owner
+
+**Date**: 2026-09-08
+
+**What was done**: One flag, `soundEnabled`, drove both the looping rain bed and
+every one-shot interaction sound, and a second component started the rain behind
+`RainAudio`'s back. Ambience is now its own preference, off until asked for.
+
+- **`ambienceEnabled` (default off) holds the looping beds** — rain on the tent
+  and the campfire crackle. `soundEnabled` (still default on) keeps the one-shots:
+  laptop bleeps, MIDI, guitar, cat, page flips, window chrome. The split is by
+  intrusiveness, not by source: a continuous bed is a thing you consent to, a
+  click on a laptop lid is feedback for something you just did.
+- **`RainAudio` is the sole owner of the rain.** `CampfireLoadingScreen` also
+  called `startRain(0.12)` as a campfire→rain cross-fade, and that rain was
+  invisible to `RainAudio`: its volume effect and its stop path both gated on a
+  local `started` ref that the other caller never set. So loading-screen rain
+  played at a flat 0.12 through daylight and ignored the sound toggle entirely —
+  the "it activates inconsistently" symptom. The call is gone.
+- **The start latch is state, not a ref.** Even on its own path, `RainAudio`
+  recorded "playing" in a ref, which doesn't re-render, so the volume effect
+  could miss the transition and leave the rain wherever it started.
+- **The cog became a cluster.** Visual effects and rain are now their own
+  buttons beside the gear (`SceneControls`), each an `aria-pressed` toggle whose
+  label states the action it performs. The popover keeps all three switches plus
+  Reset preferences.
+- **Peak rain volume dropped** from 0.22 to 0.12 with the door open, 0.08 to
+  0.04 closed.
+
+**Key decisions**: the campfire crackle moved to `ambienceEnabled` alongside the
+rain even though only the rain was complained about — it is the same kind of
+sound, and leaving it on `soundEnabled` would have meant the loading screen
+crackling at someone who had turned ambience off. The welcome screen's "full
+experience (sound + motion)" does switch ambience on: an explicit press of a
+button offering sound _is_ the opt-in, and the scene control is right there to
+turn it back off. Off-by-default governs the visitor who never answered — the
+returning one, and the one who deep-links past the welcome screen.
+
+`SceneControls` was written against a CSS module rather than inheriting
+`SettingsMenu`'s inline styles, so `.oxlintrc.json`'s grandfathered
+`forbid-dom-props` list lost an entry instead of gaining a renamed one. The
+amber tent chrome doesn't map onto the brand tokens the tab bar uses, so it is
+declared as module-local custom properties at the top of the file; spacing,
+radius and type still come from the design system.
+
+**Deferred**: the full-screen settings takeover with 3D model credits — see
+TODO.md. Rain's day/night gate is untouched: with ambience on, it is still
+silent by day, which is now a deliberate scene effect rather than a surprise.
+
+---
+
 ## The CatOS browser window opens at a size that suits a monitor
 
 **Date**: 2026-09-08

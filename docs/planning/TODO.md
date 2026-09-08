@@ -6,6 +6,14 @@ All planned and deferred work, organised by priority.
 
 ## Next Up
 
+### Campsite — a full-screen settings takeover with model credits
+
+The cog opens a 180px popover. A takeover would have room for the three
+preferences plus the 3D model attributions, which today live only in the
+per-model comments in `TentScene/environment/*.tsx` and in `apps/campsite/README.md`
+— a visitor never sees them. Needs a focus trap and an Escape/close affordance;
+the popover's outside-click handling is already there to lift.
+
 ### CatOS — window polish left over
 
 - **Keyboard resize.** The amber and green lights cover shade and maximise, but

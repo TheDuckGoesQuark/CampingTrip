@@ -11,7 +11,7 @@ import LaptopScreenOverlay from "./overlays/LaptopScreenOverlay";
 import MusicPlayerOverlay from "./overlays/MusicPlayerOverlay";
 import NotepadOverlay from "./overlays/NotepadOverlay";
 import OverlayTabBar from "./overlays/OverlayTabBar";
-import SettingsMenu from "./overlays/SettingsMenu";
+import SceneControls from "./overlays/SceneControls";
 import TimeOfDayArc from "./overlays/TimeOfDayArc";
 
 // The heavy 3D scene (Three.js/R3F) is a lazy chunk — kept off the critical path
@@ -93,11 +93,11 @@ export default function SceneRoot() {
         </ErrorBoundary>
       )}
 
-      {/* Tent chrome. DOM order = keyboard tab order: blog → music → notes, settings, day/night. */}
+      {/* Tent chrome. DOM order = keyboard tab order: blog → music → notes, scene controls, day/night. */}
       {showChrome && (
         <>
           <OverlayTabBar />
-          <SettingsMenu />
+          <SceneControls />
           <TimeOfDayArc />
         </>
       )}

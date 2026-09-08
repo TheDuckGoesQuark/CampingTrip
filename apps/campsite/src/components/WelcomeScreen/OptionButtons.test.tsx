@@ -8,6 +8,7 @@ describe("OptionButtons", () => {
   beforeEach(() => {
     useSessionStore.setState({
       soundEnabled: true,
+      ambienceEnabled: false,
       effectsEnabled: true,
       hasCompletedWelcome: false,
     });
@@ -33,8 +34,17 @@ describe("OptionButtons", () => {
 
     const state = useSessionStore.getState();
     expect(state.soundEnabled).toBe(true);
+    expect(state.ambienceEnabled).toBe(true);
     expect(state.effectsEnabled).toBe(true);
     expect(state.hasCompletedWelcome).toBe(true);
+  });
+
+  it('"full experience" turns the rain ambience on', () => {
+    render(<OptionButtons visible={true} />);
+
+    fireEvent.click(screen.getByText(/full experience/));
+
+    expect(useSessionStore.getState().ambienceEnabled).toBe(true);
   });
 
   it('"just browsing" disables sound and effects, completes welcome', () => {
@@ -45,6 +55,7 @@ describe("OptionButtons", () => {
 
     const state = useSessionStore.getState();
     expect(state.soundEnabled).toBe(false);
+    expect(state.ambienceEnabled).toBe(false);
     expect(state.effectsEnabled).toBe(false);
     expect(state.hasCompletedWelcome).toBe(true);
   });
