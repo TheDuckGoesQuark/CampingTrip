@@ -43,3 +43,16 @@ jobs:
 
       - name: Build
         run: pnpm -r build
+
+      # A separate step from the build, so a local `pnpm build` needs no browser.
+      - name: Cache Chromium for Playwright
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - name: Install Chromium
+        run: pnpm --filter campsite exec playwright install chromium --with-deps
+
+      - name: Render the CV PDF
+        run: pnpm --filter campsite build:pdf

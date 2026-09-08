@@ -38,6 +38,18 @@ jobs:
       - name: Build campsite
         run: pnpm --filter campsite build
 
+      - name: Cache Chromium for Playwright
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - name: Install Chromium
+        run: pnpm --filter campsite exec playwright install chromium --with-deps
+
+      - name: Render the CV PDF
+        run: pnpm --filter campsite build:pdf
+
       - name: Upload campsite artifact
         uses: actions/upload-artifact@v6
         with:

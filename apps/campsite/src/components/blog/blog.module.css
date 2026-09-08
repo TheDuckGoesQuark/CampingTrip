@@ -337,6 +337,7 @@
 
 .cvLinks {
   display: flex;
+  align-items: baseline;
   flex-wrap: wrap;
   gap: var(--space-m);
 }
@@ -395,8 +396,8 @@
   margin: 0;
 }
 
-/* On paper the page is the document: no download control, and a role never
-   straddles a page break. */
+/* On paper the page is the document: no download control, a role never
+   straddles a page break, and a heading never ends a page on its own. */
 @media print {
   .cv {
     max-width: none;
@@ -404,6 +405,10 @@
 
   .cvActions {
     display: none;
+  }
+
+  .cvSection > :first-child {
+    break-after: avoid;
   }
 
   .cvRole,
