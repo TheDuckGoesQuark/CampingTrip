@@ -38,6 +38,12 @@
 
 /* Only until the layer has been measured — `geometry.ts` takes over after that,
    and holds the same proportions and ceilings. */
+.xl {
+  width: 90%;
+  max-width: 1200px;
+  height: 86%;
+  max-height: 860px;
+}
 .lg {
   width: 92%;
   max-width: 880px;

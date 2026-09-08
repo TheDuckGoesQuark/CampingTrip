@@ -32,6 +32,11 @@ describe("sizeFor", () => {
     expect(sizeFor("lg", LAYER)).toEqual({ width: 880, height: 624 });
   });
 
+  it("caps xl above a laptop's width, leaving the icon rail clear", () => {
+    // 1512 * 0.9 is over the 1200 ceiling, which centres at x=156 — past the rail.
+    expect(sizeFor("xl", { width: 1512, height: 800 })).toEqual({ width: 1200, height: 688 });
+  });
+
   it("shrinks with a small layer rather than overflowing it", () => {
     const { width } = sizeFor("lg", { width: 500, height: 800 });
     expect(width).toBe(460);

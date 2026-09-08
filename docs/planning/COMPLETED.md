@@ -4,6 +4,35 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## The CatOS browser window opens at a size that suits a monitor
+
+**Date**: 2026-09-08
+
+**What was done**: `Window` gained an `xl` size hint — `0.9` of its layer up to
+1200x860, against `lg`'s `0.92` up to 880x660 — and `BrowserWindow` asks for it.
+
+**Key decisions**:
+
+- **The ceiling was the whole problem, not the ratio.** `sizeFor` is
+  `min(layer.width * ratio, maxWidth)`, so above roughly 957px of viewport the
+  proportional term never binds: a 1512px laptop and a 2560px monitor both
+  resolved to 880px. Raising the ratio would have changed nothing on either. The
+  ratio governs only the small-viewport half of the rule.
+- **1200 is derived from the icon rail.** The rail is 148px and a window centres,
+  so a 1512px viewport puts the frame's left edge at 152 — clear by 4px. Below
+  about 1500px the ratio takes back over and the frame does overlap the rail,
+  which is what a real desktop does with its icons too.
+- **`xl`, not `browser`.** The design system knows what a browser is — it ships
+  `Window.AddressBar` and `Window.Tabs` — so naming the hint after its one caller
+  was tempting. A size named for a use case stops being a scale; `BrowserWindow`
+  naming `xl` at the call site says the same thing without spending a name on it.
+- **Two places hold the numbers.** `SIZE_HINTS` and the pre-measurement CSS
+  fallback are kept equal by hand, as the existing sizes already are.
+
+**Deferred**: nothing.
+
+---
+
 ## Scrollbars: hidden by opt-in, not by default
 
 **Date**: 2026-09-08

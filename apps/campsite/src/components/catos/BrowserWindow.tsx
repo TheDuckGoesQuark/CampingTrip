@@ -83,8 +83,9 @@ export default function BrowserWindow({ page, onClose, ...frame }: BrowserWindow
     setCanGoBack(((window.history.state as { idx?: number } | null)?.idx ?? 0) > 0);
   }, [locationKey]);
 
+  // `xl`: the one window with a page in it, so it opens wider than the desk's own.
   return (
-    <Window {...frame}>
+    <Window {...frame} size="xl">
       <Window.TitleBar title={`${titleOfBlogPage(page)} — CatNav`} onClose={onClose} />
       <Window.Tabs>
         {openTabs.map((tab) => (

@@ -18,7 +18,7 @@ export interface Size {
   height: number;
 }
 
-export type WindowSize = "sm" | "md" | "lg";
+export type WindowSize = "sm" | "md" | "lg" | "xl";
 
 /**
  * Proportional with a ceiling, so a frame always leaves the desktop chrome
@@ -31,6 +31,7 @@ const SIZE_HINTS: Record<
   sm: { widthRatio: 0.88, maxWidth: 420, heightRatio: 0.52, maxHeight: 320 },
   md: { widthRatio: 0.92, maxWidth: 600, heightRatio: 0.7, maxHeight: 500 },
   lg: { widthRatio: 0.92, maxWidth: 880, heightRatio: 0.78, maxHeight: 660 },
+  xl: { widthRatio: 0.9, maxWidth: 1200, heightRatio: 0.86, maxHeight: 860 },
 };
 
 /** Below this a window stops being usable, so drags stop shrinking it. */
