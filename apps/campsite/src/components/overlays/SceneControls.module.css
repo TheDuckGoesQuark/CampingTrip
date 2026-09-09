@@ -52,6 +52,14 @@
   outline-offset: 2px;
 }
 
+/* Narrow enough and the centred tab bar reaches the cluster, so the two
+   popover duplicates go and the gear stays. */
+@media (max-width: 640px) {
+  .quick {
+    display: none;
+  }
+}
+
 .panel {
   position: absolute;
   top: 44px;

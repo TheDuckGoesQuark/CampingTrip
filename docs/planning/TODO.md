@@ -41,6 +41,16 @@ titles and tiles, 700 is `title-4`/labels/buttons/tags/badges, 600 is `Link`, an
 the way the text face already works. Derive the current cost with
 `ls -la node_modules/.pnpm/@fontsource+nunito@*/node_modules/@fontsource/nunito/files/`.
 
+### Campsite — the tab bar and the time-of-day arc share a corner
+
+Fixing the right-hand collision left the left one. The arc is a fixed 160x130
+box at top-left and the tab pill is centred, so at 375px the pill starts at
+x=129 while the arc's box reaches x=174 — the boxes overlap, and only the arc's
+drawn stroke topping out near x=116 keeps the pixels apart. Narrower still and
+the stroke crosses under the pill. Reproduce by measuring both
+`getBoundingClientRect()`s at a 320px viewport. The fix is a call on whether the
+arc shrinks, moves, or collapses to the time text alone on narrow screens.
+
 ### Campsite — a full-screen settings takeover with model credits
 
 The cog opens a 180px popover. A takeover would have room for the three
