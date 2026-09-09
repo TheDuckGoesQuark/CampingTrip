@@ -3,7 +3,7 @@ import gsap from "gsap";
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 
-import { useSceneStore } from "../../../store/sceneStore";
+import { notepadUp, useSceneStore } from "../../../store/sceneStore";
 import { asset, DRACO_PATH } from "../../../utils/assetPath";
 
 // Credit: "Notepad" on Sketchfab (CC-BY)
@@ -24,7 +24,7 @@ const FOCUS_SCALE: [number, number, number] = [0.012, 0.012, 0.012];
 export default function Notepad() {
   const { scene } = useGLTF(asset("models/notepadb.glb"), DRACO_PATH);
   const groupRef = useRef<THREE.Group>(null);
-  const notepadFocused = useSceneStore((s) => s.notepadFocused);
+  const isUp = useSceneStore(notepadUp);
 
   useEffect(() => {
     scene.traverse((child) => {
@@ -48,7 +48,7 @@ export default function Notepad() {
     if (!groupRef.current) return;
     const g = groupRef.current;
 
-    if (notepadFocused) {
+    if (isUp) {
       gsap.to(g.position, {
         x: FOCUS_POS[0],
         y: FOCUS_POS[1],
@@ -93,7 +93,7 @@ export default function Notepad() {
         ease: "power2.inOut",
       });
     }
-  }, [notepadFocused]);
+  }, [isUp]);
 
   return (
     <group ref={groupRef}>

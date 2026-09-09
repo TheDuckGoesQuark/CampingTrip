@@ -1,4 +1,4 @@
-import { Button, DesktopIcon, Icon, MenuBar, Modal } from "@jordanscamp/ds";
+import { DesktopIcon, Icon, MenuBar, Modal } from "@jordanscamp/ds";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -167,6 +167,18 @@ export default function LaptopScreenOverlay() {
                 <span className={styles.menuBrandName}>CatOS</span>
               </span>
               <span className={styles.menuDim}>CatNav</span>
+              {/* In the menu bar rather than on the desktop: a window covers the
+                  desktop, and leaving must not depend on closing one first. */}
+              <button
+                type="button"
+                className={styles.menuAction}
+                onClick={() => navigate(routes.tent)}
+              >
+                Back to tent
+                {/* Escape closes the front window first, so it only leaves when
+                    there is nothing left to close. */}
+                {!anyOpen && <span className={styles.escHint}>Esc</span>}
+              </button>
             </>
           }
           right={<span className={styles.menuDim}>{clock}</span>}
@@ -196,15 +208,6 @@ export default function LaptopScreenOverlay() {
             onClose={() => closeWindow(window.id)}
           />
         ))}
-
-        {!anyOpen && (
-          <div className={styles.backToTent}>
-            <Button variant="ghost" size="sm" onClick={() => navigate(routes.tent)}>
-              Back to tent
-              <span className={styles.escHint}>Esc</span>
-            </Button>
-          </div>
-        )}
       </div>
     </Modal>
   );
