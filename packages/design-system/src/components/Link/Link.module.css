@@ -1,6 +1,10 @@
 .base {
   color: var(--brand-link);
-  font-family: var(--font-sans);
+  /* Inherited, not pinned: a link inside a paragraph is part of that sentence,
+     and naming a family here switches the face mid-line now that reading text
+     and UI chrome are set in different ones. A link used as chrome sits inside
+     something already on `--font-sans`, so it resolves the same either way. */
+  font-family: inherit;
   font-weight: var(--weight-medium);
   text-decoration: none;
   border-radius: var(--radius-s);

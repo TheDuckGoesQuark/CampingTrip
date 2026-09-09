@@ -6,6 +6,74 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## Two type faces, split by job — and a title that scales with its column
+
+**Date**: 2026-09-09
+
+**What was done**:
+
+- **`--text-title-1-size` is a `clamp()` on `cqi`.** One fixed 32px served the
+  phone and nothing else: the same size against a 68ch column on a wide window
+  read undersized. The floor is the old 32px, so mobile is untouched; the ceiling
+  is 2.75rem. Measured in the running app: 32px at a 371px container, 35.2px at
+  716px, 42.1px at 1148px.
+- **`--text-title-1-step` added for fixed boxes.** `Tile`'s `lg` size drew its
+  letter from the heading token, and a letter that grew with the window would
+  outgrow the 72px square `DesktopIcon` puts it in. The step is the clamp's floor,
+  so the tile is unchanged.
+- **Homepage masthead copy.** "Hello, you found the laptop." became "Hello, let's
+  see if we can make your day brighter."
+
+**Key decisions**:
+
+- **`cqi`, not `vi`.** The blog renders inside `Window.Body`, which is already a
+  named `window-page` container — a window can be dragged narrow on a wide screen,
+  and it is the window the title has to answer to. With no query container in the
+  ancestry the unit falls back to the viewport, which is the right answer for a
+  page rendered directly, so no fallback declaration is needed.
+- **Fluid in the token, not in `blog.module.css`.** Page titles on the CV, a post,
+  the archive and PhotoBroom all use `title-1`; a per-page override would have
+  fixed one heading and left four.
+
+- **`--font-text` split off `--font-sans`.** Paragraph text read loose, which was
+  Nunito's own fit rather than a spacing bug: rounded terminals sit wide and give
+  every letter a similar oval silhouette. Nunito Sans squares those terminals and
+  fits tighter. `<Text>`'s three body variants and `.blog-prose p` take the new
+  token; titles, labels, buttons, tags, badges and tiles keep Nunito. Body md went
+  16px/1.6 → 17px/1.62 with it.
+- **`Link` inherits its family instead of pinning `--font-sans`.** A link inside a
+  paragraph is part of that sentence, and a pinned family switched the face
+  mid-line the moment two faces existed. Chrome links sit inside something already
+  on `--font-sans`, so they resolve unchanged — verified across the homepage's
+  fourteen links.
+- **The masthead eyebrow is gone.** "Jordan's Camp" sat above the title in a window
+  whose own title bar and tab already say it twice.
+
+**Key decisions**:
+
+- **A variable text face, not static cuts.** Reading text needs 400 for paragraphs,
+  600 for an inline link and 700 for `<strong>`. One 31KB axis file beats three
+  ~16KB cuts, and `unicode-range` in the package keeps the unused subsets off the
+  wire.
+- **Nunito Sans, not a serif.** Source Serif 4 was the bigger readability jump and
+  was specimened, but a serif inside a pixel-art CatOS window changes what the site
+  is rather than how it reads. Keeping Nunito on the headings means the page still
+  reads as the same brand with only the paragraphs changed.
+- **`--font-text` on the variant, not on a wrapper.** `.body-lg`/`.body`/`.body-sm`
+  each set it directly, so a body `<Text>` inside a `Modal` — which pins
+  `--font-sans` on its root — still resolves to the reading face.
+
+**Deferred**: a real italic for the text face, and moving Nunito itself to a
+variable axis. Both in TODO; the weight audit behind the second is recorded there,
+because splitting the faces freed no Nunito weight.
+
+**Side effects worth knowing**: `Button`'s `md` label follows
+`--text-body-md-size`, so button text went 16px → 17px with the body. Feed item
+titles are `<Text variant="body" as="h3">`, so they now render in the reading face
+beside their standfirsts rather than in Nunito.
+
+---
+
 ## Stacked PRs are GitHub-native now, not Graphite
 
 **Date**: 2026-09-09

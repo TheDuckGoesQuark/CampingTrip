@@ -11,6 +11,7 @@
 
 .blog-prose p {
   margin: 0 0 var(--space-m);
+  font-family: var(--font-text);
   font-size: var(--text-body-lg-size);
   line-height: var(--text-body-lg-lh);
 }

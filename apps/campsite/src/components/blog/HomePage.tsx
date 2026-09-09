@@ -25,12 +25,7 @@ export default function HomePage() {
         <header className={styles.homeHeader}>
           <div className={styles.masthead}>
             <div className={styles.mastheadTitle}>
-              <div className={styles.eyebrow}>
-                <Text variant="label" tone="muted" as="p">
-                  Jordan's Camp
-                </Text>
-              </div>
-              <Text variant="title-1">Hello, you found the laptop.</Text>
+              <Text variant="title-1">Hello, let's see if we can make your day brighter.</Text>
             </div>
 
             <Mascot />

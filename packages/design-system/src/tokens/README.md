@@ -99,9 +99,16 @@ Radius: `--radius-{none,s,m,l,xl,full}` = 0/7/10/16/24/9999px.
 
 ### Typography
 
-`--font-sans` (Nunito) / `--font-mono`; weights `--weight-{regular,medium,bold,heading}`.
+`--font-sans` (Nunito — display, UI chrome), `--font-text` (Nunito Sans Variable
+— anything set for reading), `--font-mono`; weights
+`--weight-{regular,medium,bold,heading}`. `<Text>`'s three body variants take
+`--font-text`; titles, labels and every control keep `--font-sans`.
 The type scale (`--text-title-1..4`, `--text-body-{lg,md,sm}`, `--text-label`) is
 owned by `<Text variant="…">` — prefer composing `<Text>` over restating sizes.
+
+`--text-title-1-size` is the one fluid step: a `clamp()` on `cqi`, so a page
+title tracks the width of the column it heads. Anything setting a glyph in a
+fixed box takes `--text-title-1-step` instead, which is the clamp's floor.
 
 ### Shadows
 
