@@ -39,9 +39,9 @@ describe("CatosWindow", () => {
     it("Preview shows the image and its facts, and no tabs or address bar", () => {
       renderWindow(deskPage("smittens-047-jpg"));
       expect(
-        screen.getByRole("img", { name: /cat sitting in a tent doorway/i }),
+        screen.getByRole("img", { name: /Smittens, a black-and-white cat/i }),
       ).toBeInTheDocument();
-      expect(screen.getByText(/2048 × 1365/)).toBeInTheDocument();
+      expect(screen.getByText(/1600 × 1015/)).toBeInTheDocument();
       expect(screen.queryByRole("tablist")).toBeNull();
       expect(screen.queryByRole("button", { name: "New tab" })).toBeNull();
     });
