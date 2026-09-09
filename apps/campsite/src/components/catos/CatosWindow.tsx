@@ -1,4 +1,5 @@
 import type { BlogPage } from "../../data/blogPages";
+import AboutWindow from "./AboutWindow";
 import BinWindow from "./BinWindow";
 import BrowserWindow from "./BrowserWindow";
 import PreviewWindow from "./PreviewWindow";
@@ -17,6 +18,7 @@ export interface CatosWindowProps extends WindowFrameProps {
  * adding a case here and a component, and nothing in the design system moves.
  */
 export default function CatosWindow({ page, onClose, ...frame }: CatosWindowProps) {
+  if (page.kind === "about") return <AboutWindow onClose={onClose} {...frame} />;
   if (page.kind !== "desk") return <BrowserWindow page={page} onClose={onClose} {...frame} />;
 
   const { item } = page;

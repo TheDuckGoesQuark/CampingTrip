@@ -26,5 +26,10 @@ export {
   type WindowToolButtonProps,
   type WindowBodyProps,
 } from "./components/desktop/Window";
-export { MenuBar, type MenuBarProps } from "./components/desktop/MenuBar";
+export {
+  MenuBar,
+  type MenuBarProps,
+  type MenuBarMenuProps,
+  type MenuBarItemProps,
+} from "./components/desktop/MenuBar";
 export { DesktopIcon, type DesktopIconProps } from "./components/desktop/DesktopIcon";

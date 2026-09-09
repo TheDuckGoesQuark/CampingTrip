@@ -4,7 +4,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { StaticRouter } from "react-router-dom";
 
 import BlogPageView from "../components/blog/BlogPageView";
-import { metaOfBlogPage, resolveBlogPage } from "../data/blogPages";
+import { isBrowserPage, metaOfBlogPage, resolveBlogPage } from "../data/blogPages";
 import { cv } from "../data/cv";
 import { published } from "../data/posts";
 import { slugify } from "../data/slug";
@@ -40,7 +40,7 @@ function toStatic(path: string, children: ReactNode): string {
 export function render(path: string): RenderedPage | null {
   const ref = parseBlogPath(path);
   const page = ref && resolveBlogPage(ref);
-  if (!page || page.kind === "desk") return null;
+  if (!page || !isBrowserPage(page)) return null;
   return {
     head: headTags(metaOfBlogPage(page), path),
     html: toStatic(path, <BlogPageView page={page} />),

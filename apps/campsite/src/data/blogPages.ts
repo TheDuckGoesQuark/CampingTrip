@@ -22,14 +22,20 @@ export type BlogPage =
   | { kind: "project"; project: Project }
   | { kind: "tool"; bookmark: Bookmark }
   | { kind: "cv"; cv: Cv }
-  | { kind: "desk"; item: DesktopItem };
+  | { kind: "desk"; item: DesktopItem }
+  | { kind: "about" };
 
 /**
- * The pages the mock browser renders. A desktop item is a window of its own
- * kind, never a page in a tab, so excluding it here makes the browser's own
- * renderer exhaustive rather than quietly falling through.
+ * The pages the mock browser renders. A desktop item and the About box are
+ * windows of their own kind, never pages in a tab, so excluding them here makes
+ * the browser's own renderer exhaustive rather than quietly falling through.
  */
-export type BrowserPage = Exclude<BlogPage, { kind: "desk" }>;
+export type BrowserPage = Exclude<BlogPage, { kind: "desk" } | { kind: "about" }>;
+
+/** The page-level counterpart of `isBrowserPath`, for narrowing a renderer. */
+export function isBrowserPage(page: BlogPage): page is BrowserPage {
+  return page.kind !== "desk" && page.kind !== "about";
+}
 
 const bySlug = <T extends { title: string }>(items: T[], slug: string): T | undefined =>
   items.find((item) => slugify(item.title) === slug);
@@ -63,6 +69,8 @@ export function resolveBlogPage(ref: BlogRef): BlogPage | null {
       const item = findDesktopItem(ref.slug);
       return item ? { kind: "desk", item } : null;
     }
+    case "about":
+      return { kind: "about" };
   }
 }
 
@@ -85,6 +93,8 @@ export function titleOfBlogPage(page: BlogPage): string {
       return "CV";
     case "desk":
       return page.item.label;
+    case "about":
+      return "About CatOS";
   }
 }
 
@@ -107,6 +117,8 @@ export function iconOfBlogPage(page: BlogPage): IconName {
       return "document";
     case "desk":
       return iconOfDesktopItem(page.item);
+    case "about":
+      return "cat";
   }
 }
 

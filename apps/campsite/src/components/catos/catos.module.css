@@ -18,40 +18,12 @@
   background: linear-gradient(180deg, var(--brand-bg), var(--brand-surface));
 }
 
-.menuBrand {
-  display: flex;
-  align-items: center;
-  gap: var(--space-xs);
-}
-
 .menuBrandName {
   font-weight: var(--weight-bold);
 }
 
 .menuDim {
   opacity: 0.7;
-}
-
-/* A menu-bar item, not a button with chrome: the bar is one line tall and its
-   other entries are bare text, so a frame would read as a foreign object. */
-.menuAction {
-  appearance: none;
-  border: 0;
-  padding: 0;
-  background: none;
-  font: inherit;
-  color: inherit;
-  cursor: pointer;
-  opacity: 0.7;
-}
-.menuAction:hover,
-.menuAction:focus-visible {
-  opacity: 1;
-}
-
-.escHint {
-  opacity: 0.5;
-  margin-left: var(--space-xs);
 }
 
 /* A page is a document, so it opts back into selectable text. */
@@ -153,4 +125,35 @@
 
 .statusSpacer {
   margin-left: auto;
+}
+
+/* ── About box ─────────────────────────────────────────────── */
+
+.aboutBody {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  padding: var(--space-l) var(--space-m);
+}
+
+.aboutMark {
+  color: var(--brand-solid);
+  margin-bottom: var(--space-xs);
+}
+
+.aboutSpecs {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xxs);
+  /* The memory line outruns the frame, and a centred orphan reads as a fault. */
+  text-wrap: balance;
+}
+
+/* Tabular figures, so a ticking second does not shuffle the line it sits on. */
+.aboutUptime {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
 }

@@ -6,6 +6,69 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## The cat menu replaces the loose "Back to tent" button
+
+**Date**: 2026-09-09
+
+**What was done**: The way out of CatOS moved from a bare button sitting on the
+menu bar into a pull-down behind the cat glyph, which is where a desktop of this
+vintage keeps it.
+
+### `MenuBar` grew pull-downs
+
+`MenuBar` was pure chrome — a left slot and a right slot. It is now compound:
+`MenuBar.Menu` (a trigger plus a portalled popup), `MenuBar.Item` (with an
+optional right-aligned `shortcut` hint, hidden from assistive tech) and
+`MenuBar.Separator`. Behaviour comes from Base UI's `Menu`, added as
+`primitives/Menu.tsx` — roles, roving focus, typeahead, Escape and outside-press
+dismissal, focus-return.
+
+- **The popup is portalled to the body, so it escapes the takeover's stacking
+  context.** CatOS is a Base UI `Dialog` popup at `z-index: 201`; a menu opened
+  from inside it lands in a body-level sibling and was painted underneath. The
+  z-index goes on the _positioner_, not the popup — the anchoring engine leaves
+  the popup `position: static`, where a z-index means nothing.
+- **Stacking order became a token layer.** Four component stylesheets each held
+  a hand-written `z-index`; adding a fifth for the menu would have made the
+  ordering unreadable. `tokens/layers.css` now names them
+  (`--layer-menubar`, `--layer-window`, `--layer-modal-backdrop`, `--layer-modal`,
+  `--layer-popup`) and every one of those five reads from it. Adding a new
+  `@import` to `tokens.css` needs a Vite restart, not just a reload.
+
+### The About box is a route, not an alert
+
+"About CatOS" opens a real CatOS window at `/blog/about` — it stacks, drags and
+closes like everything else on the desktop. That meant a new `BlogRef`/`BlogPage`
+kind rather than a nested modal, which would have been the one thing on that
+desktop behaving like the real web. The exhaustive switches made the compiler
+find every site that needed the case.
+
+`isBrowserPath` (path-level) gained a page-level counterpart, `isBrowserPage`,
+because "not a tab" was being re-derived in the browser window and again in the
+prerenderer.
+
+Its body is a centred spec stack, with a live uptime counting from
+1997-09-17T21:00+01:00 — Jordan's birth, to the minute. The offset is written
+into the timestamp rather than left as local wall-clock time, so every visitor
+counts from the same instant instead of from 9pm wherever they happen to be.
+The figure is mono and tabular so a ticking second does not shuffle the line
+under it.
+
+### The menu's three items
+
+`About CatOS`, `Close all windows` (disabled on an empty desktop), and
+`Shut down` — which keeps the `Esc` hint the old button had, shown only when no
+window is left to close, since Escape closes the front window first.
+
+**Deferred**: a battery indicator beside the clock, dropped from this change.
+The Battery Status API is Chromium-only, so it needs a decided fallback for
+Firefox and Safari before it is worth building.
+
+A screen-off fade before returning to the tent was built and then removed at
+Jordan's request — `Shut down` navigates straight out.
+
+---
+
 ## The desktop's text files are editable, and notes.txt is now words_with_friends.txt
 
 **Date**: 2026-09-09
