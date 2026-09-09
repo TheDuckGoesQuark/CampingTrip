@@ -6,6 +6,83 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## The tape deck, the light rig's test, and a stale audio doc
+
+**Date**: 2026-09-09
+
+**What was done**: Three recorded loose ends, all in the campsite's audio and
+scene layers.
+
+### The music player had no music
+
+`songs.ts` named three mp3s under `public/audio/songs/` and none of them were in
+the repo, so every track 404ed and the transport did nothing visible. The
+playlist is now empty, which is what the repo actually holds — the overlay
+already had both empty states ("No songs yet" in the list, "No track" in the
+now-playing view), so the player reads as empty rather than broken. Emptying it
+exposed the arithmetic underneath:
+
+- **A zero-length playlist wrapped to `NaN`.** `next()` and `prev()` computed
+  `(index ± 1) % songs.length`, and a `NaN` index went into `musicStore` and
+  stayed there — no later track can ever equal it, so `togglePlay`'s
+  "same track already loaded" check would never be true again. All three modulo
+  sites go through one `wrapIndex`, which returns `null` for an empty playlist
+  and stops each caller before it writes.
+- **`musicPlayer` had no tests at all.** It has 11 now, over a mocked Howler:
+  the empty-playlist guards, wrapping past either end, `prev()` restarting a
+  track more than 3 s in, Howl reuse, and progress publication on the 250 ms
+  interval.
+- **Deferred**: whether the deck gets recordings. Adding one is an entry in
+  `songs.ts` plus the file. The blog's music-tag callout still promises songs it
+  hasn't got — that copy is Jordan's to write, and is now in TODO.
+
+### `Lighting.test.ts` asserted on copies of the component's arithmetic
+
+It declared its own `AMBIENT_INT` and `MAIN_INT` arrays, transcribed from
+`Lighting.tsx`, and asserted on those — so the file never imported the
+component, and a keyframe could move without a test noticing. It is now
+`Lighting.test.tsx`, driving the real rig through `@react-three/test-renderer`:
+mount `<Lighting />`, set `timeStore.progress`, `advanceFrames(1, 0)` to run the
+`useFrame` body, then read the intensities and colours off the lights it wrote
+to.
+
+- **The keyframe stops stay private to the component**, which is the point —
+  there is nothing to transcribe. Lights are found by the positions the
+  component gives them, not by scene order.
+- **Checked that it actually catches drift**: moving the noon ambient stop from
+  1.0 to 0.1 fails the noon test. The old file stayed green through the same
+  edit.
+- **Two assertions the copies could not make**: colours are now covered (the
+  door light is bluer than it is red at midnight and the other way round at
+  noon, the hemisphere sky cools from dusk to noon), and `debug` is covered —
+  its flat rig ignores the clock and carries none of the animated lights.
+- `IS_REACT_ACT_ENVIRONMENT` is set in `src/test/setup.ts`. Testing Library
+  sets it for itself, so nothing needed it until a test used the R3F renderer
+  directly.
+
+### `ARCHITECTURE.md` documented an audio module that isn't there
+
+Its "File Playback" section described an `audioManager.ts` subscribing to
+Zustand stores outside React, playing a `rain-ambient.mp3` and a
+`tent-door-rustle.mp3`. None of the three exist.
+
+- The section is now **Track Playback (`musicPlayer.ts`)** — one Howl at a time,
+  seek pushed into `musicStore` on an interval, and the empty playlist stated so
+  the next reader does not go hunting for the mp3s.
+- The `audio/` tree in the directory listing matches the directory: `audioContext.ts`
+  and `musicPlayer.ts` were missing from it.
+- The state-architecture bullet justifying five stores cited `audioManager` as
+  the non-React subscriber. `CameraController` is the real one.
+- The tech-stack table said React 18; the workspace is on 19.
+- **A fourth testing category** is documented, since `Lighting.test.tsx` is not
+  any of the three that were listed.
+- **Deferred**: `PLAN.md` still names `audioManager.ts` and both mp3s. It is the
+  pre-build plan rather than a description of the app, so it is left alone and
+  recorded in TODO — what it needs is a decision about where it lives, not an
+  edit to its audio section.
+
+---
+
 ## The campfire outlived its loading screen
 
 **Date**: 2026-09-09
