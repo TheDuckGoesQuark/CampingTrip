@@ -77,15 +77,21 @@
 }
 
 /* The classic grow box. A pointer affordance only — every state it can reach is
-   also reachable from the amber and green lights, which are ordinary buttons. */
+   also reachable from the amber and green lights, which are ordinary buttons.
+
+   Bare hatching over whatever the frame ends with: against a page that runs to
+   the corner, the stripes alone are the whole control. */
 .growBox {
   position: absolute;
   right: 0;
   bottom: 0;
+  /* The DS cannot assume the consuming app's reset, and once the cell is a
+     bevelled cube its border has to sit inside the 16px the corner reserves. */
+  box-sizing: border-box;
   width: var(--space-m);
   height: var(--space-m);
   cursor: nwse-resize;
-  background: linear-gradient(
+  background-image: linear-gradient(
     135deg,
     transparent 0 40%,
     var(--brand-border-strong) 40% 50%,
@@ -94,6 +100,24 @@
     transparent 75%
   );
   touch-action: none;
+}
+
+/* Beside a page that is actually showing a bar, the grip becomes a cube in the
+   thumb and end caps' own material, so the column reads as one run of controls.
+   `data-scrolls` is the page's answer about its own overflow — see `Body`. It is
+   opaque only here: a cube needs a face, and there is a track behind this one. */
+.body[data-scrolls] + .growBox {
+  background-color: var(--brand-subtle);
+  border: 1px solid var(--brand-border-strong);
+  box-shadow: var(--shadow-bevel-out);
+}
+
+.body[data-scrolls] + .growBox:hover {
+  background-color: var(--brand-subtle-hover);
+}
+
+.body[data-scrolls] + .growBox:active {
+  box-shadow: var(--shadow-bevel-in);
 }
 
 .titlebar {
@@ -413,12 +437,28 @@ button.light:active {
 .body {
   flex: 1;
   overflow-y: auto;
+  composes: classic from "../../../styles/scrollbars.module.css";
   padding: var(--space-l) var(--space-xl);
   /* A window is resized independently of the viewport, so its content has to
      respond to the window rather than the screen. Named, so a container query
      inside cannot accidentally resolve against some other ancestor. */
   container-type: inline-size;
   container-name: window-page;
+}
+
+/* The grow box owns the frame's bottom-right corner, and a page whose next
+   sibling is that box is the bottom-most thing in the frame — so a bar of its
+   own runs into that corner and the grip's hatching crosses the end cap. A
+   scrollbar is laid out across the padding box, so a bottom border is what
+   shortens it: the bar ends one cell early and the grip becomes the foot of the
+   column, which is where a sizing grip and a scrollbar have always met.
+   Transparent, because the page's own background shows through it.
+
+   All three conditions have to hold, or the cell is a gap for nothing: a page
+   with a status bar under it has no adjacent corner, a page that is not
+   scrolling has no bar to shorten, and a fixed frame has no grip. */
+.body[data-scrolls]:has(+ .growBox) {
+  border-bottom: var(--space-m) solid transparent;
 }
 
 /* One object on display rather than a document: no reading gutter, and the same

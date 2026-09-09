@@ -6,6 +6,83 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## A window's scrollbar, drawn in the frame's own hard edges
+
+**Date**: 2026-09-09
+
+**What was done**: A `Window`'s page drew whatever the OS draws — a rounded grey
+overlay bar inside a 2px-bordered frame that squares off every radius its
+children bring. `scrollbars.module.css` gained a second opt-in class beside
+`hidden`, and `Window.Body` composes it.
+
+- **`classic` is the new class**: a 2px-dithered sunken track, a bevelled thumb
+  and a clickable arrow end cap at each end, all in `--brand-subtle` with
+  `--shadow-bevel-out` — the material the title bar, tab strip, toolbar and
+  status bar already share. Opt-in per scroller, like `hidden`: `Window.Body`
+  takes it, and the modal, the plain-text surface and PhotoBroom's horizontal
+  rail are left for a deliberate decision.
+- **The arrows are gradients, not glyphs or SVG.** `content` does not render
+  inside a scrollbar pseudo-element, and a data-URI SVG cannot read a custom
+  property — so each arrow is a 90° `conic-gradient` wedge in `--brand-text`,
+  which re-themes with the rest.
+- **The grow box became the foot of the bar, but only beside one.** It is 16px
+  at the frame's bottom-right and so was the bar's bottom end cap, which put
+  the sizing hatch across the arrow. A transparent `border-bottom` shortens the
+  bar by one cell — a scrollbar is laid out across the padding box, so a border
+  is what moves its end — and the box becomes a bevelled cube in the buttons'
+  material, so the column reads ▲ / thumb / track / ▼ / grip. Same fix as
+  publicobject.com's Swing `ScrollPaneLayout`, which reserves `CORNER_HEIGHT`
+  at the foot of the vertical bar for the same reason.
+- **The plain-text window scrolls as one document.** A `textarea` is its own
+  scroll container, so the file drew the platform's bar inside the frame while
+  the window's own bar sat idle. `field-sizing: content` sizes the control to
+  its text instead — Baseline as of June 2026 — with `min-height: 100%` keeping
+  a short file filling the window, so growing the file is what brings the
+  window's bar and the grip cube in. `overflow-y` and the composed `classic`
+  class stay for a browser that cannot size a field to its content, where the
+  textarea keeps its own bar in the brand's palette rather than the OS grey.
+- **Without a bar it stays bare hatching**, which is what it always was. A cube
+  beside a page that is not scrolling is a cell with nothing above it — the
+  image viewer showed this plainly. Both the reserved cell and the cube hang
+  off `.body[data-scrolls]:has(+ .growBox)`: all three conditions have to hold
+  — a bar to shorten, a corner adjacent to it, and a frame that resizes — or
+  the corner is a gap for nothing.
+
+**Key decisions**:
+
+- **Two mechanisms, one gated behind the other.** Blink discards every
+  `::-webkit-scrollbar` rule if any standard `scrollbar-*` property is set on
+  the element, so the two are mutually exclusive rather than additive. The
+  Firefox colours sit inside `@supports not selector(::-webkit-scrollbar)`,
+  which tests for the pseudo-element rather than naming an engine. Getting this
+  wrong is silent: the bar renders as the browser's own overlay.
+- **Buttons are opted into, not carved out.** WebKit lays out four button slots
+  per axis and starts all four at `display: none`, so a slot exists only once
+  named. Naming the two outer ones (`:vertical:start:decrement`,
+  `:vertical:end:increment`) leaves the inner pair off with no rule to switch it
+  back off. Confirmed in the running app by colouring all four slots.
+- **The page answers for its own overflow.** Whether a bar is showing is not a
+  question CSS can ask, so `Window.Body` measures it and writes `data-scrolls`
+  on itself — a sibling selector then reaches it, rather than threading a prop
+  or the frame context through. It measures against the live box, so the answer
+  stays true of the render it describes even though the reserved corner is part
+  of that box: both states are fixed points, and each reports the bar Chrome is
+  actually drawing.
+
+**Deferred**:
+
+- Firefox draws a flat bar in the same palette — it has only `scrollbar-color`,
+  so no bevel, no dither, no end caps. The `Scrolling` story says to check both.
+- The end caps' click-to-scroll is Blink's own behaviour and was not exercised:
+  the preview pane would not accept clicks in this session.
+- Re-measuring took a rendering page to confirm: a backgrounded one runs no
+  animation frames, so `ResizeObserver` never delivers there and the attribute
+  looks stuck. Confirmed once the pane was foregrounded — the answer flips as a
+  frame settles, and as the text window's file grows past its page.
+- The modal and PhotoBroom's horizontal rail still draw the platform bar.
+
+---
+
 ## The way back to the campsite, from inside the blog
 
 **Date**: 2026-09-09

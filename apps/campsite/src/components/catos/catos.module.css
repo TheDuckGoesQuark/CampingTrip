@@ -50,9 +50,17 @@
 /* A typewriter face, because the campsite's own body font is one and a text
    file is the one place that reads as deliberate rather than unstyled. */
 .textBody {
+  composes: classic from "@jordanscamp/ds/scrollbars.module.css";
   display: block;
   width: 100%;
-  height: 100%;
+  /* Sized by its content, so the bar that appears as the file grows is the
+     window's own — a text file in a frame is one document, not a pane inside a
+     pane. `min-height` keeps a short file filling the window it opened at, and
+     the width stays pinned so only the height follows the text. Where the
+     control cannot size itself it falls back to filling the window and
+     scrolling, which is what `overflow-y` and the composed bar are still for. */
+  field-sizing: content;
+  min-height: 100%;
   margin: 0;
   padding: 0;
   border: 0;

@@ -60,11 +60,17 @@ import "@jordanscamp/ds/tokens.css";
 - `@jordanscamp/ds/tokens.css` loads the brand font (Nunito) and the token layers
   (`primitives → semantic → dimensions → typography → shadow`). Without it, DS
   components render unstyled — every class references a `var(--…)` token.
-- `@jordanscamp/ds/scrollbars.module.css` carries one class, `hidden`, for a
-  scroller that draws no bar — `composes: hidden from
-"@jordanscamp/ds/scrollbars.module.css"` in a CSS module, or the class through
-  `className`. It is opt-in per scroller: chrome with no room for a bar takes it,
-  a surface holding a document leaves it so a reader can see there is more below.
+- `@jordanscamp/ds/scrollbars.module.css` carries two classes, taken through
+  `composes: <class> from "@jordanscamp/ds/scrollbars.module.css"` in a CSS
+  module or through `className`. Both are opt-in per scroller.
+  - `hidden` draws no bar. For chrome with no room for one — an icon rail, a
+    window's tab strip.
+  - `classic` draws a bevelled square bar with arrow end caps, in the same
+    material as `Window`'s toolbar buttons. For a scroller inside boxy chrome,
+    where the browser's own rounded overlay bar reads as foreign. Firefox styles
+    only a thumb and track colour, so it lands on a flat bar in the same palette.
+  - Neither, the default, leaves the browser's bar. For a surface holding a
+    document, where a reader needs to see that there is more below.
 - `<BrandProvider>` applies the `.jc-brand` base (brand font + ink) and the colour
   scheme. Pass `colorScheme="dark"` for the dark token set; it writes `data-theme`
   on `<html>` so Base UI's body-portalled dialogs re-theme too.

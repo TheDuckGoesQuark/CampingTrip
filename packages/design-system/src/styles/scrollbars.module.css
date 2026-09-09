@@ -9,3 +9,110 @@
 .hidden::-webkit-scrollbar {
   display: none;
 }
+
+/* A bevelled bar with arrow end caps, for a scroller that belongs to boxy
+   chrome rather than to the page. The two mechanisms are not equivalent:
+   Blink/WebKit's `::-webkit-scrollbar*` pseudo-elements take a track, a thumb
+   and clickable end caps, while Firefox exposes only a thumb and track colour —
+   so it lands on a flat bar in the same palette rather than this one.
+
+   They are also mutually exclusive rather than additive: any of the standard
+   `scrollbar-*` properties on an element makes Blink take the standard path and
+   discard every `::-webkit-scrollbar` rule, leaving the browser's own overlay
+   bar. So the colours are gated to the engines that have no pseudo-element to
+   lose — which is what the feature query tests, not the engine's name. */
+@supports not selector(::-webkit-scrollbar) {
+  .classic {
+    scrollbar-color: var(--brand-subtle) var(--brand-surface-sunken);
+  }
+}
+
+.classic::-webkit-scrollbar {
+  width: var(--space-m);
+  height: var(--space-m);
+}
+
+/* Dithered rather than flat — a 2px checkerboard is how a well was shaded
+   before gradients, and it separates the track from the page it scrolls. */
+.classic::-webkit-scrollbar-track {
+  background-color: var(--brand-surface-sunken);
+  background-image: repeating-conic-gradient(
+    var(--brand-surface-sunken) 0 25%,
+    var(--brand-surface-raised) 0 50%
+  );
+  background-size: 2px 2px;
+  border: 1px solid var(--brand-border-strong);
+}
+
+/* The chrome band colour, not the raised surface a toolbar button uses: the bar
+   runs alongside the page, so a thumb in the page's own paper would disappear
+   into both it and the track. */
+.classic::-webkit-scrollbar-thumb,
+.classic::-webkit-scrollbar-button {
+  background-color: var(--brand-subtle);
+  border: 1px solid var(--brand-border-strong);
+  box-shadow: var(--shadow-bevel-out);
+}
+
+.classic::-webkit-scrollbar-thumb:hover,
+.classic::-webkit-scrollbar-button:hover {
+  background-color: var(--brand-subtle-hover);
+}
+
+.classic::-webkit-scrollbar-thumb:active,
+.classic::-webkit-scrollbar-button:active {
+  box-shadow: var(--shadow-bevel-in);
+}
+
+/* `content` does not render inside a scrollbar pseudo-element, so each arrow is
+   a background: a 90° wedge whose apex sits on the edge it points at. Drawn
+   rather than an inline SVG so the ink stays a token and re-themes with it. */
+.classic::-webkit-scrollbar-button {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 7px 7px;
+}
+
+/* WebKit lays out four button slots per axis — an inner pair as well as the end
+   caps — and starts every one of them at `display: none`, so a slot exists only
+   once it is asked for by name. Naming the two outer ones leaves the inner pair
+   off without a rule that switches it back off, and each needs an extent along
+   the bar or it collapses to nothing. */
+.classic::-webkit-scrollbar-button:vertical:start:decrement {
+  display: block;
+  height: var(--space-m);
+  background-image: conic-gradient(from 135deg at 50% 0, var(--brand-text) 0 90deg, transparent 0);
+}
+
+.classic::-webkit-scrollbar-button:vertical:end:increment {
+  display: block;
+  height: var(--space-m);
+  background-image: conic-gradient(
+    from 315deg at 50% 100%,
+    var(--brand-text) 0 90deg,
+    transparent 0
+  );
+}
+
+.classic::-webkit-scrollbar-button:horizontal:start:decrement {
+  display: block;
+  width: var(--space-m);
+  background-image: conic-gradient(from 45deg at 0 50%, var(--brand-text) 0 90deg, transparent 0);
+}
+
+.classic::-webkit-scrollbar-button:horizontal:end:increment {
+  display: block;
+  width: var(--space-m);
+  background-image: conic-gradient(
+    from 225deg at 100% 50%,
+    var(--brand-text) 0 90deg,
+    transparent 0
+  );
+}
+
+/* Where a horizontal and a vertical bar meet. Left unfilled it shows through to
+   the page, which breaks the frame at the one corner that has no content. */
+.classic::-webkit-scrollbar-corner {
+  background: var(--brand-subtle);
+  border: 1px solid var(--brand-border-strong);
+}

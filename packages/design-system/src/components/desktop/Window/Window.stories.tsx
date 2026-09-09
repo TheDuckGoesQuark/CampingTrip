@@ -213,3 +213,23 @@ export const Stacked: Story = {
     );
   },
 };
+
+/**
+ * The page's own scrollbar: a dithered track, a bevelled thumb and an arrow end
+ * cap at each end, so the bar belongs to the frame rather than to the browser.
+ * Firefox has no scrollbar pseudo-elements to style, so it draws a flat bar in
+ * the same palette — check this story in both engines.
+ */
+export const Scrolling: Story = {
+  render: () => (
+    <Window size="md">
+      <Window.TitleBar title="A page taller than its frame" onClose={() => {}} />
+      <Window.Body>
+        {Array.from({ length: 6 }, (_, i) => (
+          <Text key={i}>{lorem}</Text>
+        ))}
+      </Window.Body>
+      <Window.StatusBar>Drag the thumb, or press an end cap.</Window.StatusBar>
+    </Window>
+  ),
+};

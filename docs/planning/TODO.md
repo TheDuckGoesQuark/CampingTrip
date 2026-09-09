@@ -53,11 +53,12 @@ the popover's outside-click handling is already there to lift.
 
 - **Keyboard resize.** The amber and green lights cover shade and maximise, but
   dragging to an arbitrary size has no keyboard equivalent.
-- **The scrollbars are the platform's.** A window body, the plain-text surface
-  and a modal draw whatever the OS draws, now that hiding one is opt-in rather
-  than sitewide. A brand-styled thumb and track (`::-webkit-scrollbar-thumb`,
-  `scrollbar-color` for Firefox) would sit better in a stylised desktop than
-  macOS grey — and unlike hiding them, it keeps the affordance.
+- **Two scrollers still draw the platform's bar.** `Window.Body` takes the
+  design system's `classic` class and CatOS's plain-text window no longer
+  scrolls itself; the modal and PhotoBroom's horizontal rail are still the
+  platform's. Each is a deliberate call rather than a sweep: a modal is a
+  document surface, and the rail is horizontal, where the end caps and the 16px
+  band cost more.
 - **A window can be completely hidden.** The browser is the widest frame and it
   centres, so a cascaded viewer lands inside its bounds. Re-clicking the desktop
   icon raises it, which works but is not discoverable. A dock, or windows that
