@@ -1,6 +1,6 @@
 # Jordan's Camp
 
-A personal platform hosted at **[jordanscamp.site](https://jordanscamp.site)**, structured as a pnpm monorepo of static frontend apps. There is currently no backend — the apps are static SPAs served by Caddy on a single EC2 instance. See [Adding a backend later](#adding-a-backend-later) for the on-ramp when one is needed.
+A personal platform hosted at **[jordanscamp.site](https://jordanscamp.site)**, structured as a pnpm monorepo of static frontend apps. There is currently no backend — the apps are static SPAs served by Caddy on a single EC2 instance.
 
 ## Apps
 
@@ -51,19 +51,6 @@ pnpm -r exec tsc -b   # typecheck all apps
 - **Hosting**: Caddy (auto-TLS static file server) on a single EC2 instance
 - **Infrastructure**: Terraform on AWS (EC2, S3, Route53)
 - **CI/CD**: GitHub Actions — lint, test, build, deploy on push to main
-
-## Adding a backend later
-
-The apps are static today, but the box is kept backend-ready (Docker + Compose are
-installed by the EC2 bootstrap). To add a DB-backed backend in any language:
-
-1. Write a `docker-compose.yml` in `/opt/jordanscamp` with your service container and a
-   co-located `postgres` container using a named volume. A co-located Postgres costs nothing
-   extra — it shares the EC2 you already pay for, so there's no always-on database bill.
-2. Add a `reverse_proxy` block for an `api` subdomain to `infra/Caddyfile` (and the EC2
-   bootstrap Caddyfile in `infra/templates/user_data.sh`).
-3. Add a Route53 A record for the `api` subdomain in `infra/route53.tf` pointing to the EIP.
-4. Wire build/deploy into `.github/workflows/deploy.yml`.
 
 ## License
 
