@@ -36,8 +36,8 @@ other by the same night factor.
 - **Both files are normalised to −20 LUFS with a fixed gain**, not a compressor,
   so the rain keeps its gusts and the birds their transients. Matching their
   loudness is what lets one set of gain constants in `AmbienceAudio` mean the
-  same thing for either bed. Birdsong still sits slightly below rain at the same
-  door state, because transients draw the ear where a flat bed doesn't.
+  same thing for either bed. Birdsong still peaks slightly below rain, because
+  transients draw the ear where a flat bed doesn't.
 - **The loops are seamless by construction**, each one's last 5 s crossfaded
   onto its first 5 s. Verified in a browser rather than assumed: both decode to
   exactly 60.0000 s with 0 ms of trailing silence, so mp3 encoder padding did not
@@ -51,6 +51,11 @@ other by the same night factor.
   (`Howler.autoUnlock`) and queues volume changes made before a file has loaded,
   so neither the retry nor the `playing` state latch that woke the volume effect
   is needed.
+- **The mix does not read the tent door.** `RainAudio` scaled rain by
+  `tentDoorState`, but nothing in the app ever calls `setTentDoorState` — the
+  open/close mechanic is still backlog — so the field sits at its initial
+  `"open"` forever and the closed branch was unreachable. The beds track the
+  day/night arc alone.
 - **The toggle is no longer called "rain".** It governs birdsong too, so the
   control reads "Ambience" and its button label follows.
 - **`rainSynth.ts` and its test are deleted** (317 lines). Keeping a second rain

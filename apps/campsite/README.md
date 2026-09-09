@@ -40,9 +40,9 @@ complement crossfades them for free: neither cuts out, and both sit at half gain
 mid-dusk.
 
 `AmbienceAudio` is the sole owner of both. It alone may call into
-`src/audio/ambienceBeds.ts`, and it alone sets the mix from the tent door and
-the day/night arc. A second caller gets beds at a fixed volume that no longer
-track either, and that neither the toggle nor the arc can reach.
+`src/audio/ambienceBeds.ts`, and it alone sets the mix from the day/night arc. A
+second caller gets beds at a fixed volume that no longer tracks it, and that
+neither the toggle nor the arc can reach.
 
 Neither file is fetched until ambience is switched on, which is why an opt-in
 default also keeps 1.7 MB off the critical path. Where the recordings came

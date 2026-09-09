@@ -1,7 +1,6 @@
 import { render, act } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import { useSceneStore } from "../../store/sceneStore";
 import { useSessionStore } from "../../store/sessionStore";
 import { useTimeStore } from "../../store/timeStore";
 import AmbienceAudio from "./AmbienceAudio";
@@ -21,9 +20,8 @@ const NOON = 0.25;
 const MIDNIGHT = 0.75;
 const MID_DUSK = 0.5; // getNightFactor smoothsteps to exactly 0.5 here
 
-function setUp(opts: { progress: number; door?: "open" | "closed"; enabled?: boolean }) {
+function setUp(opts: { progress: number; enabled?: boolean }) {
   useSessionStore.setState({ ambienceEnabled: opts.enabled ?? true });
-  useSceneStore.setState({ tentDoorState: opts.door ?? "open" });
   useTimeStore.setState({ progress: opts.progress });
 }
 
@@ -81,20 +79,6 @@ describe("AmbienceAudio", () => {
     }
 
     expect(lastMix().day).toBe(0);
-  });
-
-  it("muffles both beds when the tent door is closed", () => {
-    setUp({ progress: MID_DUSK, door: "open" });
-    render(<AmbienceAudio />);
-    const open = lastMix();
-
-    setAmbienceMix.mockClear();
-    setUp({ progress: MID_DUSK, door: "closed" });
-    render(<AmbienceAudio />);
-    const closed = lastMix();
-
-    expect(closed.rain).toBeLessThan(open.rain);
-    expect(closed.day).toBeLessThan(open.day);
   });
 
   it("stops the beds and sets no mix while ambience is off", () => {

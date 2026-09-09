@@ -290,8 +290,8 @@ HTML5 Audio path gaps at the loop point and cannot be gain-automated:
 Each file is a 60 s loop with its tail crossfaded onto its head, and both are
 normalised to −20 LUFS so one set of gain constants serves either. `AmbienceAudio`
 owns the mix: it reads `rain` off `getNightFactor` and `day` off its complement,
-which crossfades them through dawn and dusk without either dropping out, then
-scales both by tent door state (open = louder). Neither file is fetched until
+which crossfades them through dawn and dusk without either dropping out.
+Neither file is fetched until
 `ambienceEnabled` goes true. Provenance and the loop-cutting recipe live in
 [docs/ambience-beds.md](docs/ambience-beds.md).
 
