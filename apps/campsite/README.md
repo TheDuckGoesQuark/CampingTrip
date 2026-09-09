@@ -82,11 +82,13 @@ Rules this puts on anything rendered inside the blog window:
   takes the viewport — `height: 100%`, `overflow: hidden`, no pull-to-refresh —
   only under `html.js`, the class the shell's inline script sets, so a page that
   reaches a browser which never ran it keeps the viewport it was given and
-  scrolls. Hiding a scrollbar is per-scroller and opt-in through the design
-  system: `composes: hidden from "@jordanscamp/ds/scrollbars.module.css"`, or
-  that class through `className`. Chrome with no room for a bar takes it — an
-  icon rail, a window's tab strip, the iPod's song list; a surface holding a
-  document leaves it, so a reader can see there is more below.
+  scrolls. A scrollbar's treatment is per-scroller and opt-in through the design
+  system's `scrollbars.module.css`. Chrome with no room for a bar takes `hidden`
+  — an icon rail, a window's tab strip, the iPod's song list. A scroller inside
+  boxy chrome takes `classic`, the bevelled bar with arrow end caps, so the
+  browser's rounded overlay bar does not read as foreign inside a `Window`. A
+  surface holding a document takes neither, so a reader can see there is more
+  below.
 
 ### The CV, and its PDF
 

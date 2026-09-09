@@ -553,7 +553,41 @@ export interface WindowBodyProps {
 }
 
 function Body({ children, inset = false }: WindowBodyProps) {
-  return <div className={cn(styles.body, inset && styles.bodyInset)}>{children}</div>;
+  const page = useRef<HTMLDivElement>(null);
+  const [scrolls, setScrolls] = useState(false);
+
+  /**
+   * Whether the page overflows is not a question CSS can ask, and the frame's
+   * corner needs the answer: the sizing grip reads as the foot of a scrollbar
+   * only when there is one to be the foot of. An inset page cannot scroll, so
+   * it never asks. Measured against the live box, so the answer stays true of
+   * the render it describes — the reserved corner is part of that box.
+   */
+  useLayoutEffect(() => {
+    const element = page.current;
+    if (!element || inset) return;
+
+    const measure = () => setScrolls(element.scrollHeight > element.clientHeight);
+    measure();
+
+    /* Both ends of the comparison move: the frame is resized by its own grip,
+       and the content reflows under it. Watching the page catches the first and
+       its children the second — a late web font resizes neither box itself. */
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+    for (const child of element.children) observer.observe(child);
+    return () => observer.disconnect();
+  }, [children, inset]);
+
+  return (
+    <div
+      ref={page}
+      className={cn(styles.body, inset && styles.bodyInset)}
+      data-scrolls={scrolls || undefined}
+    >
+      {children}
+    </div>
+  );
 }
 
 export const Window = Object.assign(Root, {

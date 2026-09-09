@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { Window } from "./Window";
 
@@ -196,6 +196,50 @@ describe("Window", () => {
     expect(plain).toBeTruthy();
     expect(inset).toBeTruthy();
   });
+  describe("whether the page is scrolling", () => {
+    /* jsdom lays nothing out, so both sides of the comparison are stubbed. The
+       frame's corner reads the answer off the page, so the attribute is the
+       contract worth holding rather than the styling it drives. */
+    const layOut = ({ content, box }: { content: number; box: number }) => {
+      vi.spyOn(HTMLElement.prototype, "scrollHeight", "get").mockReturnValue(content);
+      vi.spyOn(HTMLElement.prototype, "clientHeight", "get").mockReturnValue(box);
+    };
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it("says so when the content is taller than the page", () => {
+      layOut({ content: 2000, box: 500 });
+      render(
+        <Window>
+          <Window.Body>a</Window.Body>
+        </Window>,
+      );
+      expect(screen.getByText("a")).toHaveAttribute("data-scrolls", "true");
+    });
+
+    it("stays silent when the content fits", () => {
+      layOut({ content: 200, box: 500 });
+      render(
+        <Window>
+          <Window.Body>a</Window.Body>
+        </Window>,
+      );
+      expect(screen.getByText("a")).not.toHaveAttribute("data-scrolls");
+    });
+
+    it("stays silent for an inset page, which clips instead of scrolling", () => {
+      layOut({ content: 2000, box: 500 });
+      render(
+        <Window>
+          <Window.Body inset>a</Window.Body>
+        </Window>,
+      );
+      expect(screen.getByText("a")).not.toHaveAttribute("data-scrolls");
+    });
+  });
+
   describe("geometry", () => {
     const titleBarOf = (container: HTMLElement) =>
       container.querySelector("[class*=titlebar]") as HTMLElement;
