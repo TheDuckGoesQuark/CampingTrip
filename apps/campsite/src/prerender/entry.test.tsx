@@ -50,6 +50,12 @@ describe("prerender entry", () => {
     expect(html).toContain(`href="${blogPaths.cvPdf}"`);
   });
 
+  it("points the campsite project at the tent, not at a reload of this site", () => {
+    const { html } = render(blogPaths.project("camping-trip"))!;
+    expect(html).toContain('href="/"');
+    expect(html).not.toContain('href="https://jordanscamp.site/"');
+  });
+
   it("renders an island's fallback rather than its component", () => {
     const page = render("/blog/posts/what-vibe-coding-actually-changed.html")!;
     expect(page.html).toContain("counts your clicks");

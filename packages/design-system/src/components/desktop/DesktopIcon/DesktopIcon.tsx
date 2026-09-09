@@ -37,7 +37,7 @@ export function DesktopIcon({ label, icon, glyph, color, isNew, onClick }: Deskt
       {showFallback ? (
         glyph ? (
           <span className={styles.glyph}>
-            <Icon name={glyph} size="lg" />
+            <Icon name={glyph} size="xl" />
           </span>
         ) : (
           <Tile label={label} color={color} size="lg" />

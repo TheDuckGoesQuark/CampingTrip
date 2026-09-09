@@ -74,6 +74,35 @@ function Item({ onClick, disabled, shortcut, children }: MenuBarItemProps) {
 }
 Item.displayName = "MenuBar.Item";
 
+export interface MenuBarActionProps {
+  onClick?: () => void;
+  /** Required when `children` is a glyph: without it the button has no name. */
+  ariaLabel?: string;
+  /** Hover and focus hint. Distinct from `ariaLabel`, which names the control. */
+  title?: string;
+  children?: ReactNode;
+}
+
+/**
+ * A bar entry that acts on its own rather than dropping a menu. Wears the same
+ * bare styling as a `MenuBar.Menu` trigger, so a bar can mix the two without
+ * one of them reading as a foreign object.
+ */
+function Action({ onClick, ariaLabel, title, children }: MenuBarActionProps) {
+  return (
+    <button
+      type="button"
+      className={styles.trigger}
+      onClick={onClick}
+      aria-label={ariaLabel}
+      title={title}
+    >
+      {children}
+    </button>
+  );
+}
+Action.displayName = "MenuBar.Action";
+
 function MenuSeparator() {
   return <Menu.Separator className={styles.separator} />;
 }
@@ -82,6 +111,7 @@ MenuSeparator.displayName = "MenuBar.Separator";
 /** MenuBar — a `MenuBar.Menu` goes in the `left` slot, like any other bar content. */
 export const MenuBar = Object.assign(Root, {
   Menu: BarMenu,
+  Action,
   Item,
   Separator: MenuSeparator,
 });

@@ -7,6 +7,7 @@ import {
   iconOfBlogPage,
   isBrowserPage,
   resolveBlogPage,
+  SITE_ORIGIN,
   titleOfBlogPage,
   type BrowserPage,
 } from "../../data/blogPages";
@@ -17,9 +18,6 @@ import BlogPageView from "../blog/BlogPageView";
 import type { WindowFrameProps } from "./windowFrame";
 
 import styles from "./catos.module.css";
-
-/** Not `location.origin`: a `localhost:5173` address would break the illusion. */
-const SITE_ORIGIN = "https://jordanscamp.site";
 
 function browserPageAt(path: string): BrowserPage | null {
   const ref = parseBlogPath(path);

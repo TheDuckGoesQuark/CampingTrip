@@ -1,4 +1,5 @@
 import { blogPaths } from "../routing/blogPaths";
+import { routes } from "../routing/navigation";
 import type { DesktopItem } from "../types/desktop";
 import { slugify } from "./slug";
 
@@ -10,7 +11,10 @@ import { slugify } from "./slug";
  * visible before it scrolls.
  */
 export const desktopItems: DesktopItem[] = [
-  { kind: "app", label: "CatNav", opens: blogPaths.home },
+  { kind: "app", label: "CatNav", opens: blogPaths.home, glyph: "globe" },
+  // High in the rail, because the rail scrolls and a way out below the fold is
+  // not one. It is the joke rather than the reliable door — see the menu bar.
+  { kind: "app", label: "Touch Grass", opens: routes.tent, glyph: "grass" },
   {
     kind: "image",
     label: "smittens_047.jpg",

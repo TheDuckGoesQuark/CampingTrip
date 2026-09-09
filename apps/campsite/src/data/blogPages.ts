@@ -126,7 +126,7 @@ export function iconOfBlogPage(page: BlogPage): IconName {
 export function iconOfDesktopItem(item: DesktopItem): IconName {
   switch (item.kind) {
     case "app":
-      return "globe";
+      return item.glyph;
     case "image":
       return "image";
     case "text":
@@ -175,6 +175,12 @@ export type PageMeta = {
 );
 
 export const SITE = "Jordan's Camp";
+
+/**
+ * Where the site is served from. Not `location.origin`: a `localhost:5173` in
+ * CatNav's address bar would break the illusion.
+ */
+export const SITE_ORIGIN = "https://jordanscamp.site";
 const MAX_DESCRIPTION = 160;
 
 function summarise(text: string): string {

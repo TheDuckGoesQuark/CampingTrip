@@ -15,7 +15,7 @@ export const Default: Story = {};
 export const AllVariants: Story = {
   render: () => (
     <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-      {(["sm", "md", "lg"] as const).map((size) => (
+      {(["sm", "md", "lg", "xl"] as const).map((size) => (
         <div key={size} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           <code>{size}</code>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 16 }}>

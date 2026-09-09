@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import { blogPaths } from "../routing/blogPaths";
+import { routes } from "../routing/navigation";
 import { desktopItems, desktopItemSlug, findDesktopItem } from "./desktopItems";
 
 describe("desktopItems", () => {
@@ -24,7 +26,15 @@ describe("desktopItems", () => {
     expect(findDesktopItem("not-on-the-desktop")).toBeUndefined();
   });
 
-  it("keeps exactly one launcher, so the rail is a junk drawer and not an index", () => {
-    expect(desktopItems.filter((item) => item.kind === "app")).toHaveLength(1);
+  it("launches one page and leaves by one door, so the rail is not an index", () => {
+    const launchers = desktopItems.filter((item) => item.kind === "app");
+    expect(launchers.map((item) => item.opens)).toEqual([blogPaths.home, routes.tent]);
+  });
+
+  it("keeps the way outside above the junk, so a short rail still shows it", () => {
+    const outside = desktopItems.findIndex(
+      (item) => item.kind === "app" && item.opens === routes.tent,
+    );
+    expect(outside).toBeLessThan(2);
   });
 });

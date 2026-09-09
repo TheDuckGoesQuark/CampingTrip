@@ -39,8 +39,9 @@ function pathFor(item: DesktopItem): string {
  * faux-desktop chrome with the campsite's content.
  *
  * The split: the browser owns everything worth reading, the desktop owns
- * everything else. So the rail launches CatNav and a junk drawer, and CatNav
- * opens a homepage rather than treating the desktop as its new-tab page.
+ * everything else. So the rail launches CatNav, a junk drawer and the way
+ * outside, and CatNav opens a homepage rather than treating the desktop as its
+ * new-tab page.
  *
  * Several windows can be open together, stacked by `stackOrder` rather than by
  * DOM order. The URL names the front window; which others are open is session
@@ -103,6 +104,15 @@ export default function LaptopScreenOverlay() {
     playSoftClick();
     navigate(routes.tent);
   }, [navigate]);
+
+  const launch = useCallback(
+    (item: DesktopItem) => {
+      const path = pathFor(item);
+      if (path === routes.tent) shutDown();
+      else open(path);
+    },
+    [open, shutDown],
+  );
 
   /**
    * The red light. Closing the front window hands the address bar to whatever is
@@ -170,9 +180,9 @@ export default function LaptopScreenOverlay() {
         {/* Wallpaper — soft green → ivory */}
         <div className={styles.wallpaper} />
 
-        {/* The way out lives in the menu bar rather than on the desktop: a
-            window covers the desktop, and leaving must not depend on closing
-            one first. */}
+        {/* Drawn on the bar rather than only in the menu or on the desktop: a
+            window covers the desktop, and under 768px covers all of it, so
+            leaving must not depend on moving one. */}
         <MenuBar
           left={
             <>
@@ -194,13 +204,21 @@ export default function LaptopScreenOverlay() {
                 {/* Escape closes the front window first, so it only leaves when
                     there is nothing left to close. */}
                 <MenuBar.Item onClick={shutDown} shortcut={anyOpen ? undefined : "Esc"}>
-                  Shut down
+                  Touch grass
                 </MenuBar.Item>
               </MenuBar.Menu>
               <span className={styles.menuDim}>CatNav</span>
             </>
           }
-          right={<span className={styles.menuDim}>{clock}</span>}
+          right={
+            <>
+              <MenuBar.Action onClick={shutDown} title="Leave CatOS for the campsite">
+                <Icon name="door-arrow" size="md" />
+                Touch grass
+              </MenuBar.Action>
+              <span className={styles.menuDim}>{clock}</span>
+            </>
+          }
         />
 
         <div className={styles.rail}>
@@ -209,7 +227,7 @@ export default function LaptopScreenOverlay() {
               key={item.label}
               label={item.label}
               glyph={iconOfDesktopItem(item)}
-              onClick={() => open(pathFor(item))}
+              onClick={() => launch(item)}
             />
           ))}
         </div>

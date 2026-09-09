@@ -9,6 +9,10 @@
 .backdrop[data-ending-style] {
   opacity: 0;
 }
+/* Same reason as the popup below. */
+.backdrop[data-ending-style] {
+  pointer-events: none;
+}
 
 .popup {
   position: fixed;
@@ -25,6 +29,14 @@
   transition:
     opacity 0.15s ease,
     transform 0.15s ease;
+}
+/* A popup on its way out still covers what it is revealing, so it would
+   swallow a click meant for that. The descendant half is not redundant with
+   inheritance: `Window`'s frame sets `pointer-events: auto` to be clickable
+   through its layer, and takes hits back unless outranked. */
+.popup[data-ending-style],
+.popup[data-ending-style] * {
+  pointer-events: none;
 }
 
 /* Centered card */
