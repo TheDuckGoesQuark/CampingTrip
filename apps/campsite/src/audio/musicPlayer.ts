@@ -26,8 +26,14 @@ function startProgress() {
   }, 250);
 }
 
-function loadTrack(index: number): Howl | null {
-  const wrappedIndex = ((index % songs.length) + songs.length) % songs.length;
+// Null for an empty playlist: a modulo by zero length is NaN, and a NaN index
+// in the store sticks — no later track can ever equal it.
+function wrapIndex(index: number): number | null {
+  if (songs.length === 0) return null;
+  return ((index % songs.length) + songs.length) % songs.length;
+}
+
+function loadTrack(wrappedIndex: number): Howl | null {
   const song = songs[wrappedIndex];
   if (!song) return null;
 
@@ -63,7 +69,8 @@ function loadTrack(index: number): Howl | null {
 
 export const musicPlayer = {
   playTrack(index: number) {
-    const wrappedIndex = ((index % songs.length) + songs.length) % songs.length;
+    const wrappedIndex = wrapIndex(index);
+    if (wrappedIndex === null) return;
     const howl =
       wrappedIndex === loadedIndex && currentHowl ? currentHowl : loadTrack(wrappedIndex);
     if (!howl) return;
@@ -103,7 +110,8 @@ export const musicPlayer = {
 
   next() {
     const store = useMusicStore.getState();
-    const nextIndex = (store.currentTrackIndex + 1) % songs.length;
+    const nextIndex = wrapIndex(store.currentTrackIndex + 1);
+    if (nextIndex === null) return;
     store.setTrack(nextIndex);
     this.playTrack(nextIndex);
   },
@@ -119,7 +127,8 @@ export const musicPlayer = {
         return;
       }
     }
-    const prevIndex = (store.currentTrackIndex - 1 + songs.length) % songs.length;
+    const prevIndex = wrapIndex(store.currentTrackIndex - 1);
+    if (prevIndex === null) return;
     store.setTrack(prevIndex);
     this.playTrack(prevIndex);
   },
