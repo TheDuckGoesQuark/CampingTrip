@@ -6,6 +6,52 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## The campfire outlived its loading screen
+
+**Date**: 2026-09-09
+
+**What was done**: The campfire's low base rumble could keep playing for the
+rest of the session, through the ambience toggle being switched off. It was
+started in one effect and stopped in a different one, so any exit that did not
+run the second effect's timer left it burning with nothing holding a handle to
+it.
+
+- **The stop lived on the happy path only.** `stopCampfire` was called from
+  inside the fade-out effect's `setTimeout`, and that effect's cleanup cleared
+  the timer without stopping the fire. Unmounting before it fired therefore
+  leaked the fire permanently — and "Reset preferences" in the cog popover does
+  exactly that, clearing `hasCompletedWelcome`, which drops `showTent` in
+  `SceneRoot` and unmounts the screen. The control that leaks the sound sits in
+  the same popover as the toggle meant to silence it.
+- **Withdrawing the preference did nothing to a lit fire.** Both start effects
+  gated on `ambienceEnabled`, but nothing stopped the campfire when it went
+  false, so turning ambience off mid-load left the fire crackling.
+- **One effect now owns both ends**, keyed on a single `campfireLit` derived
+  from the welcome, the preference and the fade-out. Every exit is a cleanup:
+  the fade-out flips the flag, an unmount runs the same teardown, and so does
+  withdrawing the preference. Two tests cover the two paths that were broken.
+- **`campfireSynth` was building its own `AudioContext`**, against the rule
+  `audioContext.ts` states in its own docblock. So the hum sat on a second OS
+  audio thread that nothing else could reach or suspend. It uses the shared
+  context now, and `audioContext.ts` is the only place in `src/` that
+  constructs one.
+- **A suspended context no longer counts as a lit fire.** `startCampfire` set
+  `playing = true` regardless of whether Web Audio could sound, and the caller
+  latched `audioStarted` on the same assumption, so a returning visitor — who
+  arrives with the welcome already completed and has made no gesture yet — got
+  a graph built against a mute context and no retry. It now declines, reports
+  that through `isCampfirePlaying`, and the owner retries on the first gesture.
+- **Relighting during a fade-out builds a fresh graph.** `playing` was cleared
+  on a timer, so a start inside the fade window returned early and was then
+  silenced by the pending teardown. Same detach-before-fade fix as
+  `ambienceBeds`.
+
+**Deferred**: the campfire is still synthesised rather than recorded, unlike the
+two ambience beds. It only plays under the loading screen, where a synth reads
+fine.
+
+---
+
 ## `tentDoorState` is gone
 
 **Date**: 2026-09-09
