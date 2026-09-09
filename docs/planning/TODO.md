@@ -92,35 +92,27 @@ them was broken and had to be reverted. Worth solving before the next change
 inside the Canvas:
 
 - Find a way to drive the tent scene with a live rAF for verification, or
-- Add coverage with `@react-three/test-renderer` (already a devDependency, and
-  the vitest config already inlines it) so scene-graph assertions — a mesh's
-  resolved position, whether a tween's completion is wired — can run headlessly.
+- Extend the `@react-three/test-renderer` coverage. `Lighting.test.tsx` is the
+  worked example: mount a subtree, `advanceFrames`, then assert on what the
+  `useFrame` body wrote. A mesh's resolved position and whether a tween's
+  completion is wired are reachable the same way.
 
 ---
 
 ## Backlog
 
-### Campsite — the music player has no music
+### Blog — the music callout promises songs the tape deck hasn't got
 
-`src/data/songs.ts` names three tracks under `public/audio/songs/`, and none of
-the files are in the repo, so every track 404s and the player's transport does
-nothing. Either add the mp3s, or cut the player back to whatever actually
-exists. `ls apps/campsite/public/audio` shows what is actually there.
+The `Callout` at the foot of `/blog/tags/music.html` reads "The tape deck back at camp
+has the actual songs on it", and its button opens a player whose song list is
+empty. Needs either Jordan's words or a recording in `songs.ts`.
 
-### Campsite — `ARCHITECTURE.md` describes an audio module that isn't there
+### Repo — `PLAN.md` reads as a second architecture document
 
-Its audio section documents `audioManager.ts`, subscribing to Zustand stores
-outside React, plus `rain-ambient.mp3` and `tent-door-rustle.mp3`. None of the
-three exist; file playback is `musicPlayer.ts`. The ambience and rain entries
-around it are current, so this is a stale pocket rather than a stale document.
-
-### Campsite — `Lighting.test.ts` asserts on copies of the component's arithmetic
-
-Every test in it rebuilds the keyframe arrays from `Lighting.tsx` in the test
-file and asserts on those, so nothing imports or renders `Lighting`. The stops
-can drift from the component silently and the suite stays green. Driving the
-`useFrame` body needs `@react-three/test-renderer`, which the campsite already
-depends on for other scene tests.
+It is the pre-build implementation plan, and it describes an `audioManager.ts`,
+a `rain-ambient.mp3` and a `tent-door-rustle.mp3` that were never built. A
+reader who opens it alongside `ARCHITECTURE.md` gets two answers. Decide whether
+it moves under `docs/`, goes away, or gains a header saying what it is.
 
 ### Campsite — tent open/close mechanic
 

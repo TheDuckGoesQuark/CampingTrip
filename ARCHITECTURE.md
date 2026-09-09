@@ -6,7 +6,7 @@ This document describes the design decisions, architecture, and patterns used in
 
 | Layer            | Technology                                                      |
 | ---------------- | --------------------------------------------------------------- |
-| UI Framework     | React 18                                                        |
+| UI Framework     | React 19                                                        |
 | 3D Rendering     | Three.js via React Three Fiber (R3F)                            |
 | R3F Utilities    | Drei (useGLTF, useTexture, Html, Environment)                   |
 | State Management | Zustand (5 independent stores)                                  |
@@ -25,9 +25,10 @@ src/
 │   └── gsapTimelines.ts     createWakeUpTimeline, createDoorTimeline, createLaptopTimeline
 │
 ├── audio/               All sound generation
-│   ├── audioManager.ts      Howler.js file playback + store subscriptions
+│   ├── audioContext.ts      Shared AudioContext singleton
 │   ├── ambienceBeds.ts      Two looping recorded beds (Howler)
 │   ├── campfireSynth.ts     Crackling fire for the loading screen (Web Audio)
+│   ├── musicPlayer.ts       Tape-deck transport over one Howl (Howler)
 │   └── soundEffects.ts      Synthesised one-shot SFX (laptop, midi, guitar, cat)
 │
 ├── components/
@@ -131,7 +132,7 @@ Five independent Zustand stores keep concerns separated:
 
 - Each store has a single concern and a minimal surface area
 - Components subscribe to exactly the slice they need (Zustand's selector pattern)
-- Non-React code (audioManager) can subscribe without hooks via `store.subscribe()`
+- Code outside a React render can subscribe via `store.subscribe()` — `CameraController` fires GSAP tweens off scene-store transitions that way
 - Stores can be tested and reset independently
 
 **Session persistence:** `sessionStore` uses Zustand's `persist` middleware with `localStorage` key `campingtrip-session`. It remembers sound/effects preferences across visits.
@@ -296,9 +297,17 @@ Neither file is fetched until
 `ambienceEnabled` goes true. Provenance and the loop-cutting recipe live in
 [docs/ambience-beds.md](docs/ambience-beds.md).
 
-### File Playback (`audioManager.ts`)
+### Track Playback (`musicPlayer.ts`)
 
-Uses Howler.js for the few audio files that exist (rain-ambient.mp3, tent-door-rustle.mp3). Subscribes directly to Zustand stores (not via React hooks) for reactive volume/mute control.
+The tape deck's transport, behind the iPod-style overlay at `/music`. It keeps
+one Howl at a time — loading a track stops and unloads the last — and pushes
+seek position into `musicStore` on a 250 ms interval so the progress bar has
+something to read.
+
+Its playlist is `src/data/songs.ts`, which is empty: no recordings are
+published, so the overlay renders its empty song list and every transport
+control is a no-op. Adding a track is an entry in that array plus the file under
+`public/audio/songs/`.
 
 ## Animation Patterns
 
@@ -373,7 +382,8 @@ Tests use Vitest with jsdom environment. Three categories:
 
 1. **Pure logic tests** — Store actions, keyframe interpolation, camera math, easing values. No DOM or WebGL needed.
 2. **DOM component tests** — Testing Library for overlays, buttons, keyboard handlers. Mock WebGL context in setup.
-3. **Audio system tests** — Mock AudioContext verifies synthesiser functions execute without errors and respect mute state.
+3. **Audio system tests** — Mock AudioContext verifies synthesiser functions execute without errors and respect mute state. Howler is mocked per-suite, so the transport and the ambience mix are asserted through the calls they make.
+4. **Scene-graph tests** — `@react-three/test-renderer` mounts an R3F subtree without a WebGL context and `advanceFrames` runs its `useFrame` bodies, so a rig like `Lighting` can be asserted on the values it actually writes to its lights rather than on a copy of its arithmetic.
 
 WebGL-dependent rendering (actual pixels, shaders, shadows) is not unit-tested — that would require visual regression testing with a real browser (Playwright).
 
