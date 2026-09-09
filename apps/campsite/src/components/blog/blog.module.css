@@ -108,10 +108,6 @@
   }
 }
 
-.eyebrow {
-  margin-bottom: var(--space-s);
-}
-
 /* Gap above a paragraph that follows another. */
 .paragraphGap {
   margin-top: var(--space-m);

@@ -5,7 +5,14 @@
  */
 
 :root {
+  /* Two faces, split by job. Nunito is a rounded display face: its terminals
+     curve and its counters are wide, which gives every letter a similar oval
+     silhouette — excellent at heading sizes, tiring across a 68ch paragraph.
+     Nunito Sans squares those terminals and fits tighter, so words resolve by
+     outline rather than by reading through them. Headings, buttons, tags and
+     labels keep Nunito; anything set for reading takes `--font-text`. */
   --font-sans: "Nunito", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-text: "Nunito Sans Variable", "Nunito Sans", var(--font-sans);
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
 
   --weight-regular: 400;
@@ -14,7 +21,14 @@
   --weight-heading: 800;
 
   /* Headings (Nunito 800) — size / line-height */
-  --text-title-1-size: 2rem; /* 32 */
+  /* The top step is fluid. One fixed size cannot serve both ends: 32px is right
+     against a phone's column and reads undersized once the column is twice as
+     wide. `cqi`, not `vi` — a page here can sit inside a resizable in-page
+     window, and it is that width the title answers to; with no query container
+     in the ancestry the unit falls back to the viewport, which is the same
+     answer for a page rendered directly. */
+  --text-title-1-step: 2rem; /* 32 — the fixed step, for a glyph in a fixed box */
+  --text-title-1-size: clamp(var(--text-title-1-step), 1.55rem + 1.6cqi, 2.75rem);
   --text-title-1-lh: 1.2;
   --text-title-2-size: 1.625rem; /* 26 */
   --text-title-2-lh: 1.25;
@@ -23,11 +37,11 @@
   --text-title-4-size: 1.0625rem; /* 17 */
   --text-title-4-lh: 1.35;
 
-  /* Body */
+  /* Body — set in `--font-text` */
   --text-body-lg-size: 1.125rem; /* 18 */
   --text-body-lg-lh: 1.6;
-  --text-body-md-size: 1rem; /* 16 */
-  --text-body-md-lh: 1.6;
+  --text-body-md-size: 1.0625rem; /* 17 */
+  --text-body-md-lh: 1.62;
   --text-body-sm-size: 0.875rem; /* 14 */
   --text-body-sm-lh: 1.55;
 

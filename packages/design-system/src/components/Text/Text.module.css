@@ -24,6 +24,14 @@
   line-height: var(--text-title-4-lh);
   font-weight: var(--weight-bold);
 }
+/* The three reading variants, and only these: a title, a label or a tile is
+   looked at rather than read through, and stays on the display face. */
+.body-lg,
+.body,
+.body-sm {
+  font-family: var(--font-text);
+}
+
 .body-lg {
   font-size: var(--text-body-lg-size);
   line-height: var(--text-body-lg-lh);

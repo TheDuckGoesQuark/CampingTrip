@@ -8,11 +8,15 @@
  * stacking order.
  */
 
-/* Brand font */
+/* Brand fonts — Nunito for display and UI chrome, Nunito Sans for reading. */
 @import "@fontsource/nunito/400.css";
 @import "@fontsource/nunito/600.css";
 @import "@fontsource/nunito/700.css";
 @import "@fontsource/nunito/800.css";
+/* Variable, not static weights: paragraphs want 400, an inline link 600 and a
+   `<strong>` 700, and one 31KB axis file is cheaper than three cuts at ~16KB
+   each. `unicode-range` in the package keeps the unused subsets off the wire. */
+@import "@fontsource-variable/nunito-sans";
 
 /* Token layers (order matters: primitives back semantic) */
 @import "./primitives.css";

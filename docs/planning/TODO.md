@@ -6,6 +6,22 @@ All planned and deferred work, organised by priority.
 
 ## Next Up
 
+### Blog — a real italic for post prose
+
+`whatVibeCodingChanged.tsx` uses `<em>`, and the Nunito Sans load is the roman
+axis only, so the browser synthesises the slant. `@fontsource-variable/nunito-sans`
+ships `index-italic.css` beside it — another ~31KB for the one `<em>` on the site
+today, which is why it was not taken. Worth it once prose leans on emphasis.
+
+### Blog — Nunito still fetches four static weights
+
+Splitting `--font-text` off `--font-sans` did not free any Nunito weight: 800 is
+titles and tiles, 700 is `title-4`/labels/buttons/tags/badges, 600 is `Link`, and
+400 is every unweighted descendant of `.jc-brand`. The saving is a different move
+— `@fontsource-variable/nunito` would replace four ~16KB cuts with one axis file,
+the way the text face already works. Derive the current cost with
+`ls -la node_modules/.pnpm/@fontsource+nunito@*/node_modules/@fontsource/nunito/files/`.
+
 ### Campsite — a full-screen settings takeover with model credits
 
 The cog opens a 180px popover. A takeover would have room for the three

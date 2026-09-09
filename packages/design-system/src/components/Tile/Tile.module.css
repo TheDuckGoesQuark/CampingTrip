@@ -25,5 +25,7 @@
 .lg {
   width: var(--tile-lg);
   height: var(--tile-lg);
-  font-size: var(--text-title-1-size);
+  /* The step, not the fluid heading size: the box is a fixed 72px, so a letter
+     that grew with the window would outgrow the square it sits in. */
+  font-size: var(--text-title-1-step);
 }
