@@ -6,6 +6,66 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## The intro says what I'm for, and the way out is a control you can press
+
+**Date**: 2026-09-09
+
+**What was done**:
+
+- **The homepage intro is rewritten.** It led with "I build software for a
+  living and make odd little things for the fun of it" and an explanation of the
+  computer-inside-a-campsite joke. It now opens on what I'm for — making
+  people's lives easier, and solving complex problems with easy-to-follow
+  systems — and invites contact. The writing paragraph loses the specific
+  examples and names the range instead: music, physics, Flash game mechanics.
+- **The invitation carries a footnote.** An asterisk after "the medium of your
+  liking" links to a small, muted aside below the prose offering the campsite as
+  the other option. `<sup>` is hand-positioned rather than left on
+  `vertical-align: super`, which grows the line box and would loosen the one
+  line holding the marker against the rest of the paragraph.
+- **The aside offers a control, not an instruction.** `EscapeHatch` draws the
+  way out as whichever control the reader actually has — a keycap where there is
+  a keyboard, the menu bar's own `→ Touch grass` button where there is not —
+  and both are the same link to the tent, so the aside is pressable rather than
+  a note about a key. The keycap is a `.key` chip: mono, sunken, thick bottom
+  border, `line-height: 1` so it does not stretch the line it sits in.
+- **The bin window lost its status bar.** "Items in the Bin are kept for 60
+  days" was a second joke stacked on the one already in the body, which is the
+  funnier of the two and the one that reads as the bin's own voice.
+
+**Key decisions**:
+
+- **The swap turns on `pointer`, not on a width.** A width query gets this
+  wrong in the direction that matters: CatNav is resizable, so a narrow window
+  on a laptop still has an Esc key and would have been told to tap a button.
+  `(pointer: coarse)` asks whether there is a keyboard, which is the actual
+  question.
+- **CSS rather than `isMobile`.** `isMobile` is a module-load constant, and
+  every blog URL is prerendered — `typeof window` is `undefined` there, so a JS
+  branch would bake the keyboard copy into the static HTML and flip it on
+  hydration for phone visitors. Shipping both branches and letting the device
+  choose has no mismatch to reconcile.
+- **The verb moves with the control.** "Hit Esc a few times" is true of layered
+  Escape, which closes the front window before it leaves; a tap on Touch grass
+  does it once. The swapped span carries its own verb so neither reading lies,
+  and the rest of the sentence stays single-sourced.
+- **A link, not a button.** It is a real navigation to `/` with a URL, and its
+  accessible name stays the visible text so it satisfies label-in-name; the
+  menu bar's own `title` explains the destination.
+- **The footnote marker is named.** A link whose entire text is `*` fills a
+  screen reader's link list with punctuation, so it carries
+  `aria-label="Footnote"` and the aside's matching `*` is `aria-hidden` — the
+  same treatment `MenuBar` gives its shortcut hints. No back-link from the
+  aside: with one footnote two lines under its marker, it would be clutter.
+
+**Deferred**: the `.key` chip lives in the blog's CSS module. If a second use
+turns up it belongs in `@jordanscamp/ds`, with `MenuBar.Item`'s shortcut hint
+rendering it too, so there is one keycap look rather than two. The aside's link
+also skips the `playSoftClick()` the menu bar's button plays, on the grounds
+that it is prose rather than chrome.
+
+---
+
 ## A window's scrollbar, drawn in the frame's own hard edges
 
 **Date**: 2026-09-09

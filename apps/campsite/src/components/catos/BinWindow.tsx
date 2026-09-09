@@ -42,7 +42,6 @@ export default function BinWindow({ item, onClose, ...frame }: BinWindowProps) {
           </Text>
         </div>
       </Window.Body>
-      <Window.StatusBar>Items in the Bin are kept for 60 days.</Window.StatusBar>
     </Window>
   );
 }
