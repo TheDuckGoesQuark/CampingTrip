@@ -100,6 +100,20 @@ inside the Canvas:
 
 ## Backlog
 
+### Campsite — the music player has no music
+
+`src/data/songs.ts` names three tracks under `public/audio/songs/`, and none of
+the files are in the repo, so every track 404s and the player's transport does
+nothing. Either add the mp3s, or cut the player back to whatever actually
+exists. `ls apps/campsite/public/audio` shows what is actually there.
+
+### Campsite — `ARCHITECTURE.md` describes an audio module that isn't there
+
+Its audio section documents `audioManager.ts`, subscribing to Zustand stores
+outside React, plus `rain-ambient.mp3` and `tent-door-rustle.mp3`. None of the
+three exist; file playback is `musicPlayer.ts`. The ambience and rain entries
+around it are current, so this is a stale pocket rather than a stale document.
+
 ### Campsite — tent open/close mechanic
 
 - Add tent flap open/close interaction (click or swipe to unzip/zip)

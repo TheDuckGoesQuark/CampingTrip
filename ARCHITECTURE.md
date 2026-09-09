@@ -26,7 +26,7 @@ src/
 │
 ├── audio/               All sound generation
 │   ├── audioManager.ts      Howler.js file playback + store subscriptions
-│   ├── rainSynth.ts         Multi-layer procedural rain (Web Audio)
+│   ├── ambienceBeds.ts      Two looping recorded beds (Howler)
 │   └── soundEffects.ts      Synthesised one-shot SFX (laptop, midi, guitar, cat)
 │
 ├── components/
@@ -38,7 +38,7 @@ src/
 │   │   ├── InteractiveObject.tsx Generic wrapper: hover highlight, click, a11y
 │   │   ├── InteractionOverlay.tsx Keyboard navigation (hidden buttons)
 │   │   ├── WakeUpController.tsx  Intro cinematic (GSAP timeline)
-│   │   ├── RainAudio.tsx         Bridges rainSynth to R3F lifecycle
+│   │   ├── AmbienceAudio.tsx     Drives the ambience mix from door + time
 │   │   ├── SceneLabel.tsx        3D floating label (Drei Html)
 │   │   └── DebugControls.tsx     Dev-only orbit camera + FPS display
 │   │
@@ -277,16 +277,23 @@ All one-shot sounds are generated from Web Audio oscillators and buffers — no 
 
 Each function checks `sessionStore.soundEnabled` before creating any audio nodes.
 
-### Rain Synthesis (`rainSynth.ts`)
+### Ambience Beds (`ambienceBeds.ts`)
 
-Four concurrent noise layers:
+Two looping field recordings, played through Howler on the Web Audio path — the
+HTML5 Audio path gaps at the loop point and cannot be gain-automated:
 
-1. **Deep** — Brownian noise → 600 Hz LPF (rain body on fabric)
-2. **Mid** — White noise → 2.2 kHz bandpass (individual drop patter)
-3. **High** — White noise → 5.5 kHz bandpass (mist / splatter detail)
-4. **Drips** — Stochastic short bursts with resonant LPF (heavy drops on canvas)
+| Bed    | File               | Sounds when                       |
+| ------ | ------------------ | --------------------------------- |
+| `rain` | `rain-on-tent.mp3` | night, peaking at `nightFactor` 1 |
+| `day`  | `dawn-chorus.mp3`  | day, peaking at `nightFactor` 0   |
 
-A slow LFO (2.5s random walk) modulates layers for natural gust fluctuation. Volume responds to door state (open = louder) and night factor (silent during day).
+Each file is a 60 s loop with its tail crossfaded onto its head, and both are
+normalised to −20 LUFS so one set of gain constants serves either. `AmbienceAudio`
+owns the mix: it reads `rain` off `getNightFactor` and `day` off its complement,
+which crossfades them through dawn and dusk without either dropping out, then
+scales both by tent door state (open = louder). Neither file is fetched until
+`ambienceEnabled` goes true. Provenance and the loop-cutting recipe live in
+[docs/ambience-beds.md](docs/ambience-beds.md).
 
 ### File Playback (`audioManager.ts`)
 

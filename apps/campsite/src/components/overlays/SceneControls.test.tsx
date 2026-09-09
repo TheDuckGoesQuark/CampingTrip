@@ -4,7 +4,7 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { useSessionStore } from "../../store/sessionStore";
 import SceneControls from "./SceneControls";
 
-const RAIN = 0;
+const AMBIENCE = 0;
 const SOUND = 1;
 const VISUALS = 2;
 
@@ -21,7 +21,7 @@ describe("SceneControls", () => {
   it("renders the three cluster buttons", () => {
     render(<SceneControls />);
     expect(screen.getByLabelText("Turn visual effects off")).toBeInTheDocument();
-    expect(screen.getByLabelText("Turn rain sound on")).toBeInTheDocument();
+    expect(screen.getByLabelText("Turn ambience on")).toBeInTheDocument();
     expect(screen.getByLabelText("Settings")).toBeInTheDocument();
   });
 
@@ -31,22 +31,22 @@ describe("SceneControls", () => {
       "aria-pressed",
       "true",
     );
-    expect(screen.getByLabelText("Turn rain sound on")).toHaveAttribute("aria-pressed", "false");
+    expect(screen.getByLabelText("Turn ambience on")).toHaveAttribute("aria-pressed", "false");
   });
 
-  it("the rain button turns ambience on, and its label follows", () => {
+  it("the ambience button turns ambience on, and its label follows", () => {
     render(<SceneControls />);
 
-    fireEvent.click(screen.getByLabelText("Turn rain sound on"));
+    fireEvent.click(screen.getByLabelText("Turn ambience on"));
 
     expect(useSessionStore.getState().ambienceEnabled).toBe(true);
-    expect(screen.getByLabelText("Turn rain sound off")).toBeInTheDocument();
+    expect(screen.getByLabelText("Turn ambience off")).toBeInTheDocument();
   });
 
-  it("the rain button does not touch the one-shot sound effects", () => {
+  it("the ambience button does not touch the one-shot sound effects", () => {
     render(<SceneControls />);
 
-    fireEvent.click(screen.getByLabelText("Turn rain sound on"));
+    fireEvent.click(screen.getByLabelText("Turn ambience on"));
 
     expect(useSessionStore.getState().soundEnabled).toBe(true);
   });
@@ -72,7 +72,7 @@ describe("SceneControls", () => {
     fireEvent.click(gear);
 
     expect(gear).toHaveAttribute("aria-expanded", "true");
-    expect(screen.getByText("Rain sound", { exact: false })).toBeInTheDocument();
+    expect(screen.getByText("Ambience", { exact: false })).toBeInTheDocument();
     expect(screen.getByText("Sound effects", { exact: false })).toBeInTheDocument();
     expect(screen.getByText("Visual effects", { exact: false })).toBeInTheDocument();
   });
@@ -87,14 +87,14 @@ describe("SceneControls", () => {
     expect(gear).toHaveAttribute("aria-expanded", "false");
   });
 
-  it("toggles rain from the popover", () => {
+  it("toggles ambience from the popover", () => {
     render(<SceneControls />);
     fireEvent.click(screen.getByLabelText("Settings"));
 
-    const rainSwitch = screen.getAllByRole("switch")[RAIN];
-    expect(rainSwitch).toHaveAttribute("aria-checked", "false");
+    const ambienceSwitch = screen.getAllByRole("switch")[AMBIENCE];
+    expect(ambienceSwitch).toHaveAttribute("aria-checked", "false");
 
-    fireEvent.click(rainSwitch);
+    fireEvent.click(ambienceSwitch);
     expect(useSessionStore.getState().ambienceEnabled).toBe(true);
   });
 

@@ -14,7 +14,8 @@ pnpm --filter campsite dev
 - React Three Fiber / drei — 3D scene rendering
 - GSAP — animation timelines
 - Zustand — state management
-- Web Audio API — synthesised rain, campfire, and typing sounds
+- Web Audio API — synthesised campfire and typing sounds
+- Howler — the recorded ambience beds
 
 ## Audio: two preferences, not one
 
@@ -24,15 +25,29 @@ adding a new noise:
 - `soundEnabled` (default **on**) — one-shots fired by something the visitor
   just did: laptop bleeps, MIDI notes, guitar, the cat, page flips. Everything
   in `src/audio/soundEffects.ts` self-gates on it.
-- `ambienceEnabled` (default **off**) — the looping beds, rain and campfire.
+- `ambienceEnabled` (default **off**) — the looping beds and the campfire.
   A continuous noise is something you consent to rather than something you
   triggered, so it needs an explicit yes: either the scene control, or the
   welcome screen's "full experience".
 
-`RainAudio` is the sole owner of the rain: it alone may call `startRain`, and it
-alone drives `setRainVolume` from the tent door and the day/night arc. A second
-caller gets rain at a fixed volume that no longer tracks either, and that
-neither the toggle nor the arc can reach.
+### The two ambience beds
+
+The scene has weather: `RainSystem` draws rain only at night and clears by day,
+so the ambience follows the same rule with two recorded beds — rain on the tent
+canvas after dark, birdsong before it. `getNightFactor` already smoothsteps
+through dawn and dusk, so driving one bed off it and the other off its
+complement crossfades them for free: neither cuts out, and both sit at half gain
+mid-dusk.
+
+`AmbienceAudio` is the sole owner of both. It alone may call into
+`src/audio/ambienceBeds.ts`, and it alone sets the mix from the tent door and
+the day/night arc. A second caller gets beds at a fixed volume that no longer
+track either, and that neither the toggle nor the arc can reach.
+
+Neither file is fetched until ambience is switched on, which is why an opt-in
+default also keeps 1.7 MB off the critical path. Where the recordings came
+from, how the loops were cut, and how to swap one out: [ambience
+beds](../../docs/ambience-beds.md).
 
 ## The blog without JavaScript
 

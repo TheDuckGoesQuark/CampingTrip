@@ -65,7 +65,7 @@ export default function SceneControls() {
       </ControlButton>
 
       <ControlButton
-        label={ambienceEnabled ? "Turn rain sound off" : "Turn rain sound on"}
+        label={ambienceEnabled ? "Turn ambience off" : "Turn ambience on"}
         pressed={ambienceEnabled}
         onClick={() => setAmbienceEnabled(!ambienceEnabled)}
       >
@@ -80,7 +80,7 @@ export default function SceneControls() {
         {open && (
           <div className={styles.panel}>
             <SettingRow
-              text="🌧 Rain sound"
+              text="🌿 Ambience"
               checked={ambienceEnabled}
               onChange={setAmbienceEnabled}
             />
