@@ -4,7 +4,8 @@
  *   import "@jordanscamp/ds/tokens.css";
  *
  * Loads the brand font and the token layers in order: primitives (raw ramps)
- * back semantic (themed light/dark), then dimensions, typography, shadows.
+ * back semantic (themed light/dark), then dimensions, typography, shadows and
+ * stacking order.
  */
 
 /* Brand font */
@@ -19,6 +20,7 @@
 @import "./dimensions.css";
 @import "./typography.css";
 @import "./shadow.css";
+@import "./layers.css";
 
 /* Brand base — applied by <BrandProvider>'s wrapper. */
 .jc-brand {

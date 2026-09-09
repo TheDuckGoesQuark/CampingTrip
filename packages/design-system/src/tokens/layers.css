@@ -1,0 +1,21 @@
+/*
+ * Stacking order — the one place that decides what covers what. Components
+ * reference these; no raw `z-index` in component CSS.
+ *
+ * The values are spaced so a component can offset from one without reaching the
+ * next (a window adds its stack order to `--layer-window`).
+ */
+
+:root {
+  --layer-menubar: 10;
+  /* Floating window frames, offset by each frame's place in the stack. */
+  --layer-window: 20;
+  --layer-modal-backdrop: 200;
+  --layer-modal: 201;
+  /*
+   * Menus and popovers. Above a modal on purpose: a menu can be opened from
+   * inside one, and it portals to the body rather than into the modal, so it
+   * would otherwise be painted underneath the surface it was opened from.
+   */
+  --layer-popup: 300;
+}

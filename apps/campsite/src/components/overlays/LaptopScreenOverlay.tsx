@@ -99,6 +99,11 @@ export default function LaptopScreenOverlay() {
     [navigate],
   );
 
+  const shutDown = useCallback(() => {
+    playSoftClick();
+    navigate(routes.tent);
+  }, [navigate]);
+
   /**
    * The red light. Closing the front window hands the address bar to whatever is
    * behind it, and only an empty desktop goes back to bare /blog. Closing the
@@ -120,6 +125,12 @@ export default function LaptopScreenOverlay() {
     },
     [navigate],
   );
+
+  const closeAllWindows = useCallback(() => {
+    playSoftClick();
+    useSceneStore.getState().closeAllWindows();
+    navigate(routes.blog);
+  }, [navigate]);
 
   /** Raising a window is not a new place, so it replaces rather than pushes. */
   const raise = useCallback(
@@ -159,26 +170,34 @@ export default function LaptopScreenOverlay() {
         {/* Wallpaper — soft green → ivory */}
         <div className={styles.wallpaper} />
 
+        {/* The way out lives in the menu bar rather than on the desktop: a
+            window covers the desktop, and leaving must not depend on closing
+            one first. */}
         <MenuBar
           left={
             <>
-              <span className={styles.menuBrand}>
-                <Icon name="cat" size="md" />
-                <span className={styles.menuBrandName}>CatOS</span>
-              </span>
-              <span className={styles.menuDim}>CatNav</span>
-              {/* In the menu bar rather than on the desktop: a window covers the
-                  desktop, and leaving must not depend on closing one first. */}
-              <button
-                type="button"
-                className={styles.menuAction}
-                onClick={() => navigate(routes.tent)}
+              <MenuBar.Menu
+                ariaLabel="CatOS menu"
+                label={
+                  <>
+                    <Icon name="cat" size="md" />
+                    <span className={styles.menuBrandName}>CatOS</span>
+                  </>
+                }
               >
-                Back to tent
+                <MenuBar.Item onClick={() => open(blogPaths.about)}>About CatOS</MenuBar.Item>
+                <MenuBar.Separator />
+                <MenuBar.Item onClick={closeAllWindows} disabled={!anyOpen}>
+                  Close all windows
+                </MenuBar.Item>
+                <MenuBar.Separator />
                 {/* Escape closes the front window first, so it only leaves when
                     there is nothing left to close. */}
-                {!anyOpen && <span className={styles.escHint}>Esc</span>}
-              </button>
+                <MenuBar.Item onClick={shutDown} shortcut={anyOpen ? undefined : "Esc"}>
+                  Shut down
+                </MenuBar.Item>
+              </MenuBar.Menu>
+              <span className={styles.menuDim}>CatNav</span>
             </>
           }
           right={<span className={styles.menuDim}>{clock}</span>}

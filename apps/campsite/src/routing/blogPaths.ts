@@ -31,6 +31,8 @@ export const blogPaths = {
    * address bar, and none of these windows has one.
    */
   desk: (slug: string) => `${ROOT}/desk/${encodeURIComponent(slug)}`,
+  /** The About box. A window rather than a page, so no `.html` — see `desk`. */
+  about: `${ROOT}/about`,
 } as const;
 
 /** What a blog URL names, before any lookup against content. */
@@ -42,7 +44,8 @@ export type BlogRef =
   | { kind: "project"; slug: string }
   | { kind: "tool"; slug: string }
   | { kind: "cv" }
-  | { kind: "desk"; slug: string };
+  | { kind: "desk"; slug: string }
+  | { kind: "about" };
 
 /** Strips the cosmetic extension. Absent is fine; canonical links carry it. */
 export function stripHtml(segment: string): string {
@@ -71,6 +74,7 @@ export function parseBlogPath(path: string): BlogRef | null {
     const name = stripHtml(directory);
     if (name === "index") return { kind: "home" };
     if (name === "cv") return { kind: "cv" };
+    if (name === "about") return { kind: "about" };
     return null;
   }
 
@@ -81,11 +85,12 @@ export function parseBlogPath(path: string): BlogRef | null {
 
 /**
  * Whether a path names something the mock browser can hold in a tab. Desktop
- * items open in windows of their own, so they must not join the tab strip.
+ * items and the About box open in windows of their own, so they must not join
+ * the tab strip.
  */
 export function isBrowserPath(path: string): boolean {
   const ref = parseBlogPath(path);
-  return ref !== null && ref.kind !== "desk";
+  return ref !== null && ref.kind !== "desk" && ref.kind !== "about";
 }
 
 /** The canonical path for a ref — the inverse of `parseBlogPath`. */
@@ -107,5 +112,7 @@ export function blogPathFor(ref: BlogRef): string {
       return blogPaths.cv;
     case "desk":
       return blogPaths.desk(ref.slug);
+    case "about":
+      return blogPaths.about;
   }
 }

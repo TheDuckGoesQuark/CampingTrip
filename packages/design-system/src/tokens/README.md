@@ -18,7 +18,8 @@ tokens/
 ├── semantic.css     ← adaptive semantic tokens (--brand-*); light at :root, dark under [data-theme="dark"].
 ├── dimensions.css   ← spacing (--space-*) + corner radius (--radius-*).
 ├── typography.css   ← font families (--font-*) + the type scale (--text-*, --weight-*).
-└── shadow.css       ← elevation (--shadow-1..5, --shadow-hard-*), bevels (--shadow-bevel-*) + --shadow-focus.
+├── shadow.css       ← elevation (--shadow-1..5, --shadow-hard-*), bevels (--shadow-bevel-*) + --shadow-focus.
+└── layers.css       ← stacking order (--layer-*). The one place that decides what covers what.
 ```
 
 ## What lives where
@@ -124,3 +125,16 @@ Edit the CSS by hand — there's no codegen. Change a semantic value in
 `semantic.css` (both the `:root` and `[data-theme="dark"]` blocks if it should
 differ per scheme); the ramps in `primitives.css` only when the underlying brand
 palette changes.
+
+### Stacking order is a token, not a guess
+
+`layers.css` names every `z-index` the DS uses. Two of them are load-bearing
+rather than cosmetic:
+
+- `--layer-window` is a _base_ — a frame adds its place in the stack to it, so
+  the gap to the next layer bounds how many windows can be open.
+- `--layer-popup` sits **above** `--layer-modal` on purpose. A menu can be
+  opened from inside a modal, and Base UI portals its popup to `<body>` rather
+  than into the modal, so it would otherwise be painted under the surface it was
+  opened from. Put the value on the _positioner_: the anchoring engine leaves the
+  popup itself `position: static`, where a `z-index` does nothing.

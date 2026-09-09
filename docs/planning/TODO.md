@@ -101,6 +101,15 @@ inside the Canvas:
 
 ## Backlog
 
+### CatOS — a battery indicator beside the clock
+
+The menu bar's right slot holds the clock and nothing else. A battery reading
+the visitor's real level would finish the illusion, but the Battery Status API
+is Chromium-only — Firefox and Safari (so every iOS browser) never resolve
+`navigator.getBattery`. What to draw there is the open question: hide the
+indicator entirely, show a static full cell, or show an explicit
+unknown-state glyph. The first is the honest default and the one to beat.
+
 ### Blog — the music callout promises songs the tape deck hasn't got
 
 The `Callout` at the foot of `/blog/tags/music.html` reads "The tape deck back at camp

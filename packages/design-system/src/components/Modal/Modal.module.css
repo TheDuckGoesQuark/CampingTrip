@@ -1,7 +1,7 @@
 .backdrop {
   position: fixed;
   inset: 0;
-  z-index: 200;
+  z-index: var(--layer-modal-backdrop);
   background: var(--brand-scrim);
   transition: opacity 0.15s ease;
 }
@@ -12,7 +12,7 @@
 
 .popup {
   position: fixed;
-  z-index: 201;
+  z-index: var(--layer-modal);
   display: flex;
   flex-direction: column;
   /* Base UI portals the popup to <body>, so it lands outside BrandProvider's

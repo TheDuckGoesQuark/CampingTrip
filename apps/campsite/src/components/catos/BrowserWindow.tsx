@@ -5,6 +5,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { playSoftClick } from "../../audio/soundEffects";
 import {
   iconOfBlogPage,
+  isBrowserPage,
   resolveBlogPage,
   titleOfBlogPage,
   type BrowserPage,
@@ -25,7 +26,7 @@ function browserPageAt(path: string): BrowserPage | null {
   if (!ref) return null;
   const page = resolveBlogPage(ref);
   // Narrow on the resolved page, not the ref: a desktop item is not a tab.
-  return page && page.kind !== "desk" ? page : null;
+  return page && isBrowserPage(page) ? page : null;
 }
 
 export interface BrowserWindowProps extends WindowFrameProps {

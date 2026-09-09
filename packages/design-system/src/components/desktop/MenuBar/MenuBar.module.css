@@ -4,7 +4,7 @@
   left: 0;
   right: 0;
   height: var(--menubar-height);
-  z-index: 10;
+  z-index: var(--layer-menubar);
   display: flex;
   align-items: center;
   gap: var(--space-l);
@@ -26,4 +26,81 @@
   margin-left: auto;
   font-family: var(--font-mono);
   font-size: var(--text-label-size);
+}
+
+/* A bar item, not a button with chrome: the bar is one line tall and its other
+   entries are bare text, so a frame would read as a foreign object. */
+.trigger {
+  appearance: none;
+  border: 0;
+  padding: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  opacity: 0.85;
+}
+.trigger:hover,
+.trigger:focus-visible {
+  opacity: 1;
+}
+.trigger[data-popup-open] {
+  opacity: 1;
+}
+
+/* The z-index goes on the positioner rather than the popup, which the anchoring
+   engine leaves `position: static` — where a z-index means nothing. */
+.positioner {
+  z-index: var(--layer-popup);
+}
+
+.popup {
+  min-width: 200px;
+  padding: var(--space-xxs) 0;
+  background: var(--brand-surface-raised);
+  color: var(--brand-text);
+  border: 2px solid var(--brand-border-strong);
+  border-radius: var(--radius-none);
+  box-shadow: var(--shadow-hard-2);
+  font-size: var(--text-body-sm-size);
+  outline: none;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-m);
+  padding: var(--space-xxs) var(--space-m);
+  cursor: pointer;
+  user-select: none;
+}
+/* Base UI drives highlight from the keyboard as well as the pointer, so the
+   hover style is hung off that rather than off `:hover`. */
+.item[data-highlighted] {
+  background: var(--brand-solid);
+  color: var(--brand-text-on-brand);
+}
+.item[data-disabled] {
+  color: var(--brand-text-disabled);
+  cursor: default;
+}
+
+.itemLabel {
+  flex: 1;
+}
+
+.shortcut {
+  opacity: 0.6;
+  font-family: var(--font-mono);
+  font-size: var(--text-label-size);
+}
+
+.separator {
+  height: 0;
+  margin: var(--space-xxs) 0;
+  border: 0;
+  border-top: 1px solid var(--brand-border);
 }

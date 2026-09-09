@@ -1,5 +1,6 @@
 import { BrandProvider } from "@jordanscamp/ds";
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import type { ReactNode } from "react";
 import { MemoryRouter, useLocation } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -14,24 +15,28 @@ const CAMPING_TRIP = "/blog/projects/camping-trip.html";
 const CATMAP = "/blog/projects/catmap.html";
 const MUSIC_TAG = "/blog/tags/music.html";
 
-const Wrapper = ({ children }: { children: ReactNode }) => (
-  <MemoryRouter>
-    <BrandProvider>{children}</BrandProvider>
-  </MemoryRouter>
-);
+/** A router seeded at `path`, so a test can tell "went to /" from "started there". */
+const wrapperAt =
+  (path: string) =>
+  ({ children }: { children: ReactNode }) => (
+    <MemoryRouter initialEntries={[path]}>
+      <BrandProvider>{children}</BrandProvider>
+    </MemoryRouter>
+  );
+const Wrapper = wrapperAt("/");
 const renderOverlay = () => render(<LaptopScreenOverlay />, { wrapper: Wrapper });
 
 /** Surfaces the router path, so a test can assert where a control navigated to. */
 function PathProbe() {
   return <span data-testid="path">{useLocation().pathname}</span>;
 }
-const renderWithPath = () =>
+const renderWithPath = (from = "/") =>
   render(
     <>
       <LaptopScreenOverlay />
       <PathProbe />
     </>,
-    { wrapper: Wrapper },
+    { wrapper: wrapperAt(from) },
   );
 const currentPath = () => screen.getByTestId("path").textContent;
 
@@ -79,11 +84,73 @@ describe("LaptopScreenOverlay (CatOS)", () => {
     expect(screen.getByText("CatOS")).toBeInTheDocument();
   });
 
-  it("shows the back-to-tent button with an Esc hint", () => {
-    useSceneStore.setState({ laptopFocused: true });
-    renderOverlay();
-    expect(screen.getByText(/Back to tent/)).toBeInTheDocument();
-    expect(screen.getByText("Esc")).toBeInTheDocument();
+  describe("the cat menu", () => {
+    const openMenu = async () => {
+      const user = userEvent.setup();
+      await user.click(screen.getByRole("button", { name: "CatOS menu" }));
+      return user;
+    };
+
+    it("keeps the way out behind the cat, not loose on the bar", () => {
+      useSceneStore.setState({ laptopFocused: true });
+      renderOverlay();
+      expect(screen.queryByRole("menuitem", { name: /Shut down/ })).toBeNull();
+    });
+
+    it("hints Esc on Shut down only while there is nothing left to close", async () => {
+      useSceneStore.setState({ laptopFocused: true });
+      renderOverlay();
+      await openMenu();
+      expect(await screen.findByText("Esc")).toBeInTheDocument();
+    });
+
+    it("drops the Esc hint while a window is open, since Escape closes that first", async () => {
+      useSceneStore.setState({
+        laptopFocused: true,
+        openWindows: ["/blog/desk/words-with-friends-txt"],
+      });
+      renderOverlay();
+      await openMenu();
+      await screen.findByRole("menuitem", { name: "Shut down" });
+      expect(screen.queryByText("Esc")).toBeNull();
+    });
+
+    it("opens the About box in a window of its own", async () => {
+      useSceneStore.setState({ laptopFocused: true });
+      renderWithPath();
+      const user = await openMenu();
+      await user.click(await screen.findByRole("menuitem", { name: "About CatOS" }));
+      expect(currentPath()).toBe("/blog/about");
+    });
+
+    it("offers Close all windows only when there are some", async () => {
+      useSceneStore.setState({ laptopFocused: true });
+      renderOverlay();
+      await openMenu();
+      expect(await screen.findByRole("menuitem", { name: "Close all windows" })).toHaveAttribute(
+        "data-disabled",
+      );
+    });
+
+    it("sweeps the desktop without leaving CatOS", async () => {
+      useSceneStore.setState({
+        laptopFocused: true,
+        openWindows: ["/blog/desk/words-with-friends-txt", "/blog/desk/bin"],
+      });
+      renderWithPath();
+      const user = await openMenu();
+      await user.click(await screen.findByRole("menuitem", { name: "Close all windows" }));
+      expect(useSceneStore.getState().openWindows).toEqual([]);
+      expect(currentPath()).toBe("/blog");
+    });
+
+    it("shuts down back to the tent", async () => {
+      useSceneStore.setState({ laptopFocused: true });
+      renderWithPath("/blog");
+      const user = await openMenu();
+      await user.click(await screen.findByRole("menuitem", { name: "Shut down" }));
+      expect(currentPath()).toBe("/");
+    });
   });
 
   it("launches CatNav from the desktop rather than listing content there", () => {
