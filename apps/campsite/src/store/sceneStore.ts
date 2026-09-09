@@ -1,7 +1,7 @@
 import { create } from "zustand";
 
 import { frontWindow } from "../routing/windows";
-import type { TentDoorState, SceneName, FocusTarget, OverlayKind } from "../types/scene";
+import type { SceneName, FocusTarget, OverlayKind } from "../types/scene";
 
 export interface SceneState {
   wakeUpDone: boolean;
@@ -9,7 +9,6 @@ export interface SceneState {
   sceneReady: boolean;
   /** 0–100, pushed by the scene chunk — see TentScene/loadProgress.ts. */
   loadProgress: number;
-  tentDoorState: TentDoorState;
   lanternOn: boolean;
   laptopFocused: boolean;
   notepadFocused: boolean;
@@ -42,7 +41,6 @@ export interface SceneState {
   setWakeUpDone: () => void;
   setSceneReady: (v: boolean) => void;
   setLoadProgress: (p: number) => void;
-  setTentDoorState: (s: TentDoorState) => void;
   toggleLantern: () => void;
   setLaptopFocused: (f: boolean) => void;
   setNotepadFocused: (f: boolean) => void;
@@ -73,7 +71,6 @@ export const useSceneStore = create<SceneState>()((set) => ({
   wakeUpDone: false,
   sceneReady: false,
   loadProgress: 0,
-  tentDoorState: "open",
   lanternOn: true,
   laptopFocused: false,
   notepadFocused: false,
@@ -86,7 +83,6 @@ export const useSceneStore = create<SceneState>()((set) => ({
   setWakeUpDone: () => set({ wakeUpDone: true }),
   setSceneReady: (v) => set({ sceneReady: v }),
   setLoadProgress: (p) => set({ loadProgress: p }),
-  setTentDoorState: (s) => set({ tentDoorState: s }),
   toggleLantern: () => set((state) => ({ lanternOn: !state.lanternOn })),
   setLaptopFocused: (f) => set({ laptopFocused: f }),
   setNotepadFocused: (f) => set({ notepadFocused: f }),

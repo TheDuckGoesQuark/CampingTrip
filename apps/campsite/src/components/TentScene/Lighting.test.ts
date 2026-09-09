@@ -1,19 +1,12 @@
-import * as THREE from "three";
 import { describe, it, expect } from "vitest";
 
-import { lerpKeyframes, getNightFactor } from "../../store/timeStore";
+import { lerpKeyframes } from "../../store/timeStore";
 
 /**
- * The Lighting component is an R3F component that runs in a useFrame loop.
- * We test the keyframe interpolation functions it depends on (exported from
- * timeStore) and verify the lighting configuration constants make sense.
- *
- * The actual light setup is tested via scene structure assertions below.
+ * These stops replicate the keyframe arrays in Lighting.tsx, so they check the
+ * shape of the day cycle rather than the component — a drift between the two
+ * goes unnoticed. See TODO.md.
  */
-
-// ─── Lighting keyframe data validation ───────────────────────────
-// These replicate the keyframe arrays defined in Lighting.tsx to verify
-// they produce sensible values across the full day cycle.
 
 const AMBIENT_INT = [
   { t: 0.0, value: 0.35 },
@@ -69,38 +62,5 @@ describe("Lighting keyframe configuration", () => {
       expect(delta).toBeLessThan(0.15); // no jump > 0.15 per 1% of day
       prev = current;
     }
-  });
-});
-
-describe("Lighting night factor integration", () => {
-  it("campfire is brighter at night", () => {
-    const nightFactor = getNightFactor(0.75); // midnight
-    const dayFactor = getNightFactor(0.25); // noon
-
-    expect(nightFactor).toBe(1);
-    expect(dayFactor).toBe(0);
-
-    // Campfire intensity calculation from Lighting.tsx:
-    // const nightInt = doorOpen ? 2.5 : 0.8;
-    // const dayInt = doorOpen ? 2.0 : 0.3;
-    // intensity = lerp(dayInt, nightInt, nf)
-    // Campfire intensity calculation from Lighting.tsx:
-    // const nightInt = doorOpen ? 2.5 : 0.8;
-    // const dayInt = doorOpen ? 2.0 : 0.3;
-    // intensity = lerp(dayInt, nightInt, nf)
-    const nightIntensity = THREE.MathUtils.lerp(2.0, 2.5, nightFactor);
-    const dayIntensity = THREE.MathUtils.lerp(2.0, 2.5, dayFactor);
-
-    expect(nightIntensity).toBe(2.5);
-    expect(dayIntensity).toBe(2.0);
-  });
-
-  it("door light is off when door is closed", () => {
-    // From Lighting.tsx: intensity = doorOpen ? baseInt : 0
-    const doorOpen = false;
-    const baseInt = THREE.MathUtils.lerp(1.5, 0.6, getNightFactor(0.5));
-    const intensity = doorOpen ? baseInt : 0;
-
-    expect(intensity).toBe(0);
   });
 });

@@ -90,7 +90,7 @@ src/
 │   └── projects.ts      Portfolio project data
 │
 ├── types/
-│   ├── scene.ts         TentDoorState, LaptopState, FocusTarget, etc.
+│   ├── scene.ts         SceneName, FocusTarget, OverlayKind
 │   └── project.ts       Project interface
 │
 ├── utils/
@@ -112,7 +112,7 @@ Five independent Zustand stores keep concerns separated:
 │  timeStore   │  │ sessionStore │  │ sceneStore  │
 │              │  │  (persisted) │  │             │
 │ progress 0-1 │  │ soundEnabled │  │ wakeUpDone  │
-│ isManual     │  │ effectsEnabl │  │ doorState   │
+│ isManual     │  │ effectsEnabl │  │ sceneReady  │
 │              │  │ hasWelcome   │  │ lanternOn   │
 │ + helpers:   │  └──────────────┘  │ laptopState │
 │ getNightFact │                    │ focusTarget │
@@ -163,15 +163,15 @@ Canvas → shadows: on, antialias: on, alpha: off
 
 Seven independent lights with time-of-day keyframe animation:
 
-| Light          | Role                       | Key Behaviour                          |
-| -------------- | -------------------------- | -------------------------------------- |
-| Ambient        | Base fill                  | Color shifts warm↔cool across day      |
-| Hemisphere     | Sky/ground bounce          | Sky color tracks time of day           |
-| Main Point     | Lantern / string lights    | Brightest at night (4.5 intensity)     |
-| Warm Fill      | Camera-area fill           | Subtle depth cue                       |
-| Campfire Point | Outdoor warmth             | Modulated by door state + night factor |
-| Rear Fill      | Background dimension       | Subtle, increases at night             |
-| Door Spotlight | Moon/sunlight through door | Only visible when door is open         |
+| Light          | Role                       | Key Behaviour                      |
+| -------------- | -------------------------- | ---------------------------------- |
+| Ambient        | Base fill                  | Color shifts warm↔cool across day  |
+| Hemisphere     | Sky/ground bounce          | Sky color tracks time of day       |
+| Main Point     | Lantern / string lights    | Brightest at night (4.5 intensity) |
+| Warm Fill      | Camera-area fill           | Subtle depth cue                   |
+| Campfire Point | Outdoor warmth             | Brighter at night                  |
+| Rear Fill      | Background dimension       | Subtle, increases at night         |
+| Door Spotlight | Moon/sunlight through door | Cooler and dimmer at night         |
 
 All keyframe interpolation uses `smoothstep` (not linear) for organic transitions.
 
