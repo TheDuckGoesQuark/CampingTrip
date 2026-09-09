@@ -27,3 +27,5 @@ The whole workspace is React 19; Mantine is v9.
   (outputs `extensions/photobroom/overlay.js`)
 - Recompress 3D models: `pnpm --filter campsite models:optimise`
   (WebP + Draco, in place; run it on any model added to `public/models`)
+- Stacked PRs: GitHub-native, via `gh stack`
+  (`gh extension install github/gh-stack`)
