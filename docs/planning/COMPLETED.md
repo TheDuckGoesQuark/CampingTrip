@@ -2,6 +2,73 @@
 
 History of what's been built, key decisions made, and what was deferred along the way.
 
+<!-- comment-guard: allow — this file's job is to narrate history. -->
+
+---
+
+## Recorded ambience, and a bed for the daytime
+
+**Date**: 2026-09-09
+
+**What was done**: The rain was four layers of filtered noise from
+`rainSynth.ts`, which read as white noise rather than as weather, and the day
+had no bed at all — `getNightFactor` scaled the rain to silence by dawn and
+nothing replaced it. Both are now 60 s field recordings, crossfaded into each
+other by the same night factor.
+
+- **Two beds, one crossfade.** `getNightFactor` already smoothsteps through
+  dawn (progress 0.00–0.06) and dusk (0.46–0.54), so reading rain off it and
+  birdsong off its complement crossfades them for nothing: both sit at half gain
+  mid-dusk and neither cuts out. It also deleted a special case — the old
+  component faded rain to silence explicitly below a night factor of 0.05, which
+  the multiplication now does on its own.
+- **Birdsong by day, not rain.** `RainSystem` already hides its particles
+  during daylight, so the world's rule was rain at night and clear by day. The
+  daytime bed follows the picture rather than fighting it.
+- **The recordings are Public Domain Mark 1.0** from archive.org, so no
+  attribution is owed; both recordists are credited in
+  [docs/ambience-beds.md](../ambience-beds.md) anyway, since the licence is the
+  only thing making the files safe to ship and a maintainer needs to check it.
+- **The rain excerpt dodges the thunder.** Its source promises thunder and
+  delivers it in two rolls, each a ~19 dB excursion in the 20–120 Hz band. A
+  thunderclap on a 60 s loop reads as a loop, not as weather, so the excerpt
+  sits in the quiet 75 s between them.
+- **Both files are normalised to −20 LUFS with a fixed gain**, not a compressor,
+  so the rain keeps its gusts and the birds their transients. Matching their
+  loudness is what lets one set of gain constants in `AmbienceAudio` mean the
+  same thing for either bed. Birdsong still peaks slightly below rain, because
+  transients draw the ear where a flat bed doesn't.
+- **The loops are seamless by construction**, each one's last 5 s crossfaded
+  onto its first 5 s. Verified in a browser rather than assumed: both decode to
+  exactly 60.0000 s with 0 ms of trailing silence, so mp3 encoder padding did not
+  survive into the decoded buffer and Web Audio's loop is sample-exact.
+- **`html5: false` is load-bearing.** Howler's HTML5 Audio path inserts a gap at
+  the loop point and cannot be gain-automated smoothly, so both of this
+  module's jobs depend on staying on the Web Audio path.
+- **The gesture-retry logic went away.** `RainAudio` retried `startRain` on the
+  first click, touch or keypress because a raw `AudioContext` will not sound
+  before a gesture. Howler resumes a suspended context itself
+  (`Howler.autoUnlock`) and queues volume changes made before a file has loaded,
+  so neither the retry nor the `playing` state latch that woke the volume effect
+  is needed.
+- **The mix does not read the tent door.** `RainAudio` scaled rain by
+  `tentDoorState`, but nothing in the app ever calls `setTentDoorState` — the
+  open/close mechanic is still backlog — so the field sits at its initial
+  `"open"` forever and the closed branch was unreachable. The beds track the
+  day/night arc alone.
+- **The toggle is no longer called "rain".** It governs birdsong too, so the
+  control reads "Ambience" and its button label follows.
+- **`rainSynth.ts` and its test are deleted** (317 lines). Keeping a second rain
+  engine would have meant two things to reason about for one sound.
+
+**Cost**: 1.7 MB of audio, fetched only when ambience is switched on — which is
+off by default, so it stays off the critical path entirely.
+
+**Deferred**: the beds load as a pair. Loading each only as its gain goes
+non-zero would halve the night-time fetch, but the time-of-day wheel can jump
+from noon to midnight instantly, so the saving buys a gap where a bed should
+already be playing.
+
 ---
 
 ## The laptop flies to the viewer before CatOS covers it

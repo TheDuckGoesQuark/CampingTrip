@@ -100,6 +100,36 @@ inside the Canvas:
 
 ## Backlog
 
+### Campsite — the music player has no music
+
+`src/data/songs.ts` names three tracks under `public/audio/songs/`, and none of
+the files are in the repo, so every track 404s and the player's transport does
+nothing. Either add the mp3s, or cut the player back to whatever actually
+exists. `ls apps/campsite/public/audio` shows what is actually there.
+
+### Campsite — `ARCHITECTURE.md` describes an audio module that isn't there
+
+Its audio section documents `audioManager.ts`, subscribing to Zustand stores
+outside React, plus `rain-ambient.mp3` and `tent-door-rustle.mp3`. None of the
+three exist; file playback is `musicPlayer.ts`. The ambience and rain entries
+around it are current, so this is a stale pocket rather than a stale document.
+
+### Campsite — `tentDoorState` has no writer, and Lighting branches on it anyway
+
+Nothing in the app calls `setTentDoorState`, so the field holds its initial
+`"open"` for the whole session. `Lighting.tsx` still branches on it in three
+places (the night and day fill intensities, and the door spotlight switching
+off entirely), all unreachable.
+
+Worse, `Lighting.test.ts` "door light is off when door is closed" copies the
+ternary into the test body and asserts on the local copy, so it passes without
+executing `Lighting.tsx` at all — the same shape as the two commented-out
+intensity assertions above it.
+
+Either wire the open/close mechanic below, or drop `tentDoorState` and the
+branches with it. Worth doing together, since the mechanic wants those branches
+back.
+
 ### Campsite — tent open/close mechanic
 
 - Add tent flap open/close interaction (click or swipe to unzip/zip)

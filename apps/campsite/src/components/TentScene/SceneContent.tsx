@@ -16,6 +16,7 @@ import { requestOpen } from "../../routing/navigation";
 import { useMusicStore } from "../../store/musicStore";
 import { useSceneStore } from "../../store/sceneStore";
 import { useTimeStore, lerpKeyframes } from "../../store/timeStore";
+import AmbienceAudio from "./AmbienceAudio";
 import CameraController from "./CameraController";
 import Campfire from "./environment/Campfire";
 import Guitar from "./environment/Guitar";
@@ -32,7 +33,6 @@ import TentInterior from "./environment/TentInterior";
 import WalkingCat from "./environment/WalkingCat";
 import InteractiveObject from "./InteractiveObject";
 import Lighting from "./Lighting";
-import RainAudio from "./RainAudio";
 
 // Environment intensity keyframes (brighter during day)
 const ENV_INT = [
@@ -201,7 +201,7 @@ export default function SceneContent({ debug = false }: Props) {
       <Campfire />
       <WalkingCat />
       <RainSystem />
-      <RainAudio />
+      <AmbienceAudio />
     </>
   );
 }

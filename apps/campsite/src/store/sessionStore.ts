@@ -4,8 +4,9 @@ import { persist } from "zustand/middleware";
 interface SessionState {
   /** One-shots fired by something the visitor just did. */
   soundEnabled: boolean;
-  /** Looping beds — rain, campfire. Off by default: a continuous noise is
-   *  intrusive in a way a click on a laptop lid isn't. */
+  /** Looping beds — rain on the tent at night, birdsong by day. Off by
+   *  default: a continuous noise is intrusive in a way a click on a laptop
+   *  lid isn't. */
   ambienceEnabled: boolean;
   effectsEnabled: boolean;
   hasCompletedWelcome: boolean;
