@@ -29,6 +29,7 @@ export const desktopItems: DesktopItem[] = [
       "- Is this the camping equivalent of the walk of shame",
       "- Are you gonna gaslight me into thinking that was normal",
       "- These kids and their damn artichokes",
+      "- How do I explain that I can't hear what just happened because I rick rolled myself",
     ].join("\n"),
   },
   {
