@@ -123,6 +123,34 @@
   height: auto;
 }
 
+/* ── Player window ─────────────────────────────────── */
+
+.videoFigure {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-s);
+  width: 100%;
+}
+
+/* Matches the image viewer's bordered print, so the two windows read as one OS. */
+.videoFrame {
+  width: 100%;
+  border: 2px solid var(--brand-border-strong);
+  box-shadow: var(--shadow-hard-2);
+  background: #000;
+  aspect-ratio: 16 / 9;
+  line-height: 0;
+}
+
+.videoEmbed {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
 .statusSpacer {
   margin-left: auto;
 }

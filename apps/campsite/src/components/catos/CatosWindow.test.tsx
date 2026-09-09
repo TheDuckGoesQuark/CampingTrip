@@ -29,9 +29,27 @@ const deskPage = (slug: string): BlogPage => {
 const renderWindow = (page: BlogPage) =>
   render(<CatosWindow page={page} onClose={() => {}} />, { wrapper: Wrapper });
 
+const playerSrc = () => new URL(screen.getByTitle("DO_NOT_OPEN.txt").getAttribute("src") ?? "");
+
+const prefersReducedMotion = (reduced: boolean) => {
+  vi.mocked(window.matchMedia).mockImplementation(
+    (query: string) =>
+      ({
+        matches: query.includes("prefers-reduced-motion") ? reduced : false,
+        media: query,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+      }) as unknown as MediaQueryList,
+  );
+};
+
 describe("CatosWindow", () => {
-  // Text edits live in the persisted session store, so they outlive a render.
-  beforeEach(() => useSessionStore.setState({ textEdits: {} }));
+  // Text edits and the sound preference live in the persisted session store, so
+  // they outlive a render.
+  beforeEach(() => {
+    useSessionStore.setState({ textEdits: {}, soundEnabled: true });
+    prefersReducedMotion(false);
+  });
 
   it("gives the browser a tab strip and an address bar", () => {
     renderWindow({ kind: "home" });
@@ -66,9 +84,44 @@ describe("CatosWindow", () => {
       expect(screen.queryByRole("tablist")).toBeNull();
     });
 
-    it("DO_NOT_OPEN.txt pays off", () => {
+    it("DO_NOT_OPEN.txt pays off: a .txt that opens a player, not an editor", () => {
       renderWindow(deskPage("do-not-open-txt"));
-      expect(screen.getByRole("textbox", { name: "DO_NOT_OPEN.txt" })).toHaveValue("Told you.");
+      expect(screen.queryByRole("textbox", { name: "DO_NOT_OPEN.txt" })).toBeNull();
+      expect(screen.getByTitle("DO_NOT_OPEN.txt")).toBeInTheDocument();
+      expect(screen.getByText("Told you.")).toBeInTheDocument();
+    });
+
+    it("the player embeds from the no-cookie host, so a site with no consent banner stays honest", () => {
+      renderWindow(deskPage("do-not-open-txt"));
+      expect(playerSrc().origin).toBe("https://www.youtube-nocookie.com");
+    });
+
+    it("starts playing with sound the moment the window opens", () => {
+      renderWindow(deskPage("do-not-open-txt"));
+      const src = playerSrc();
+      expect(src.searchParams.get("autoplay")).toBe("1");
+      expect(src.searchParams.get("mute")).toBe("0");
+    });
+
+    it("keeps the video muted for a visitor who turned the scene's sound off", () => {
+      useSessionStore.setState({ soundEnabled: false });
+      renderWindow(deskPage("do-not-open-txt"));
+      const src = playerSrc();
+      expect(src.searchParams.get("autoplay")).toBe("1");
+      expect(src.searchParams.get("mute")).toBe("1");
+      expect(screen.getByText("Muted")).toBeInTheDocument();
+    });
+
+    it("does not autoplay for a visitor who asked for reduced motion", () => {
+      prefersReducedMotion(true);
+      renderWindow(deskPage("do-not-open-txt"));
+      expect(playerSrc().searchParams.get("autoplay")).toBe("0");
+    });
+
+    it("leaves the player's own controls in place, so audio can always be stopped", () => {
+      renderWindow(deskPage("do-not-open-txt"));
+      // `controls=0` would hide the only pause button on the page (WCAG 1.4.2).
+      expect(playerSrc().searchParams.get("controls")).not.toBe("0");
     });
 
     it("a text window can be typed into, and reverted back to the file on disk", () => {

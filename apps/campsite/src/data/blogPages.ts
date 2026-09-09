@@ -131,6 +131,8 @@ export function iconOfDesktopItem(item: DesktopItem): IconName {
       return "image";
     case "text":
       return "document";
+    case "video":
+      return "cassette";
     case "bin":
       return "trash";
   }
