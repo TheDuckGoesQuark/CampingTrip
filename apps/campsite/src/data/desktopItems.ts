@@ -20,15 +20,15 @@ export const desktopItems: DesktopItem[] = [
   },
   {
     kind: "text",
-    label: "notes.txt",
+    label: "words_with_friends.txt",
     mode: "Plain text",
     body: [
-      "- she is NOT called Smittens on the vet's forms",
-      "- ask Claude to stop suggesting Tailwind (17th time)",
-      "- the campfire shader is one magic number away",
-      "  from collapse. do not touch 0.37",
-      "- buy oat milk",
-      "- tell absolutely nobody about line 412",
+      "- A fact becomes a lie if you leave it for long enough",
+      "- There is never a good reason to chug wine",
+      "- Sometimes I make myself cringe so hard I disassociate",
+      "- Is this the camping equivalent of the walk of shame",
+      "- Are you gonna gaslight me into thinking that was normal",
+      "- These kids and their damn artichokes",
     ].join("\n"),
   },
   {

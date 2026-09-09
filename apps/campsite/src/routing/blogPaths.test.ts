@@ -26,7 +26,7 @@ describe("blogPaths", () => {
   });
 
   it("leaves the extension off a desktop item, which has no address bar", () => {
-    expect(blogPaths.desk("notes-txt")).toBe("/blog/desk/notes-txt");
+    expect(blogPaths.desk("words-with-friends-txt")).toBe("/blog/desk/words-with-friends-txt");
   });
 
   it("encodes a slug that would otherwise break the path", () => {
@@ -57,7 +57,10 @@ describe("parseBlogPath", () => {
       slug: "catmap",
     });
     expect(parseBlogPath("/blog/tools/mynoise.html")).toEqual({ kind: "tool", slug: "mynoise" });
-    expect(parseBlogPath("/blog/desk/notes-txt")).toEqual({ kind: "desk", slug: "notes-txt" });
+    expect(parseBlogPath("/blog/desk/words-with-friends-txt")).toEqual({
+      kind: "desk",
+      slug: "words-with-friends-txt",
+    });
     expect(parseBlogPath("/blog/cv.html")).toEqual({ kind: "cv" });
   });
 
@@ -87,7 +90,7 @@ describe("parseBlogPath", () => {
       { kind: "project", slug: "catmap" },
       { kind: "tool", slug: "mynoise" },
       { kind: "cv" },
-      { kind: "desk", slug: "notes-txt" },
+      { kind: "desk", slug: "words-with-friends-txt" },
     ];
     for (const ref of refs) {
       expect(parseBlogPath(blogPathFor(ref))).toEqual(ref);
@@ -105,7 +108,7 @@ describe("isBrowserPath", () => {
   });
 
   it("rejects a desktop item, which opens in a window of its own", () => {
-    expect(isBrowserPath(blogPaths.desk("notes-txt"))).toBe(false);
+    expect(isBrowserPath(blogPaths.desk("words-with-friends-txt"))).toBe(false);
   });
 
   it("rejects the desktop itself and anything unrecognised", () => {
