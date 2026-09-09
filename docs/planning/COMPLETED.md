@@ -6,6 +6,62 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## DO_NOT_OPEN.txt pays off with a video, not a punchline
+
+**Date**: 2026-09-09
+
+**What was done**: The desktop's warning file used to open a text window reading
+"Told you." It now opens a media player that starts the Rick Astley video on its
+own. The filename stays `.txt` — a text file that opens a player is the joke, and
+the mismatched cassette icon on the rail is the only tell the visitor gets.
+
+### A new desktop kind, not a special case on the text window
+
+`DesktopItem` gained `{ kind: "video"; videoId; caption; duration }` and
+`VideoWindow` joined the `CatosWindow` switch. This follows the pattern the
+dispatcher's own comment describes — a kind of window means a case plus a
+component, and nothing in the design system moves. The alternative, embedding an
+iframe inside `TextWindow`, would have put a player behind a `textarea` and left
+the revert control claiming to apply to a video.
+
+The player wears the image viewer's chrome deliberately, so the two read as one
+OS. Its transport buttons are inert for the same reason the viewer's zoom is: the
+embedded player owns playback.
+
+- **Autoplay is a request, not a guarantee, and the code is written to survive
+  being refused.** A cross-origin frame only gets it where the embedder delegates
+  the permission (`allow="autoplay"`) _and_ the top document already has user
+  activation. A visitor who clicked the icon gets the payoff; one who arrives on
+  `/blog/desk/do-not-open-txt` cold gets a paused player, because the browser
+  never handed out the activation. Both were acceptable; a frame that refuses to
+  load was not.
+- **The scene's own sound preference governs the video.** `soundEnabled` off
+  means `mute=1`. A site that offers a mute toggle and then ignores it for one
+  file is a bug wearing a joke's clothes.
+- **`prefers-reduced-motion` suppresses autoplay entirely.** The player still
+  loads and still plays on a click.
+- **The player's own controls stay visible.** Audio that starts unprompted needs
+  a visible way to stop it (WCAG 1.4.2), and that control bar is the only one on
+  the page — hiding it for a cleaner frame would have removed the sole remedy.
+- **The `src` is frozen at mount.** Recomputing it from the live store would swap
+  the iframe's URL and restart the video every time the visitor touched the
+  scene's sound toggle.
+- **Embedded from `youtube-nocookie.com`.** The same player without tracking
+  cookies until playback starts, which keeps a static site with no consent banner
+  honest.
+- **The sandbox suppresses an oxlint warning on purpose.** `iframe-missing-sandbox`
+  rejects `allow-scripts` with `allow-same-origin` as an escape, which holds for a
+  same-origin frame able to drop its own sandbox. This frame is cross-origin, the
+  token preserves YouTube's origin rather than ours, and the player will not run
+  without both. What the sandbox buys is the tokens left out: the frame cannot
+  navigate this page away or claim its storage.
+
+**Deferred**: the icon set is closed and has no film or play glyph, so a video
+shares `cassette` with tool pages. Adding one is a design-system change for a
+single desktop item, and the borrowed glyph reads correctly on a retro desktop.
+
+---
+
 ## The cat menu replaces the loose "Back to tent" button
 
 **Date**: 2026-09-09

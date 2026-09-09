@@ -4,6 +4,7 @@ import BinWindow from "./BinWindow";
 import BrowserWindow from "./BrowserWindow";
 import PreviewWindow from "./PreviewWindow";
 import TextWindow from "./TextWindow";
+import VideoWindow from "./VideoWindow";
 import type { WindowFrameProps } from "./windowFrame";
 
 export interface CatosWindowProps extends WindowFrameProps {
@@ -27,6 +28,8 @@ export default function CatosWindow({ page, onClose, ...frame }: CatosWindowProp
       return <PreviewWindow item={item} onClose={onClose} {...frame} />;
     case "text":
       return <TextWindow item={item} onClose={onClose} {...frame} />;
+    case "video":
+      return <VideoWindow item={item} onClose={onClose} {...frame} />;
     case "bin":
       return <BinWindow item={item} onClose={onClose} {...frame} />;
     // An app launches something else; it is never itself a window.

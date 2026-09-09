@@ -32,10 +32,12 @@ export const desktopItems: DesktopItem[] = [
     ].join("\n"),
   },
   {
-    kind: "text",
+    // The `.txt` is bait, not a stale label — the mismatch is the joke.
+    kind: "video",
     label: "DO_NOT_OPEN.txt",
-    mode: "Plain text",
-    body: "Told you.",
+    videoId: "dQw4w9WgXcQ",
+    caption: "Told you.",
+    duration: "3:33",
   },
   {
     kind: "bin",

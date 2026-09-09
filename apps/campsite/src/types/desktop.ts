@@ -7,6 +7,7 @@ export type DesktopItem =
   | { kind: "app"; label: string; opens: string }
   | { kind: "image"; label: string; caption: string; dimensions: string; size: string }
   | { kind: "text"; label: string; mode: string; body: string }
+  | { kind: "video"; label: string; videoId: string; caption: string; duration: string }
   | { kind: "bin"; label: string; contents: string[] };
 
 /** The desktop label a URL is built from. */
