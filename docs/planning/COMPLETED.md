@@ -6,6 +6,95 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## The way back to the campsite, from inside the blog
+
+**Date**: 2026-09-09
+
+**What was done**:
+
+- **The exit names a place, not a mechanic.** The cat menu's "Shut down" became
+  "Touch grass". Both label a departure, but grass is somewhere to arrive, and
+  the joke lands literally — there is grass and a picnic area outside the tent.
+- **The way out is drawn on the menu bar.** `MenuBar.Action` is a new subpart —
+  a bar entry that acts instead of dropping a menu, wearing the trigger's bare
+  styling — carrying a new `door-arrow` glyph and the same label, in the bar's
+  right slot beside the clock. The slot became a flex row to hold both. A menu
+  item is only found by someone who already suspects it is there, and the glyph
+  is the half that reaches a stranger: a shape showing a way out of somewhere
+  says there is an outside, which the label cannot without spoiling it.
+- **A "Touch Grass" desktop icon**, with a new `grass` glyph, high in the rail.
+  It is the joke and the reward for moving a window, deliberately not the
+  reliable door: CatNav opens at `xl` and centres, so it covers half a rail icon
+  at 1280px and, under 768px where a window locks to maximised, all of them. A
+  cold deep link always arrives with a window already open, so that is the
+  normal case. The `app` kind now carries its own `glyph`, since what an app
+  launches is not a fact about apps, and a rail item pointed at the tent takes
+  the shut-down path rather than the window-opening one.
+- **The campsite project links to the tent.** It is one of the projects, and its
+  action opened `https://jordanscamp.site/` in a new tab — a full reload of the
+  site the reader is standing in. Recognised by comparing the URL to
+  `SITE_ORIGIN` rather than by a flag on the project, so the two cannot
+  disagree. `SITE_ORIGIN` is now declared once in `blogPages.ts`, with
+  `head.ts` and CatNav's address bar reading it.
+- **The landing story plays on the way out.** Arriving anywhere under `/blog` or
+  `/notes` used to mark the welcome completed and persist that, so the story at
+  `/` was spent without ever being shown and the sound choice was never offered
+  — while `soundEnabled` defaults to on. `deepLinkSkipsIntro` now spends the
+  intro only for an arrival the tent shows through (`/music`), where the
+  backdrop would otherwise be blank. A covering arrival leaves it owed, so
+  leaving CatOS by any route — the bar, the menu, the desktop icon, Escape, the
+  project link — lands on `/` and plays the story, revealing the tent behind it.
+  `isCoveringRoute` moved from `SceneRoot` to `routing/navigation` alongside it,
+  since both are route policy rather than layout, and both are now asserted.
+- **A launcher's glyph fills its frame.** `Icon` gained an `xl` size
+  (`--icon-xl`, 48px) and `DesktopIcon` uses it. A glyph sat at 24px in a 72px
+  box while the other two things that can fill that frame — an image, and a
+  `Tile`'s letter — both filled it, so a glyph launcher read as a smaller
+  object than its neighbours. A new enumerated size rather than a local
+  override, because the DS takes no `className`.
+- **The grass glyph is a tuft, not a sprig.** Seven blades — five tall, two
+  short outer stubs — converging at a wide base and fanning out, from a
+  reference Jordan supplied. Stroked, so the blades cannot taper the way a
+  filled outline's do; this is as close as the set's one-path-per-glyph shape
+  reaches. It only ever draws at `xl`, since an app is never a window and so
+  never a tab.
+- **A closing Modal no longer swallows clicks.** Found while checking the
+  reveal in a browser: the takeover fades out at `--layer-modal` over a welcome
+  screen at `z-index: 100`, so the story's buttons were not clickable. Both the
+  popup and the backdrop drop their hit area under `[data-ending-style]`. The
+  popup needs its descendants named too — `pointer-events` inherits, but
+  `Window`'s frame sets `auto` to be clickable through its layer, and takes hits
+  back unless outranked.
+
+**Key decisions**:
+
+- **The door is chrome, not scenery.** A still of the tent behind the CatOS
+  window was the strongest existence signal on offer and was rejected as too
+  visually busy. So the burden falls on the bar, where it cannot be covered.
+- **Two capitalisations of one phrase, on purpose.** "Touch grass" in the bar and
+  menu, where entries are sentence case; "Touch Grass" on the desktop, where
+  they are app and file names. The tests name both exactly rather than matching
+  a case-sensitive regex, so the difference is stated rather than incidental.
+- **The reveal costs the laptop's pull-away shot.** Leaving now cuts to the
+  story instead of flying the camera back from the laptop. Traded knowingly:
+  suspense for a visitor who has never seen the tent beats a transition they
+  have no context for.
+- **`/blog` stays the front door.** Every canonical URL, the sitemap and the
+  feed point there, and the reader-first alternative — CatOS as something you
+  enter rather than arrive inside — was left alone: the story at `/` is what
+  earns its place as the root.
+
+**Deferred**:
+
+- A closing Modal never unmounts; the guard makes the leftover node harmless
+  rather than absent. Its own TODO entry.
+- The prerendered reader still has no way up, which is hygiene for crawlers and
+  no-JS readers rather than discoverability, and has to reckon with the CV PDF.
+  Its own TODO entry.
+- Copy throughout is Jordan's to change.
+
+---
+
 ## Two type faces, split by job — and a title that scales with its column
 
 **Date**: 2026-09-09

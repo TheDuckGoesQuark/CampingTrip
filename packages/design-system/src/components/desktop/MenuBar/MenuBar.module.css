@@ -24,6 +24,9 @@
 
 .right {
   margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-m);
   font-family: var(--font-mono);
   font-size: var(--text-label-size);
 }

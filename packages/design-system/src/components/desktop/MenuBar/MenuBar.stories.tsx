@@ -50,4 +50,18 @@ export const WithMenu: Story = {
   },
 };
 
+export const WithAction: Story = {
+  args: {
+    left: <Text variant="body-sm">CatOS</Text>,
+    right: (
+      <>
+        <MenuBar.Action ariaLabel="Touch grass" title="Touch grass">
+          <Icon name="door-arrow" size="md" />
+        </MenuBar.Action>
+        <Text variant="body-sm">9:41</Text>
+      </>
+    ),
+  },
+};
+
 export const AllVariants: Story = { ...WithMenu };

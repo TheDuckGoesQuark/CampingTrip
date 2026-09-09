@@ -15,6 +15,24 @@ export const routes = {
   notes: "/notes",
 } as const;
 
+/**
+ * Whether an overlay at this path leaves the tent invisible behind it. Decides
+ * what a cold load pays for — the scene is a lazy chunk — and, below, whether
+ * the welcome is owed.
+ */
+export function isCoveringRoute(pathname: string): boolean {
+  return pathname.startsWith(routes.blog) || pathname.startsWith(routes.notes);
+}
+
+/**
+ * Whether arriving here spends the welcome intro rather than leaving it owed.
+ * An arrival the tent shows through must spend it, or the backdrop is blank; a
+ * covering one keeps it, to play on the way out.
+ */
+export function deepLinkSkipsIntro(pathname: string): boolean {
+  return pathname !== routes.tent && !isCoveringRoute(pathname);
+}
+
 /** The tab/overlay link for a given overlay kind. */
 export function linkFor(kind: OverlayKind): OverlayLink {
   const link = OVERLAY_LINKS.find((l) => l.kind === kind);

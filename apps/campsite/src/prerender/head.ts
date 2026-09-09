@@ -1,6 +1,6 @@
-import { type PageMeta, SITE } from "../data/blogPages";
+import { type PageMeta, SITE, SITE_ORIGIN } from "../data/blogPages";
 
-export const ORIGIN = "https://jordanscamp.site";
+export const ORIGIN = SITE_ORIGIN;
 export const FEED_PATH = "/feed.xml";
 
 const AUTHOR = "Jordan Mackie";

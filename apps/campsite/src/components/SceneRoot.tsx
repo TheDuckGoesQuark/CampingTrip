@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 
-import { overlayNavigation } from "../routing/navigation";
+import { deepLinkSkipsIntro, isCoveringRoute, overlayNavigation } from "../routing/navigation";
 import { useSceneNavigate } from "../routing/useSceneNavigate";
 import { useSceneStore } from "../store/sceneStore";
 import { useSessionStore } from "../store/sessionStore";
@@ -17,12 +17,6 @@ import TimeOfDayArc from "./overlays/TimeOfDayArc";
 // The heavy 3D scene (Three.js/R3F) is a lazy chunk — kept off the critical path
 // so the blog/notes overlays can render without it.
 const TentScene = lazy(() => import("./TentScene/TentScene"));
-
-/** Routes whose overlay fully covers the viewport — the tent isn't visible, so a
- *  cold deep link to them shouldn't pay for the 3D scene at all. */
-function isCoveringRoute(pathname: string): boolean {
-  return pathname.startsWith("/blog") || pathname.startsWith("/notes");
-}
 
 /**
  * Layout route. Renders the overlays (HTML, no Canvas) as a top-level layer and
@@ -47,9 +41,15 @@ export default function SceneRoot() {
     if (!covering) setSceneActivated(true);
   }, [covering]);
 
-  // Deep link straight to an overlay: skip the welcome intro for this visit.
+  /*
+   * A deep link past the tent. Leaving the intro owed is the point, not an
+   * oversight: a covering route never showed the tent, so closing it lands on
+   * "/" and plays the story there — the only way a visitor who arrived at the
+   * blog learns the tent exists, or gets asked about sound.
+   */
   useEffect(() => {
-    if (location.pathname !== "/" && !useSessionStore.getState().hasCompletedWelcome) {
+    if (!deepLinkSkipsIntro(location.pathname)) return;
+    if (!useSessionStore.getState().hasCompletedWelcome) {
       useSessionStore.getState().completeWelcome();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

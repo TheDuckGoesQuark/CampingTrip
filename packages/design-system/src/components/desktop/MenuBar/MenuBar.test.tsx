@@ -11,6 +11,29 @@ describe("MenuBar", () => {
     expect(screen.getByText("9:41")).toBeInTheDocument();
   });
 
+  describe("actions", () => {
+    it("calls its handler on a press", async () => {
+      const user = userEvent.setup();
+      const onPress = vi.fn();
+      render(<MenuBar right={<MenuBar.Action onClick={onPress}>Touch grass</MenuBar.Action>} />);
+      await user.click(screen.getByRole("button", { name: "Touch grass" }));
+      expect(onPress).toHaveBeenCalledOnce();
+    });
+
+    it("names a glyph-only action", () => {
+      render(
+        <MenuBar
+          right={
+            <MenuBar.Action ariaLabel="Touch grass">
+              <svg />
+            </MenuBar.Action>
+          }
+        />,
+      );
+      expect(screen.getByRole("button", { name: "Touch grass" })).toBeInTheDocument();
+    });
+  });
+
   describe("pull-downs", () => {
     const renderMenu = (onChoose = vi.fn()) => {
       render(

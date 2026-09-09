@@ -6,6 +6,25 @@ All planned and deferred work, organised by priority.
 
 ## Next Up
 
+### Design system — a closing Modal never unmounts
+
+Leaving CatOS leaves the takeover in the DOM indefinitely, carrying
+`data-closed` and `data-ending-style`: Base UI is waiting on an exit transition
+that never reports finishing, since the ending style sets the opacity the popup
+already has. It holds no focus and, since the pointer-events guard, catches no
+clicks, so what is left is a stuck invisible node rather than a broken screen.
+Reproduce by leaving CatOS and reading `document.querySelector("[role=dialog]")`.
+
+### Blog — the prerendered reader has no way up
+
+A prerendered page is the head template plus `<main id="reader">` and nothing
+else: no site header, no nav landmark, no link to `/` or to the blog index. So
+`/blog/cv.html` with no JavaScript offers the CV's own links and the PDF, and
+nothing more — a dead end for a crawler, a scraper and a reader-mode
+extraction. Whatever header this grows has to be print-hidden, because the
+print stylesheet in `index.html` keeps `#reader` and drops the rest, and that
+is the path `build:pdf` prints `/cv.pdf` from.
+
 ### Blog — a real italic for post prose
 
 `whatVibeCodingChanged.tsx` uses `<em>`, and the Nunito Sans load is the roman

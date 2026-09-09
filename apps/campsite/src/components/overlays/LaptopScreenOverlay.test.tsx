@@ -91,13 +91,13 @@ describe("LaptopScreenOverlay (CatOS)", () => {
       return user;
     };
 
-    it("keeps the way out behind the cat, not loose on the bar", () => {
+    it("keeps the menu's own copy of the way out shut until the cat is used", () => {
       useSceneStore.setState({ laptopFocused: true });
       renderOverlay();
-      expect(screen.queryByRole("menuitem", { name: /Shut down/ })).toBeNull();
+      expect(screen.queryByRole("menuitem", { name: /Touch grass/ })).toBeNull();
     });
 
-    it("hints Esc on Shut down only while there is nothing left to close", async () => {
+    it("hints Esc on the way out only while there is nothing left to close", async () => {
       useSceneStore.setState({ laptopFocused: true });
       renderOverlay();
       await openMenu();
@@ -111,7 +111,7 @@ describe("LaptopScreenOverlay (CatOS)", () => {
       });
       renderOverlay();
       await openMenu();
-      await screen.findByRole("menuitem", { name: "Shut down" });
+      await screen.findByRole("menuitem", { name: "Touch grass" });
       expect(screen.queryByText("Esc")).toBeNull();
     });
 
@@ -148,7 +148,33 @@ describe("LaptopScreenOverlay (CatOS)", () => {
       useSceneStore.setState({ laptopFocused: true });
       renderWithPath("/blog");
       const user = await openMenu();
-      await user.click(await screen.findByRole("menuitem", { name: "Shut down" }));
+      await user.click(await screen.findByRole("menuitem", { name: "Touch grass" }));
+      expect(currentPath()).toBe("/");
+    });
+  });
+
+  describe("the way outside", () => {
+    it("is drawn on the bar, where it needs no menu to be found", () => {
+      useSceneStore.setState({ laptopFocused: true });
+      renderOverlay();
+      expect(screen.getByRole("button", { name: "Touch grass" })).toBeInTheDocument();
+    });
+
+    it("stays reachable on the bar with a window covering the desktop", async () => {
+      useSceneStore.setState({
+        laptopFocused: true,
+        openWindows: ["/blog/desk/words-with-friends-txt"],
+      });
+      renderWithPath("/blog");
+      const user = userEvent.setup();
+      await user.click(screen.getByRole("button", { name: "Touch grass" }));
+      expect(currentPath()).toBe("/");
+    });
+
+    it("leaves from the desktop icon too, rather than opening it in a window", () => {
+      useSceneStore.setState({ laptopFocused: true });
+      renderWithPath("/blog");
+      fireEvent.click(screen.getByRole("button", { name: "Touch Grass" }));
       expect(currentPath()).toBe("/");
     });
   });

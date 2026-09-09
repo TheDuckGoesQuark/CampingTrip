@@ -17,6 +17,9 @@ const PATHS = {
   image: "M3 5h18v14H3zM3 16l5-5 4 4 3-3 6 6",
   cassette: "M3 6h18v12H3zM7 15h10M8 11h.01M16 11h.01M7 11h10",
   cat: "M4 5l2 4v9h12V9l2-4-5 2H9zM9.5 13h.01M14.5 13h.01M12 16v1",
+  grass:
+    "M4 20h16M12 20C12 13 12 9 12 4.5M10.5 20C10.5 14 9.5 10 8 6.5M13.5 20C13.5 14 14.5 10 16 6.5M9 20C9 15 7 12 4.5 9M15 20C15 15 17 12 19.5 9M7 20C7 17 6 15 4 13M17 20C17 17 18 15 20 13",
+  "door-arrow": "M14 4H5v16h9M10 12h10M17 9l3 3-3 3",
   trash: "M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6",
   reload: "M19 12a7 7 0 1 1-2.1-5M19 4v4h-4",
   "chevron-left": "M14 6l-6 6 6 6",
@@ -33,7 +36,7 @@ export const ICON_NAMES = Object.keys(PATHS) as readonly IconName[];
 
 const icon = cva(styles.base, {
   variants: {
-    size: { sm: styles.sm, md: styles.md, lg: styles.lg },
+    size: { sm: styles.sm, md: styles.md, lg: styles.lg, xl: styles.xl },
   },
   defaultVariants: { size: "md" },
 });
