@@ -2,7 +2,6 @@ import { useFrame } from "@react-three/fiber";
 import { useRef } from "react";
 import * as THREE from "three";
 
-import { useSceneStore } from "../../store/sceneStore";
 import { useTimeStore, lerpKeyframes, getNightFactor } from "../../store/timeStore";
 import { isMobile } from "../../utils/deviceDetect";
 import { lerpColorKeyframes } from "./colorKeyframes";
@@ -126,8 +125,6 @@ export default function Lighting({ debug = false }: LightingProps) {
     if (debug) return;
 
     const p = useTimeStore.getState().progress;
-    const doorState = useSceneStore.getState().tentDoorState;
-    const doorOpen = doorState === "open" || doorState === "opening";
     const nf = getNightFactor(p);
 
     // ── Ambient ──
@@ -157,9 +154,7 @@ export default function Lighting({ debug = false }: LightingProps) {
     // ── Campfire / outdoor ambient through door ──
     if (campfireRef.current) {
       campfireRef.current.color.copy(CAMPFIRE_NIGHT).lerp(CAMPFIRE_DAY, 1 - nf);
-      const nightInt = doorOpen ? 2.5 : 0.8;
-      const dayInt = doorOpen ? 2.0 : 0.3;
-      campfireRef.current.intensity = THREE.MathUtils.lerp(dayInt, nightInt, nf);
+      campfireRef.current.intensity = THREE.MathUtils.lerp(2.0, 2.5, nf);
     }
 
     // ── Rear fill ──
@@ -170,8 +165,7 @@ export default function Lighting({ debug = false }: LightingProps) {
     // ── Door spotlight — moonlight at night, sunlight by day ──
     if (doorLightRef.current) {
       doorLightRef.current.color.copy(DOOR_MOON).lerp(DOOR_SUN, 1 - nf);
-      const baseInt = THREE.MathUtils.lerp(1.5, 0.6, nf);
-      doorLightRef.current.intensity = doorOpen ? baseInt : 0;
+      doorLightRef.current.intensity = THREE.MathUtils.lerp(1.5, 0.6, nf);
     }
   });
 

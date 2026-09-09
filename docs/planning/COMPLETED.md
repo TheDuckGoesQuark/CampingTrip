@@ -6,6 +6,38 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## `tentDoorState` is gone
+
+**Date**: 2026-09-09
+
+**What was done**: The store carried a four-state tent door — `"closed" |
+"opening" | "open" | "closing"` — that nothing ever set. `setTentDoorState` had
+no caller in the app; the only ones were the store's own definition and a test
+that fed the setter each state and read it back, so the field held its initial
+`"open"` for every session that ever ran.
+
+- **The readers were branching on a constant.** `Lighting.tsx` chose the
+  campfire's night and day intensities and switched the door spotlight off
+  entirely, all off a `doorOpen` that could not be false. Those branches
+  collapse to their open-door values, so the scene looks exactly as it did.
+- **Two tests went with it.** `Lighting.test.ts`'s "door light is off when door
+  is closed" set `const doorOpen = false` in the test body and asserted on that,
+  never touching `Lighting.tsx` — it would have passed with the component
+  deleted. "Campfire is brighter at night" had the same shape, recomputing
+  `THREE.MathUtils.lerp` and checking the result against itself.
+- **The mechanic that wanted it is still on the backlog**, now noted as starting
+  from scratch in the store. Keeping unreachable scaffolding for it bought
+  nothing: a future implementation needs a writer, an animation and a mesh, none
+  of which the dead field brought with it.
+
+**Deferred**: the rest of `Lighting.test.ts` has the same defect — it replicates
+the component's keyframe arrays and asserts on the copies — and `PLAN.md` still
+shows `setTentDoorState` in its illustrative snippets. The plan is a
+point-in-time design artifact from the first commit rather than live
+documentation, so it was left as written.
+
+---
+
 ## Recorded ambience, and a bed for the daytime
 
 **Date**: 2026-09-09

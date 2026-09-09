@@ -6,7 +6,6 @@ describe("useSceneStore", () => {
   beforeEach(() => {
     useSceneStore.setState({
       wakeUpDone: false,
-      tentDoorState: "open",
       lanternOn: true,
       laptopFocused: false,
       notepadFocused: false,
@@ -18,7 +17,6 @@ describe("useSceneStore", () => {
   it("initialises with correct defaults", () => {
     const state = useSceneStore.getState();
     expect(state.wakeUpDone).toBe(false);
-    expect(state.tentDoorState).toBe("open");
     expect(state.lanternOn).toBe(true);
     expect(state.laptopFocused).toBe(false);
     expect(state.notepadFocused).toBe(false);
@@ -29,19 +27,6 @@ describe("useSceneStore", () => {
   it("setWakeUpDone sets to true", () => {
     useSceneStore.getState().setWakeUpDone();
     expect(useSceneStore.getState().wakeUpDone).toBe(true);
-  });
-
-  it("setTentDoorState transitions through door states", () => {
-    const states: Array<"closed" | "opening" | "open" | "closing"> = [
-      "closed",
-      "opening",
-      "open",
-      "closing",
-    ];
-    for (const s of states) {
-      useSceneStore.getState().setTentDoorState(s);
-      expect(useSceneStore.getState().tentDoorState).toBe(s);
-    }
   });
 
   it("toggleLantern flips the lantern state", () => {

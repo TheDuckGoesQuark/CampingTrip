@@ -114,25 +114,19 @@ outside React, plus `rain-ambient.mp3` and `tent-door-rustle.mp3`. None of the
 three exist; file playback is `musicPlayer.ts`. The ambience and rain entries
 around it are current, so this is a stale pocket rather than a stale document.
 
-### Campsite — `tentDoorState` has no writer, and Lighting branches on it anyway
+### Campsite — `Lighting.test.ts` asserts on copies of the component's arithmetic
 
-Nothing in the app calls `setTentDoorState`, so the field holds its initial
-`"open"` for the whole session. `Lighting.tsx` still branches on it in three
-places (the night and day fill intensities, and the door spotlight switching
-off entirely), all unreachable.
-
-Worse, `Lighting.test.ts` "door light is off when door is closed" copies the
-ternary into the test body and asserts on the local copy, so it passes without
-executing `Lighting.tsx` at all — the same shape as the two commented-out
-intensity assertions above it.
-
-Either wire the open/close mechanic below, or drop `tentDoorState` and the
-branches with it. Worth doing together, since the mechanic wants those branches
-back.
+Every test in it rebuilds the keyframe arrays from `Lighting.tsx` in the test
+file and asserts on those, so nothing imports or renders `Lighting`. The stops
+can drift from the component silently and the suite stays green. Driving the
+`useFrame` body needs `@react-three/test-renderer`, which the campsite already
+depends on for other scene tests.
 
 ### Campsite — tent open/close mechanic
 
-- Add tent flap open/close interaction (click or swipe to unzip/zip)
+- Add tent flap open/close interaction (click or swipe to unzip/zip). Starts
+  from scratch in the store: `tentDoorState` and its setter are gone, since
+  nothing ever called the setter and the readers all branched on a constant.
 - Different ambient environment when tent is open vs closed
   - Open: brighter interior, outdoor sounds more prominent, wider camera range
   - Closed: cosier, muffled rain, warmer lighting
