@@ -1,6 +1,12 @@
 import { vi, afterEach } from "vitest";
 import "@testing-library/jest-dom/vitest";
 
+// Testing Library sets this for itself; the R3F test renderer needs it set here.
+declare global {
+  var IS_REACT_ACT_ENVIRONMENT: boolean;
+}
+globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+
 // ─── Mock Web Audio API ──────────────────────────────────────────
 class MockGainNode {
   gain = {
