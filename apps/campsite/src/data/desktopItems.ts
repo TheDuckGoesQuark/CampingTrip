@@ -14,9 +14,9 @@ export const desktopItems: DesktopItem[] = [
   {
     kind: "image",
     label: "smittens_047.jpg",
-    caption: "Smittens, in the doorway, refusing to come in out of the rain.",
-    dimensions: "2048 × 1365",
-    size: "1.4 MB",
+    caption: "Smittens, desperately protecting his treasured catnip fish.",
+    dimensions: "1600 × 1015",
+    size: "87 KB",
   },
   {
     kind: "text",

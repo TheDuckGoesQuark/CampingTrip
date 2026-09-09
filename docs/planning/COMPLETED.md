@@ -6,6 +6,34 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## Smittens is a photograph now, not a drawing
+
+**Date**: 2026-09-09
+
+**What was done**: `SmittensPhoto` shipped an inline SVG cat because the repo
+carried no cat photo. It carries one now:
+`apps/campsite/public/images/smittens.webp`, referenced through `asset()` like
+every other public-directory asset. `PreviewWindow` was untouched, which is what
+the old component's comment promised would happen.
+
+**Key decisions**:
+
+- **The source was cropped, not the CSS.** The photo is 4:3; the viewer window
+  is sized for the ~1.58:1 shape the SVG occupied. Dropped in at 4:3 the figure
+  ran 43px past the window body and the caption was clipped. Cropping the source
+  to 1600 × 1015 puts it back inside the frame with no styling change and a
+  smaller file, rather than adding an `object-fit` crop the frame would then own.
+- **WebP at q80, 1600px long edge** — the convention `images/screenshots/README.md`
+  already sets for this repo. 87 KB.
+- **`cwebp` strips EXIF by default**, so no camera or GPS metadata ships with it.
+- **The desktop item's `label` stays `smittens_047.jpg`.** It is the in-world
+  filename shown in a fictional OS's title bar, not a claim about what the repo
+  serves. `dimensions` and `size` were updated, because those read as facts.
+
+**Deferred**: nothing.
+
+---
+
 ## The tape deck, the light rig's test, and a stale audio doc
 
 **Date**: 2026-09-09
