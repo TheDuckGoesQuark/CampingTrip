@@ -186,9 +186,11 @@ export default function PhotoBroomPage() {
         </Text>
       </Section>
 
-      <div className={styles.coffeeCard}>
+      <aside className={styles.coffeeCard}>
         <div>
-          <Text variant="title-4">Found this useful?</Text>
+          <Text variant="title-4" as="h2">
+            Found this useful?
+          </Text>
           <Text variant="body-sm" tone="muted" as="p">
             PhotoBroom is free and ad-free. A coffee keeps the tinkering going.
           </Text>
@@ -196,16 +198,16 @@ export default function PhotoBroomPage() {
         <Button render={<a href={COFFEE_URL} target="_blank" rel="noopener noreferrer" />}>
           ☕ Buy me a coffee
         </Button>
-      </div>
+      </aside>
 
-      <div className={styles.footer}>
+      <footer className={styles.footer}>
         <Text variant="body-sm" tone="muted" as="span">
           Part of jordanscamp.site
         </Text>
         <Link href={REPO} target="_blank" rel="noopener noreferrer">
           View source on GitHub →
         </Link>
-      </div>
+      </footer>
     </div>
   );
 }
@@ -213,7 +215,9 @@ export default function PhotoBroomPage() {
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className={styles.section}>
-      <Text variant="title-3">{title}</Text>
+      <Text variant="title-3" as="h2">
+        {title}
+      </Text>
       {children}
     </section>
   );

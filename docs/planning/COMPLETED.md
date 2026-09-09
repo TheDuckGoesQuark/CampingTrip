@@ -6,6 +6,123 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## The blog's markup says what it means, and the header got a cat
+
+**Date**: 2026-09-09
+
+**What was done**: Two things that turned out to share a diff. The homepage
+masthead gained a pixel-art tuxedo cat beside the title, and every blog page's
+markup moved from anonymous `div`s onto real sectioning elements, with the
+heading outline fixed and both layers of enforcement wired up behind it.
+
+### The cat is a self-hosted GIF with a credit, not a hotlink
+
+Jordan picked a GIF from Giphy — pixel art by @victorbasso, originally Instagram
+`vitu.pixel` — which happens to look a great deal like Smittens. No licence is
+stated anywhere on it, so the two honest options were hotlinking Giphy's own CDN
+(the channel the artist chose, but a third-party request on every page load, and
+against the precedent set by self-hosting the Draco decoder) or self-hosting with
+a visible credit. Jordan chose self-hosting, and the credit under the frame is
+load-bearing rather than decorative: the picture is art resembling the cat, not a
+photograph of him.
+
+An interim attempt drew the cat from scratch as an animated SVG sprite to sidestep
+the licence question entirely. Jordan preferred the original — "they nailed the
+tail flick" — so it was dropped rather than kept as dead code.
+
+The source art is 32x32 upscaled 6x to 192px, so the frame renders at 128px: an
+exact 4x, which `image-rendering: pixelated` keeps hard-edged. That also forced
+`box-sizing: content-box` on the image, because under the global border-box the
+2px frame ate into the 128 and left a 124px picture at a fractional scale. The
+figure is held to the frame's own width so the credit wraps beneath the picture
+instead of setting the figure wider than the thing it captions.
+
+The GIF carries an opaque cream background of its own, which is why it is framed
+as a picture rather than floated on the page — unframed it reads as a pale block
+on the dark theme. A still WebP of the first frame is served through
+`<picture><source media="(prefers-reduced-motion: reduce)">`, because CSS cannot
+pause a GIF and a rule was never going to be enough.
+
+### Flex, not grid, for the masthead
+
+The title and the cat share a wrapping flex row with the intro running the full
+column beneath both. Only the heading shares the row: a paragraph held to the
+width the cat leaves is a 35-character measure.
+
+`<header>` owns the width for everything inside it — one `max-width`, and the
+masthead row and both paragraphs fill it. So the cat's right edge and the
+paragraph's right edge are the same edge, and all four elements measure the same.
+An earlier attempt shrink-wrapped the row instead, which made the masthead
+narrower than the prose and, via `max-width: fit-content` on the title, gave
+`justify-content` free space to act on and indented the whole masthead away from
+the prose's left edge.
+
+Grid was considered and rejected. Two explicit grid columns never collapse to one
+without a media or container query, and `repeat(auto-fit, minmax(...))` would give
+the cat an equal share of the width. Intrinsic wrapping is what `flex-wrap`
+already is. The alignment falls out of three declarations: `align-items:
+flex-start` puts the title at the top, `align-self: center` on the figure opts it
+alone out of that, and `justify-content: center` centres the cat on the line it
+wraps onto while staying inert on the shared line, where the title's `flex-grow`
+has already taken the free space.
+
+Wrapping rather than a container query, too: the room the masthead gets is
+whatever the 280px feed leaves it, not the width of the window, so the window can
+be wide while this column is not.
+
+Where the title breaks is left to the browser. Non-breaking spaces were tried, to
+force the break after "Hello,", and must not be retried: gluing the clause makes
+it unbreakable, and at the widths this column actually gets, the text then runs up
+to 74px into the cat. Greedy line breaking also means no single glue gives the
+same break at every width.
+
+### Sectioning, and the two heading levels that were missing
+
+`CvPage` was already semantic and served as the pattern; the rest of the blog was
+`div`s. Now: `header`/`section`/`article`/`nav`/`aside`/`footer` throughout, every
+run of posts, tags and projects is a real list, dates are `time` elements with
+machine-readable `datetime`, and the cat is a `figure` with its credit in a
+`figcaption`.
+
+Two pages had **no `h1` at all** — `ProjectPage` opened at `title-2` and `ToolPage`
+at `title-3`. Both now pass `as="h1"` while keeping the visual size, which is the
+`variant`-versus-`as` split the DS `Text` component exists to allow. The homepage
+skipped `h1 → h3`, and the CV skipped `h2 → h4`.
+
+Section rules moved out of the DOM: an `<hr>` next to a `<section>` announces a
+break the element already makes, so the rule is the section's own top border now.
+
+### Enforcement, in two layers, because they catch disjoint things
+
+`jsx-a11y` is on in `.oxlintrc.json`. Three rules are off with the reason stated
+in the config: `anchor-has-content` and `control-has-associated-label` fire falsely
+against the DS's polymorphic `render={<a/>}` API — they read an element in
+isolation and cannot see that its accessible name comes from the wrapping
+component's children — and `prefer-tag-over-role` insists an arc-shaped
+time-of-day dial should be an `<input>`. The alternative, a per-file exemption
+list, grows with every new consumer and protects new code least.
+
+The other layer is `src/prerender/semantics.test.ts`, which parses the real
+prerendered HTML of every page. A linter cannot see a heading that skips a level,
+a `ul` full of `div`s, an unnamed `nav`, a nested `main`, or an `aria-labelledby`
+pointing at nothing — those are facts about a document, not an element. It earned
+itself immediately by failing on two heading skips in files this work had not
+touched: the no-JS landing page and PhotoBroom's folded-in project page. Both
+fixed, and `.blog-prose` gained the `h2` style whose absence had pushed the
+landing page's sections down a level in the first place.
+
+Globally, the `semantic-html` skill was installed into GlobalKnowledge from the
+skills.sh registry, with the two-layer enforcement note added to the global
+`CLAUDE.md` — the half a third-party skill does not carry.
+
+### Deferred
+
+The tape deck's seek bar is a bare `div` with an `onClick` reading `clientX`, so
+it is mouse-only. It is grandfathered in `.oxlintrc.json` with an entry to delete
+once fixed, and tracked in TODO.
+
+---
+
 ## DO_NOT_OPEN.txt pays off with a video, not a punchline
 
 **Date**: 2026-09-09

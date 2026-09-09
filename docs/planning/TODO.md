@@ -110,6 +110,18 @@ is Chromium-only — Firefox and Safari (so every iOS browser) never resolve
 indicator entirely, show a static full cell, or show an explicit
 unknown-state glyph. The first is the honest default and the one to beat.
 
+### Music player — the seek bar cannot be reached from a keyboard
+
+`ProgressBar` in `MusicPlayerOverlay` is a bare `div` with an `onClick` that reads
+`clientX`, so seeking is mouse-only and the control is invisible to assistive
+technology. Wants a real slider: `role="slider"` with `aria-valuenow`/`min`/`max`,
+`tabIndex={0}`, and arrow keys stepping the position. A native
+`<input type="range">` would come with all of that, at the cost of restyling the
+track and thumb to match the deck. Until then the file carries a grandfathered
+`jsx-a11y/click-events-have-key-events` +
+`jsx-a11y/no-static-element-interactions` entry in `.oxlintrc.json` — delete it
+with the fix.
+
 ### Blog — the music callout promises songs the tape deck hasn't got
 
 The `Callout` at the foot of `/blog/tags/music.html` reads "The tape deck back at camp

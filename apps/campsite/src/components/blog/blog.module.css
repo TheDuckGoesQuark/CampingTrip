@@ -16,6 +16,11 @@
 }
 
 .homeMain {
+  /* Past roughly 75 characters a line is hard to track back from. The masthead
+     answers to the same measure as the prose under it, or on a wide window the
+     cat strands itself far to the right of where the paragraph stops. */
+  --measure: 68ch;
+
   flex: 1;
   min-width: 0;
 }
@@ -25,6 +30,65 @@
 .homeFeed {
   width: 280px;
   flex-shrink: 0;
+}
+
+/* Wrapping rather than a container query: the room here is whatever the feed
+   beside it leaves, not the width of the window, so the page can be wide while
+   this column is not. */
+/* One width for the masthead and the prose under it, set once here. Both fill
+   it, so the cat's right edge and the paragraph's are the same edge. */
+.homeHeader {
+  max-width: var(--measure);
+}
+
+.masthead {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-l);
+  align-items: flex-start;
+  /* Reaches only the line the cat wraps onto alone: while the cat shares a line
+     with the title, the title's `flex-grow` has taken the free space already. */
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+/* Grows, which pushes the cat to the row's right edge — the same edge the
+   paragraph below ends on. The basis decides when the cat wraps underneath. */
+.mastheadTitle {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+/* Held to the frame's width, or the credit sets the figure wider than the thing
+   it captions and pushes the prose out of the row. */
+.mascot {
+  --cat-frame: 128px;
+  --cat-frame-border: 2px;
+
+  margin: 0;
+  flex-shrink: 0;
+  align-self: center;
+  width: calc(var(--cat-frame) + 2 * var(--cat-frame-border));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+  text-align: center;
+}
+
+/* The GIF's own background is opaque cream, so it is framed as a picture rather
+   than floated — unframed it reads as a pale block on the dark theme. 128px is
+   4x its real 32x32, so a source pixel lands on exactly 4 device pixels. */
+.mascotFrame {
+  display: block;
+  /* Under the global border-box the frame eats into the 128 and leaves 124px —
+     no longer a multiple of 32, so the sprite scales unevenly. */
+  box-sizing: content-box;
+  width: var(--cat-frame);
+  height: var(--cat-frame);
+  image-rendering: pixelated;
+  border: var(--cat-frame-border) solid var(--brand-border-strong);
+  box-shadow: var(--shadow-hard-2);
 }
 
 /* Below this the two columns cannot both hold their content: the feed's 280px
@@ -44,24 +108,20 @@
   }
 }
 
-/* Prose gets a measure even though its column does not. Past roughly 75
-   characters a line is hard to track back from, so a maximised window makes the
-   intro wider without making it more readable. */
-.intro {
-  max-width: 68ch;
-}
-
 .eyebrow {
   margin-bottom: var(--space-s);
-}
-
-.pageTitle {
-  margin-bottom: 14px;
 }
 
 /* Gap above a paragraph that follows another. */
 .paragraphGap {
   margin-top: var(--space-m);
+}
+
+/* A `<hr>` here would announce a second time the break `<section>` already is. */
+.homeSection {
+  border-top: 2px solid var(--brand-border-strong);
+  margin-top: var(--space-l);
+  padding-top: 20px;
 }
 
 .rule {
@@ -72,7 +132,9 @@
 }
 
 .sectionBody {
-  margin-top: 14px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -85,6 +147,9 @@
 /* Two cards in a narrow window, more as it widens — these are chips, not prose,
    so they genuinely benefit from the room. */
 .toolGrid {
+  margin: 0;
+  padding: 0;
+  list-style: none;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
   gap: var(--space-s);
@@ -118,7 +183,10 @@
   flex-wrap: wrap;
 }
 
-.tagRow {
+.tagList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-xs);
@@ -172,7 +240,9 @@
 }
 
 .panelList {
+  margin: 0;
   padding: var(--space-s);
+  list-style: none;
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -204,10 +274,13 @@
 }
 
 .feedList {
+  margin: 0;
+  padding: var(--space-l) 0 0;
+  list-style: none;
+  border-top: 2px solid var(--brand-border-strong);
   display: flex;
   flex-direction: column;
   gap: var(--space-s);
-  margin-top: 20px;
 }
 
 .feedFooter {
@@ -238,11 +311,10 @@
   margin-top: var(--space-l);
 }
 
-.postFooterRule {
-  height: 2px;
-  border: 0;
-  background: var(--brand-border-strong);
-  margin: var(--space-xl) 0 20px;
+.postFooter {
+  border-top: 2px solid var(--brand-border-strong);
+  margin-top: var(--space-xl);
+  padding-top: 20px;
 }
 
 .neighbours {

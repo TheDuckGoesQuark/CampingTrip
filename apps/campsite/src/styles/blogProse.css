@@ -19,11 +19,18 @@
   margin-bottom: 0;
 }
 
-.blog-prose h3 {
+.blog-prose h2 {
   margin: var(--space-l) 0 var(--space-s);
   font-size: var(--text-title-3-size);
   line-height: var(--text-title-3-lh);
   font-weight: var(--weight-heading);
+}
+
+.blog-prose h3 {
+  margin: var(--space-l) 0 var(--space-s);
+  font-size: var(--text-title-4-size);
+  line-height: var(--text-title-4-lh);
+  font-weight: var(--weight-bold);
 }
 
 /* A bordered box, not a left accent bar: a hard-edged window has no rounded,

@@ -18,7 +18,7 @@ export interface CalloutProps {
  */
 export default function Callout({ icon, title, body, action }: CalloutProps) {
   return (
-    <Card tone="subtle" elevation="floating">
+    <Card tone="subtle" elevation="floating" render={<aside />}>
       <div className={styles.callout}>
         <Icon name={icon} size="lg" />
         <div className={styles.calloutBody}>

@@ -25,42 +25,45 @@ export default function PostPage({ post }: PostPageProps) {
   const { older, newer } = neighbours(post);
 
   return (
-    <div className={styles.post}>
-      <div className={styles.postMeta}>
-        <Text variant="label" tone="muted" as="span">
-          {formatDate(post.date)}
-        </Text>
-        <div className={styles.tagRow}>
-          {post.tags.map((tag) => (
-            <Tag key={tag} render={<RouterLink to={blogPaths.tag(tag)} />}>
-              {tag}
-            </Tag>
-          ))}
+    <article className={styles.post}>
+      <header>
+        <div className={styles.postMeta}>
+          <Text variant="label" tone="muted" as="span">
+            <time dateTime={post.date}>{formatDate(post.date)}</time>
+          </Text>
+          <ul className={styles.tagList}>
+            {post.tags.map((tag) => (
+              <li key={tag}>
+                <Tag render={<RouterLink to={blogPaths.tag(tag)} />}>{tag}</Tag>
+              </li>
+            ))}
+          </ul>
         </div>
-      </div>
 
-      <Text variant="title-1">{post.title}</Text>
-      <div className={styles.postStandfirst}>
-        <Text variant="body-lg" tone="muted">
-          {post.standfirst}
-        </Text>
-      </div>
+        <Text variant="title-1">{post.title}</Text>
+        <div className={styles.postStandfirst}>
+          <Text variant="body-lg" tone="muted">
+            {post.standfirst}
+          </Text>
+        </div>
+      </header>
 
       <hr className={styles.rule} />
       <div className={`blog-prose ${styles.postBody}`}>{post.body}</div>
-      <hr className={styles.postFooterRule} />
 
-      <div className={styles.neighbours}>
-        <Neighbour post={older} direction="older" />
-        <Neighbour post={newer} direction="newer" />
-      </div>
+      <footer className={styles.postFooter}>
+        <nav className={styles.neighbours} aria-label="Nearby posts">
+          <Neighbour post={older} direction="older" />
+          <Neighbour post={newer} direction="newer" />
+        </nav>
 
-      <div className={styles.allPosts}>
-        <Button variant="subtle" size="sm" render={<RouterLink to={blogPaths.archive} />}>
-          All posts
-        </Button>
-      </div>
-    </div>
+        <div className={styles.allPosts}>
+          <Button variant="subtle" size="sm" render={<RouterLink to={blogPaths.archive} />}>
+            All posts
+          </Button>
+        </div>
+      </footer>
+    </article>
   );
 }
 

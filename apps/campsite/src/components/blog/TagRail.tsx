@@ -16,34 +16,40 @@ export interface TagRailProps {
 }
 
 /**
- * The row of topic tags. The tag standing for the current page renders as a
- * `span` with `aria-current`, not a link back to where you already are.
+ * The row of topic tags — a list, because it is a set of destinations and a
+ * reader is told how many there are to skip. The tag standing for the current
+ * page renders as a `span` with `aria-current`, not a link back to where you
+ * already are.
  */
 export default function TagRail({ current, total, withCounts = true }: TagRailProps) {
   const count = (n: number) => (withCounts ? n : undefined);
 
   return (
-    <div className={styles.tagRow}>
-      {current === undefined ? (
-        <Tag selected count={count(total)} aria-current="page">
-          All
-        </Tag>
-      ) : (
-        <Tag count={count(total)} render={<Link to={blogPaths.archive} />}>
-          All
-        </Tag>
-      )}
-      {tags.map(({ tag, count: n }) =>
-        tag === current ? (
-          <Tag key={tag} selected count={count(n)} aria-current="page">
-            {tag}
+    <ul className={styles.tagList}>
+      <li>
+        {current === undefined ? (
+          <Tag selected count={count(total)} aria-current="page">
+            All
           </Tag>
         ) : (
-          <Tag key={tag} count={count(n)} render={<Link to={blogPaths.tag(tag)} />}>
-            {tag}
+          <Tag count={count(total)} render={<Link to={blogPaths.archive} />}>
+            All
           </Tag>
-        ),
-      )}
-    </div>
+        )}
+      </li>
+      {tags.map(({ tag, count: n }) => (
+        <li key={tag}>
+          {tag === current ? (
+            <Tag selected count={count(n)} aria-current="page">
+              {tag}
+            </Tag>
+          ) : (
+            <Tag count={count(n)} render={<Link to={blogPaths.tag(tag)} />}>
+              {tag}
+            </Tag>
+          )}
+        </li>
+      ))}
+    </ul>
   );
 }
