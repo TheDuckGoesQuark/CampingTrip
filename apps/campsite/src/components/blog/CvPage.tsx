@@ -12,8 +12,18 @@ export interface CvPageProps {
   cv: Cv;
 }
 
-function dateRange(start: string, end?: string): string {
-  return `${monthYear(start)} – ${end ? monthYear(end) : "Present"}`;
+/**
+ * Two `time` elements rather than one string: a range has no single datetime,
+ * and this page is parsed by CV tooling as well as read.
+ */
+function DateRange({ start, end }: { start: string; end?: string }) {
+  return (
+    <>
+      <time dateTime={start}>{monthYear(start)}</time>
+      {" – "}
+      {end ? <time dateTime={end}>{monthYear(end)}</time> : "Present"}
+    </>
+  );
 }
 
 /**
@@ -42,7 +52,7 @@ export default function CvPage({ cv }: CvPageProps) {
             </Link>
           ))}
           <Text variant="label" tone="muted" as="span">
-            Updated {formatDate(cv.updated)}
+            Updated <time dateTime={cv.updated}>{formatDate(cv.updated)}</time>
           </Text>
         </div>
         <div className={styles.cvActions}>
@@ -95,9 +105,11 @@ function RoleEntry({ role }: { role: Role }) {
   return (
     <div className={styles.cvRole}>
       <div className={styles.cvRoleHead}>
-        <Text variant="title-4">{role.title}</Text>
+        <Text variant="title-4" as="h3">
+          {role.title}
+        </Text>
         <Text variant="label" tone="muted" as="span">
-          {dateRange(role.start, role.end)}
+          <DateRange start={role.start} end={role.end} />
         </Text>
       </div>
       <Text variant="body-sm" tone="muted">
@@ -106,11 +118,13 @@ function RoleEntry({ role }: { role: Role }) {
       {role.summary && <Text>{role.summary}</Text>}
       {role.highlights.length > 0 && <Highlights items={role.highlights} />}
       {role.tags.length > 0 && (
-        <div className={styles.tagRow}>
+        <ul className={styles.tagList}>
           {role.tags.map((tag) => (
-            <Tag key={tag}>{tag}</Tag>
+            <li key={tag}>
+              <Tag>{tag}</Tag>
+            </li>
           ))}
-        </div>
+        </ul>
       )}
     </div>
   );
@@ -120,9 +134,11 @@ function EducationEntry({ entry }: { entry: Education }) {
   return (
     <div className={styles.cvEducation}>
       <div className={styles.cvRoleHead}>
-        <Text variant="title-4">{entry.qualification}</Text>
+        <Text variant="title-4" as="h3">
+          {entry.qualification}
+        </Text>
         <Text variant="label" tone="muted" as="span">
-          {dateRange(entry.start, entry.end)}
+          <DateRange start={entry.start} end={entry.end} />
         </Text>
       </div>
       <Text variant="body-sm" tone="muted">

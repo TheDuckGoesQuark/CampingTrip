@@ -48,14 +48,14 @@ export default function LandingReader() {
         with my projects. Enable JavaScript to experience the full interactive scene.
       </p>
 
-      <h3>About</h3>
+      <h2>About</h2>
       <p>
         Hi, I'm Jordan Mackie. This is my personal website, a geocities-style art experiment
         disguised as a camping trip. The scene has a day/night cycle, spatial audio, and a few
         things to click on.
       </p>
 
-      <h3>Read</h3>
+      <h2>Read</h2>
       <ul>
         <li>
           <a href={blogPaths.home}>The laptop: who I am, what I've built, what I use</a>
@@ -68,7 +68,7 @@ export default function LandingReader() {
         </li>
       </ul>
 
-      <h3>What's in the tent</h3>
+      <h2>What's in the tent</h2>
       <ul>
         <li>A laptop with my projects</li>
         <li>An acoustic guitar</li>
@@ -80,7 +80,7 @@ export default function LandingReader() {
         <li>A campfire and picnic area outside</li>
       </ul>
 
-      <h3>3D model credits</h3>
+      <h2>3D model credits</h2>
       <p>All models used under CC-BY licenses:</p>
       <ul>
         {CREDITS.map((credit) => (

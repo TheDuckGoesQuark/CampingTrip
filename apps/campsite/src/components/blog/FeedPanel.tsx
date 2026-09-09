@@ -1,4 +1,5 @@
 import { Link, Text } from "@jordanscamp/ds";
+import { useId } from "react";
 import { Link as RouterLink } from "react-router-dom";
 
 import { posts } from "../../data/posts";
@@ -18,32 +19,34 @@ const VISIBLE = 5;
  */
 export default function FeedPanel() {
   const visible = posts.slice(0, VISIBLE);
+  // A `section` counts as a landmark only once it has a name.
+  const headingId = useId();
 
   return (
-    <div className={styles.panel}>
+    <section className={styles.panel} aria-labelledby={headingId}>
       <div className={styles.panelHeader}>
-        <Text variant="label" as="span">
+        <Text variant="label" as="h2" id={headingId}>
           From the blog
         </Text>
       </div>
 
-      <div className={styles.panelRail}>
+      <nav className={styles.panelRail} aria-label="Browse posts by topic">
         <TagRail total={posts.length} withCounts={false} />
-      </div>
+      </nav>
 
-      <div className={styles.panelList}>
+      <ul className={styles.panelList}>
         {visible.map((post) => (
           <CompactPostSummary key={post.title} post={post} />
         ))}
-      </div>
+      </ul>
 
-      <div className={styles.panelFooter}>
+      <footer className={styles.panelFooter}>
         <Link render={<RouterLink to={blogPaths.archive} />}>
           <Text variant="body-sm" as="span">
             <strong>All posts →</strong>
           </Text>
         </Link>
-      </div>
-    </div>
+      </footer>
+    </section>
   );
 }

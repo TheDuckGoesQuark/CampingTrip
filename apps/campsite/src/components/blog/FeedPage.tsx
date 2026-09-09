@@ -24,27 +24,27 @@ export interface FeedPageProps {
 export default function FeedPage({ posts, tag }: FeedPageProps) {
   return (
     <>
-      <Text variant="label" tone="muted" as="span">
-        {tag ? "Filed under" : "Everything, newest first"}
-      </Text>
-      <div className={styles.feedHeading}>
-        <Text variant="title-1">{tag ?? "All posts"}</Text>
-        <Text variant="label" tone="muted" as="span">
-          {posts.length} {posts.length === 1 ? "post" : "posts"}
+      <header>
+        <Text variant="label" tone="muted" as="p">
+          {tag ? "Filed under" : "Everything, newest first"}
         </Text>
-      </div>
+        <div className={styles.feedHeading}>
+          <Text variant="title-1">{tag ?? "All posts"}</Text>
+          <Text variant="label" tone="muted" as="span">
+            {posts.length} {posts.length === 1 ? "post" : "posts"}
+          </Text>
+        </div>
 
-      <div className={styles.feedRail}>
-        <TagRail current={tag} total={allPosts.length} />
-      </div>
+        <nav className={styles.feedRail} aria-label="Browse posts by topic">
+          <TagRail current={tag} total={allPosts.length} />
+        </nav>
+      </header>
 
-      <hr className={styles.postFooterRule} />
-
-      <div className={styles.feedList}>
+      <ul className={styles.feedList}>
         {posts.map((post) => (
           <PostSummaryCard key={post.title} post={post} />
         ))}
-      </div>
+      </ul>
 
       {tag === "music" && (
         <div className={styles.feedFooter}>

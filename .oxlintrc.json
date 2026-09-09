@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["typescript", "unicorn", "oxc", "import", "react", "promise"],
+  "plugins": ["typescript", "unicorn", "oxc", "import", "react", "promise", "jsx-a11y"],
   "categories": {
     "correctness": "error",
     "suspicious": "warn",
@@ -18,7 +18,21 @@
     "react/jsx-no-constructed-context-values": "off",
     "react/no-unknown-property": "off",
     "import/no-unassigned-import": ["warn", { "allow": ["**/*.css"] }],
-    "react/forbid-dom-props": ["error", { "forbid": ["style"] }]
+    "react/forbid-dom-props": ["error", { "forbid": ["style"] }],
+
+    // Both rules read an element in isolation, so they cannot see that the DS's
+    // `render={<a href=… />}` takes its accessible name from the children of the
+    // component wrapping it. Every Card/Tag/Link/Button call site trips them.
+    // The cost of switching them off is that a genuinely empty hand-written
+    // anchor now goes unflagged; the alternative was a file list growing with
+    // every new consumer, which protects new code even less.
+    "jsx-a11y/anchor-has-content": "off",
+    "jsx-a11y/control-has-associated-label": "off",
+
+    // An arc-shaped time-of-day dial and a 3D scene's live label are not an
+    // `input` and an `output`. The rule assumes the semantic tag can always do
+    // the job, and for custom widgets built on a role it cannot.
+    "jsx-a11y/prefer-tag-over-role": "off"
   },
   "overrides": [
     {
@@ -108,6 +122,18 @@
       ],
       "rules": {
         "react/forbid-dom-props": "off"
+      }
+    },
+    {
+      // GRANDFATHERED keyboard-inaccessible click targets. The tape deck's seek
+      // bar is a bare `div` with an `onClick` that reads `clientX`; making it
+      // reachable means giving it a real slider role and arrow keys, which is a
+      // change to the player rather than to its markup. Delete the entry with
+      // the fix — the rules are enforced everywhere else, new files included.
+      "files": ["apps/campsite/src/components/overlays/MusicPlayerOverlay.tsx"],
+      "rules": {
+        "jsx-a11y/click-events-have-key-events": "off",
+        "jsx-a11y/no-static-element-interactions": "off"
       }
     },
     {

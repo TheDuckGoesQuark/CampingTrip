@@ -22,24 +22,29 @@ export default function ProjectPage({ project }: ProjectPageProps) {
       : project.description;
 
   return (
-    <>
-      <div className={styles.projectHeader}>
-        <Text variant="title-2">{project.title}</Text>
+    <article>
+      {/* Sized like a title-2, but it is still the one heading this page is about. */}
+      <header className={styles.projectHeader}>
+        <Text variant="title-2" as="h1">
+          {project.title}
+        </Text>
         <Text variant="body-sm" tone="muted">
           {project.year}
         </Text>
         {project.tags && project.tags.length > 0 && (
-          <div className={styles.tagRow}>
+          <ul className={styles.tagList}>
             {project.tags.map((tag) => (
-              <Badge key={tag}>{tag}</Badge>
+              <li key={tag}>
+                <Badge>{tag}</Badge>
+              </li>
             ))}
-          </div>
+          </ul>
         )}
-      </div>
+      </header>
 
       <div className="blog-prose">{body}</div>
 
-      <div className={styles.projectActions}>
+      <footer className={styles.projectActions}>
         <Button
           render={<a href={project.url} target="_blank" rel="noopener noreferrer" />}
           variant="subtle"
@@ -54,7 +59,7 @@ export default function ProjectPage({ project }: ProjectPageProps) {
             Source
           </Button>
         )}
-      </div>
-    </>
+      </footer>
+    </article>
   );
 }
