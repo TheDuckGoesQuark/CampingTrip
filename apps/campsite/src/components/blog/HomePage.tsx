@@ -67,7 +67,7 @@ export default function HomePage() {
 
         <section className={styles.homeSection}>
           <Text variant="title-3" as="h2">
-            Projects
+            Things I'm proud of
           </Text>
           <ul className={styles.sectionBody}>
             {projects.map((project) => (
@@ -78,7 +78,7 @@ export default function HomePage() {
 
         <section className={styles.homeSection}>
           <Text variant="title-3" as="h2">
-            Favourite Tools
+            Things I think are cool
           </Text>
           <div className={styles.sectionNote}>
             <Text variant="body-sm" tone="muted">

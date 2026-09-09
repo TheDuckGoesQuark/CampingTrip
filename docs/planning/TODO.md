@@ -98,9 +98,10 @@ place for an `Island` if the CV wants one interactive piece.
 - Three posts are seeded with a real standfirst and opening paragraph and a
   bracketed `[DRAFT — …]` beat to finish. They are placeholders for Jordan's
   words, not content.
-- `Favourite Tools` on the homepage is fed from `bookmarks.ts`, which mixes two
-  things: tools (myNoise) and things loved (Eyezmaze). Decide whether those want
-  to be two homepage sections or one.
+- `Things I think are cool` on the homepage is fed from `bookmarks.ts`, which
+  mixes two things: tools (myNoise) and things loved (Eyezmaze). The heading is
+  wide enough to hold both, so the open question is whether they read better
+  split across two homepage sections.
 
 ### Design system — boxy pass on in-window content
 
