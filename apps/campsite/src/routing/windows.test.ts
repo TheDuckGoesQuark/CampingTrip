@@ -17,7 +17,7 @@ describe("windowIdFor", () => {
   });
 
   it("gives a desktop item a window identified by its own path", () => {
-    const path = blogPaths.desk("notes-txt");
+    const path = blogPaths.desk("words-with-friends-txt");
     expect(windowIdFor(path)).toBe(path);
   });
 });
@@ -39,7 +39,7 @@ describe("pathForWindow", () => {
   });
 
   it("gives a desktop item its own id back", () => {
-    const path = blogPaths.desk("notes-txt");
+    const path = blogPaths.desk("words-with-friends-txt");
     expect(pathForWindow(path, null)).toBe(path);
   });
 

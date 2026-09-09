@@ -78,18 +78,27 @@
 /* A typewriter face, because the campsite's own body font is one and a text
    file is the one place that reads as deliberate rather than unstyled. */
 .textBody {
+  display: block;
+  width: 100%;
+  height: 100%;
   margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  resize: none;
+  overflow-y: auto;
   white-space: pre-wrap;
   font-family: var(--font-mono);
   font-size: var(--text-body-sm-size);
   line-height: 1.7;
   color: var(--brand-text);
+  caret-color: var(--brand-text);
 }
 
-.textSurface {
-  width: 100%;
-  height: 100%;
-  overflow-y: auto;
+/* A ring around the whole page would read as a selected object rather than as a
+   document; the caret is the focus indicator a text field is expected to have. */
+.textBody:focus-visible {
+  outline: none;
 }
 
 /* ── Bin window ────────────────────────────────────────────── */

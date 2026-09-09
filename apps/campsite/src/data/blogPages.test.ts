@@ -41,10 +41,10 @@ describe("resolveBlogPage", () => {
   });
 
   it("resolves a desktop item", () => {
-    const page = resolveBlogPage({ kind: "desk", slug: "notes-txt" });
+    const page = resolveBlogPage({ kind: "desk", slug: "words-with-friends-txt" });
     expect(page?.kind).toBe("desk");
     if (page?.kind !== "desk") return;
-    expect(page.item.label).toBe("notes.txt");
+    expect(page.item.label).toBe("words_with_friends.txt");
   });
 
   it("returns null for a desktop slug that names nothing", () => {

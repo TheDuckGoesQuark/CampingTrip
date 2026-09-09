@@ -1,11 +1,12 @@
 import { BrandProvider } from "@jordanscamp/ds";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { MemoryRouter } from "react-router-dom";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { BlogPage } from "../../data/blogPages";
 import { findDesktopItem } from "../../data/desktopItems";
+import { useSessionStore } from "../../store/sessionStore";
 import CatosWindow from "./CatosWindow";
 
 vi.mock("../../audio/soundEffects", () => ({
@@ -29,6 +30,9 @@ const renderWindow = (page: BlogPage) =>
   render(<CatosWindow page={page} onClose={() => {}} />, { wrapper: Wrapper });
 
 describe("CatosWindow", () => {
+  // Text edits live in the persisted session store, so they outlive a render.
+  beforeEach(() => useSessionStore.setState({ textEdits: {} }));
+
   it("gives the browser a tab strip and an address bar", () => {
     renderWindow({ kind: "home" });
     expect(screen.getByRole("tablist")).toBeInTheDocument();
@@ -54,15 +58,31 @@ describe("CatosWindow", () => {
     });
 
     it("a text window shows the file's body verbatim, newlines included", () => {
-      renderWindow(deskPage("notes-txt"));
-      expect(screen.getByText(/do not touch 0\.37/)).toBeInTheDocument();
-      expect(screen.getByText(/oat milk/)).toBeInTheDocument();
+      renderWindow(deskPage("words-with-friends-txt"));
+      const body = screen.getByRole("textbox", { name: "words_with_friends.txt" });
+      const value = (body as HTMLTextAreaElement).value;
+      expect(value).toContain("- A fact becomes a lie if you leave it for long enough");
+      expect(value).toContain("\n- These kids and their damn artichokes");
       expect(screen.queryByRole("tablist")).toBeNull();
     });
 
     it("DO_NOT_OPEN.txt pays off", () => {
       renderWindow(deskPage("do-not-open-txt"));
-      expect(screen.getByText("Told you.")).toBeInTheDocument();
+      expect(screen.getByRole("textbox", { name: "DO_NOT_OPEN.txt" })).toHaveValue("Told you.");
+    });
+
+    it("a text window can be typed into, and reverted back to the file on disk", () => {
+      renderWindow(deskPage("words-with-friends-txt"));
+      const body = screen.getByRole("textbox", { name: "words_with_friends.txt" });
+      const original = (body as HTMLTextAreaElement).value;
+
+      expect(screen.getByRole("button", { name: "Revert" })).toBeDisabled();
+      fireEvent.change(body, { target: { value: "there is never a good reason to chug wine" } });
+      expect(body).toHaveValue("there is never a good reason to chug wine");
+
+      fireEvent.click(screen.getByRole("button", { name: "Revert" }));
+      expect(body).toHaveValue(original);
+      expect(screen.getByRole("button", { name: "Revert" })).toBeDisabled();
     });
 
     it("the bin lists its contents and offers no way to empty it", () => {

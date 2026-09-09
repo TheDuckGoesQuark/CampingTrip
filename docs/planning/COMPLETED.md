@@ -6,6 +6,43 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## The desktop's text files are editable, and notes.txt is now words_with_friends.txt
+
+**Date**: 2026-09-09
+
+**What was done**: `TextWindow` renders a `<textarea>` where it rendered a `<pre>`,
+so a visitor can type into a file on the CatOS desktop. Typing goes to
+`useSessionStore.textEdits`, keyed by the file's slug. The toolbar's "read only"
+label is replaced by a `Revert` tool button. `notes.txt` was replaced with
+`words_with_friends.txt` — six lines lifted from Jordan's group chats — which
+changes its slug, and so its URL, from `notes-txt` to `words-with-friends-txt`.
+
+**Key decisions**:
+
+- **Edits persist, in the session store rather than component state.** A window
+  unmounts when it closes, so component state would lose a visitor's typing the
+  moment they hit the red light — which reads as a bug, not as a scene. The store
+  is already `persist`-wrapped, so edits survive a reload too.
+- **Revert instead of Save.** With no server there is nothing to save to, and a
+  Save button that only wrote to `localStorage` would be theatre. Revert is the
+  one control that is honest about what the window can do, and it renders
+  disabled until there is something to revert — the same handler-less-means-
+  disabled pattern `PreviewWindow`'s zoom controls already use.
+- **The caret is the focus indicator.** `.textBody:focus-visible` drops the
+  outline: a ring around the whole page would read as a selected object rather
+  than as a document, and a caret is what a text field is expected to show.
+- **`.textSurface` is gone.** A textarea is its own scroll container, so the
+  wrapper it needed as a `<pre>` had nothing left to do.
+- **`DO_NOT_OPEN.txt` became editable too**, since editability is a property of
+  the text window rather than of one file. Overwriting "Told you." is a fair
+  thing to let a visitor do.
+
+**Deferred**: nothing. Worth knowing: a visitor's edits are per-browser and
+invisible to anyone else, and there is no undo beyond the browser's own
+textarea history plus Revert.
+
+---
+
 ## Smittens is a photograph now, not a drawing
 
 **Date**: 2026-09-09

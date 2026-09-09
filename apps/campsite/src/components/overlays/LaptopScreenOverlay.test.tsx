@@ -98,17 +98,17 @@ describe("LaptopScreenOverlay (CatOS)", () => {
     it("opens a desktop item at its own URL", () => {
       useSceneStore.setState({ laptopFocused: true });
       renderWithPath();
-      fireEvent.click(screen.getByRole("button", { name: /notes\.txt/ }));
-      expect(currentPath()).toBe("/blog/desk/notes-txt");
+      fireEvent.click(screen.getByRole("button", { name: /words_with_friends\.txt/ }));
+      expect(currentPath()).toBe("/blog/desk/words-with-friends-txt");
     });
 
     it("shows a desktop item in a window with no browser chrome", () => {
       useSceneStore.setState({
         laptopFocused: true,
-        openWindows: ["/blog/desk/notes-txt"],
+        openWindows: ["/blog/desk/words-with-friends-txt"],
       });
       renderOverlay();
-      expect(screen.getByText(/oat milk/)).toBeInTheDocument();
+      expect(screen.getByRole("textbox", { name: "words_with_friends.txt" })).toBeInTheDocument();
       expect(screen.queryByRole("tablist")).toBeNull();
     });
 
@@ -223,7 +223,7 @@ describe("LaptopScreenOverlay (CatOS)", () => {
     });
   });
   describe("several windows at once", () => {
-    const NOTES = "/blog/desk/notes-txt";
+    const WORDS = "/blog/desk/words-with-friends-txt";
     const BIN = "/blog/desk/bin";
 
     /**
@@ -256,52 +256,52 @@ describe("LaptopScreenOverlay (CatOS)", () => {
       });
 
     it("renders every open window", () => {
-      openStack([WINDOW_BROWSER, NOTES], HOME);
+      openStack([WINDOW_BROWSER, WORDS], HOME);
       renderOverlay();
       expect(screen.getByRole("tablist")).toBeInTheDocument();
-      expect(screen.getByText(/oat milk/)).toBeInTheDocument();
+      expect(screen.getByRole("textbox", { name: "words_with_friends.txt" })).toBeInTheDocument();
     });
 
     it("stacks them back to front, so the last one is on top", () => {
-      openStack([NOTES, BIN]);
+      openStack([WORDS, BIN]);
       renderOverlay();
-      expect(stackOrderOf("notes.txt")).toBe("0");
+      expect(stackOrderOf("words_with_friends.txt")).toBe("0");
       expect(stackOrderOf("Bin")).toBe("1");
     });
 
     it("keeps the frames where they are in the DOM when one is raised", () => {
-      openStack([NOTES, BIN]);
+      openStack([WORDS, BIN]);
       renderOverlay();
       const before = renderedTitles();
 
-      act(() => useSceneStore.getState().raiseWindow(NOTES));
+      act(() => useSceneStore.getState().raiseWindow(WORDS));
 
       // A raise must not move a node: a node detached and re-attached drops the
       // click or the pointer capture mid-flight through it, which is the very
       // gesture that asked for the raise.
       expect(renderedTitles()).toEqual(before);
-      expect(stackOrderOf("notes.txt")).toBe("1");
+      expect(stackOrderOf("words_with_friends.txt")).toBe("1");
       expect(stackOrderOf("Bin")).toBe("0");
     });
 
     it("skips a window whose content no longer resolves", () => {
-      openStack([NOTES, "/blog/desk/not-a-thing"]);
+      openStack([WORDS, "/blog/desk/not-a-thing"]);
       renderOverlay();
       expect(screen.getAllByRole("button", { name: "Close" })).toHaveLength(1);
     });
 
     it("closing the front window hands the address to the one behind it", () => {
-      openStack([NOTES, BIN]);
+      openStack([WORDS, BIN]);
       renderWithPath();
       fireEvent.click(closeLightOf("Bin"));
-      expect(useSceneStore.getState().openWindows).toEqual([NOTES]);
-      expect(currentPath()).toBe(NOTES);
+      expect(useSceneStore.getState().openWindows).toEqual([WORDS]);
+      expect(currentPath()).toBe(WORDS);
     });
 
     it("closing a window behind closes it rather than raising it", () => {
-      openStack([NOTES, BIN]);
+      openStack([WORDS, BIN]);
       renderWithPath();
-      const light = closeLightOf("notes.txt");
+      const light = closeLightOf("words_with_friends.txt");
       // The press raises, and the click that follows must still land on the light
       // it started on — the two halves of one real click on a background window.
       fireEvent.pointerDown(light);
@@ -310,32 +310,32 @@ describe("LaptopScreenOverlay (CatOS)", () => {
     });
 
     it("closing the last window returns to the empty desktop", () => {
-      openStack([NOTES]);
+      openStack([WORDS]);
       renderWithPath();
       fireEvent.click(screen.getByRole("button", { name: "Close" }));
       expect(currentPath()).toBe("/blog");
     });
 
     it("closing the browser ends the browsing session, tab strip included", () => {
-      openStack([WINDOW_BROWSER, NOTES], HOME);
+      openStack([WINDOW_BROWSER, WORDS], HOME);
       renderWithPath();
       fireEvent.click(closeLightOf("Jordan's Camp — CatNav"));
       const state = useSceneStore.getState();
-      expect(state.openWindows).toEqual([NOTES]);
+      expect(state.openWindows).toEqual([WORDS]);
       expect(state.openBlogPaths).toEqual([]);
       expect(state.browserPath).toBeNull();
     });
 
     it("a press on a window behind raises it, without adding to history", () => {
-      openStack([NOTES, BIN]);
+      openStack([WORDS, BIN]);
       renderWithPath();
       // A press anywhere in the frame raises it.
-      fireEvent.pointerDown(titleBarOf("notes.txt"));
-      expect(currentPath()).toBe(NOTES);
+      fireEvent.pointerDown(titleBarOf("words_with_friends.txt"));
+      expect(currentPath()).toBe(WORDS);
     });
 
     it("a press on the front window changes nothing", () => {
-      openStack([NOTES, BIN]);
+      openStack([WORDS, BIN]);
       renderWithPath();
       const before = currentPath();
       fireEvent.pointerDown(titleBarOf("Bin"));

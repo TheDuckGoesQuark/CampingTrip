@@ -95,13 +95,13 @@ describe("applyOverlayState", () => {
 
   it("bare /blog closes every window, leaving the empty desktop", () => {
     applyOverlayState("laptop", "/blog/tags/music.html");
-    applyOverlayState("laptop", "/blog/desk/notes-txt");
+    applyOverlayState("laptop", "/blog/desk/words-with-friends-txt");
     applyOverlayState("laptop", null);
     expect(useSceneStore.getState().openWindows).toEqual([]);
   });
 
   describe("the window stack", () => {
-    const NOTES = "/blog/desk/notes-txt";
+    const NOTES = "/blog/desk/words-with-friends-txt";
     const BIN = "/blog/desk/bin";
 
     it("gives a desktop item a window of its own, not a browser tab", () => {
