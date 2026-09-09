@@ -6,6 +6,43 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## Stacked PRs are GitHub-native now, not Graphite
+
+**Date**: 2026-09-09
+
+**What was done**:
+
+- **`CLAUDE.md` names the stack tool.** The Conventions list now records
+  GitHub-native stacked PRs via `gh stack`, alongside the install line. Nothing
+  in the repo had said which tool the stacks were built with — the only mention
+  lived in a CI comment, which is not where a contributor looks for it.
+- **`terraform.yml`'s trigger comment renamed the tool.** The comment explains
+  why the `pull_request` trigger has no `branches` filter, and that explanation
+  rests on stacked PRs being based on their parent branch rather than main —
+  which is equally true of `gh stack`, so only the tool's name changed.
+- **Cleared the local Graphite state from `.git/`.** `.graphite_repo_config`,
+  `.graphite_cache_persist` and `.graphite_pr_info` are per-clone and ignored by
+  git, so they are invisible in a diff — but they are the tell a tool-detecting
+  agent checks first, and would have kept pointing at `gt` whatever the tracked
+  files said.
+
+**Key decisions**:
+
+- **Put the convention in `CLAUDE.md`, not the README.** The README is project
+  context — architecture, stack, commands. Which PR tool to reach for is
+  agent/contributor workflow, which is what `CLAUDE.md` already holds.
+- **Verified the Graphite cache before deleting it rather than trusting the
+  file's absence.** It held no surviving multi-level stack — every branch was
+  the trunk, parented directly on `main`, or already `BAD_PARENT_NAME` — and no
+  PR was open, so nothing reconstructable was lost.
+- **Trimmed the CI comment's history narration while renaming the tool.** It
+  recounted which PR numbers had skipped the workflow and how many there were.
+  Both load-bearing facts survive — a `branches: [main]` filter only matches the
+  bottom of a stack, and the `apply` job's gates are what make an unfiltered
+  trigger safe.
+
+---
+
 ## The blog's markup says what it means, and the header got a cat
 
 **Date**: 2026-09-09

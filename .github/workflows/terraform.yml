@@ -8,16 +8,14 @@ on:
       - ".github/workflows/terraform.yml"
   # Deliberately NO `branches` filter here, unlike `push` above.
   #
-  # `branches` matches a pull request's BASE, and this repo uses Graphite, where
-  # every PR in a stack is based on its parent branch rather than on main. With
-  # `branches: [main]` those PRs matched nothing, so an `infra/**` change
-  # reviewed as part of a stack got no `fmt -check`, no `validate` and no plan
-  # preview — the first Terraform to see it was `apply -auto-approve` after the
-  # merge. That is exactly backwards, and it is not theoretical: the five PRs
-  # that scoped this account's IAM policies (#66-#70) all skipped this workflow,
-  # while #72 — one PR based on main — got the full check.
+  # `branches` matches a pull request's BASE, and this repo uses GitHub-native
+  # stacked PRs (`gh stack`), where every PR in a stack is based on its parent
+  # branch rather than on main. A `branches: [main]` filter therefore matches
+  # only the bottom of a stack, and an `infra/**` change reviewed further up it
+  # would get no `fmt -check`, no `validate` and no plan preview — the first
+  # Terraform to see it would be `apply -auto-approve` after the merge.
   #
-  # Dropping the filter cannot cause an apply. The `apply` job below is gated on
+  # Having no filter cannot cause an apply. The `apply` job below is gated on
   # `github.event_name == 'push' && github.ref == 'refs/heads/main'`, and the
   # `push` trigger is still restricted to main, so a feature branch can only ever
   # reach `validate` and the read-only `plan`.
