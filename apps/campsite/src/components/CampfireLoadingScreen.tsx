@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-import { startCampfire, stopCampfire } from "../audio/campfireSynth";
+import { startCampfire, stopCampfire, isCampfirePlaying } from "../audio/campfireSynth";
 import { useSceneStore } from "../store/sceneStore";
 import { useSessionStore } from "../store/sessionStore";
 
@@ -46,7 +46,6 @@ export default function CampfireLoadingScreen() {
   const [frame, setFrame] = useState(0);
   const [displayPct, setDisplayPct] = useState(0);
 
-  const audioStarted = useRef(false);
   const mountTime = useRef(Date.now());
   const displayRef = useRef(0);
 
@@ -55,7 +54,6 @@ export default function CampfireLoadingScreen() {
     if (!hasCompletedWelcome) {
       setVisible(true);
       setFadingOut(false);
-      audioStarted.current = false;
       mountTime.current = Date.now();
     }
   }, [hasCompletedWelcome]);
@@ -100,30 +98,38 @@ export default function CampfireLoadingScreen() {
     return () => clearInterval(id);
   }, []);
 
-  // Start campfire audio once welcome is done (user gesture unlocks AudioContext)
-  useEffect(() => {
-    if (!hasCompletedWelcome || !ambienceEnabled || audioStarted.current) return;
-    startCampfire(0.15);
-    audioStarted.current = true;
-  }, [hasCompletedWelcome, ambienceEnabled]);
+  // The campfire belongs to this screen, so every way of leaving it — the fade
+  // out, an unmount from "Reset preferences" clearing hasCompletedWelcome, or
+  // the preference being withdrawn mid-load — has to put the fire out. One
+  // effect owning both ends is what guarantees that; a stop on the fade-out
+  // path alone leaves the fire burning with nothing left able to reach it.
+  const campfireLit = hasCompletedWelcome && ambienceEnabled && !fadingOut;
 
-  // Returning users: no prior gesture → unlock AudioContext on first touch/click
   useEffect(() => {
-    if (!hasCompletedWelcome || !ambienceEnabled) return;
-    if (audioStarted.current) return;
-    const unlock = () => {
-      if (!audioStarted.current) {
-        startCampfire(0.15);
-        audioStarted.current = true;
-      }
-    };
-    window.addEventListener("touchstart", unlock, { once: true, passive: true });
-    window.addEventListener("click", unlock, { once: true });
-    return () => {
+    if (!campfireLit) return;
+
+    startCampfire(0.15);
+
+    function removeListeners() {
       window.removeEventListener("touchstart", unlock);
       window.removeEventListener("click", unlock);
+    }
+    function unlock() {
+      startCampfire(0.15);
+      if (isCampfirePlaying()) removeListeners();
+    }
+    // A returning visitor arrives with the welcome already completed and so has
+    // made no gesture yet, which leaves Web Audio mute until they make one.
+    if (!isCampfirePlaying()) {
+      window.addEventListener("touchstart", unlock, { passive: true });
+      window.addEventListener("click", unlock);
+    }
+
+    return () => {
+      removeListeners();
+      stopCampfire(1.5);
     };
-  }, [hasCompletedWelcome, ambienceEnabled]);
+  }, [campfireLit]);
 
   // Fade out when loading completes + min time elapsed + welcome done
   useEffect(() => {
@@ -134,8 +140,6 @@ export default function CampfireLoadingScreen() {
     const remaining = Math.max(0, MIN_DISPLAY_MS - elapsed);
 
     const timer = setTimeout(() => {
-      if (audioStarted.current) stopCampfire(1.5);
-
       setFadingOut(true);
       setTimeout(() => setVisible(false), 1800);
     }, remaining);

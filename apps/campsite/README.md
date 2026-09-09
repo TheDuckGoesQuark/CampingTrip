@@ -30,6 +30,13 @@ adding a new noise:
   triggered, so it needs an explicit yes: either the scene control, or the
   welcome screen's "full experience".
 
+Each looping sound has exactly one owning component, which starts it and stops
+it from the same effect. `CampfireLoadingScreen` owns the campfire and
+`AmbienceAudio` owns the two beds. Starting a loop from one place and stopping
+it from another is how a sound outlives the thing it belongs to: a stop reachable
+only down the happy path leaves the loop running whenever the component leaves by
+any other route, and nothing is left holding a handle to it.
+
 ### The two ambience beds
 
 The scene has weather: `RainSystem` draws rain only at night and clears by day,

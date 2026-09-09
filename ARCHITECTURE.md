@@ -27,6 +27,7 @@ src/
 ├── audio/               All sound generation
 │   ├── audioManager.ts      Howler.js file playback + store subscriptions
 │   ├── ambienceBeds.ts      Two looping recorded beds (Howler)
+│   ├── campfireSynth.ts     Crackling fire for the loading screen (Web Audio)
 │   └── soundEffects.ts      Synthesised one-shot SFX (laptop, midi, guitar, cat)
 │
 ├── components/
