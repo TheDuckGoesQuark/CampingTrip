@@ -743,6 +743,80 @@
   margin: 0;
 }
 
+/* ── Contact footer ────────────────────────────────────────── */
+
+/* The negative margins cancel the inset the page is given — `Window.Body` and
+   the static reader both publish `--window-page-inset-*` — so the banner
+   reaches the frame's edges whatever measure the page above it reads at. No one
+   measure would do: the homepage's column is whatever the feed leaves it, and
+   the CV's is centred. */
+.contact {
+  margin-top: var(--space-xl);
+  margin-inline: calc(-1 * var(--window-page-inset-inline, 0px));
+  margin-bottom: calc(-1 * var(--window-page-inset-block, 0px));
+  padding: var(--space-l) var(--window-page-inset-inline, var(--space-l));
+  border-top: 2px solid var(--brand-border-strong);
+  background: var(--brand-surface-sunken);
+  box-shadow: var(--shadow-bevel-out);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-l);
+}
+
+/* `:target` rather than a class and a timer, so a deep link into a prerendered
+   page marks itself with no script running. */
+.contact:target {
+  border-top-color: var(--brand-accent);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .contact:target {
+    animation: contactArrival 1.4s steps(1, end);
+  }
+}
+
+@keyframes contactArrival {
+  0%,
+  60% {
+    background: var(--brand-accent-subtle);
+  }
+
+  100% {
+    background: var(--brand-surface-sunken);
+  }
+}
+
+/* Sized by the `img`'s own attributes, so the number lives once in the
+   component and the border sits outside it rather than eating into it. */
+.contactPortrait {
+  box-sizing: content-box;
+  flex-shrink: 0;
+  border: 2px solid var(--brand-border-strong);
+  box-shadow: var(--shadow-hard-2);
+  object-fit: cover;
+}
+
+.contactRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+}
+
+.contactLinks {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.contactLinks li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
 /* On paper the page is the document: no download control, a role never
    straddles a page break, and a heading never ends a page on its own. */
 @media print {
@@ -750,7 +824,8 @@
     max-width: none;
   }
 
-  .cvActions {
+  .cvActions,
+  .contact {
     display: none;
   }
 

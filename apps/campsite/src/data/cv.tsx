@@ -79,7 +79,13 @@ export const cv: Cv = {
   headline:
     "Senior software engineer at Lindus Health, building the data infrastructure, safety workflows and design system behind clinical trials.",
   updated: "2026-09-08",
-  links: [{ label: "GitHub", url: "https://github.com/TheDuckGoesQuark" }],
+  /* The address is its own label: a link that only says "Email" hides the one
+     thing a reader might want to copy rather than click. */
+  links: [
+    { label: "jmackie97@hotmail.com", url: "mailto:jmackie97@hotmail.com" },
+    { label: "LinkedIn", url: "https://www.linkedin.com/in/jordan-mackie/" },
+    { label: "GitHub", url: "https://github.com/TheDuckGoesQuark" },
+  ],
   narrative: (
     <>
       <p>

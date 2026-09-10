@@ -6,6 +6,107 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## The invitation to get in touch has somewhere to go
+
+**Date**: 2026-09-10
+
+**What was done**:
+
+- **The homepage's offer is shorter and pressable.** "let me know via the
+  medium of your liking*" is now "let me know*", with "let me know" an anchor
+  to the contact banner. The footnote marker and its note are unchanged.
+- **Every page CatNav renders ends in a contact banner.** One row — a
+  bevel-framed portrait at the mascot's 128px, then "Let's talk" at the
+  greeting's own `title-1` over a stacked list of links, each with its glyph —
+  so the CV's own header row,
+  the `schema.org/Person` in the page head and this strip cannot disagree about
+  how to reach me. Appended in `BlogPageView`, which already switches on the
+  page kind, rather than by each page.
+- **An icon set, at last: Phosphor.** The design system had seventeen
+  hand-drawn stroked paths and no library, so a GitHub glyph had to be invented
+  — and a hand-drawn git-branch standing in for GitHub read as homemade.
+  Mantine's icons guide names Phosphor as its own recommendation, and
+  `@phosphor-icons/react` ships the brand marks: `Envelope`, `LinkedinLogo`,
+  `GithubLogo`, at `weight="bold"` to hold up against the display face. Added
+  to the design system and re-exported from `@jordanscamp/ds/icons`, its own
+  entry point so nine thousand names stay out of the barrel. Tree-shaking
+  holds: the main chunk grew about 16KB for three glyphs.
+- **`cv.links` carries the address and the LinkedIn profile.** The email's
+  label is the address itself, not the word "Email". `personOf` sorts them
+  without change: the `mailto:` becomes the `schema.org` `email` and the
+  profile joins `sameAs`, and both reach `/cv.pdf`, where a link is useless but
+  a printed address is not.
+- **`Window.Body` publishes its page inset.** `--window-page-inset-block` and
+  `--window-page-inset-inline` name the padding the body applies, so a child
+  that has to reach the frame's edges can cancel it without restating the
+  value. `index.html`'s `#reader` publishes the same two names, so the
+  prerendered document behaves identically.
+- **`Window.Body` takes a `flush` page.** The frame keeps a transparent
+  16px cell above the grow box so the scrollbar ends one cell early; a page
+  whose last element is its own full-bleed foot needs that cell filled, not
+  reserved, or the banner stops short of the frame. `flush` drops it, and the
+  scrollbar runs to the corner — where it also ends in a window with a status
+  bar. Only CatNav passes it.
+- **Arriving is gentle and marked.** `Window.Body` scrolls smoothly for anyone
+  who has not asked for less motion, and `.contact:target` keeps an accent top
+  border and, again only without a motion preference, flashes the banner once
+  before settling.
+- **Every hand-written id is namespaced per render target.** `useDocumentId`
+  prefixes the prerendered half's ids with `reader-`.
+- **`offsiteLinkProps` is shared.** The `mailto:` gets no `target`/`rel`;
+  everything else opens in a new tab. `CvPage` had this inline and now calls it.
+- **The banner is hidden on paper, and `build:pdf` proves it.** The CV's header
+  already prints its links, so a second copy would waste an inch of an A4. The
+  render script asserts `CONTACT_HEADING` — exported from the component through
+  the SSR entry the script already imports from — is absent from the PDF text.
+- **Two new structural tests.** `semantics.test.ts` asserts every
+  `a[href^="#"]` in the prerendered HTML resolves to an `id` on the same page,
+  and that each such href is `reader-`-prefixed. Both were verified by breaking
+  the thing they assert and watching them fail.
+
+**Key decisions**:
+
+- **The anchor was dead before the id fix, and would have shipped that way.**
+  Booting the app does not remove the prerendered `#reader` — printing renders
+  it, so `index.html` only hides it — which leaves both copies of a page in the
+  document and two elements answering to `contact`. The browser resolves a bare
+  `#contact` to the first, the hidden one, so the link scrolled nowhere. It
+  reproduced only against a built `dist`, never against the dev server, which
+  has no reader block. The pre-existing footnote marker had the same dead
+  anchor and is fixed by the same change.
+- **The prerendered half takes the prefix, not the live half.** A URL already
+  shared as `…/blog/index.html#contact` still lands on the app's banner.
+- **A full-bleed banner rather than a measured column.** The first attempt
+  capped the footer at the 640px measure a post and the CV read at, which meant
+  matching a width that differs per page: on the homepage the reading column is
+  whatever the feed beside it leaves, so the footer's rule sat 116px shorter
+  than the section rule above it and read as a bug, and under the CV's centred
+  column it sat flush left. A banner in the feed panel's sunken green sidesteps
+  the question — it belongs to the frame, not to the article, so no page's
+  measure has to be answered.
+- **The banner's content sits at the frame's left inset on every page,** rather
+  than tracking the centred column a post and the CV use. It reads as the
+  frame's floor, and it needs no per-page rule.
+- **`:target` rather than a class and a timer.** No script, and a deep link
+  into a prerendered page marks itself. A repeat click still re-scrolls — a
+  same-fragment navigation runs the scroll again — but does not re-flash, since
+  the element is already the target. The accent border is what stays.
+
+**Deferred**:
+
+- **The seventeen hand-drawn glyphs are still in use** across CatOS (`house`,
+  `cat`, `grass`, `cassette`, `door-arrow`, `trash`, the chevrons). Both sets
+  are current. Moving the generic ones onto Phosphor is a visual change to the
+  whole desktop and wants its own review.
+- **`LandingReader` hand-lists GitHub** in its "Read" section and does not read
+  `cv.links`, so the no-JavaScript landing page will not pick up a new profile.
+- **React's `useId` ids are still duplicated across the two renders.**
+  `FeedPanel`'s `aria-labelledby` is the one in play; both copies carry the same
+  heading text, so there is no user-visible effect, but it is the same latent
+  defect `useDocumentId` fixes for hand-written ids.
+
+---
+
 ## The blog's greeting arrives on a rainbow
 
 **Date**: 2026-09-10

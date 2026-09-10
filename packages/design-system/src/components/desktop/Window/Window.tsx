@@ -550,9 +550,15 @@ export interface WindowBodyProps {
    * (an image) rather than a document that runs to the edges.
    */
   inset?: boolean;
+  /**
+   * The page ends in its own full-bleed foot — a banner reaching the frame's
+   * edges — so the frame must not reserve the corner cell it otherwise keeps
+   * clear for the grow box; the reserved cell would be a gap in that banner.
+   */
+  flush?: boolean;
 }
 
-function Body({ children, inset = false }: WindowBodyProps) {
+function Body({ children, inset = false, flush = false }: WindowBodyProps) {
   const page = useRef<HTMLDivElement>(null);
   const [scrolls, setScrolls] = useState(false);
 
@@ -582,7 +588,7 @@ function Body({ children, inset = false }: WindowBodyProps) {
   return (
     <div
       ref={page}
-      className={cn(styles.body, inset && styles.bodyInset)}
+      className={cn(styles.body, inset && styles.bodyInset, flush && styles.bodyFlush)}
       data-scrolls={scrolls || undefined}
     >
       {children}

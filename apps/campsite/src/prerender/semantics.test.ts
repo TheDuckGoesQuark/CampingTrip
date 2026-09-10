@@ -89,6 +89,28 @@ describe("prerendered page structure", () => {
     }
   });
 
+  it("resolves every in-page link to a target on the same page", () => {
+    for (const { path, html } of pages()) {
+      const root = parse(html);
+      const fragments = [...root.querySelectorAll('a[href^="#"]')].map(
+        (a) => a.getAttribute("href")!,
+      );
+      for (const href of fragments) {
+        const id = href.slice(1);
+        expect(root.querySelector(`[id="${id}"]`), `${path}: ${href}`).not.toBeNull();
+      }
+    }
+  });
+
+  // Why the prefix: `useDocumentId` in `renderTarget.ts`.
+  it("namespaces every in-page link, so it cannot resolve to the hidden copy", () => {
+    for (const { path, html } of pages()) {
+      for (const a of parse(html).querySelectorAll('a[href^="#"]')) {
+        expect(a.getAttribute("href"), `${path}: ${a.textContent}`).toMatch(/^#reader-/);
+      }
+    }
+  });
+
   it("names every nav, so two on a page can be told apart", () => {
     for (const { path, html } of pages()) {
       for (const nav of parse(html).querySelectorAll("nav")) {

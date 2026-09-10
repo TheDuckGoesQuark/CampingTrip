@@ -104,7 +104,7 @@ export default function BrowserWindow({ page, onClose, ...frame }: BrowserWindow
         onBack={canGoBack ? () => navigate(-1) : undefined}
         onReload={() => setReloadCount((n) => n + 1)}
       />
-      <Window.Body>
+      <Window.Body flush>
         {/* Re-keyed so the reload control actually remounts the page. */}
         <div key={`${browserPath}:${reloadCount}`} className={styles.pageBody}>
           <BlogPageView page={page} />
