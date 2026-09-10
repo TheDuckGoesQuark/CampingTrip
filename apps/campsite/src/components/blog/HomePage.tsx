@@ -18,6 +18,12 @@ const FOOTNOTE_ID = "home-footnote";
 
 const LEAVE_TITLE = "Leave CatOS for the campsite";
 
+/* The greeting, in two halves because only the tail keeps the rainbow. Written
+   once: the sweep renders the same words a second time, and two copies that
+   disagree stop lining up. */
+const GREETING_LEAD = "Hello, let's see if we can make your day ";
+const GREETING_TAIL = "brighter.";
+
 /**
  * The page CatNav opens on — who I am, what I've built, what I use, and the blog
  * feed down the right. The desktop behind it holds no content of its own, so
@@ -30,7 +36,20 @@ export default function HomePage() {
         <header className={styles.homeHeader}>
           <div className={styles.masthead}>
             <div className={styles.mastheadTitle}>
-              <Text variant="title-1">Hello, let's see if we can make your day brighter.</Text>
+              <Text variant="title-1">
+                {GREETING_LEAD}
+                <span className={styles.brighter}>{GREETING_TAIL}</span>
+              </Text>
+              {/* Decorative: the moving copy of the heading above. Same words,
+                  same type, exactly over it — see `.sweep`. Hidden from the
+                  accessibility tree so the greeting is announced once, and not
+                  a heading, so the outline still has one. */}
+              <div className={styles.sweep} aria-hidden="true">
+                <Text variant="title-1" as="div">
+                  {GREETING_LEAD}
+                  {GREETING_TAIL}
+                </Text>
+              </div>
             </div>
 
             <Mascot />
@@ -38,16 +57,20 @@ export default function HomePage() {
 
           <Text>
             I'm Jordan. I love making people's lives easier and more fun. I also love solving
-            complex problems with easy to follow systems. This website is trying to do both. If it
-            sounds like we'd work well together, feel free to let me know via the medium of your
-            liking
-            <sup className={styles.footnoteRef}>
-              <Link href={`#${FOOTNOTE_ID}`} aria-label="Footnote">
-                *
-              </Link>
-            </sup>
-            .
+            complex problems with easy to follow systems.{" "}
+            <strong>This website is trying to do both.</strong>
           </Text>
+          <div className={styles.paragraphGap}>
+            <Text>
+              If it sounds like we'd work well together, let me know via the medium of your liking
+              <sup className={styles.footnoteRef}>
+                <Link href={`#${FOOTNOTE_ID}`} aria-label="Footnote">
+                  *
+                </Link>
+              </sup>
+              .
+            </Text>
+          </div>
           <div className={styles.paragraphGap}>
             <Text>
               I write about whatever I've been fixated on lately. Sometimes it's code. Often it's
