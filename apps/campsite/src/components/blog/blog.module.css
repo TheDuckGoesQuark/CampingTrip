@@ -59,47 +59,24 @@
    appears: it rises into place, and a bar of rainbow glides across it once,
    leaving "brighter." coloured behind it. The heading this holds is the
    finished state and never animates — ink, with that last word already
-   rainbow. What animates is `.sweep`, a second copy laid exactly over it. */
+   rainbow. What animates is `.sweep`, a second copy laid exactly over it.
+
+   `play` from the outset: this one shimmers because the page opened. */
 .mastheadTitle {
+  composes: palette sparks play from "./rainbow.module.css";
+
   flex: 1 1 220px;
   min-width: 0;
 
-  /* Six stops, themed rather than fixed, because "brighter." keeps them and a
-     permanent word has to stay readable where a passing band need not. Each is
-     fully saturated and then taken only as dark (light mode) or as light (dark
-     mode) as it must be to clear 3:1 against its own surface — the ratio large
-     text is held to, this being a 34px heading. Lightness pays for contrast so
-     that saturation does not, which is what keeps them vivid; yellow is the
-     stop that pays most, since a yellow that reads on paper is gold. */
-  --rainbow-1: #f21414;
-  --rainbow-2: #ef7000;
-  --rainbow-3: #ad9000;
-  --rainbow-4: #00a83d;
-  --rainbow-5: #007fff;
-  --rainbow-6: #7f00ff;
-
-  /* Four-pointed twinkles, one warm and one cool, so the specks read as part of
-     the rainbow rather than a row of identical dots. A white core inside a
-     saturated outer star is what lets one image work everywhere it lands: the
-     colour carries it over the page, the core carries it over a glyph.
-
-     Inline SVG because a `background-image` cannot take its fill from a custom
-     property — which is why these hexes are written out rather than named by a
-     token, as everything else here is. */
-  --spark-warm: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%23ffa11f' d='M12 0c1.2 7.6 4.4 10.8 12 12-7.6 1.2-10.8 4.4-12 12-1.2-7.6-4.4-10.8-12-12C7.6 10.8 10.8 7.6 12 0Z'/><path fill='%23ffffff' d='M12 6c.6 3.8 2.2 5.4 6 6-3.8 .6-5.4 2.2-6 6-.6-3.8-2.2-5.4-6-6C9.8 11.4 11.4 9.8 12 6Z'/></svg>");
-  --spark-cool: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%239775fa' d='M12 0c1.2 7.6 4.4 10.8 12 12-7.6 1.2-10.8 4.4-12 12-1.2-7.6-4.4-10.8-12-12C7.6 10.8 10.8 7.6 12 0Z'/><path fill='%23ffffff' d='M12 6c.6 3.8 2.2 5.4 6 6-3.8 .6-5.4 2.2-6 6-.6-3.8-2.2-5.4-6-6C9.8 11.4 11.4 9.8 12 6Z'/></svg>");
+  /* Reaching past the glyphs, so a speck can sit just off a letter rather than
+     only ever on one. */
+  --rainbow-sparks-inset: -0.45em -0.6em;
+  /* Long enough for the greeting to have finished rising before the bar starts
+     across it. */
+  --rainbow-delay: 0.3s;
 
   position: relative;
   animation: mastheadRise 0.45s ease-out both;
-}
-
-[data-theme="dark"] .mastheadTitle {
-  --rainbow-1: #ff6b6b;
-  --rainbow-2: #ff9500;
-  --rainbow-3: #ffd400;
-  --rainbow-4: #3af07a;
-  --rainbow-5: #3aa9ff;
-  --rainbow-6: #b98cff;
 }
 
 /* The copy that does the moving: the same words, same type, stacked on the real
@@ -116,12 +93,14 @@
    the painting area the whole block: one slanted bar across however many lines
    the greeting wraps onto, rather than a fresh one per line. */
 .sweep {
+  composes: travel play from "./rainbow.module.css";
+
   position: absolute;
   inset: 0;
   pointer-events: none;
   user-select: none;
   background-image: linear-gradient(
-    100deg,
+    var(--rainbow-angle),
     transparent 0 44%,
     var(--rainbow-1) 46.4%,
     var(--rainbow-2) 48.8%,
@@ -131,14 +110,8 @@
     var(--rainbow-6) 58.4%,
     var(--brand-text) 61% 100%
   );
-  background-repeat: no-repeat;
-  /* Three times the block wide, so the 44%–61% band is about a third of the
-     title and both ends have room to hold the bar fully off-screen. */
-  background-size: 300% 100%;
-  background-position: 0 0;
   background-clip: text;
   -webkit-background-clip: text;
-  animation: mastheadShine 1.8s ease-in-out 0.3s backwards;
 }
 
 /* Safari has historically only honoured `background-clip: text` against
@@ -154,7 +127,7 @@
    what hides it until the bar has been past. */
 .brighter {
   background-image: linear-gradient(
-    100deg,
+    var(--rainbow-angle),
     var(--rainbow-1),
     var(--rainbow-2),
     var(--rainbow-3),
@@ -168,43 +141,6 @@
   -webkit-text-fill-color: transparent;
 }
 
-/* Specks riding the bar. Placed across the whole block, then masked by the same
-   300%-wide travelling window the sweep uses — identical geometry, so a speck
-   can only catch the light while the bar is actually over it. */
-.mastheadTitle::after {
-  content: "";
-  position: absolute;
-  inset: -0.45em -0.6em;
-  pointer-events: none;
-  opacity: 0;
-  background-image:
-    var(--spark-warm), var(--spark-cool), var(--spark-warm), var(--spark-cool), var(--spark-warm),
-    var(--spark-cool), var(--spark-warm);
-  background-repeat: no-repeat;
-  background-size:
-    16px 16px,
-    11px 11px,
-    19px 19px,
-    13px 13px,
-    12px 12px,
-    15px 15px,
-    11px 11px;
-  /* Spread across the block and kept off its edges, so a speck lands on or
-     beside the words rather than out in the margin where nothing is. */
-  background-position:
-    5% 20%,
-    18% 78%,
-    31% 10%,
-    45% 66%,
-    58% 28%,
-    71% 82%,
-    85% 40%;
-  mask-image: linear-gradient(100deg, transparent 45%, #000 50% 55%, transparent 60%);
-  mask-size: 300% 100%;
-  mask-repeat: no-repeat;
-  animation: mastheadShimmer 1.8s ease-in-out 0.3s backwards;
-}
-
 @keyframes mastheadRise {
   from {
     opacity: 0;
@@ -216,47 +152,13 @@
   }
 }
 
-/* Position 100% puts the gradient's right edge on the block's right edge, so
-   the block sees only the ink end and the bar sits off to the left; position 0
-   shows only the transparent end, the bar off to the right and the heading
-   beneath uncovered. The sweep runs the way the line is read, and ends with
-   this copy contributing nothing. */
-@keyframes mastheadShine {
-  from {
-    background-position: 100% 0;
-  }
-  to {
-    background-position: 0 0;
-  }
-}
-
-@keyframes mastheadShimmer {
-  from {
-    mask-position: 100% 0;
-    opacity: 0;
-  }
-  12% {
-    opacity: 1;
-  }
-  88% {
-    opacity: 1;
-  }
-  to {
-    mask-position: 0 0;
-    opacity: 0;
-  }
-}
-
-/* Both branches want the same thing of the sweep — a copy of the heading that
-   is not going to move is a copy of the heading sitting on the heading — and
-   the real one underneath needs nothing done to it. */
+/* Only what this block owns; the shared shimmer drops the bar and the specks. */
 @media (prefers-reduced-motion: reduce), (forced-colors: active) {
   .mastheadTitle {
     animation: none;
   }
 
-  .sweep,
-  .mastheadTitle::after {
+  .sweep {
     display: none;
   }
 }
@@ -758,32 +660,21 @@
   border-top: 2px solid var(--brand-border-strong);
   background: var(--brand-surface-sunken);
   box-shadow: var(--shadow-bevel-out);
+  position: relative;
   display: flex;
   align-items: flex-start;
   gap: var(--space-l);
 }
 
-/* `:target` rather than a class and a timer, so a deep link into a prerendered
-   page marks itself with no script running. */
-.contact:target {
-  border-top-color: var(--brand-accent);
-}
+/* An element of its own rather than more pseudo-elements on the banner: a CSS
+   animation starts over only when its element does, and remounting is the handle
+   React has on that. `ContactFooter` mounts one per arrival. */
+.contactShimmer {
+  composes: palette sheen sparks play from "./rainbow.module.css";
 
-@media (prefers-reduced-motion: no-preference) {
-  .contact:target {
-    animation: contactArrival 1.4s steps(1, end);
-  }
-}
-
-@keyframes contactArrival {
-  0%,
-  60% {
-    background: var(--brand-accent-subtle);
-  }
-
-  100% {
-    background: var(--brand-surface-sunken);
-  }
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
 }
 
 /* Sized by the `img`'s own attributes, so the number lives once in the
