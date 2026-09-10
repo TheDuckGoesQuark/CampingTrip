@@ -6,6 +6,64 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## The footnote link lands on the footnote, not on its hidden twin
+
+**Date**: 2026-09-10
+
+**What was done**:
+
+- **`useDocumentId` namespaces the prerendered reader's ids.** It reads the
+  render target and returns `reader-<id>` under `static`, the bare id under
+  `live`. It lives in `prerender/renderTarget.ts` beside `useRenderTarget`,
+  since the same context answers both questions.
+- **The homepage footnote goes through it, marker and target together.** So the
+  reader holds `#reader-home-footnote` → `reader-home-footnote` and the live
+  app holds `#home-footnote` → `home-footnote`, and neither reaches the other.
+- **`prerender/semantics.test.tsx` grew four assertions** and became `.tsx`, so
+  it can mount a live root. Two read the static markup: every `href="#…"`
+  resolves, and every id the reader declares is in a namespace the live app
+  cannot mint. Two assemble the real pair — the static HTML plus a client root
+  rendering the same `BlogPageView` — and assert no id is declared twice and
+  that no `href="#…"`, `aria-labelledby`, `aria-describedby`, `aria-controls`,
+  `aria-owns` or `for` crosses between the halves. All four fail without the
+  fix; the pair also covers `useId`.
+- **The rule is in `apps/campsite/README.md`,** in the list of what rendering
+  inside the blog window requires.
+
+**Key decisions**:
+
+- **`useId` was measured, not assumed, and needs nothing.** In the built page
+  the reader's `aria-labelledby` is `_R_2_` and the live app's is `_r_9_`.
+  React's `mountId` builds `"_" + prefix + "R_" + treeId` when hydrating and
+  `"_" + prefix + "r_" + counter + "_"` otherwise, so a server render and a
+  client root that never hydrates occupy disjoint spaces by construction. The
+  two renders here are separate roots, not a hydration pair. Passing
+  `identifierPrefix` to `renderToStaticMarkup` would work — it yields
+  `_reader-R_0_` — but it would guard a collision that cannot happen, so the
+  assumption is pinned by a test instead of by code.
+- **The defect was a hand-written id, and it was user-visible.** Clicking the
+  homepage's `*` in the built site resolved `#home-footnote` to the copy inside
+  the hidden `#reader` and went nowhere; a screen reader following it landed on
+  `display: none` content. Verified against `vite preview` of `dist`, since the
+  dev server never has the reader in the DOM.
+- **The static half takes the prefix, not the live half.** The reader is the
+  subordinate copy, and moving reference and target together keeps printing —
+  which shows the reader and hides everything else — working unchanged.
+  `build:pdf` still renders `/cv.pdf`.
+- **Removing the reader from the DOM was rejected.** It is what printing
+  renders, and what `build:pdf` prints the CV from, so deleting it after boot
+  would mean rebuilding it before every print.
+
+**Deferred**:
+
+- The side-by-side test covers blog pages only. The landing page's live half is
+  the 3D scene, which is not worth standing up in jsdom, and its reader declares
+  no ids.
+- `useDocumentId` is opt-in: a new hand-written id that forgets it is caught by
+  the test, not by the type system.
+
+---
+
 ## The blog's greeting arrives on a rainbow
 
 **Date**: 2026-09-10
