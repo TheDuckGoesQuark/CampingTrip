@@ -6,6 +6,32 @@ All planned and deferred work, organised by priority.
 
 ## Next Up
 
+### Design system — no border token clears 3:1, and the focus ring misses in light
+
+WCAG 1.4.11 wants 3:1 for the boundary that identifies a control and for a focus
+indicator. Derive the current figures with the ramps in `src/tokens/primitives.css`:
+
+| Against the page                  | Light | Dark | Needs |
+| --------------------------------- | ----- | ---- | ----- |
+| `--brand-border`                  | 1.34  | 1.61 | 3.0   |
+| `--brand-border-strong`           | 1.82  | 2.29 | 3.0   |
+| `--shadow-focus` ring, composited | 1.84  | 3.20 | 3.0   |
+
+Two separate problems. The border one arrived with the form controls, where the
+box is the only thing saying where to type — a `Card`'s border is decoration and
+carries no such duty, so the tokens were never asked for this. `--neutral-5`
+(4.28 light) is the first stop on the ramp that clears it, which suggests a
+`--brand-border-control` rather than moving `--brand-border-strong` and
+restyling every card and window that leans on it.
+
+The focus ring is older and wider: `--shadow-focus` is what `Button`, `Card`,
+`Tag` and `Window`'s controls all focus with, so a light-mode ring at 1.84
+affects every one of them and is not the form's to fix alone. The dark ring is
+fine, which is why it reads as a light-palette bug rather than a shadow bug.
+
+Text contrast is not in question — label 8.6, hint 4.81, error 4.63, typed value
+9.21, placeholder 5.16, all above 4.5 in both schemes.
+
 ### Blog — the prerendered reader has no way up
 
 A prerendered page is the head template plus `<main id="reader">` and nothing

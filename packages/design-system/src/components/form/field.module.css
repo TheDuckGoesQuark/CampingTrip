@@ -1,0 +1,108 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xxs);
+  /* A field in a flex or grid parent would otherwise be sized by its widest
+     descendant's intrinsic width, which for an input is its `size` attribute. */
+  min-width: 0;
+}
+
+.label {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-xs);
+  font-family: var(--font-sans);
+  font-size: var(--text-label-size);
+  line-height: var(--text-label-lh);
+  letter-spacing: var(--text-label-tracking);
+  font-weight: var(--weight-bold);
+  color: var(--brand-text);
+}
+
+/* Words, not an asterisk: an asterisk needs a legend elsewhere on the page to
+   decode, and marking the optional field is the smaller mark when most are
+   required. */
+.optional {
+  font-weight: var(--weight-regular);
+  color: var(--brand-text-muted);
+}
+
+/* `margin: 0` on the text parts, here and below: the host page's reset reaches
+   these, and a paragraph-shaped default margin puts a line of air between the
+   hint and the control it belongs to. The gap is `.root`'s to set. */
+.description {
+  margin: 0;
+  font-family: var(--font-text);
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-lh);
+  color: var(--brand-text-muted);
+}
+
+.control {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: var(--font-text);
+  color: var(--brand-text);
+  background: var(--brand-surface);
+  /* `-strong`, not `--brand-border`: for a card a border is decoration, but here
+     it is the only thing telling a reader where the control is, which is a
+     WCAG 1.4.11 boundary rather than a hairline. Neither token clears 3:1 —
+     see the note in docs/planning/TODO.md. */
+  border: 1px solid var(--brand-border-strong);
+  border-radius: var(--radius-m);
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.control::placeholder {
+  color: var(--brand-text-muted);
+}
+
+.control:focus-visible {
+  outline: none;
+  border-color: var(--brand-accent);
+  box-shadow: var(--shadow-focus);
+}
+
+/* Border *and* the message below it: colour alone would carry the invalid state
+   for nobody who cannot see it, and for nobody reading in monochrome. */
+.control[data-invalid] {
+  border-color: var(--brand-danger);
+}
+
+.control[data-disabled] {
+  color: var(--brand-text-disabled);
+  background: var(--brand-surface-sunken);
+  cursor: not-allowed;
+}
+
+.error {
+  margin: 0;
+  font-family: var(--font-text);
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-lh);
+  color: var(--brand-danger);
+}
+
+/* Sizes */
+.sm {
+  padding: var(--space-xxs) var(--space-xs);
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-lh);
+}
+
+.md {
+  padding: var(--space-xs) var(--space-s);
+  font-size: var(--text-body-md-size);
+  line-height: var(--text-body-md-lh);
+}
+
+/* Vertical only: a horizontal drag would let the control break the column it
+   sits in, and the width is the layout's business rather than the reader's.
+   No `min-height` floor — `rows` is the caller's stated height, and any floor
+   worth setting is taller than `rows={1}` or `rows={2}` asks for. */
+.textarea {
+  resize: vertical;
+}

@@ -15,6 +15,7 @@ const PATHS = {
   tag: "M5 5h6l8 8-6 6-8-8zM9 9h.01",
   lock: "M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4",
   image: "M3 5h18v14H3zM3 16l5-5 4 4 3-3 6 6",
+  envelope: "M3 6h18v12H3zM3 6l9 7 9-7",
   cassette: "M3 6h18v12H3zM7 15h10M8 11h.01M16 11h.01M7 11h10",
   cat: "M4 5l2 4v9h12V9l2-4-5 2H9zM9.5 13h.01M14.5 13h.01M12 16v1",
   grass:
