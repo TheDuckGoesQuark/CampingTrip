@@ -6,15 +6,6 @@ All planned and deferred work, organised by priority.
 
 ## Next Up
 
-### Design system — a closing Modal never unmounts
-
-Leaving CatOS leaves the takeover in the DOM indefinitely, carrying
-`data-closed` and `data-ending-style`: Base UI is waiting on an exit transition
-that never reports finishing, since the ending style sets the opacity the popup
-already has. It holds no focus and, since the pointer-events guard, catches no
-clicks, so what is left is a stuck invisible node rather than a broken screen.
-Reproduce by leaving CatOS and reading `document.querySelector("[role=dialog]")`.
-
 ### Blog — the prerendered reader has no way up
 
 A prerendered page is the head template plus `<main id="reader">` and nothing

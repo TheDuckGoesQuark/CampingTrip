@@ -118,6 +118,52 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## A closing Modal does unmount, and two instruments that say otherwise
+
+**Date**: 2026-09-10
+
+**What was done**: Probed the reported stuck `[role=dialog]` before building a
+contact modal on top of `Modal`. It does not reproduce against
+`@base-ui/react` 1.6 on either variant, on any exit route: Escape, the close
+button, CatOS's "Touch grass" control, a route-driven `open` flip, five
+consecutive open/close cycles, or a close issued inside the 150ms opening
+transition. Each leaves nothing behind.
+
+The reported node carried `data-closed` and `data-ending-style` — Base UI
+waiting on an exit transition that never reports finishing. `centered` and
+`bare` were never strong suspects: both transition `transform` alongside
+`opacity`, so the transform change fires a `transitionend` even when opacity is
+already settled. `takeover` animates opacity alone, making it the plausible
+one, but the `pointer-events` guard in `Modal.module.css` gives that wait
+somewhere to land.
+
+**Key decisions**:
+
+- **Headless Chromium is the only instrument that can see this class of bug.**
+  Two cheaper ones give a confident wrong answer. jsdom stubs CSS modules, so
+  no transition exists for Base UI to wait on and the popup always unmounts —
+  `Modal.test.tsx` asserts exactly that and passes regardless of the truth. The
+  browser pane is worse than blind: it reports `document.hidden`,
+  `requestAnimationFrame` never fires, and the popup then sticks in
+  `data-starting-style` at opacity 0 with Escape registering no close at all.
+  That signature reads as the bug and is not it — stuck _opening_, not closing.
+  `tabs_select` does not clear it; the pane stays hidden.
+- **`/blog` drives CatOS without WebGL.** It is a covering route, so a cold
+  load there skips the 3D scene chunk entirely — the takeover can be exercised
+  headlessly without the tent rendering.
+- **No fix committed.** There is nothing to fix in the tree as it stands, and a
+  speculative change to transition handling would be a change with no failing
+  case to justify it.
+
+**Deferred**: no regression test. Pinning this behaviour needs a real browser in
+CI, which the design system's `vitest` + jsdom setup cannot provide; the
+campsite's Playwright is the closest existing tool but lives in the wrong
+package. Worth revisiting if the design system grows other transition-dependent
+behaviour that wants covering, rather than standing up a browser runner for one
+assertion.
+
+---
+
 ## The invitation to get in touch has somewhere to go
 
 **Date**: 2026-09-10
