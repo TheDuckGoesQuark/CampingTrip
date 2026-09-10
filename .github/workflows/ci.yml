@@ -41,6 +41,14 @@ jobs:
       - name: Run tests
         run: pnpm -r test
 
+      # `infra/` is not a workspace package, so `pnpm -r test` never reaches the
+      # contact endpoint's validation — which is the whole security surface of a
+      # public unauthenticated endpoint. The glob rather than the directory: a
+      # bare directory makes node treat `index.mjs` as a test, and that imports
+      # the AWS SDK the Lambda runtime provides.
+      - name: Contact endpoint tests
+        run: node --test "infra/lambda/**/*.test.mjs"
+
       - name: Build
         run: pnpm -r build
 

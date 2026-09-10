@@ -31,3 +31,11 @@ output "deploy_bucket" {
   description = "S3 bucket for deploy artifacts"
   value       = aws_s3_bucket.deploy.id
 }
+
+# Paste this into `infra/Caddyfile`'s `reverse_proxy`. It is only known after the
+# function exists, and the Caddyfile ships as a static file from the repo, so the
+# endpoint and the proxy in front of it cannot land in one change.
+output "contact_function_url" {
+  description = "The contact Lambda's Function URL"
+  value       = aws_lambda_function_url.contact.function_url
+}

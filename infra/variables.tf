@@ -40,3 +40,9 @@ variable "github_repo" {
   default     = "CampingTrip"
 }
 
+
+variable "contact_email" {
+  description = "Where MouseMail's notes are sent. Already public in the CV, so not a secret."
+  type        = string
+  default     = "jmackie97@hotmail.com"
+}
