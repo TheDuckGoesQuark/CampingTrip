@@ -14,7 +14,13 @@ export type DesktopItem =
   | { kind: "image"; label: string; caption: string; dimensions: string; size: string }
   | { kind: "text"; label: string; mode: string; body: string }
   | { kind: "video"; label: string; videoId: string; caption: string; duration: string }
-  | { kind: "bin"; label: string; contents: string[] };
+  | { kind: "bin"; label: string; contents: string[] }
+  /**
+   * Opens MouseMail. Like `app` it is a launcher rather than a document, but it
+   * launches a window rather than a URL, so it cannot name a path the way an
+   * `app` does.
+   */
+  | { kind: "mail"; label: string };
 
 /** The desktop label a URL is built from. */
 export type DesktopItemKind = DesktopItem["kind"];

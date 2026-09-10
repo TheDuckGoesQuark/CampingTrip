@@ -32,8 +32,9 @@ export default function CatosWindow({ page, onClose, ...frame }: CatosWindowProp
       return <VideoWindow item={item} onClose={onClose} {...frame} />;
     case "bin":
       return <BinWindow item={item} onClose={onClose} {...frame} />;
-    // An app launches something else; it is never itself a window.
+    // These launch something else; neither is ever itself a desk window.
     case "app":
+    case "mail":
       return null;
   }
 }

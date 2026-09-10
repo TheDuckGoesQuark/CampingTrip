@@ -8,6 +8,14 @@ import { isBrowserPath, parseBlogPath } from "./blogPaths";
 export const WINDOW_BROWSER = "browser";
 
 /**
+ * MouseMail, for the same reason: it is an app rather than a page, so it has no
+ * URL to be identified by. Deliberately *not* given one — a route would be
+ * prerendered, and a prerendered form is a form that cannot send. The `mailto:`
+ * in the contact footer is what a scriptless visitor gets instead.
+ */
+export const WINDOW_MAIL = "mail";
+
+/**
  * The window in front — the last one, since the stack renders back to front.
  * Indexed rather than `at(-1)`, which the app's TS lib target does not carry.
  */
@@ -23,6 +31,10 @@ export function windowIdFor(blogPath: string): string {
 /** True for the browser's own id, as opposed to a desktop item's path. */
 export function isBrowserWindow(id: string): boolean {
   return id === WINDOW_BROWSER;
+}
+
+export function isMailWindow(id: string): boolean {
+  return id === WINDOW_MAIL;
 }
 
 /**
