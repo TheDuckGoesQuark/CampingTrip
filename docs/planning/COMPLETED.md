@@ -6,6 +6,56 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## The tent stops drawing when the blog covers it
+
+**Date**: 2026-09-10
+
+**What was done**:
+
+- **`<Canvas frameloop>` is now driven by the route.** `SceneRoot` passes
+  `paused={covering}` to `TentScene`, which maps it to
+  `frameloop={paused ? "never" : "always"}`. R3F cancels its `requestAnimationFrame`
+  loop on `"never"` while leaving the WebGL context, compiled shaders and
+  uploaded textures resident, so the mount latch keeps its whole point — closing
+  the overlay is still instant — without paying for frames nobody can see.
+- **The measurement, so the claim is not a guess.** Playwright against a
+  `vite preview` of `dist`, with every WebGL draw entry point and
+  `requestAnimationFrame` wrapped as counters. Before: the blog route ran at
+  60fps and ~10,200 draw calls/sec, more than the tent's ~9,800, while five
+  hit-tested points across the canvas all returned CatOS elements — every one of
+  those pixels was behind an opaque wallpaper. After: 0fps and 0 draw calls
+  under the blog, ~9,200 draw calls/sec once back in the tent, one WebGL context
+  created for the whole journey, and 10ms from `history.back()` to the first
+  frame drawn again.
+
+**Key decisions**:
+
+- **`"never"`, not `"demand"`.** The scene is genuinely continuously animated
+  when visible — nine `useFrame` callbacks across the camera, lighting, campfire,
+  rain and cat — so `"demand"` would need `invalidate()` every frame anyway and
+  buys nothing over `"always"`.
+- **Mounted and drawing are now separate ideas.** The latch that keeps the scene
+  mounted across a covering route was deliberate and stays; the bug was that
+  `showTent` never consulted `covering`, so there was no way to express
+  "resident but idle".
+- **Route-driven, not visibility-driven.** `isCoveringRoute` already encodes
+  which overlays are opaque, so the pause reuses it rather than introducing a
+  second notion of what covers the tent. `/music` is not covering and keeps
+  drawing, which is correct — the tent shows through it.
+- **The clock reset is a non-issue here.** `setFrameloop` zeroes
+  `clock.elapsedTime` and restarts it, so resuming hands `useFrame` a jumped
+  delta. Nothing in the scene reads absolute clock time (`grep` for
+  `elapsedTime` finds no hits outside R3F itself), and a one-frame delta jump on
+  return was accepted rather than smoothed.
+
+**Deferred**:
+
+- A cold load to `/blog` was checked and does _not_ render: no WebGL context, no
+  frames, no draw calls. It does still pull 4.1MB of GLB models plus the 752KB
+  Draco decoder on idle for a page that shows none of them, with no main-thread
+  cost (Draco decodes in a worker, `totalBlockedMs: 0`). Logged under
+  "Campsite — what the blog still pays for" rather than fixed here.
+
 ## The contact banner shimmers when you reach it
 
 **Date**: 2026-09-10
