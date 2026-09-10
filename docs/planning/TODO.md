@@ -6,6 +6,27 @@ All planned and deferred work, organised by priority.
 
 ## Next Up
 
+### MouseMail — only two ways in, and one of them is two hops
+
+The desktop icon and the contact footer open it; the CatOS menu bar does not,
+though it is where "Close all windows" and "Touch grass" live and so is where
+someone looks for what CatOS can do. Separately, the homepage's "let me know"
+still jumps to the contact footer, so reaching MouseMail from the landing page
+means following a link and then following another — the footer link was the whole
+point of #123, and it now sits in front of a thing that could be opened directly.
+
+Both are one-liners; the question is whether the landing page should skip the
+footer, or whether arriving at the banner first is the intended pause.
+
+### Design system — `Text` has no `danger` tone
+
+`tone` offers default / muted / on-brand / link, so a form error cannot be
+coloured through `Text` and `components/form/field.module.css` restates
+`--text-*` sizes for the label, the hint and the error instead of composing
+`<Text>` as the package's styling rules prefer. `Badge` already carries a
+`danger` tone, so the semantic exists — it is only missing from the type scale.
+Adding it would let all three parts of a field compose through `Text`.
+
 ### Design system — no border token clears 3:1, and the focus ring misses in light
 
 WCAG 1.4.11 wants 3:1 for the boundary that identifies a control and for a focus
