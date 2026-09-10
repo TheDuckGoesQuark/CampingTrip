@@ -4,10 +4,12 @@ import { Link as RouterLink } from "react-router-dom";
 import { bookmarks } from "../../data/bookmarks";
 import { projects } from "../../data/projects";
 import { slugify } from "../../data/slug";
+import { useDocumentId } from "../../prerender/renderTarget";
 import { blogPaths } from "../../routing/blogPaths";
 import { routes } from "../../routing/navigation";
 import type { Bookmark, Project } from "../../types/project";
 import { asset } from "../../utils/assetPath";
+import { CONTACT_ID } from "./ContactFooter";
 import FeedPanel from "./FeedPanel";
 
 import styles from "./blog.module.css";
@@ -30,6 +32,8 @@ const GREETING_TAIL = "brighter.";
  * everything worth reading is reachable from here.
  */
 export default function HomePage() {
+  const contactAnchor = useDocumentId(CONTACT_ID);
+  const footnoteId = useDocumentId(FOOTNOTE_ID);
   return (
     <div className={styles.home}>
       <div className={styles.homeMain}>
@@ -62,9 +66,10 @@ export default function HomePage() {
           </Text>
           <div className={styles.paragraphGap}>
             <Text>
-              If it sounds like we'd work well together, let me know via the medium of your liking
+              If it sounds like we'd work well together,{" "}
+              <Link href={`#${contactAnchor}`}>let me know</Link>
               <sup className={styles.footnoteRef}>
-                <Link href={`#${FOOTNOTE_ID}`} aria-label="Footnote">
+                <Link href={`#${footnoteId}`} aria-label="Footnote">
                   *
                 </Link>
               </sup>
@@ -79,7 +84,7 @@ export default function HomePage() {
             </Text>
           </div>
           <div className={styles.footnote}>
-            <Text variant="body-sm" tone="muted" id={FOOTNOTE_ID}>
+            <Text variant="body-sm" tone="muted" id={footnoteId}>
               {/* Decorative: it ties the note to the marker above, which the link
                   already names for a screen reader. */}
               <span aria-hidden="true">*</span> or if you just fancy a break, <EscapeHatch /> and be

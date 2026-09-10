@@ -1,4 +1,5 @@
 import type { BrowserPage } from "../../data/blogPages";
+import ContactFooter from "./ContactFooter";
 import CvPage from "./CvPage";
 import FeedPage from "./FeedPage";
 import HomePage from "./HomePage";
@@ -11,6 +12,15 @@ import ToolPage from "./ToolPage";
  * a resolved `BlogPage` onto a component, so the overlay stays about chrome.
  */
 export default function BlogPageView({ page }: { page: BrowserPage }) {
+  return (
+    <>
+      <PageBody page={page} />
+      <ContactFooter />
+    </>
+  );
+}
+
+function PageBody({ page }: { page: BrowserPage }) {
   switch (page.kind) {
     case "home":
       return <HomePage />;

@@ -25,10 +25,15 @@
       html:not(.js) body {
         background: var(--brand-bg, #f4f1e8);
       }
+      /* The inset is published under the same names `Window.Body` uses, so a
+         full-bleed banner reaches this document's edges too. */
       #reader {
+        --window-page-inset-block: 2rem;
+        --window-page-inset-inline: 1rem;
+
         max-width: 72ch;
         margin: 0 auto;
-        padding: 2rem 1rem;
+        padding: var(--window-page-inset-block) var(--window-page-inset-inline);
       }
       /* Printing gets the reader whether or not the tent is up: it is the page's
          paper form, and what the build prints the CV's PDF from. */
@@ -46,6 +51,9 @@
           display: block;
         }
         #reader {
+          --window-page-inset-block: 0;
+          --window-page-inset-inline: 0;
+
           max-width: none;
           padding: 0;
         }

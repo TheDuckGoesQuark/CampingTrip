@@ -5,6 +5,7 @@ import { blogPaths } from "../../routing/blogPaths";
 import "../../styles/blogProse.css";
 import type { Cv, Education, Role } from "../../types/cv";
 import { formatDate, monthYear } from "./formatDate";
+import { offsiteLinkProps } from "./offsiteLink";
 
 import styles from "./blog.module.css";
 
@@ -41,13 +42,7 @@ export default function CvPage({ cv }: CvPageProps) {
         </Text>
         <div className={styles.cvLinks}>
           {cv.links.map((link) => (
-            <Link
-              key={link.url}
-              href={link.url}
-              {...(link.url.startsWith("mailto:")
-                ? {}
-                : { target: "_blank", rel: "noopener noreferrer" })}
-            >
+            <Link key={link.url} href={link.url} {...offsiteLinkProps(link.url)}>
               {link.label}
             </Link>
           ))}

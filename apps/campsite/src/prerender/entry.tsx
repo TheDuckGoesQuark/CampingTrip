@@ -4,6 +4,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { StaticRouter } from "react-router-dom";
 
 import BlogPageView from "../components/blog/BlogPageView";
+import { CONTACT_HEADING } from "../components/blog/ContactFooter";
 import { isBrowserPage, metaOfBlogPage, resolveBlogPage } from "../data/blogPages";
 import { cv } from "../data/cv";
 import { published } from "../data/posts";
@@ -16,7 +17,7 @@ import { RenderTargetContext } from "./renderTarget";
 
 import "../styles/blogProse.css";
 
-export { blogUrls, cv, FEED_PATH, ORIGIN };
+export { blogUrls, CONTACT_HEADING, cv, FEED_PATH, ORIGIN };
 export const CV_PATH = blogPaths.cv;
 export const CV_PDF_PATH = blogPaths.cvPdf;
 

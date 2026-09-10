@@ -38,6 +38,11 @@ pnpm -r exec tsc -b   # typecheck all apps
 ## Tech stack
 
 - **Frontend**: React + TypeScript + Vite, managed as a pnpm workspace
+- **Icons**: [Phosphor](https://phosphoricons.com) (MIT), re-exported from
+  `@jordanscamp/ds/icons` so an app never depends on the icon library directly.
+  `Icon` in the design system's barrel is a separate, closed set of stroked
+  shapes drawn for this era — a cassette, a tuft of grass — that Phosphor has no
+  equivalent of. Reach for Phosphor unless the drawn glyph is the point.
 - **3D assets**: GLB with WebP textures and Draco-compressed geometry; the
   decoder is served from `apps/campsite/public/draco`. A newly added model is
   put through `pnpm --filter campsite models:optimise` before it is committed.

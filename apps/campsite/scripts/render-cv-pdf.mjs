@@ -7,7 +7,7 @@ import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
 import { chromium } from "playwright";
 import { preview } from "vite";
 
-import { cv, CV_PATH, CV_PDF_PATH } from "../dist-ssr/entry.js";
+import { CONTACT_HEADING, cv, CV_PATH, CV_PDF_PATH } from "../dist-ssr/entry.js";
 
 const DIST = "dist";
 
@@ -60,6 +60,11 @@ async function check(pdf) {
     if (!text.includes(collapse(expected))) {
       throw new Error(`${CV_PDF_PATH} does not contain "${expected}"`);
     }
+  }
+  // The header's link row is already on the paper, so a second copy at the foot
+  // is a wasted inch of an A4 someone is holding.
+  if (text.includes(CONTACT_HEADING)) {
+    throw new Error(`${CV_PDF_PATH} prints the contact footer twice over`);
   }
 }
 

@@ -40,6 +40,26 @@ so search crawlers, link unfurlers and AI bots read the same content a person
 sees in the CatOS browser, without a second copy of it to keep in sync. The CV
 page is also printed to `/cv.pdf` in CI, from that same prerendered HTML.
 
+#### Both copies of a page are in the document at once
+
+`index.html` does not remove the prerendered markup once the app boots — it
+hides it with `html.js #reader { display: none }`, because printing renders that
+copy and not the app's, and `build:pdf` prints `/cv.pdf` from it. So a live blog
+page holds the same markup twice, and every `id` in it exists twice.
+
+That makes a bare in-page anchor resolve to the hidden copy: `#contact` finds
+the reader's footer, so the link scrolls nowhere and `:target` styles a box
+nobody can see. It reproduces only against a built `dist` — the dev server never
+renders the reader — so it does not show up in `pnpm --filter campsite dev`.
+
+`useDocumentId` in `apps/campsite/src/prerender/renderTarget.ts` is how a
+hand-written `id` avoids this: it prefixes the prerendered render's copy with
+`reader-`. The prerendered half takes the prefix rather than the live half, so a
+URL already shared as `/blog/index.html#contact` still lands on the app's own
+element. Anchors are asserted by `semantics.test.ts`.
+
+Ids from React's `useId` are not covered and are still duplicated.
+
 ## Repository structure
 
 ```
