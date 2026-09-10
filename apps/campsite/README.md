@@ -73,6 +73,16 @@ Rules this puts on anything rendered inside the blog window:
   content (a still, a caption, a sentence), because for a crawler the fallback
   is the whole thing. The module behind it is code-split and never loaded by
   the static render.
+- A hand-written `id` goes through `useDocumentId`, and so does every reference
+  to it (`href="#…"`, `aria-labelledby`, `for`). Both renders sit in the DOM at
+  once, so an id written once exists twice and `#foo` resolves to whichever
+  comes first — the reader's hidden copy, every time. The hook namespaces the
+  static render's ids and leaves the live app the bare name, so each half's
+  references stay inside it and printing, which shows the reader, still
+  resolves. Ids from `useId` need no equivalent: React mints them `_R_…` from a
+  server render and `_r_…` from a client root, and these two are separate roots
+  rather than a hydration pair. `prerender/semantics.test.tsx` assembles the
+  pair the way the browser does and holds both halves apart.
 - A new kind of page needs a `metaOfBlogPage` case and a `blogUrls()` entry as
   well as its `BlogPage` variant. The test over `blogUrls()` renders every URL,
   which catches a page that exists but cannot be prerendered.
