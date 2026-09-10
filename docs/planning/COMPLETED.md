@@ -6,6 +6,84 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## The blog's greeting arrives on a rainbow
+
+**Date**: 2026-09-10
+
+**What was done**:
+
+- **The homepage masthead title animates in.** It rises 6px into place over
+  0.45s, then a band of rainbow glides left-to-right across it once and leaves
+  "brighter." coloured behind it. Specks of four-pointed sparkle ride the band.
+- **The greeting is rendered twice, stacked.** The `h1` is the finished state
+  and never animates: ink, with "brighter." already rainbow. Over it sits
+  `.sweep` — the same words, same type, `inset: 0`, `aria-hidden`, not a
+  heading — whose gradient runs transparent → rainbow → ink and travels. Ahead
+  of the bar the copy is opaque ink and the heading beneath is not seen; behind
+  it the copy is transparent and the heading shows through, rainbow word and
+  all.
+- **The rainbow is one sweep across the block, not one per line.** The gradient
+  is painted on `.sweep` and clipped to the glyphs inside it with
+  `background-clip: text`. The painting area is the whole block, so a title
+  that wraps onto two or three lines gets a single slanted bar crossing all of
+  them at the same offset, rather than the bar restarting per line.
+- **The sparkles are masked by the same travelling window.** `::after` on the
+  wrapper carries seven star images spread across the block, masked by a
+  gradient with the identical `300%` size and `100% → 0` position animation, so
+  a speck can only light up while the bar is actually over it.
+- **The intro's thesis got its own weight, and the invitation its own
+  paragraph.** "This website is trying to do both." is `<strong>` and now ends
+  the opening paragraph; the offer to get in touch, and the footnote marker
+  that hangs off it, start a new one.
+
+**Key decisions**:
+
+- **The reveal is the bar, not a second animation.** Earlier attempts gave
+  "brighter." its own animation — a timed fade, then a one-way wipe in the
+  word's own coordinate space — and both had to guess where in the block the
+  word sat. That moves with every rewrap, so the reveal ran late on a wide
+  window and early on a narrow one, and the timed version let the word fall
+  back to ink between the bar leaving and the fade starting. Stacking two
+  copies makes the ink/transparent boundary of the sweep's own gradient the
+  thing that uncovers the word: correct at every width, and nothing to retime.
+- **The real heading is the one underneath.** It is in flow, so it sets the
+  height the overlay is `inset: 0` against; it is the only `h1`, so the outline
+  and the accessible name are unchanged; and it is what selection and find-in
+  page reach, the copy being `user-select: none` and `pointer-events: none`.
+- **The words are written once.** `GREETING_LEAD` / `GREETING_TAIL` in
+  `HomePage.tsx`, because two copies that disagree stop lining up.
+- **The stops are themed and contrast-bounded.** Each is fully saturated, then
+  taken only as dark (light mode) or as light (dark mode) as it must be to
+  clear 3:1 against its own surface — the ratio a 34px heading is held to.
+  Spending lightness rather than saturation is what keeps them vivid. Yellow is
+  the stop that pays for it, since a yellow that reads on paper is gold.
+- **Saturated sparkles with a white core.** A pale cream speck is what a
+  sparkle wants to be and is invisible on ivory at twelve pixels wide. The
+  outer star is amber or violet so it reads on the page; the white core is what
+  reads when it lands on a glyph.
+- **Reduced motion and forced colours both just drop the copy.** With the
+  overlay gone what is left is the finished heading, which is the right answer
+  for a reader who does not want motion. Forced colours additionally takes the
+  word's rainbow, which it must: that mode strips the background the fill is
+  showing through while leaving `-webkit-text-fill-color` transparent.
+
+**Deferred**:
+
+- The sweep runs once, on mount. Replaying it on hover would need the animation
+  restarted, which CSS alone does not do cleanly.
+- The stacked copies paint the same glyphs twice while the overlay is opaque,
+  so the ink text carries a little extra edge weight for the second or so
+  before the bar passes. Not visible at this size; worth knowing if the
+  treatment is ever reused at body sizes.
+- The sparkle images are fixed amber and violet in both themes. On paper they
+  sit around 2:1, which is thin for a decoration; theming them would mean four
+  data URIs rather than two.
+- Roughly the first and last fifth of the 1.8s is the bar travelling off-screen.
+  Harmless, since the title just sits still, but the timing could be tightened
+  by narrowing the gradient's dead zones.
+
+---
+
 ## Narrow viewports keep only the gear in the scene controls
 
 **Date**: 2026-09-09

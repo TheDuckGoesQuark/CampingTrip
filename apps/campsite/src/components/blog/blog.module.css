@@ -53,10 +53,224 @@
 }
 
 /* Grows, which pushes the cat to the row's right edge — the same edge the
-   paragraph below ends on. The basis decides when the cat wraps underneath. */
+   paragraph below ends on. The basis decides when the cat wraps underneath.
+
+   The greeting is the first thing anyone reads, so it arrives rather than
+   appears: it rises into place, and a bar of rainbow glides across it once,
+   leaving "brighter." coloured behind it. The heading this holds is the
+   finished state and never animates — ink, with that last word already
+   rainbow. What animates is `.sweep`, a second copy laid exactly over it. */
 .mastheadTitle {
   flex: 1 1 220px;
   min-width: 0;
+
+  /* Six stops, themed rather than fixed, because "brighter." keeps them and a
+     permanent word has to stay readable where a passing band need not. Each is
+     fully saturated and then taken only as dark (light mode) or as light (dark
+     mode) as it must be to clear 3:1 against its own surface — the ratio large
+     text is held to, this being a 34px heading. Lightness pays for contrast so
+     that saturation does not, which is what keeps them vivid; yellow is the
+     stop that pays most, since a yellow that reads on paper is gold. */
+  --rainbow-1: #f21414;
+  --rainbow-2: #ef7000;
+  --rainbow-3: #ad9000;
+  --rainbow-4: #00a83d;
+  --rainbow-5: #007fff;
+  --rainbow-6: #7f00ff;
+
+  /* Four-pointed twinkles, one warm and one cool, so the specks read as part of
+     the rainbow rather than a row of identical dots. A white core inside a
+     saturated outer star is what lets one image work everywhere it lands: the
+     colour carries it over the page, the core carries it over a glyph.
+
+     Inline SVG because a `background-image` cannot take its fill from a custom
+     property — which is why these hexes are written out rather than named by a
+     token, as everything else here is. */
+  --spark-warm: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%23ffa11f' d='M12 0c1.2 7.6 4.4 10.8 12 12-7.6 1.2-10.8 4.4-12 12-1.2-7.6-4.4-10.8-12-12C7.6 10.8 10.8 7.6 12 0Z'/><path fill='%23ffffff' d='M12 6c.6 3.8 2.2 5.4 6 6-3.8 .6-5.4 2.2-6 6-.6-3.8-2.2-5.4-6-6C9.8 11.4 11.4 9.8 12 6Z'/></svg>");
+  --spark-cool: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%239775fa' d='M12 0c1.2 7.6 4.4 10.8 12 12-7.6 1.2-10.8 4.4-12 12-1.2-7.6-4.4-10.8-12-12C7.6 10.8 10.8 7.6 12 0Z'/><path fill='%23ffffff' d='M12 6c.6 3.8 2.2 5.4 6 6-3.8 .6-5.4 2.2-6 6-.6-3.8-2.2-5.4-6-6C9.8 11.4 11.4 9.8 12 6Z'/></svg>");
+
+  position: relative;
+  animation: mastheadRise 0.45s ease-out both;
+}
+
+[data-theme="dark"] .mastheadTitle {
+  --rainbow-1: #ff6b6b;
+  --rainbow-2: #ff9500;
+  --rainbow-3: #ffd400;
+  --rainbow-4: #3af07a;
+  --rainbow-5: #3aa9ff;
+  --rainbow-6: #b98cff;
+}
+
+/* The copy that does the moving: the same words, same type, stacked on the real
+   heading and hidden from everything but the eye.
+
+   Its gradient runs transparent → rainbow → ink, and travels. Ahead of the bar
+   it is opaque ink and the heading beneath is simply not seen; behind the bar
+   it is transparent and the heading shows through, rainbow word and all. So the
+   boundary that uncovers "brighter." *is* the bar, at every window width —
+   there is no second animation to keep in step with the first, and nothing to
+   retime when the greeting rewraps.
+
+   The gradient is painted here and clipped to the glyphs inside, which makes
+   the painting area the whole block: one slanted bar across however many lines
+   the greeting wraps onto, rather than a fresh one per line. */
+.sweep {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  user-select: none;
+  background-image: linear-gradient(
+    100deg,
+    transparent 0 44%,
+    var(--rainbow-1) 46.4%,
+    var(--rainbow-2) 48.8%,
+    var(--rainbow-3) 51.2%,
+    var(--rainbow-4) 53.6%,
+    var(--rainbow-5) 56%,
+    var(--rainbow-6) 58.4%,
+    var(--brand-text) 61% 100%
+  );
+  background-repeat: no-repeat;
+  /* Three times the block wide, so the 44%–61% band is about a third of the
+     title and both ends have room to hold the bar fully off-screen. */
+  background-size: 300% 100%;
+  background-position: 0 0;
+  background-clip: text;
+  -webkit-background-clip: text;
+  animation: mastheadShine 1.8s ease-in-out 0.3s backwards;
+}
+
+/* Safari has historically only honoured `background-clip: text` against
+   `-webkit-text-fill-color`, and a copy that paints its own ink is just a
+   second heading sitting on the first. */
+.sweep > * {
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+/* The word the sweep uncovers. The same six stops, spread across it rather than
+   packed into a band. It is rainbow from the first frame — the copy above is
+   what hides it until the bar has been past. */
+.brighter {
+  background-image: linear-gradient(
+    100deg,
+    var(--rainbow-1),
+    var(--rainbow-2),
+    var(--rainbow-3),
+    var(--rainbow-4),
+    var(--rainbow-5),
+    var(--rainbow-6)
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Specks riding the bar. Placed across the whole block, then masked by the same
+   300%-wide travelling window the sweep uses — identical geometry, so a speck
+   can only catch the light while the bar is actually over it. */
+.mastheadTitle::after {
+  content: "";
+  position: absolute;
+  inset: -0.45em -0.6em;
+  pointer-events: none;
+  opacity: 0;
+  background-image:
+    var(--spark-warm), var(--spark-cool), var(--spark-warm), var(--spark-cool), var(--spark-warm),
+    var(--spark-cool), var(--spark-warm);
+  background-repeat: no-repeat;
+  background-size:
+    16px 16px,
+    11px 11px,
+    19px 19px,
+    13px 13px,
+    12px 12px,
+    15px 15px,
+    11px 11px;
+  /* Spread across the block and kept off its edges, so a speck lands on or
+     beside the words rather than out in the margin where nothing is. */
+  background-position:
+    5% 20%,
+    18% 78%,
+    31% 10%,
+    45% 66%,
+    58% 28%,
+    71% 82%,
+    85% 40%;
+  mask-image: linear-gradient(100deg, transparent 45%, #000 50% 55%, transparent 60%);
+  mask-size: 300% 100%;
+  mask-repeat: no-repeat;
+  animation: mastheadShimmer 1.8s ease-in-out 0.3s backwards;
+}
+
+@keyframes mastheadRise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Position 100% puts the gradient's right edge on the block's right edge, so
+   the block sees only the ink end and the bar sits off to the left; position 0
+   shows only the transparent end, the bar off to the right and the heading
+   beneath uncovered. The sweep runs the way the line is read, and ends with
+   this copy contributing nothing. */
+@keyframes mastheadShine {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: 0 0;
+  }
+}
+
+@keyframes mastheadShimmer {
+  from {
+    mask-position: 100% 0;
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  88% {
+    opacity: 1;
+  }
+  to {
+    mask-position: 0 0;
+    opacity: 0;
+  }
+}
+
+/* Both branches want the same thing of the sweep — a copy of the heading that
+   is not going to move is a copy of the heading sitting on the heading — and
+   the real one underneath needs nothing done to it. */
+@media (prefers-reduced-motion: reduce), (forced-colors: active) {
+  .mastheadTitle {
+    animation: none;
+  }
+
+  .sweep,
+  .mastheadTitle::after {
+    display: none;
+  }
+}
+
+/* Where the two part company: a rainbow is colour rather than motion, so
+   "brighter." keeps it under reduced motion and only forced colours takes it,
+   which it must — that mode strips the background the fill is showing through
+   while leaving `-webkit-text-fill-color` transparent, which it does not
+   override. */
+@media (forced-colors: active) {
+  .brighter {
+    background-image: none;
+    -webkit-text-fill-color: currentcolor;
+  }
 }
 
 /* Held to the frame's width, or the credit sets the figure wider than the thing
