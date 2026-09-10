@@ -12,6 +12,8 @@ export { Badge, type BadgeProps } from "./components/Badge";
 export { Link, type LinkProps } from "./components/Link";
 export { Modal, type ModalProps, type ModalVariant, type ModalSize } from "./components/Modal";
 export { Icon, ICON_NAMES, type IconProps, type IconName } from "./components/Icon";
+export { TextField, type TextFieldProps } from "./components/form/TextField";
+export { TextArea, type TextAreaProps } from "./components/form/TextArea";
 export { Card, type CardProps } from "./components/Card";
 export { Tag, type TagProps } from "./components/Tag";
 export { Tile, type TileProps } from "./components/Tile";
