@@ -16,12 +16,18 @@ mirrorLoadProgress();
 
 interface TentSceneProps {
   visible: boolean;
+  /**
+   * Stop the render loop but keep the Canvas mounted. Unmounting it instead
+   * would drop the WebGL context, the compiled shaders and the uploaded
+   * textures, which are what make reopening the scene instant.
+   */
+  paused: boolean;
 }
 
 // Heavy 3D scene. Memoised so SceneRoot re-rendering on every location change
 // (it subscribes to useLocation) doesn't re-render the whole Canvas subtree —
-// only a change to `visible` should.
-function TentScene({ visible }: TentSceneProps) {
+// only a change to `visible` or `paused` should.
+function TentScene({ visible, paused }: TentSceneProps) {
   const [debug, setDebug] = useState(false);
   const [fadeIn, setFadeIn] = useState(true);
   const [contextLost, setContextLost] = useState(false);
@@ -81,6 +87,7 @@ function TentScene({ visible }: TentSceneProps) {
     >
       <Canvas
         shadows
+        frameloop={paused ? "never" : "always"}
         dpr={isMobile ? [1, 1.5] : [1, 2]}
         camera={{ position: [0, 2.8, 3.5], fov: 69, near: 0.1, far: 200 }}
         gl={{ antialias: !isMobile, alpha: false }}

@@ -209,6 +209,15 @@ are there only for the tent:
 - **Four Nunito weights**, each in latin and latin-ext. Unicode-range keeps the
   unused subsets off the wire, but the weights themselves are all fetched. Worth
   checking whether the design actually uses all four.
+- **4.1MB of models, on a page that shows none of them.** `SceneRoot`'s idle
+  prefetch imports the TentScene chunk, whose module-scope `useGLTF.preload`
+  calls then fetch every GLB plus the Draco decoder — measured at 4.1MB of
+  models and 752KB of decoder, first request ~560ms after load. It costs no
+  main-thread time (Draco decodes in a worker) and `saveData`/2G already opts
+  out, so this is cellular bandwidth and battery rather than jank. The call is
+  whether the prefetch should warm the chunk only and leave the models to the
+  mount, or wait for a signal that the visitor is heading for the tent.
+  Reproduce by counting `/models/` responses on a cold load of `/blog`.
 
 ### Digital Twins — scheduling simulator polish & storytelling
 

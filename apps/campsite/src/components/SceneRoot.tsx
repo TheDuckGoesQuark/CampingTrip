@@ -88,7 +88,7 @@ export default function SceneRoot() {
       {showTent && (
         <ErrorBoundary>
           <Suspense fallback={null}>
-            <TentScene visible={showTent} />
+            <TentScene visible={showTent} paused={covering} />
           </Suspense>
         </ErrorBoundary>
       )}
