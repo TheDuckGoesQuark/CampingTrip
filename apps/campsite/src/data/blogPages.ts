@@ -6,6 +6,7 @@ import type { DesktopItem } from "../types/desktop";
 import type { Post } from "../types/post";
 import type { Bookmark, Project } from "../types/project";
 import { bookmarks } from "./bookmarks";
+import { emailOf, MAILTO } from "./contactEmail";
 import { cv } from "./cv";
 import { findDesktopItem } from "./desktopItems";
 import { posts } from "./posts";
@@ -133,6 +134,8 @@ export function iconOfDesktopItem(item: DesktopItem): IconName {
       return "document";
     case "video":
       return "cassette";
+    case "mail":
+      return "envelope";
     case "bin":
       return "trash";
   }
@@ -240,15 +243,13 @@ export function metaOfBlogPage(page: BrowserPage): PageMeta {
   }
 }
 
-const MAILTO = "mailto:";
-
 function personOf(person: Cv): PersonMeta {
   const urls = person.links.map((link) => link.url);
   return {
     name: person.name,
     jobTitle: person.experience.find((role) => !role.end)?.title,
     sameAs: urls.filter((url) => !url.startsWith(MAILTO)),
-    email: urls.find((url) => url.startsWith(MAILTO))?.slice(MAILTO.length),
+    email: emailOf(person),
     knowsAbout: person.skills.flatMap((group) => group.items),
     dateModified: person.updated,
   };

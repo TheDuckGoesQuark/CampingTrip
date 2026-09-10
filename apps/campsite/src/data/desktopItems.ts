@@ -15,6 +15,7 @@ export const desktopItems: DesktopItem[] = [
   // High in the rail, because the rail scrolls and a way out below the fold is
   // not one. It is the joke rather than the reliable door — see the menu bar.
   { kind: "app", label: "Touch Grass", opens: routes.tent, glyph: "grass" },
+  { kind: "mail", label: "MouseMail" },
   {
     kind: "image",
     label: "smittens_047.jpg",

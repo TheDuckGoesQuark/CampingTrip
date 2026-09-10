@@ -1,0 +1,27 @@
+/* The honeypot. `display: none` rather than an off-screen shift on purpose: a
+   screen reader skips it entirely, so nobody is asked to fill in a field that
+   only a bot should touch. */
+.trap {
+  display: none;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-m);
+}
+
+/* The outcome replaces the form, so it holds roughly the form's height and the
+   card does not jump as it swaps. */
+.outcome {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+  padding-block: var(--space-m);
+}
+
+/* The window's own foot is the status bar, so the control sits with the form. */
+.send {
+  display: flex;
+  justify-content: flex-end;
+}
