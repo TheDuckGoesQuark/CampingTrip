@@ -6,6 +6,38 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## Narrow viewports keep only the gear in the scene controls
+
+**Date**: 2026-09-09
+
+**What was done**: The tab bar is centred and the scene controls are pinned
+right, so on a phone the two ran into each other — measured at 375px, the pill
+ended at x=246 and the three-button cluster started at x=239, a 7px collision.
+Below 640px the two popover duplicates (visual effects, ambience) now hide and
+the gear stands alone; the same measurement gives 81px of clearance.
+
+- **The duplicates were the ones to drop.** They exist only because they are
+  what people reach for mid-visit; the popover behind the gear still carries
+  ambience, sound effects and visual effects, so nothing becomes unreachable.
+- **CSS, not `matchMedia`.** `display: none` under a media query takes the
+  buttons out of the accessibility tree too, and avoids a first-paint flash of
+  the wrong cluster. The rule is declared after `.button` so it wins the
+  cascade — both are single-class specificity.
+- **`ControlButton` grew an optional `className`.** The alternative, a
+  `hideOnNarrow` boolean, would have put a layout concern in the component's
+  API for one caller pair.
+- **640px picked to match the app's existing breakpoint** in
+  `PhotoBroomPage.module.css` — the repo has no breakpoint tokens. At 641px the
+  three-button cluster returns with 126px of clearance, so nothing snaps back
+  into a collision at the boundary.
+
+**Deferred**: no test. jsdom does not evaluate CSS-module media queries, so the
+only assertion available is that the buttons carry a hashed class name — a test
+of the implementation, not the behaviour. The existing SceneControls suite still
+covers both buttons and every popover row.
+
+---
+
 ## The intro says what I'm for, and the way out is a control you can press
 
 **Date**: 2026-09-09

@@ -5,8 +5,10 @@ import { useSessionStore } from "../../store/sessionStore";
 import styles from "./SceneControls.module.css";
 
 /**
- * Visual effects and rain sit outside the popover, duplicating two of its rows,
- * because they are the ones people reach for mid-visit.
+ * Visual effects and ambience sit outside the popover, duplicating two of its
+ * rows, because they are the ones people reach for mid-visit. Narrow viewports
+ * drop the duplicates rather than collide with the centred tab bar — the
+ * popover still holds every toggle.
  */
 export default function SceneControls() {
   const [open, setOpen] = useState(false);
@@ -57,6 +59,7 @@ export default function SceneControls() {
   return (
     <div ref={clusterRef} className={styles.cluster}>
       <ControlButton
+        className={styles.quick}
         label={effectsEnabled ? "Turn visual effects off" : "Turn visual effects on"}
         pressed={effectsEnabled}
         onClick={() => setEffectsEnabled(!effectsEnabled)}
@@ -65,6 +68,7 @@ export default function SceneControls() {
       </ControlButton>
 
       <ControlButton
+        className={styles.quick}
         label={ambienceEnabled ? "Turn ambience off" : "Turn ambience on"}
         pressed={ambienceEnabled}
         onClick={() => setAmbienceEnabled(!ambienceEnabled)}
@@ -112,17 +116,19 @@ function ControlButton({
   pressed,
   expanded,
   onClick,
+  className,
   children,
 }: {
   label: string;
   pressed?: boolean;
   expanded?: boolean;
   onClick: () => void;
+  className?: string;
   children: React.ReactNode;
 }) {
   return (
     <button
-      className={styles.button}
+      className={className ? `${styles.button} ${className}` : styles.button}
       onClick={onClick}
       aria-label={label}
       aria-pressed={pressed}
