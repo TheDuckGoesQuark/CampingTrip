@@ -6,6 +6,68 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## The contact banner shimmers when you reach it
+
+**Date**: 2026-09-10
+
+**What was done**:
+
+- **The greeting and the banner share one rainbow.**
+  `blog/rainbow.module.css` holds the six themed stops, the two spark images,
+  and the travelling window they ride in — everything the effect is except the
+  clip. The masthead composes `palette sparks play` and clips its bar to the
+  greeting's glyphs; the contact banner composes `palette sheen sparks` and lays
+  the same bar over the whole panel. One `@keyframes`, one set of stops, one
+  band geometry, so tuning either one cannot drift them apart. Verified against
+  the built CSS that no masthead declaration changed value in the move.
+- **`.play` is why the classes are inert.** Every animation is declared `paused`
+  and started by a separate class. Without that the effect could only ever fire
+  on load, which is right for a greeting and wrong for a banner nobody has
+  scrolled to yet.
+- **The banner shimmers on every arrival, not just the first.** `useArrivals`
+  counts the times its element has been held in view for 500ms uninterrupted
+  having been away since the last, and `useAnchorFollows` adds the other way in:
+  a click on any link to the banner's own hash, delegated from the document
+  because `hashchange` never reports the same hash twice. The wait is what
+  separates arriving from passing through — `Window.Body` scrolls smoothly, so
+  the target is in view for most of the journey to it — and it is also why a
+  followed link cannot count twice, since the click and the scroll answering it
+  restart one timer. A `rootMargin` of `-10%` at the bottom stops a banner whose
+  top edge has only just appeared from counting as arrived.
+- **The shimmer is an element, not more pseudo-elements on the banner.** A CSS
+  animation starts over only when its element does, so `ContactFooter` mounts one
+  overlay per arrival, keyed by the count. Nothing imperative, and the greeting's
+  own `.sweep` was already a real element for the same reason.
+
+**Key decisions**:
+
+- **A sheen over the panel, not a text sweep on the heading.** The greeting's
+  bar is clipped to glyphs, which can only light up text; a banner is a
+  portrait, a heading and a link list. So the footer's bar travels over the
+  whole surface instead, ending transparent at both ends so it passes rather
+  than arrives.
+- **Over the content, not under it.** Under it the bar would vanish behind the
+  portrait and reappear the other side. Over it at `0.3` opacity the wash moves
+  ink and its background by roughly the same amount, so text stays comfortably
+  readable while the bar is on it — and the bar crosses the photo, which is what
+  a glare does.
+- **`:target` is gone.** It marked the banner with an accent top border and a
+  background flash, and because the hash stays in the URL the orange border
+  stayed with it — a permanent mark left by having once followed a link. The
+  shimmer says the same thing and then stops saying it.
+- **Reduced motion and forced colours drop the whole thing.** Unlike
+  "brighter.", which is colour rather than motion and stays, none of the
+  banner's shimmer is load-bearing, so both branches take all of it.
+
+**Deferred**:
+
+- The band is a fixed fraction of whatever block it crosses, so on a banner far
+  wider than the greeting it reads as a broad wash rather than a narrow bar.
+  Narrowing it per-site means parameterising the gradient's stops, which is not
+  worth the machinery for two callers.
+
+---
+
 ## The invitation to get in touch has somewhere to go
 
 **Date**: 2026-09-10

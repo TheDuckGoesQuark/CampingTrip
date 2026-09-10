@@ -6,8 +6,11 @@ import {
   Link as LinkGlyph,
   LinkedinLogo,
 } from "@jordanscamp/ds/icons";
+import { useRef } from "react";
 
 import { cv } from "../../data/cv";
+import { useAnchorFollows } from "../../hooks/useAnchorFollows";
+import { useArrivals } from "../../hooks/useArrivals";
 import { useDocumentId } from "../../prerender/renderTarget";
 import { asset } from "../../utils/assetPath";
 import { offsiteLinkProps } from "./offsiteLink";
@@ -26,6 +29,9 @@ const PORTRAIT_PX = 128;
 
 /** Optically level with the 16px link text beside it. */
 const GLYPH_PX = 20;
+
+/** Past the end of a smooth scroll, short of the reader losing interest. */
+const SETTLE_MS = 500;
 
 /**
  * Read off the URL rather than stored beside it: a second field would be a fact
@@ -48,8 +54,12 @@ function glyphFor(url: string): Icon {
 export default function ContactFooter() {
   const anchor = useDocumentId(CONTACT_ID);
   const headingId = useDocumentId(HEADING_ID);
+  const banner = useRef<HTMLElement>(null);
+  const followed = useAnchorFollows(`#${anchor}`);
+  const arrivals = useArrivals(banner, SETTLE_MS, followed);
   return (
-    <footer id={anchor} className={styles.contact} aria-labelledby={headingId}>
+    <footer ref={banner} id={anchor} className={styles.contact} aria-labelledby={headingId}>
+      {arrivals > 0 && <span key={arrivals} className={styles.contactShimmer} aria-hidden="true" />}
       <img
         className={styles.contactPortrait}
         src={asset("images/jordan.webp")}

@@ -216,6 +216,21 @@ globalThis.ResizeObserver = class implements ResizeObserver {
   disconnect(): void {}
 };
 
+// ─── Mock IntersectionObserver ───────────────────────────────────
+// Inert: it never reports, so nothing armed by scrolling into view fires unless
+// a test replaces this with one it drives itself.
+globalThis.IntersectionObserver = class implements IntersectionObserver {
+  readonly root = null;
+  readonly rootMargin = "";
+  readonly thresholds: readonly number[] = [];
+  observe(): void {}
+  unobserve(): void {}
+  disconnect(): void {}
+  takeRecords(): IntersectionObserverEntry[] {
+    return [];
+  }
+};
+
 // ─── Mock HTMLMediaElement ───────────────────────────────────────
 HTMLMediaElement.prototype.play = vi.fn().mockResolvedValue(undefined);
 HTMLMediaElement.prototype.pause = vi.fn();
