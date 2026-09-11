@@ -20,7 +20,7 @@ const FOOTNOTE_ID = "home-footnote";
 
 const LEAVE_TITLE = "Leave CatOS for the campsite";
 
-/* The greeting, in two halves because only the tail keeps the rainbow. Written
+/* The greeting, in two halves because only the tail keeps the colour. Written
    once: the sweep renders the same words a second time, and two copies that
    disagree stop lining up. */
 const GREETING_LEAD = "Hello, let's see if we can make your day ";

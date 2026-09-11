@@ -56,24 +56,24 @@
    paragraph below ends on. The basis decides when the cat wraps underneath.
 
    The greeting is the first thing anyone reads, so it arrives rather than
-   appears: it rises into place, and a bar of rainbow glides across it once,
-   leaving "brighter." coloured behind it. The heading this holds is the
+   appears: it rises into place, and a band of brand colour glides across it
+   once, leaving "brighter." coloured behind it. The heading this holds is the
    finished state and never animates — ink, with that last word already
-   rainbow. What animates is `.sweep`, a second copy laid exactly over it.
+   coloured. What animates is `.sweep`, a second copy laid exactly over it.
 
    `play` from the outset: this one shimmers because the page opened. */
 .mastheadTitle {
-  composes: palette sparks play from "./rainbow.module.css";
+  composes: palette sparks play from "./shimmer.module.css";
 
   flex: 1 1 220px;
   min-width: 0;
 
   /* Reaching past the glyphs, so a speck can sit just off a letter rather than
      only ever on one. */
-  --rainbow-sparks-inset: -0.45em -0.6em;
+  --shimmer-sparks-inset: -0.45em -0.6em;
   /* Long enough for the greeting to have finished rising before the bar starts
      across it. */
-  --rainbow-delay: 0.3s;
+  --shimmer-delay: 0.3s;
 
   position: relative;
   animation: mastheadRise 0.45s ease-out both;
@@ -82,9 +82,9 @@
 /* The copy that does the moving: the same words, same type, stacked on the real
    heading and hidden from everything but the eye.
 
-   Its gradient runs transparent → rainbow → ink, and travels. Ahead of the bar
-   it is opaque ink and the heading beneath is simply not seen; behind the bar
-   it is transparent and the heading shows through, rainbow word and all. So the
+   Its gradient runs transparent → band → ink, and travels. Ahead of the bar it
+   is opaque ink and the heading beneath is simply not seen; behind the bar it
+   is transparent and the heading shows through, coloured word and all. So the
    boundary that uncovers "brighter." *is* the bar, at every window width —
    there is no second animation to keep in step with the first, and nothing to
    retime when the greeting rewraps.
@@ -93,21 +93,15 @@
    the painting area the whole block: one slanted bar across however many lines
    the greeting wraps onto, rather than a fresh one per line. */
 .sweep {
-  composes: travel play from "./rainbow.module.css";
+  composes: travel play from "./shimmer.module.css";
 
   position: absolute;
   inset: 0;
   pointer-events: none;
   user-select: none;
   background-image: linear-gradient(
-    var(--rainbow-angle),
-    transparent 0 44%,
-    var(--rainbow-1) 46.4%,
-    var(--rainbow-2) 48.8%,
-    var(--rainbow-3) 51.2%,
-    var(--rainbow-4) 53.6%,
-    var(--rainbow-5) 56%,
-    var(--rainbow-6) 58.4%,
+    var(--shimmer-angle),
+    var(--shimmer-band),
     var(--brand-text) 61% 100%
   );
   background-clip: text;
@@ -122,23 +116,12 @@
   -webkit-text-fill-color: transparent;
 }
 
-/* The word the sweep uncovers. The same six stops, spread across it rather than
-   packed into a band. It is rainbow from the first frame — the copy above is
-   what hides it until the bar has been past. */
+/* The word the sweep uncovers, in the band's own colour. Plain `color` rather
+   than a fill clipped to a background, so forced colours substitutes a system
+   colour here as it does for any other text. It is coloured from the first
+   frame — the copy above is what hides it until the bar has been past. */
 .brighter {
-  background-image: linear-gradient(
-    var(--rainbow-angle),
-    var(--rainbow-1),
-    var(--rainbow-2),
-    var(--rainbow-3),
-    var(--rainbow-4),
-    var(--rainbow-5),
-    var(--rainbow-6)
-  );
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-  -webkit-text-fill-color: transparent;
+  color: var(--shimmer-colour);
 }
 
 @keyframes mastheadRise {
@@ -160,18 +143,6 @@
 
   .sweep {
     display: none;
-  }
-}
-
-/* Where the two part company: a rainbow is colour rather than motion, so
-   "brighter." keeps it under reduced motion and only forced colours takes it,
-   which it must — that mode strips the background the fill is showing through
-   while leaving `-webkit-text-fill-color` transparent, which it does not
-   override. */
-@media (forced-colors: active) {
-  .brighter {
-    background-image: none;
-    -webkit-text-fill-color: currentcolor;
   }
 }
 
@@ -674,7 +645,7 @@
    animation starts over only when its element does, and remounting is the handle
    React has on that. `ContactFooter` mounts one per arrival. */
 .contactShimmer {
-  composes: palette sheen sparks play from "./rainbow.module.css";
+  composes: palette sheen sparks play from "./shimmer.module.css";
 
   position: absolute;
   inset: 0;
