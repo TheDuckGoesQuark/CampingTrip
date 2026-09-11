@@ -6,6 +6,48 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## MouseMail can actually send
+
+**Date**: 2026-09-11
+
+**What was done**:
+
+- **An SNS topic, a Node 22 arm64 Lambda and a public Function URL** (#131), with
+  `/api/contact` proxied to it by Caddy on the site's own origin (#135). The
+  handler validates, publishes one string, logs nothing and returns 204.
+- **The CI roles gained the permissions to manage them** — `lambda:*`/`sns:*`
+  scoped to `jordanscamp-prod-*` on the apply role, `Get*`/`List*` on the
+  read-only plan role, and `/aws/lambda/*` added to the log-group scope.
+
+**Key decisions**:
+
+- **SNS over SES.** The whole message is one body string, so no caller-influenced
+  value reaches a header field and mail injection cannot exist in this path. It
+  also skips domain identity and DKIM. The cost is no working Reply-To: the
+  address, when given, sits in the body. SES is a later upgrade needing no
+  frontend change.
+- **`reserved_concurrent_executions = 2` is the cost ceiling**, since a public
+  unauthenticated URL can be called as often as anyone likes. Caddy fronting it
+  removes CORS, not the need to validate.
+- **An explicit `aws_lambda_permission` for `lambda:InvokeFunction`.** A `NONE`
+  auth URL needs two resource-policy grants, not one; the provider adds the
+  other, and adds this one only from 6.28. Without it the URL answers 403 after
+  an apply reporting success.
+- **Three `depends_on` from the resources to the CI policy that authorises them**,
+  because Terraform draws no edge from a policy document to the API calls it
+  permits.
+
+**Deferred**:
+
+- The provider pin, the Caddyfile's second copy and the deploy/apply race are all
+  in TODO.md. The last two bit during this work: a `user_data` edit restarts the
+  instance, and the concurrent deploy failed against the stopped instance.
+- **Anti-spam stays a honeypot and a dwell check.** `mountedAt` is client-supplied
+  and a bot can lie about it, so this only costs the naive ones. Turnstile is the
+  answer if it is ever actually abused.
+
+---
+
 ## The masthead and contact shimmer run on one brand colour
 
 **Date**: 2026-09-11
