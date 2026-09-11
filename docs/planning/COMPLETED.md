@@ -6,6 +6,42 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## The masthead and contact shimmer run on one brand colour
+
+**Date**: 2026-09-11
+
+**What was done**:
+
+- **`rainbow.module.css` → `shimmer.module.css`**, with `--rainbow-*` renamed to
+  `--shimmer-*` throughout. Six hand-tuned stops per theme collapse to a single
+  `--shimmer-colour: var(--brand-solid)`, which already carries its own light and
+  dark values — so the module no longer needs a `[data-theme="dark"]` block.
+- **A shared `--shimmer-band`**, the transparent → colour → flat middle that the
+  `.sheen` wash and the masthead's `.sweep` both build their gradient from. The
+  two described the same bar in two places before.
+- **`.brighter` is plain `color`**, not a gradient clipped to the glyphs. That
+  drops its `@media (forced-colors: active)` carve-out with it: forced colours
+  substitutes a system colour for `color` on its own, which is exactly what the
+  clipped fill had to be talked into doing.
+- The warm/cool sparks are untouched.
+
+**Key decisions**:
+
+- **Sea-green over amber.** `--brand-solid` is the documented primary; amber is
+  the accent. It also decides the contrast question for free — "brighter." is a
+  permanent 34px word, so it is held to 3:1, and sage-6 clears that on ivory
+  where amber-6 does not.
+- **The band keeps its geometry.** Angle, travel, duration, delay and the
+  44%/61% shoulders are what made the sweep the reveal boundary for
+  "brighter." at any wrap; only the stops inside it changed.
+- **The file was renamed rather than left named `rainbow`.** Two consumers, so
+  the rename was cheap, and a module named for a palette it no longer has is a
+  comment that lies.
+
+**Deferred**: nothing.
+
+---
+
 ## The laptop can be turned down without leaving it
 
 **Date**: 2026-09-10
