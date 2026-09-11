@@ -17,9 +17,33 @@ serves a config nobody chose.
 
 The contact endpoint's `reverse_proxy` block makes this concrete: a rebuild
 between now and someone noticing would drop `/api/contact` and the form would
-fail to the `mailto:` with nothing in any log to say why. Options are to have
-`user_data.sh` fetch the Caddyfile from the deploy bucket on boot rather than
-carry a copy, or to render both from one `templatefile`.
+fail to the `mailto:` with nothing in any log to say why.
+
+The second copy also costs production downtime, which is the part that decides
+between the fixes. It lives inside `user_data`, so editing it changes
+`aws_instance.app`'s `user_data` attribute, and the provider applies that in
+place by **stopping and starting the instance** — the site went down for about
+half a minute doing exactly this. Cloud-init runs user-data once per instance
+lifetime, so the restart does not even apply the new config: it only matters on
+the next rebuild.
+
+So: have `user_data.sh` fetch the Caddyfile from the deploy bucket on boot rather
+than carry a copy. That removes the duplication _and_ takes Caddyfile edits out
+of the instance's lifecycle, where rendering both from one `templatefile` would
+leave every edit still bouncing production.
+
+### Infra — a Terraform run can break the deploy in the same push
+
+`terraform.yml` and `deploy.yml` both trigger on push to main and run
+concurrently. `deploy.yml`'s "Find EC2 instance by tag" step filters on
+`instance-state-name=running` and fails outright when it matches nothing, with no
+retry — so any apply that stops the instance, as a `user_data` change does, hands
+the deploy an empty result and fails it. That happened on the contact-endpoint
+merge: the apply was mid-restart when the deploy looked.
+
+The failure is loud and re-running the deploy fixes it, so this is a papercut
+rather than a hazard. Either wrap the lookup in a retry, or make `deploy` wait on
+`terraform` via `needs:` so the two cannot interleave.
 
 ### Infra — the AWS provider pin is a major version behind
 
