@@ -109,6 +109,72 @@ History of what's been built, key decisions made, and what was deferred along th
   cost (Draco decodes in a worker, `totalBlockedMs: 0`). Logged under
   "Campsite — what the blog still pays for" rather than fixed here.
 
+## MouseMail, and the text inputs it is built from
+
+**Date**: 2026-09-10
+
+**What was done**:
+
+- **The contact footer invites a reply.** Beside the links: "Feedback? Spotted a
+  bug? Just want to tell me this put a smile on your face? Let me know here."
+  Both `here` and the email address open MouseMail. The invitation is not a
+  fourth entry in `cv.links` — that array is the one source shared with the CV's
+  header row and the `schema.org/Person` in the page head, and a non-link entry
+  would corrupt all three. `contactEmail.ts` reads the address off it instead, so
+  the footer, MouseMail and `personOf` cannot disagree.
+- **MouseMail is a CatOS window, not a dialog.** `WINDOW_MAIL`, an id that is not
+  a path, beside `WINDOW_BROWSER`. It renders in the same stack as CatNav with an
+  envelope launcher on the desktop rail, and `openWindows` now carries a window
+  that shows no page.
+- **`TextField` and `TextArea` in the design system**, on a new `Field` primitive
+  shim so Base UI supplies the label association and the `aria-describedby` /
+  `aria-invalid` wiring. Grouped under `components/form/` with one shared CSS
+  module, mirroring how `desktop/` groups its chrome.
+- **An `envelope` in the drawn glyph set**, because `DesktopIcon` draws only from
+  that closed set.
+- **The Modal unmount report closed as not reproducible** — its own entry above.
+
+**Key decisions**:
+
+- **A window rather than a dialog, because the site is boxy.** A rounded card
+  floating over a faux desktop fights the aesthetic. As a window it stacks with
+  CatNav, leaves the desktop clickable and closes from the red light. The cost is
+  that Escape and focus-return become the desktop's job rather than Base UI's,
+  which is correct for a window and something the desktop already does.
+- **MouseMail has no URL, deliberately.** `blogUrls` prerenders every route, and
+  a prerendered form is a form that cannot send. Session state, like the tab
+  strip.
+- **The trigger is a `mailto:` anchor that JS takes the click off**, not a
+  button. The href is what makes the prerendered pages work with no script, and
+  it keeps right-click-copy-address; a modified click is left to the browser.
+  `Link render={<button/>}` was the alternative and is not viable —
+  `Link.module.css` sets no background or padding reset, so it draws native
+  button chrome in brand colours, and an app cannot restyle it.
+- **`label` is a required string on both inputs**, so an unlabelled field is not
+  expressible; `error` is a caller-supplied string, so the DS owns the ARIA an
+  error implies but holds no validation rules.
+- **`md`, not `sm`, for the window.** `sm` caps at 420x320, which the message
+  field, the address field and its hint do not fit inside without the body
+  scrolling before anything is typed.
+- **The footer wraps rather than answering a breakpoint.** It sits inside a
+  resizable CatOS window, so how much room it has says nothing about the width of
+  the screen.
+
+**Deferred**:
+
+- The endpoint. Every send currently fails to the `mailto:`, which is the
+  designed failure path rather than a stub — the client is the real one.
+- No CatOS menu-bar entry for MouseMail; the desktop icon and the footer are the
+  only ways in.
+- The homepage's "let me know" still jumps to the footer rather than opening
+  MouseMail, so reaching it from the landing page is two hops.
+- No `danger` tone on `Text`, which is what would let the form's label, hint and
+  error all compose through it instead of restating `--text-*` in CSS.
+- Border and focus-ring contrast, which no token currently satisfies — left in
+  TODO.md as a token decision rather than patched behind a local hex.
+
+---
+
 ## The contact banner shimmers when you reach it
 
 **Date**: 2026-09-10
