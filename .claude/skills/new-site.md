@@ -60,26 +60,14 @@ Append a new site block:
 }
 ```
 
-### 1d. `infra/ec2.tf` — add template var
+`ec2.tf` injects this file into `user_data`, so the site block does not need
+repeating there — a new instance boots with whatever `infra/Caddyfile` says.
 
-In the `templatefile()` call inside `aws_instance.app`, add to the vars map:
-`<APP_NAME>_domain = local.<APP_NAME>_domain`
+### 1d. `infra/templates/user_data.sh` — two edits
 
-### 1e. `infra/templates/user_data.sh` — three edits
+1. **mkdir -p** line: add `"$APP_DIR/<APP_NAME>"` to the existing mkdir
 
-1. **Caddyfile template** (inside the `cat > /etc/caddy/Caddyfile` heredoc, after the last site block): add:
-
-   ```
-   ${<APP_NAME>_domain} {
-       root * /opt/jordanscamp/<APP_NAME>
-       try_files {path} /index.html
-       file_server
-   }
-   ```
-
-2. **mkdir -p** line: add `"$APP_DIR/<APP_NAME>"` to the existing mkdir
-
-3. **S3 download block** (after the last `if aws s3 cp ...` block): add:
+2. **S3 download block** (after the last `if aws s3 cp ...` block): add:
 
    ```bash
    if aws s3 cp "s3://${s3_bucket}/_deploy/<APP_NAME>.tar.gz" /tmp/<APP_NAME>.tar.gz 2>/dev/null; then

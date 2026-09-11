@@ -6,6 +6,61 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## The Caddyfile exists once
+
+**Date**: 2026-09-11
+
+**What was done**:
+
+- **`infra/templates/user_data.sh` stopped carrying a second Caddyfile.** The
+  34-line heredoc is now `${caddyfile}`, and `ec2.tf` injects
+  `file("${path.module}/Caddyfile")` into the `templatefile` call it already
+  made. The two copies were directive-for-directive identical at the time of the
+  change, but the baked one had lost every explanatory comment, and the only
+  thing holding them together was a note asking the next editor to remember.
+- **`ignore_changes` grew `user_data`**, which is the half that removes the
+  restart. See below.
+- **`var.domain_name` is no longer passed to the template** — it had no other
+  use there — and a `precondition` asserts the Caddyfile names it, so the
+  variable cannot silently disagree with the config Caddy serves.
+- `docs/architecture.md` and `.claude/skills/new-site.md` both instructed the
+  next person to write the server block in two places. They no longer do.
+
+**Key decisions**:
+
+- **Injection plus `ignore_changes`, not a boot-time S3 fetch.** TODO.md
+  recommended fetching, on the grounds that rendering both from one
+  `templatefile` would leave every Caddyfile edit bouncing production. That is
+  true of injection on its own and was the real objection — the contact-endpoint
+  merge took the site down for about half a minute this way. It stops being true
+  once `user_data` is ignored: the field then produces no plan diff at all, so
+  nothing restarts.
+- **Ignoring `user_data` costs less than it looks.** Cloud-init runs once per
+  instance, so the stored script is only ever read at creation, and
+  `ignore_changes` substitutes prior state only where an object already exists —
+  a replacement still boots from the current config. The restart it removes was
+  never applying anything. The genuine cost is that a `user_data.sh` edit now
+  produces no plan diff either, so a future bootstrap change will not announce
+  itself; it was already not being applied, but it was at least visible.
+- **Fetching would not have fixed the restart on its own.** It takes the
+  Caddyfile out of `user_data`, but a `user_data.sh` edit still bounces the
+  instance. `ignore_changes` was wanted either way.
+- **`file`, not `templatefile`, for the Caddyfile itself.** Rendering it would
+  let Terraform interpolate `var.domain_name` and the contact Lambda's function
+  URL, but `deploy.yml` ships that same file to S3 unrendered — a template there
+  would put literal `${...}` on the box.
+
+**Deferred**:
+
+- **The contact Lambda's function URL is still pasted by hand** into the
+  `reverse_proxy` line, with `output "contact_function_url"` existing to be
+  copied from. Terraform knows the value, but having Terraform write the
+  Caddyfile to S3 would race `deploy.yml` — the same race already in TODO.md.
+  Fixing it means taking the Caddyfile out of `deploy.yml` entirely, so it waits
+  on that item.
+
+---
+
 ## MouseMail can actually send
 
 **Date**: 2026-09-11

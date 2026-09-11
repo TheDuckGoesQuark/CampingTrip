@@ -44,10 +44,14 @@ resource "aws_instance" "app" {
     encrypted   = true
   }
 
+  # `file`, not `templatefile` — the Caddyfile is injected verbatim, which is
+  # what lets deploy.yml ship that same file to S3 unrendered. Caddy's own
+  # placeholders are single-brace (`{path}`, `{uri}`), so nothing in it collides
+  # with Terraform's `${...}` anyway.
   user_data = base64encode(templatefile("${path.module}/templates/user_data.sh", {
-    aws_region  = var.aws_region
-    s3_bucket   = aws_s3_bucket.deploy.id
-    domain_name = var.domain_name
+    aws_region = var.aws_region
+    s3_bucket  = aws_s3_bucket.deploy.id
+    caddyfile  = file("${path.module}/Caddyfile")
   }))
 
   tags = {
@@ -73,6 +77,21 @@ resource "aws_instance" "app" {
   # AL2023 patches in place via `dnf`, and `terraform taint aws_instance.app`
   # still forces a deliberate rebuild onto the current AMI when you want one.
   lifecycle {
-    ignore_changes = [ami]
+    # `user_data`, because the Caddyfile is injected into it: the provider
+    # answers a change to this field with a stop/start of the instance, and
+    # cloud-init has already run and will not run again, so that outage buys
+    # nothing. Ignoring it substitutes the prior state only where an object
+    # already exists — a replacement still boots from the current config, which
+    # is the one moment the baked Caddyfile is read.
+    ignore_changes = [ami, user_data]
+
+    # The injected Caddyfile is verbatim, so `var.domain_name` does not reach
+    # the config Caddy actually serves — the site names itself. Changing the
+    # variable without changing the Caddyfile would otherwise apply cleanly and
+    # leave Caddy answering for the old name, and its certificate too.
+    precondition {
+      condition     = strcontains(file("${path.module}/Caddyfile"), var.domain_name)
+      error_message = "infra/Caddyfile does not name ${var.domain_name}; the site block and var.domain_name have to agree."
+    }
   }
 }

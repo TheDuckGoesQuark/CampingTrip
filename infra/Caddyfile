@@ -1,3 +1,7 @@
+# The only copy. deploy.yml ships this file to S3 and installs it over SSM;
+# ec2.tf injects the same bytes into user_data so a freshly built instance
+# serves it before any deploy has run. Edit here and both follow.
+
 jordanscamp.site {
     root * /opt/jordanscamp/webapp
 

@@ -6,32 +6,6 @@ All planned and deferred work, organised by priority.
 
 ## Next Up
 
-### Infra — the Caddyfile exists twice
-
-`infra/Caddyfile` is what `deploy.yml` ships to S3 and the instance installs;
-`infra/templates/user_data.sh` inlines a second copy, which is what a freshly
-built instance serves until the next deploy replaces it. Its own comment asks
-whoever edits one to edit the other, which is the sort of instruction that holds
-right up until it doesn't — and the failure is quiet, because a rebuilt instance
-serves a config nobody chose.
-
-The contact endpoint's `reverse_proxy` block makes this concrete: a rebuild
-between now and someone noticing would drop `/api/contact` and the form would
-fail to the `mailto:` with nothing in any log to say why.
-
-The second copy also costs production downtime, which is the part that decides
-between the fixes. It lives inside `user_data`, so editing it changes
-`aws_instance.app`'s `user_data` attribute, and the provider applies that in
-place by **stopping and starting the instance** — the site went down for about
-half a minute doing exactly this. Cloud-init runs user-data once per instance
-lifetime, so the restart does not even apply the new config: it only matters on
-the next rebuild.
-
-So: have `user_data.sh` fetch the Caddyfile from the deploy bucket on boot rather
-than carry a copy. That removes the duplication _and_ takes Caddyfile edits out
-of the instance's lifecycle, where rendering both from one `templatefile` would
-leave every edit still bouncing production.
-
 ### Infra — a Terraform run can break the deploy in the same push
 
 `terraform.yml` and `deploy.yml` both trigger on push to main and run
@@ -58,6 +32,14 @@ Worth doing on its own, not folded into feature work: the 6.0 upgrade touches
 every resource already in state, so the plan wants reading carefully before
 merging given `terraform.yml` applies on push to main. Afterwards, delete the
 explicit permission and confirm the provider's two statements replace it.
+
+### Contact — a failed endpoint looks identical to a working one
+
+`submitFeedback.ts` falls back to the `mailto:` when the POST fails, which is
+the right thing for the visitor and means a broken `/api/contact` reaches nobody
+who would notice. There is no synthetic check on the endpoint, and a check that
+only asserts a 204 would not prove SNS delivered either. Whether that is worth a
+CloudWatch canary is a judgement about what a missed note costs, not a defect.
 
 ### MouseMail — only two ways in, and one of them is two hops
 
