@@ -185,6 +185,15 @@ resource "aws_iam_role_policy" "github_plan_readonly" {
           "logs:DescribeLogGroups",
           "logs:ListTagsForResource",
           "logs:ListTagsLogGroup",
+          # A plan refreshes every resource in state, so this role needs reads
+          # for each service the configuration manages — including ones it has
+          # no business changing. `Get*`/`List*` rather than an enumeration
+          # because no mutating action is spelled either way, which is the same
+          # reasoning as `ec2:Describe*` above.
+          "lambda:Get*",
+          "lambda:List*",
+          "sns:Get*",
+          "sns:List*",
           "ssm:GetParameter",
           "ssm:GetParameters",
         ]

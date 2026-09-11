@@ -74,11 +74,21 @@ ${domain_name} {
     @media path /models/* /images/* /draco/*
     header @media Cache-Control "public, max-age=604800"
 
-    @shell path / *.html
+    @shell path / *.html /cv.pdf
     header @shell Cache-Control "no-cache"
 
-    try_files {path} {path}.html /index.html
-    file_server
+    redir /cv /blog/cv.html permanent
+
+    handle /api/contact {
+        reverse_proxy https://k6kucegvmyqo3npqoivlf5zg6q0wubku.lambda-url.eu-west-2.on.aws {
+            header_up Host {upstream_hostport}
+        }
+    }
+
+    handle {
+        try_files {path} {path}.html /index.html
+        file_server
+    }
 }
 
 # Keep this in step with infra/Caddyfile. This copy is what a freshly built
