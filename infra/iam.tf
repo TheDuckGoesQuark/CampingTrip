@@ -772,10 +772,36 @@ resource "aws_iam_role_policy" "github_terraform_resources" {
           "logs:ListTagsForResource",
           "logs:ListTagsLogGroup",
         ]
+        # The second pair of patterns is Lambda's naming, not this project's: a
+        # function's runtime writes to `/aws/lambda/<function-name>` whoever
+        # created the group, so the prefix above cannot reach it.
         Resource = [
           "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:${local.name_prefix}/*",
           "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:${local.name_prefix}/*:*",
+          "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda/${local.name_prefix}-*",
+          "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda/${local.name_prefix}-*:*",
         ]
+      },
+      {
+        # A wildcard action, unlike every statement above, because the set the
+        # provider calls over a function's lifecycle grows with provider
+        # releases and matches nothing written here — `GetRuntimeManagementConfig`
+        # is read on every refresh. A missing action does not fail the plan,
+        # which needs none of them; it fails the apply, on main, half-done.
+        # The scope is one function-name prefix in one region, so what this
+        # grants is authority over this project's own functions.
+        Sid      = "LambdaThisProjectOnly"
+        Effect   = "Allow"
+        Action   = "lambda:*"
+        Resource = "arn:aws:lambda:${var.aws_region}:${data.aws_caller_identity.current.account_id}:function:${local.name_prefix}-*"
+      },
+      {
+        # Same reasoning. One prefix covers topic and subscription both: a
+        # subscription's ARN is its topic's with a UUID appended.
+        Sid      = "SNSThisProjectOnly"
+        Effect   = "Allow"
+        Action   = "sns:*"
+        Resource = "arn:aws:sns:${var.aws_region}:${data.aws_caller_identity.current.account_id}:${local.name_prefix}-*"
       },
       {
         Sid    = "SSMParameters"

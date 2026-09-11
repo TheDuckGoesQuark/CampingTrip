@@ -6,6 +6,35 @@ All planned and deferred work, organised by priority.
 
 ## Next Up
 
+### Infra — the Caddyfile exists twice
+
+`infra/Caddyfile` is what `deploy.yml` ships to S3 and the instance installs;
+`infra/templates/user_data.sh` inlines a second copy, which is what a freshly
+built instance serves until the next deploy replaces it. Its own comment asks
+whoever edits one to edit the other, which is the sort of instruction that holds
+right up until it doesn't — and the failure is quiet, because a rebuilt instance
+serves a config nobody chose.
+
+The contact endpoint's `reverse_proxy` block makes this concrete: a rebuild
+between now and someone noticing would drop `/api/contact` and the form would
+fail to the `mailto:` with nothing in any log to say why. Options are to have
+`user_data.sh` fetch the Caddyfile from the deploy bucket on boot rather than
+carry a copy, or to render both from one `templatefile`.
+
+### Infra — the AWS provider pin is a major version behind
+
+`infra/versions.tf` pins `~> 5.0`. Two things in `contact.tf` exist only because
+of that pin: `aws_lambda_permission.contact_public_invoke`, which provider 6.28
+adds by itself for a `NONE`-auth function URL, and the note that the
+`lambda:InvokedViaFunctionUrl` condition cannot be expressed — 6.x has the
+argument, so the public grant could be narrowed from "any signed Invoke" to
+"only through the URL".
+
+Worth doing on its own, not folded into feature work: the 6.0 upgrade touches
+every resource already in state, so the plan wants reading carefully before
+merging given `terraform.yml` applies on push to main. Afterwards, delete the
+explicit permission and confirm the provider's two statements replace it.
+
 ### MouseMail — only two ways in, and one of them is two hops
 
 The desktop icon and the contact footer open it; the CatOS menu bar does not,
