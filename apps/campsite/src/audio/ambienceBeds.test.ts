@@ -12,6 +12,7 @@ interface MockHowl {
 let howls: MockHowl[] = [];
 
 vi.mock("howler", () => ({
+  Howler: { volume: vi.fn() },
   Howl: vi.fn(function (this: MockHowl, opts: Record<string, unknown>) {
     let vol = opts.volume as number;
     this.opts = opts;

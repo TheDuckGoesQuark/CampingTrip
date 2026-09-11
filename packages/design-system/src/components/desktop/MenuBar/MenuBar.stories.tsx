@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { expect, userEvent, waitFor, within } from "storybook/test";
 
 import { Icon } from "../../Icon";
 import { Text } from "../../Text";
@@ -64,4 +65,56 @@ export const WithAction: Story = {
   },
 };
 
-export const AllVariants: Story = { ...WithMenu };
+export const WithPanel: Story = {
+  args: {
+    left: <Text variant="body-sm">CatOS</Text>,
+    right: (
+      <>
+        <MenuBar.Panel ariaLabel="Volume" label={<Icon name="cassette" size="md" />}>
+          <label>
+            <Text variant="label" as="span">
+              Volume
+            </Text>
+            <input type="range" defaultValue={70} />
+          </label>
+        </MenuBar.Panel>
+        <Text variant="body-sm">9:41</Text>
+      </>
+    ),
+  },
+};
+
+export const Interactive: Story = {
+  ...WithPanel,
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+    await step("open", async () => {
+      await userEvent.click(canvas.getByRole("button", { name: "Volume" }));
+      await waitFor(() => expect(document.querySelector("[role=slider]")).toBeTruthy());
+    });
+    await step("the slider keeps its own arrow keys", async () => {
+      const slider = document.querySelector("[role=slider]") as HTMLInputElement;
+      slider.focus();
+      await userEvent.keyboard("{ArrowRight}");
+      await waitFor(() => expect(Number(slider.value)).toBeGreaterThan(70));
+    });
+    await step("Escape closes and returns focus to the trigger", async () => {
+      await userEvent.keyboard("{Escape}");
+      await waitFor(() => expect(canvas.getByRole("button", { name: "Volume" })).toHaveFocus());
+    });
+  },
+};
+
+export const AllVariants: Story = {
+  args: {
+    left: WithMenu.args?.left,
+    right: (
+      <>
+        <MenuBar.Action ariaLabel="Touch grass" title="Touch grass">
+          <Icon name="door-arrow" size="md" />
+        </MenuBar.Action>
+        {WithPanel.args?.right}
+      </>
+    ),
+  },
+};

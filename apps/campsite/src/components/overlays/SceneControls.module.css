@@ -64,7 +64,8 @@
   position: absolute;
   top: 44px;
   right: 0;
-  min-width: 200px;
+  /* Wide enough for the volume row's label beside its slider. */
+  min-width: 224px;
   display: flex;
   flex-direction: column;
   gap: var(--space-s);
@@ -87,6 +88,61 @@
   gap: var(--space-m);
   cursor: pointer;
   user-select: none;
+}
+
+/* A row whose control is not the whole row, so the pointer is not a promise. */
+.volumeRow {
+  composes: row;
+  cursor: default;
+  white-space: nowrap;
+}
+
+.volumeFader {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 88px;
+  height: 16px;
+  flex-shrink: 0;
+  background: none;
+  cursor: pointer;
+}
+
+/* Once per engine: an engine that does not know one of these pseudo-elements
+   discards the whole selector, leaving one browser with a stock range. */
+.volumeFader::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.volumeFader::-moz-range-track {
+  height: 4px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.volumeFader::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  margin-top: -5px;
+  border: 1px solid var(--chrome-edge-lit);
+  border-radius: var(--radius-full);
+  background: var(--chrome-ink);
+}
+
+.volumeFader::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--chrome-edge-lit);
+  border-radius: var(--radius-full);
+  background: var(--chrome-ink);
+}
+
+.volumeFader:focus-visible {
+  outline: 2px solid var(--brand-focus);
+  outline-offset: 2px;
 }
 
 .divider {

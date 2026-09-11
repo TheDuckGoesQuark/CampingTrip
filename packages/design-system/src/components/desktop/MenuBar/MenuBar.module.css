@@ -60,9 +60,10 @@
   z-index: var(--layer-popup);
 }
 
-.popup {
+/* A list of commands and a panel of controls differ only in what they pad for. */
+.popup,
+.panel {
   min-width: 200px;
-  padding: var(--space-xxs) 0;
   background: var(--brand-surface-raised);
   color: var(--brand-text);
   border: 2px solid var(--brand-border-strong);
@@ -70,6 +71,14 @@
   box-shadow: var(--shadow-hard-2);
   font-size: var(--text-body-sm-size);
   outline: none;
+}
+
+.popup {
+  padding: var(--space-xxs) 0;
+}
+
+.panel {
+  padding: var(--space-s) var(--space-m);
 }
 
 .item {

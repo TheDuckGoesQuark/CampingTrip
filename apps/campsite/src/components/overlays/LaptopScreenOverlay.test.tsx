@@ -8,6 +8,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { applyOverlayState } from "../../routing/overlays";
 import { WINDOW_BROWSER } from "../../routing/windows";
 import { useSceneStore } from "../../store/sceneStore";
+import { useSessionStore } from "../../store/sessionStore";
 import LaptopScreenOverlay from "./LaptopScreenOverlay";
 
 const HOME = "/blog/index.html";
@@ -150,6 +151,61 @@ describe("LaptopScreenOverlay (CatOS)", () => {
       const user = await openMenu();
       await user.click(await screen.findByRole("menuitem", { name: "Touch grass" }));
       expect(currentPath()).toBe("/");
+    });
+  });
+
+  describe("the tray volume", () => {
+    const openVolume = async () => {
+      const user = userEvent.setup();
+      await user.click(screen.getByRole("button", { name: /^Volume/ }));
+      return user;
+    };
+
+    beforeEach(() => {
+      useSessionStore.setState({ volume: 1 });
+      useSceneStore.setState({ laptopFocused: true });
+    });
+
+    it("sits on the bar, naming the level it is at", () => {
+      useSessionStore.setState({ volume: 0.4 });
+      renderOverlay();
+      expect(screen.getByRole("button", { name: "Volume — 40%" })).toBeInTheDocument();
+    });
+
+    it("keeps the fader shut until the speaker is used", async () => {
+      renderOverlay();
+      expect(screen.queryByRole("slider")).toBeNull();
+
+      await openVolume();
+
+      expect(await screen.findByRole("slider", { name: "Volume" })).toBeInTheDocument();
+    });
+
+    it("turns the scene down without leaving it", async () => {
+      renderOverlay();
+      const user = await openVolume();
+      const fader = await screen.findByRole("slider", { name: "Volume" });
+
+      fireEvent.change(fader, { target: { value: "20" } });
+
+      expect(useSessionStore.getState().volume).toBe(0.2);
+      expect(screen.getByRole("dialog", { name: /CatOS/ })).toBeInTheDocument();
+
+      await user.keyboard("{Escape}");
+      expect(screen.queryByRole("slider")).toBeNull();
+      expect(screen.getByRole("dialog", { name: /CatOS/ })).toBeInTheDocument();
+    });
+
+    it("mutes at the bottom of its travel, and says so", async () => {
+      renderOverlay();
+      await openVolume();
+
+      fireEvent.change(await screen.findByRole("slider", { name: "Volume" }), {
+        target: { value: "0" },
+      });
+
+      expect(useSessionStore.getState().volume).toBe(0);
+      expect(screen.getByRole("button", { name: "Volume — 0%" })).toBeInTheDocument();
     });
   });
 

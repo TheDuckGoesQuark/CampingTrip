@@ -20,6 +20,7 @@ import { useSessionStore } from "../../store/sessionStore";
 import type { DesktopItem } from "../../types/desktop";
 import CatosWindow from "../catos/CatosWindow";
 import MouseMailWindow from "../catos/MouseMailWindow";
+import VolumeMenu from "../catos/VolumeMenu";
 
 import styles from "../catos/catos.module.css";
 
@@ -233,6 +234,9 @@ export default function LaptopScreenOverlay() {
                 <Icon name="door-arrow" size="md" />
                 Touch grass
               </MenuBar.Action>
+              {/* The tent's gear cluster is behind this takeover, so without a
+                  volume here the only way to quieten the scene is to leave it. */}
+              <VolumeMenu />
               <span className={styles.menuDim}>{clock}</span>
             </>
           }

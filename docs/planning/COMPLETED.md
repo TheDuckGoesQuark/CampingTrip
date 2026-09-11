@@ -6,6 +6,59 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## The laptop can be turned down without leaving it
+
+**Date**: 2026-09-10
+
+**What was done**:
+
+- **One master level, in the session store.** `volume` (0–1, persisted,
+  clamped in the setter) sits beside the existing on/off flags: they choose what
+  plays, it chooses how loud all of it is.
+- **Two families of source, two ways of answering to it.** The synthesised ones
+  — `soundEffects`, `campfireSynth`, `useTypingSound` — now connect to
+  `audio/masterVolume`'s `getMasterBus()` in place of `ac.destination`, a single
+  gain node ramped over 20ms so a level change mid-note does not click. The
+  sampled ones are Howls mixed in Howler's own context, so `audio/howlerBus`
+  puts the same number on `Howler.volume()`, which multiplies every Howl on top
+  of its own gain — a bed keeps its place in the day/night mix and a fade
+  already in flight still lands scaled.
+- **A tray volume in the CatOS menu bar**, left of the clock. The trigger is a
+  Phosphor speaker whose waves follow the level and whose accessible name
+  carries the reading; the panel holds a quiet speaker, the ramp, a loud
+  speaker, and the percentage.
+- **A volume row in the tent's gear panel**, above the toggles it governs.
+- **`MenuBar.Panel` in the design system**, over a new `Popover` primitive. A
+  `MenuBar.Menu` would have sat the slider in a `menu`, where a range is not a
+  `menuitem` and the menu's roving focus eats its arrow keys.
+
+**Key decisions**:
+
+- **A level, not a fourth toggle.** The complaint was reaching the tent's gear
+  cluster from behind a full-screen takeover, which a duplicate mute button
+  would have answered too — but the beds, the music and the one-shots had three
+  unrelated fixed gains and no way to trim any of them.
+- **Silence is the mute.** The bottom of the fader's travel is 0, so there is no
+  second control to explain and no remembered level to restore.
+- **Each surface in its own idiom, one control underneath.** `VolumeSlider` is
+  the wiring — a native range, for its arrow keys, Home/End and value
+  announcement — and each surface skins it: the desktop gets the 90s tray ramp,
+  a right-angled triangle filled as far as the level reaches, drawn as two
+  polygons so the fill needs no clip path; the tent keeps its rounded
+  lantern-amber slot. Neither draws a handle it does not need — the desktop's
+  reading is the filled area, so a cap riding it would be a competing answer.
+- **`Howler.volume()` rather than scaling each bed.** Multiplying the level into
+  the day/night mix meant re-mixing on every drag, and the fade time that suits
+  a dawn crossfade is a second — far too slow for a fader.
+- **The end glyphs are decorative.** They say which way is louder; the state is
+  the fill, the bar's glyph and the percentage.
+
+**Deferred**:
+
+- The video window's YouTube embed is outside both buses — see TODO.
+
+---
+
 ## The tent stops drawing when the blog covers it
 
 **Date**: 2026-09-10

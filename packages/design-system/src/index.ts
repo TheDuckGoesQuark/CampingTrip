@@ -32,6 +32,7 @@ export {
   MenuBar,
   type MenuBarProps,
   type MenuBarMenuProps,
+  type MenuBarPanelProps,
   type MenuBarItemProps,
 } from "./components/desktop/MenuBar";
 export { DesktopIcon, type DesktopIconProps } from "./components/desktop/DesktopIcon";

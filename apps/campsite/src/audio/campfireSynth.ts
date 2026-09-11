@@ -8,6 +8,7 @@
  */
 
 import { getAudioContext } from "./audioContext";
+import { getMasterBus } from "./masterVolume";
 
 let masterGain: GainNode | null = null;
 let baseSource: AudioBufferSourceNode | null = null;
@@ -70,7 +71,7 @@ export function startCampfire(volume = 0.18) {
 
   masterGain = context.createGain();
   masterGain.gain.value = 0;
-  masterGain.connect(context.destination);
+  masterGain.connect(getMasterBus());
 
   baseSource = context.createBufferSource();
   baseSource.buffer = createNoiseBuffer(context, 6);

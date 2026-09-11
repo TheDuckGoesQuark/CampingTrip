@@ -5,6 +5,7 @@
 
 import { useSessionStore } from "../store/sessionStore";
 import { getAudioContext } from "./audioContext";
+import { getMasterBus } from "./masterVolume";
 
 /** Check if sound is enabled before playing */
 function isMuted(): boolean {
@@ -19,7 +20,7 @@ export function playLaptopOn() {
   const t = ac.currentTime;
   const master = ac.createGain();
   master.gain.value = 0.15;
-  master.connect(ac.destination);
+  master.connect(getMasterBus());
 
   // First tone: C5
   const osc1 = ac.createOscillator();
@@ -56,7 +57,7 @@ export function playLaptopOff() {
   const t = ac.currentTime;
   const master = ac.createGain();
   master.gain.value = 0.12;
-  master.connect(ac.destination);
+  master.connect(getMasterBus());
 
   const osc1 = ac.createOscillator();
   osc1.type = "sine";
@@ -90,7 +91,7 @@ export function playMidiNote() {
   const t = ac.currentTime;
   const master = ac.createGain();
   master.gain.value = 0.12;
-  master.connect(ac.destination);
+  master.connect(getMasterBus());
 
   // Pick a random note from a pentatonic scale for variety
   const notes = [262, 294, 330, 392, 440, 523, 587, 659];
@@ -126,7 +127,7 @@ export function playGuitarStrum() {
   const t = ac.currentTime;
   const master = ac.createGain();
   master.gain.value = 0.1;
-  master.connect(ac.destination);
+  master.connect(getMasterBus());
 
   // Open G chord frequencies
   const strings = [196, 247, 294, 392, 494, 587];
@@ -185,7 +186,7 @@ export function playCatMeow() {
   const t = ac.currentTime;
   const master = ac.createGain();
   master.gain.value = 0.13;
-  master.connect(ac.destination);
+  master.connect(getMasterBus());
 
   // Main "voice" — sine wave with frequency sweep
   const voice = ac.createOscillator();
@@ -263,7 +264,7 @@ export function playPageFlip() {
   const t = ac.currentTime;
   const master = ac.createGain();
   master.gain.value = 0.1;
-  master.connect(ac.destination);
+  master.connect(getMasterBus());
 
   // White noise burst
   const len = Math.round(ac.sampleRate * 0.12);
@@ -302,7 +303,7 @@ export function playSoftClick() {
   const t = ac.currentTime;
   const master = ac.createGain();
   master.gain.value = 0.08;
-  master.connect(ac.destination);
+  master.connect(getMasterBus());
 
   const osc = ac.createOscillator();
   osc.type = "sine";
@@ -328,7 +329,7 @@ export function playWindowOpen() {
   const t = ac.currentTime;
   const master = ac.createGain();
   master.gain.value = 0.07;
-  master.connect(ac.destination);
+  master.connect(getMasterBus());
 
   // Noise swoosh
   const len = Math.round(ac.sampleRate * 0.15);

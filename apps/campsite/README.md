@@ -17,7 +17,7 @@ pnpm --filter campsite dev
 - Web Audio API — synthesised campfire and typing sounds
 - Howler — the recorded ambience beds
 
-## Audio: two preferences, not one
+## Audio: two preferences and a level
 
 Sound is split by how intrusive it is, and the split is load-bearing for anyone
 adding a new noise:
@@ -29,6 +29,22 @@ adding a new noise:
   A continuous noise is something you consent to rather than something you
   triggered, so it needs an explicit yes: either the scene control, or the
   welcome screen's "full experience".
+- `volume` (default **1**) — how loud all of it is. The two flags choose what
+  plays; this scales whatever does. Reachable from the tent's gear panel and
+  from the CatOS menu bar, because the takeover covers the gear panel.
+
+### What a new sound has to do about the level
+
+Nothing, if it is wired to the right output. There are two, because the level
+has to reach two mixers:
+
+| Kind of source           | Wire it to                                                                        | Why                                                                                                                                                                                            |
+| ------------------------ | --------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Web Audio (synthesised)  | `getMasterBus()` from `src/audio/masterVolume.ts`, in place of `ac.destination`   | One gain node in front of the destination, ramped over 20ms so a change mid-note does not click                                                                                                |
+| Howler (a recorded file) | call `syncHowlerVolume()` from `src/audio/howlerBus.ts` before the first `play()` | Howler mixes in its own context; its global volume multiplies every Howl on top of that Howl's own gain, so a bed keeps its place in the day/night mix and a fade in flight still lands scaled |
+
+A source wired to `ac.destination` plays at full volume with the fader at zero,
+which reads as a broken control rather than as a missed one.
 
 Each looping sound has exactly one owning component, which starts it and stops
 it from the same effect. `CampfireLoadingScreen` owns the campfire and

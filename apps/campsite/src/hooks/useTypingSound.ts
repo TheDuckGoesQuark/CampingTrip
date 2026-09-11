@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 
 import { getAudioContext } from "../audio/audioContext";
+import { getMasterBus } from "../audio/masterVolume";
 
 // C pentatonic frequencies
 const NOTES = [261.63, 293.66, 329.63, 392.0, 440.0, 523.25];
@@ -19,7 +20,7 @@ export function useTypingSound() {
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
 
     osc.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(getMasterBus());
 
     osc.start(ctx.currentTime);
     osc.stop(ctx.currentTime + 0.05);

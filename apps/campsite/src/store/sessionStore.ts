@@ -9,6 +9,9 @@ interface SessionState {
    *  lid isn't. */
   ambienceEnabled: boolean;
   effectsEnabled: boolean;
+  /** How loud everything is, 0–1. Scales the beds and the one-shots alike, so
+   *  it is the only control that can quieten the tent from inside the laptop. */
+  volume: number;
   hasCompletedWelcome: boolean;
   lastVisitedAt: string | null;
   /** What the visitor has typed into a text file on the desktop, keyed by the
@@ -18,6 +21,7 @@ interface SessionState {
   setSoundEnabled: (v: boolean) => void;
   setAmbienceEnabled: (v: boolean) => void;
   setEffectsEnabled: (v: boolean) => void;
+  setVolume: (v: number) => void;
   completeWelcome: () => void;
   resetWelcome: () => void;
   updateLastVisited: () => void;
@@ -31,12 +35,14 @@ export const useSessionStore = create<SessionState>()(
       soundEnabled: true,
       ambienceEnabled: false,
       effectsEnabled: true,
+      volume: 1,
       hasCompletedWelcome: false,
       lastVisitedAt: null,
       textEdits: {},
       setSoundEnabled: (v) => set({ soundEnabled: v }),
       setAmbienceEnabled: (v) => set({ ambienceEnabled: v }),
       setEffectsEnabled: (v) => set({ effectsEnabled: v }),
+      setVolume: (v) => set({ volume: Math.min(1, Math.max(0, v)) }),
       completeWelcome: () => set({ hasCompletedWelcome: true }),
       resetWelcome: () => set({ hasCompletedWelcome: false }),
       updateLastVisited: () => set({ lastVisitedAt: new Date().toISOString() }),

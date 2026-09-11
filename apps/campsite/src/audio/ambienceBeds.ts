@@ -1,6 +1,7 @@
 import { Howl } from "howler";
 
 import { asset } from "../utils/assetPath";
+import { syncHowlerVolume } from "./howlerBus";
 
 /**
  * Howler resumes a suspended context on the first user gesture itself
@@ -25,6 +26,7 @@ let beds: Record<BedName, Howl> | null = null;
 
 export function startAmbience() {
   if (beds) return;
+  syncHowlerVolume();
 
   const loaded = {} as Record<BedName, Howl>;
   for (const name of BED_NAMES) {
