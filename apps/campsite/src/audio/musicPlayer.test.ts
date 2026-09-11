@@ -17,6 +17,7 @@ interface MockHowl {
 let howls: MockHowl[] = [];
 
 vi.mock("howler", () => ({
+  Howler: { volume: vi.fn() },
   Howl: vi.fn(function (this: MockHowl, opts: Record<string, unknown>) {
     let isPlaying = false;
     let position = 0;

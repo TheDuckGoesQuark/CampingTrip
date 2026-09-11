@@ -14,6 +14,7 @@ describe("SceneControls", () => {
       soundEnabled: true,
       ambienceEnabled: false,
       effectsEnabled: true,
+      volume: 1,
       hasCompletedWelcome: false,
     });
   });
@@ -128,6 +129,46 @@ describe("SceneControls", () => {
     fireEvent.click(screen.getByText("Reset preferences"));
 
     expect(useSessionStore.getState().hasCompletedWelcome).toBe(false);
+  });
+
+  describe("the volume row", () => {
+    it("stays inside the panel", () => {
+      render(<SceneControls />);
+      expect(screen.queryByRole("slider", { name: "Volume" })).toBeNull();
+
+      fireEvent.click(screen.getByLabelText("Settings"));
+
+      expect(screen.getByRole("slider", { name: "Volume" })).toBeInTheDocument();
+    });
+
+    it("sets the master level", () => {
+      render(<SceneControls />);
+      fireEvent.click(screen.getByLabelText("Settings"));
+
+      fireEvent.change(screen.getByRole("slider", { name: "Volume" }), {
+        target: { value: "30" },
+      });
+
+      expect(useSessionStore.getState().volume).toBe(0.3);
+    });
+
+    it("labels itself in words, the way the panel's own controls read", () => {
+      render(<SceneControls />);
+      fireEvent.click(screen.getByLabelText("Settings"));
+
+      expect(screen.getByText("Volume")).toBeInTheDocument();
+    });
+
+    it("leaves the sound-effects toggle alone", () => {
+      render(<SceneControls />);
+      fireEvent.click(screen.getByLabelText("Settings"));
+
+      fireEvent.change(screen.getByRole("slider", { name: "Volume" }), {
+        target: { value: "0" },
+      });
+
+      expect(useSessionStore.getState().soundEnabled).toBe(true);
+    });
   });
 
   it("switch responds to Enter key", () => {

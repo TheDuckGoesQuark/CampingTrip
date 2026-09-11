@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import { Menu } from "../../../primitives/Menu";
+import { Popover } from "../../../primitives/Popover";
 
 import styles from "./MenuBar.module.css";
 
@@ -103,6 +104,34 @@ function Action({ onClick, ariaLabel, title, children }: MenuBarActionProps) {
 }
 Action.displayName = "MenuBar.Action";
 
+export interface MenuBarPanelProps {
+  label: ReactNode;
+  /** Required when `label` is a glyph: without it the trigger has no name. */
+  ariaLabel?: string;
+  children?: ReactNode;
+}
+
+/**
+ * A bar entry that drops controls rather than commands — the volume, say. A
+ * `MenuBar.Menu` would sit them in a `menu`, where a slider is not a `menuitem`
+ * and loses its own arrow keys to the menu's roving focus.
+ */
+function Panel({ label, ariaLabel, children }: MenuBarPanelProps) {
+  return (
+    <Popover.Root>
+      <Popover.Trigger className={styles.trigger} aria-label={ariaLabel}>
+        {label}
+      </Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Positioner className={styles.positioner} side="bottom" align="end" sideOffset={2}>
+          <Popover.Popup className={styles.panel}>{children}</Popover.Popup>
+        </Popover.Positioner>
+      </Popover.Portal>
+    </Popover.Root>
+  );
+}
+Panel.displayName = "MenuBar.Panel";
+
 function MenuSeparator() {
   return <Menu.Separator className={styles.separator} />;
 }
@@ -112,6 +141,7 @@ MenuSeparator.displayName = "MenuBar.Separator";
 export const MenuBar = Object.assign(Root, {
   Menu: BarMenu,
   Action,
+  Panel,
   Item,
   Separator: MenuSeparator,
 });

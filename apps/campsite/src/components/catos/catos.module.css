@@ -26,6 +26,89 @@
   opacity: 0.7;
 }
 
+.volumePanel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-s);
+  font-family: var(--font-mono);
+}
+
+.volumeReadout {
+  min-width: 4ch;
+  text-align: right;
+  font-size: var(--text-label-size);
+}
+
+/* The range lies over the ramp because a range's own track cannot be shaped. */
+.volumeTrack {
+  position: relative;
+  display: block;
+  width: 120px;
+  height: 20px;
+}
+
+.volumeRamp {
+  position: absolute;
+  inset: 0;
+}
+
+.volumeRampTrack {
+  fill: none;
+  stroke: var(--brand-border-strong);
+  stroke-width: 1;
+}
+
+.volumeRampFill {
+  fill: var(--brand-solid);
+}
+
+.volumeFader {
+  position: absolute;
+  inset: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  height: 100%;
+  background: none;
+  cursor: pointer;
+}
+
+/* An invisible cap, because the ramp's fill is the reading. Once per engine: an
+   engine that does not know one of these pseudo-elements discards the whole
+   selector, leaving one browser a stock range on top of the ramp. */
+.volumeFader::-webkit-slider-runnable-track {
+  height: 100%;
+  background: none;
+  border: 0;
+}
+
+.volumeFader::-moz-range-track {
+  height: 100%;
+  background: none;
+  border: 0;
+}
+
+.volumeFader::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 2px;
+  height: 100%;
+  background: none;
+  border: 0;
+}
+
+.volumeFader::-moz-range-thumb {
+  width: 2px;
+  height: 100%;
+  background: none;
+  border: 0;
+}
+
+.volumeFader:focus-visible {
+  outline: 2px solid var(--brand-focus);
+  outline-offset: 2px;
+}
+
 /* A page is a document, so it opts back into selectable text. */
 .pageBody {
   user-select: text;

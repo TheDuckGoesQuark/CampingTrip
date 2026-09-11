@@ -32,6 +32,16 @@ fine, which is why it reads as a light-palette bug rather than a shadow bug.
 Text contrast is not in question — label 8.6, hint 4.81, error 4.63, typed value
 9.21, placeholder 5.16, all above 4.5 in both schemes.
 
+### CatOS — the video window is outside the master fader
+
+`VideoWindow` is a YouTube iframe, so neither the Web Audio bus nor Howler's
+global volume reaches it: it takes `soundEnabled` as a `mute` parameter at
+mount and nothing else. Its status line reads "Volume 100%" whenever it is not
+muted, which the tray fader can now contradict. Either drive the embed through
+the YouTube iframe API (`postMessage` `setVolume`, which also needs the player
+to be ready before the first call) and put it on the same level as everything
+else, or stop the status line claiming a number it does not set.
+
 ### Blog — the prerendered reader has no way up
 
 A prerendered page is the head template plus `<main id="reader">` and nothing

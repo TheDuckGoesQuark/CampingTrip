@@ -11,6 +11,7 @@ let sessionStore: typeof import("../store/sessionStore").useSessionStore;
 
 // Track the mock AudioContext instance created during each test
 let mockCtx: AudioContext;
+let masterBus: { connect: ReturnType<typeof vi.fn>; gain: { value: number } };
 
 describe("soundEffects", () => {
   beforeEach(async () => {
@@ -22,6 +23,13 @@ describe("soundEffects", () => {
     // Mock the audioContext module so getAudioContext returns our tracked instance
     vi.doMock("./audioContext", () => ({
       getAudioContext: () => mockCtx,
+    }));
+
+    // And the master bus, which would otherwise spend one of the createGain
+    // calls these tests count.
+    masterBus = { connect: vi.fn(), gain: { value: 1 } };
+    vi.doMock("./masterVolume", () => ({
+      getMasterBus: () => masterBus,
     }));
 
     // Re-import both the store and the module under test from the fresh module graph

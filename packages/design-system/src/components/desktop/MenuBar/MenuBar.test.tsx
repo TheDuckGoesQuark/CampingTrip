@@ -75,4 +75,59 @@ describe("MenuBar", () => {
       expect(await screen.findByRole("menuitem", { name: "Shut down" })).toBeInTheDocument();
     });
   });
+
+  describe("control panels", () => {
+    const renderPanel = () =>
+      render(
+        <MenuBar
+          right={
+            <MenuBar.Panel ariaLabel="Volume" label={<svg />}>
+              <input type="range" aria-label="Level" defaultValue={40} />
+            </MenuBar.Panel>
+          }
+        />,
+      );
+
+    it("keeps its controls shut until the trigger is used", () => {
+      renderPanel();
+      expect(screen.queryByRole("slider")).toBeNull();
+    });
+
+    it("names a glyph-only trigger", () => {
+      renderPanel();
+      expect(screen.getByRole("button", { name: "Volume" })).toBeInTheDocument();
+    });
+
+    it("opens on the trigger", async () => {
+      const user = userEvent.setup();
+      renderPanel();
+      await user.click(screen.getByRole("button", { name: "Volume" }));
+      expect(await screen.findByRole("slider", { name: "Level" })).toBeInTheDocument();
+    });
+
+    /* A range's arrow keys are the browser's own, so the story's `Interactive`
+       play is what proves they survive a popover; jsdom can only show there is
+       no menu between them and the control. */
+    it("leaves a control inside it as itself, not as a menu item", async () => {
+      const user = userEvent.setup();
+      renderPanel();
+      await user.click(screen.getByRole("button", { name: "Volume" }));
+      const slider = await screen.findByRole("slider", { name: "Level" });
+      expect(screen.queryByRole("menu")).toBeNull();
+      expect(screen.queryByRole("menuitem")).toBeNull();
+      slider.focus();
+      expect(slider).toHaveFocus();
+    });
+
+    it("closes on Escape and returns focus to the trigger", async () => {
+      const user = userEvent.setup();
+      renderPanel();
+      const trigger = screen.getByRole("button", { name: "Volume" });
+      await user.click(trigger);
+      await screen.findByRole("slider", { name: "Level" });
+      await user.keyboard("{Escape}");
+      expect(screen.queryByRole("slider")).toBeNull();
+      expect(trigger).toHaveFocus();
+    });
+  });
 });

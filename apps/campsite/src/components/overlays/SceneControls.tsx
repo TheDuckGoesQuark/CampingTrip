@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 
 import { useSessionStore } from "../../store/sessionStore";
+import VolumeSlider from "./VolumeSlider";
 
 import styles from "./SceneControls.module.css";
 
@@ -83,6 +84,13 @@ export default function SceneControls() {
 
         {open && (
           <div className={styles.panel}>
+            {/* Above the toggles because it governs them, and unglyphed unlike
+                them because the slider already draws its own state. */}
+            <div className={styles.volumeRow}>
+              <span>Volume</span>
+              <VolumeSlider className={styles.volumeFader} />
+            </div>
+
             <SettingRow
               text="🌿 Ambience"
               checked={ambienceEnabled}

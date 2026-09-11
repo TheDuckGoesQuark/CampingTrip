@@ -3,6 +3,7 @@ import { Howl } from "howler";
 import { songs } from "../data/songs";
 import { useMusicStore } from "../store/musicStore";
 import { asset } from "../utils/assetPath";
+import { syncHowlerVolume } from "./howlerBus";
 
 let currentHowl: Howl | null = null;
 let progressInterval: ReturnType<typeof setInterval> | null = null;
@@ -36,6 +37,7 @@ function wrapIndex(index: number): number | null {
 function loadTrack(wrappedIndex: number): Howl | null {
   const song = songs[wrappedIndex];
   if (!song) return null;
+  syncHowlerVolume();
 
   if (currentHowl) {
     currentHowl.stop();
