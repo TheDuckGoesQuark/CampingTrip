@@ -74,9 +74,9 @@ Ids from React's `useId` are not covered and are still duplicated.
 │   ├── ec2.tf
 │   ├── route53.tf
 │   ├── iam.tf
-│   ├── Caddyfile           # Static reverse-proxy config (synced to EC2 on deploy)
+│   ├── Caddyfile           # Caddy config — deployed to EC2 and injected into user_data
 │   └── templates/
-│       └── user_data.sh    # EC2 bootstrap script
+│       └── user_data.sh    # EC2 bootstrap script (Caddyfile injected by ec2.tf)
 ├── docs/
 │   ├── architecture.md     # (this file)
 │   └── planning/
@@ -157,6 +157,6 @@ Push to main
 
 1. Create `apps/<name>/` with a standard Vite + React setup and a `package.json`
 2. Add a Route53 record in `infra/route53.tf` pointing to the EC2 EIP
-3. Add a Caddy server block in `infra/Caddyfile` and `infra/templates/user_data.sh`
+3. Add a Caddy server block in `infra/Caddyfile`
 4. Add build + deploy steps in `.github/workflows/deploy.yml`
 5. Add a README in the app directory

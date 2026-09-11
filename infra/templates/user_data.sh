@@ -61,42 +61,14 @@ if ! dnf install -y caddy 2>/dev/null; then
   chown caddy:caddy /var/lib/caddy /var/log/caddy
 fi
 
-# Write Caddyfile
+# Written from infra/Caddyfile, injected by ec2.tf. A config baked here and a
+# config shipped by deploy.yml would be two files nobody diffs, and a rebuilt
+# instance would quietly serve whichever of them was last remembered.
+#
+# This copy is what a freshly built instance serves until the next deploy.yml
+# run installs the same bytes from S3.
 cat > /etc/caddy/Caddyfile <<'CADDYEOF'
-${domain_name} {
-    root * /opt/jordanscamp/webapp
-
-    encode zstd gzip
-
-    @immutable path /assets/*
-    header @immutable Cache-Control "public, max-age=31536000, immutable"
-
-    @media path /models/* /images/* /draco/*
-    header @media Cache-Control "public, max-age=604800"
-
-    @shell path / *.html /cv.pdf
-    header @shell Cache-Control "no-cache"
-
-    redir /cv /blog/cv.html permanent
-
-    handle /api/contact {
-        reverse_proxy https://k6kucegvmyqo3npqoivlf5zg6q0wubku.lambda-url.eu-west-2.on.aws {
-            header_up Host {upstream_hostport}
-        }
-    }
-
-    handle {
-        try_files {path} {path}.html /index.html
-        file_server
-    }
-}
-
-# Keep this in step with infra/Caddyfile. This copy is what a freshly built
-# instance serves until the next deploy.yml run replaces it from S3; if they
-# drift, a rebuild silently changes behaviour until someone happens to deploy.
-www.${domain_name} {
-    redir https://${domain_name}{uri} permanent
-}
+${caddyfile}
 CADDYEOF
 
 # Caddy systemd service (if not installed via package manager)
