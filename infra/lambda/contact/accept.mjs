@@ -5,6 +5,8 @@
 
 export const MESSAGE_LIMIT = 4000;
 
+export const SUBJECT_LIMIT = 200;
+
 /** Mirrors the form's own floor; see `apps/campsite/.../submitFeedback.ts`. */
 export const MIN_DWELL_MS = 2000;
 
@@ -35,7 +37,7 @@ export function accept(raw, now = Date.now()) {
   }
   if (payload === null || typeof payload !== "object") return { ok: false };
 
-  const { message, email, trap, mountedAt } = payload;
+  const { message, subject, email, trap, mountedAt } = payload;
 
   // The honeypot: a field no person is shown, so anything in it was not typed.
   if (typeof trap !== "string" || trap !== "") return { ok: false };
@@ -49,17 +51,36 @@ export function accept(raw, now = Date.now()) {
   const note = message.trim();
   if (note === "" || note.length > MESSAGE_LIMIT) return { ok: false };
 
+  // Optional, so a missing subject is not a refusal — but a present one that is
+  // not a string is a caller doing something other than filling in the form.
+  if (subject !== undefined && typeof subject !== "string") return { ok: false };
+  if (typeof subject === "string" && subject.length > SUBJECT_LIMIT) return { ok: false };
+  // A subject line is one line, and `bodyFor` labels it as one: a newline in
+  // there would read as the note having started early.
+  const heading = typeof subject === "string" ? subject.replace(/\s+/g, " ").trim() : "";
+
   const trimmed = typeof email === "string" ? email.trim() : "";
   const replyTo = LOOKS_LIKE_EMAIL.test(trimmed) ? trimmed : undefined;
 
-  return { ok: true, note, replyTo };
+  return { ok: true, note, replyTo, subject: heading === "" ? undefined : heading };
 }
 
 /**
  * The mail body. Everything a visitor typed is in here rather than in a field
  * SNS treats as a header, which is what keeps header injection out of this path
- * entirely.
+ * entirely — the subject line included, which is why it is a body line here
+ * rather than the `Subject` the handler publishes.
+ *
+ * It leads, because a constant `Subject` leaves the first body line as the only
+ * thing a mail client has to preview the message with.
  */
-export function bodyFor({ note, replyTo }) {
-  return [note, "", "—", replyTo ? `Reply to: ${replyTo}` : "No reply address given."].join("\n");
+export function bodyFor({ note, subject, replyTo }) {
+  return [
+    subject ? `Subject: ${subject}` : "No subject given.",
+    "",
+    note,
+    "",
+    "—",
+    replyTo ? `Reply to: ${replyTo}` : "No reply address given.",
+  ].join("\n");
 }

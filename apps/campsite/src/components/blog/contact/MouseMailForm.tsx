@@ -1,53 +1,28 @@
-import { Button, Text, TextArea, TextField } from "@jordanscamp/ds";
-import { useRef, useState } from "react";
+import { Tag, Text, TextField } from "@jordanscamp/ds";
+import type { Icon } from "@jordanscamp/ds/icons";
+import { useId } from "react";
 
-import { type Feedback, MESSAGE_LIMIT, submitFeedback } from "./submitFeedback";
+import { MAIL_PRESETS } from "../../../data/mailPresets";
+import { MESSAGE_LIMIT, SUBJECT_LIMIT } from "./submitFeedback";
+import type { Compose } from "./useCompose";
 
 import styles from "./contact.module.css";
 
 export interface MouseMailFormProps {
+  compose: Compose;
   /** Offered as the way out whenever sending fails. */
   mailto: string;
   emailLabel: string;
-  /** Reported so the window's status bar can say what the form is doing. */
-  onPhaseChange?: (phase: Phase) => void;
 }
 
-export type Phase = "editing" | "sending" | "sent" | "failed";
+const GLYPH_PX = 14;
 
-export default function MouseMailForm({ mailto, emailLabel, onPhaseChange }: MouseMailFormProps) {
-  const [message, setMessage] = useState("");
-  const [email, setEmail] = useState("");
-  const [trap, setTrap] = useState("");
-  const [phase, setPhase] = useState<Phase>("editing");
-  const [messageError, setMessageError] = useState<string>();
-  const mountedAt = useRef(Date.now());
+export default function MouseMailForm({ compose, mailto, emailLabel }: MouseMailFormProps) {
+  const templatesId = useId();
+  const errorId = useId();
+  const sending = compose.phase === "sending";
 
-  function moveTo(next: Phase) {
-    setPhase(next);
-    onPhaseChange?.(next);
-  }
-
-  async function send() {
-    if (message.trim() === "") {
-      setMessageError("Add a note first — anything at all.");
-      return;
-    }
-    setMessageError(undefined);
-    moveTo("sending");
-    const feedback: Feedback = {
-      message: message.trim(),
-      trap,
-      mountedAt: mountedAt.current,
-      ...(email.trim() === "" ? {} : { email: email.trim() }),
-    };
-    // The dwell floor is the endpoint's to enforce; holding the person here
-    // would punish someone who simply types fast.
-    const result = await submitFeedback(feedback);
-    moveTo(result.ok ? "sent" : "failed");
-  }
-
-  if (phase === "sent") {
+  if (compose.phase === "sent") {
     return (
       <div className={styles.outcome}>
         <Text>Got it — thank you. It made my day that you bothered.</Text>
@@ -55,7 +30,7 @@ export default function MouseMailForm({ mailto, emailLabel, onPhaseChange }: Mou
     );
   }
 
-  if (phase === "failed") {
+  if (compose.phase === "failed") {
     return (
       <div className={styles.outcome}>
         <Text>That didn&apos;t send, and I&apos;d still like to hear it. My inbox works:</Text>
@@ -67,39 +42,103 @@ export default function MouseMailForm({ mailto, emailLabel, onPhaseChange }: Mou
   }
 
   return (
-    <div className={styles.form}>
-      <TextArea
-        label="What's on your mind?"
-        value={message}
-        onValueChange={setMessage}
-        error={messageError}
-        maxLength={MESSAGE_LIMIT}
-        rows={6}
-        disabled={phase === "sending"}
-      />
-      <TextField
-        label="Your email"
-        type="email"
-        optional
-        description="Only so I can reply — leave it blank and I won't."
-        value={email}
-        onValueChange={setEmail}
-        disabled={phase === "sending"}
-      />
+    <div className={styles.compose}>
+      <div className={styles.headers}>
+        {/*
+          A field rather than a caption, so the address keeps a tab stop and stays
+          selectable. Read-only rather than disabled: nothing here is switched off.
+        */}
+        <TextField label="To" value={emailLabel} readOnly />
+        {/*
+          One per row. Side by side saves a line, but only one carries a hint, so
+          the two wells would sit at different heights.
+        */}
+        <TextField
+          label="From"
+          type="email"
+          optional
+          description="Only so I can reply — leave it blank and I won't."
+          value={compose.email}
+          onValueChange={compose.setEmail}
+          disabled={sending}
+        />
+        <TextField
+          label="Subject"
+          value={compose.subject}
+          onValueChange={compose.setSubject}
+          maxLength={SUBJECT_LIMIT}
+          disabled={sending}
+        />
+      </div>
+
+      <div className={styles.templates}>
+        <Text variant="label" as="span" tone="muted" id={templatesId}>
+          Template
+        </Text>
+        <ul className={styles.templateRow} aria-labelledby={templatesId}>
+          {MAIL_PRESETS.map((preset) => (
+            <li key={preset.id}>
+              {/*
+                `aria-pressed` rather than a radio group, which would promise
+                arrow-key navigation between the options. These are separately
+                tabbable buttons, and "Other" is the way back to nothing.
+              */}
+              <Tag
+                selected={compose.preset === preset.id}
+                render={
+                  <button
+                    type="button"
+                    aria-pressed={compose.preset === preset.id}
+                    disabled={sending}
+                    onClick={() => compose.choosePreset(preset.id)}
+                  />
+                }
+              >
+                <Glyph glyph={preset.glyph} />
+                {preset.label}
+              </Tag>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className={styles.surface}>
+        {/*
+          Not a DS field: a compose body shows no label, draws no border of its
+          own and states no height — the window supplies all three. The cost is
+          that the label and error wiring are ours to do by hand.
+        */}
+        <textarea
+          className={styles.message}
+          aria-label="Message"
+          placeholder="Anything at all."
+          value={compose.message}
+          onChange={(event) => compose.setMessage(event.target.value)}
+          maxLength={MESSAGE_LIMIT}
+          disabled={sending}
+          aria-invalid={compose.messageError === undefined ? undefined : true}
+          aria-describedby={compose.messageError === undefined ? undefined : errorId}
+        />
+        {compose.messageError === undefined ? null : (
+          <p className={styles.messageError} id={errorId}>
+            {compose.messageError}
+          </p>
+        )}
+      </div>
+
       <input
         className={styles.trap}
         name="trap"
-        value={trap}
-        onChange={(event) => setTrap(event.target.value)}
+        value={compose.trap}
+        onChange={(event) => compose.setTrap(event.target.value)}
         tabIndex={-1}
         autoComplete="off"
         aria-hidden
       />
-      <div className={styles.send}>
-        <Button variant="solid" onClick={send} disabled={phase === "sending"}>
-          {phase === "sending" ? "Sending…" : "Send"}
-        </Button>
-      </div>
     </div>
   );
+}
+
+function Glyph({ glyph: Mark }: { glyph: Icon }) {
+  return <Mark size={GLYPH_PX} weight="bold" aria-hidden />;
 }

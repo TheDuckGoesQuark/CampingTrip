@@ -639,6 +639,12 @@
      window the reader can resize, so how much room it has says nothing about
      how wide the screen is. */
   flex-wrap: wrap;
+  /* The rail reshapes on this footer's width, not the viewport's: the same
+     footer renders on the open page and inside a resizable CatOS window, and
+     neither says anything about the other. Declared here rather than leaning on
+     the window's container, which the open page does not have. */
+  container-type: inline-size;
+  container-name: contact-footer;
 }
 
 /* An element of its own rather than more pseudo-elements on the banner: a CSS
@@ -663,18 +669,69 @@
 }
 
 .contactRow {
+  /* Beside the portrait while there is room for the rail's two columns under
+     the heading, below it when there is not. The basis is the wrap threshold
+     rather than a width — `flex-wrap` needs a number to decide against. */
+  flex: 1 1 18rem;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: var(--space-s);
 }
 
-/* Beside the links while there is room for a readable measure, below them when
-   there is not. The basis is the wrap threshold, not a width: `flex-wrap` needs
-   a number to decide against, and prose narrower than this stops being worth
-   reading. */
-.contactInvite {
-  flex: 1 1 18rem;
-  max-width: 32rem;
+/* Wrapping here is the safety net, not a layout: the query below hands the rail
+   its own block before the two ever come to it. */
+.contactHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-m);
+}
+
+.contactRail {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  /* `flex: 1` instead would let the rail be squeezed narrower than the reasons
+     it holds, and they would wrap inside it, still on the heading's line. */
+  margin-inline-start: auto;
+  justify-content: flex-end;
+  gap: var(--space-s);
+}
+
+/* The cell stretches its one child, which is how the control gets a width: the
+   design system component takes no `className` to be given one directly. */
+.contactRail > li {
+  display: grid;
+}
+
+/* Portrait, heading and the four reasons measure a little under 50rem end to
+   end; the rest is slack for a longer word or a fallback face. A container query
+   reads the content box, so this is the room inside the padding, not the
+   footer's own width. */
+@container contact-footer (width < 52rem) {
+  .contactRail {
+    width: 100%;
+    margin-inline-start: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* At this width the reasons are aimed at with a thumb as often as a pointer.
+     The floor sits on the cell, since the control stretches to fill it. */
+  .contactRail > li {
+    min-height: 44px;
+  }
+}
+
+/* Narrow enough that two columns would break the longest reason across lines.
+   One column reads as a list rather than as a squeezed grid. */
+@container contact-footer (width < 27rem) {
+  .contactRail {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .contactLinks {

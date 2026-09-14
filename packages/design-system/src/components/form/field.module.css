@@ -66,6 +66,19 @@
   box-shadow: var(--shadow-focus);
 }
 
+/* Read-only, not disabled: the value is worth reading and worth copying — it is
+   simply not this reader's to change. So it sinks like a well rather than
+   greying out like a control that has been switched off, and it keeps the label,
+   the focus ring and the tab stop that make it readable at all.
+
+   Ahead of the disabled rule on purpose: the two selectors weigh the same, and
+   a control that is both is disabled first. */
+.control:read-only {
+  background: var(--brand-surface-sunken);
+  color: var(--brand-text-muted);
+  cursor: default;
+}
+
 /* Border *and* the message below it: colour alone would carry the invalid state
    for nobody who cannot see it, and for nobody reading in monochrome. */
 .control[data-invalid] {

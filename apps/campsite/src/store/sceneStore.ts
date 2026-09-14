@@ -1,6 +1,7 @@
 import { create } from "zustand";
 
-import { frontWindow } from "../routing/windows";
+import type { PresetId } from "../data/mailPresets";
+import { frontWindow, isMailWindow, WINDOW_MAIL } from "../routing/windows";
 import type { SceneName, FocusTarget, OverlayKind } from "../types/scene";
 
 export interface SceneState {
@@ -28,6 +29,13 @@ export interface SceneState {
    * stranger's desktop.
    */
   openWindows: string[];
+  /**
+   * The MouseMail template the visitor asked for on their way in — clicking a
+   * reason in the contact footer opens the window already on that one. Null
+   * whenever they reached it by some other door, and cleared when it closes, so
+   * opening MouseMail from the desktop never inherits a stranger's errand.
+   */
+  mailPreset: PresetId | null;
   /** Page shown in the browser window, or null when it holds nothing yet. */
   browserPath: string | null;
   /**
@@ -48,6 +56,8 @@ export interface SceneState {
   setBrowserPath: (p: string | null) => void;
   /** Opens a window if absent, and raises it either way. Idempotent. */
   raiseWindow: (id: string) => void;
+  /** Idempotent, like `raiseWindow` — a second call re-aims rather than stacks. */
+  openMail: (preset?: PresetId) => void;
   closeWindow: (id: string) => void;
   closeAllWindows: () => void;
   /** Idempotent — `applyOverlayState` calls it on every route change. */
@@ -76,6 +86,7 @@ export const useSceneStore = create<SceneState>()((set) => ({
   notepadFocused: false,
   flyingTo: null,
   openWindows: [],
+  mailPreset: null,
   browserPath: null,
   openBlogPaths: [],
   currentScene: "tent",
@@ -94,8 +105,19 @@ export const useSceneStore = create<SceneState>()((set) => ({
         ? state
         : { openWindows: [...state.openWindows.filter((w) => w !== id), id] },
     ),
-  closeWindow: (id) => set((state) => ({ openWindows: state.openWindows.filter((w) => w !== id) })),
-  closeAllWindows: () => set({ openWindows: [] }),
+  openMail: (preset) =>
+    set((state) => ({
+      mailPreset: preset ?? null,
+      ...(frontWindow(state.openWindows) === WINDOW_MAIL
+        ? {}
+        : { openWindows: [...state.openWindows.filter((w) => w !== WINDOW_MAIL), WINDOW_MAIL] }),
+    })),
+  closeWindow: (id) =>
+    set((state) => ({
+      openWindows: state.openWindows.filter((w) => w !== id),
+      ...(isMailWindow(id) ? { mailPreset: null } : {}),
+    })),
+  closeAllWindows: () => set({ openWindows: [], mailPreset: null }),
   openBlogPath: (path) =>
     set((state) =>
       state.openBlogPaths.includes(path)

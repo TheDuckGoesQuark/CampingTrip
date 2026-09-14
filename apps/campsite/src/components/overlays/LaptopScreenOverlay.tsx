@@ -8,13 +8,7 @@ import { contactMailto, contactLabel } from "../../data/contactEmail";
 import { desktopItems, desktopItemSlug } from "../../data/desktopItems";
 import { blogPaths, parseBlogPath } from "../../routing/blogPaths";
 import { routes } from "../../routing/navigation";
-import {
-  frontWindow,
-  isBrowserWindow,
-  isMailWindow,
-  pathForWindow,
-  WINDOW_MAIL,
-} from "../../routing/windows";
+import { frontWindow, isBrowserWindow, isMailWindow, pathForWindow } from "../../routing/windows";
 import { useSceneStore } from "../../store/sceneStore";
 import { useSessionStore } from "../../store/sessionStore";
 import type { DesktopItem } from "../../types/desktop";
@@ -61,6 +55,7 @@ export default function LaptopScreenOverlay() {
   const laptopFocused = useSceneStore((s) => s.laptopFocused);
   const openWindows = useSceneStore((s) => s.openWindows);
   const browserPath = useSceneStore((s) => s.browserPath);
+  const mailPreset = useSceneStore((s) => s.mailPreset);
   const [clock, setClock] = useState("");
   const prevFocused = useRef(false);
 
@@ -115,7 +110,7 @@ export default function LaptopScreenOverlay() {
   }, [navigate]);
 
   const openMail = useCallback(() => {
-    useSceneStore.getState().raiseWindow(WINDOW_MAIL);
+    useSceneStore.getState().openMail();
     playWindowOpen();
   }, []);
 
@@ -260,6 +255,7 @@ export default function LaptopScreenOverlay() {
                 key={window.id}
                 mailto={contactMailto}
                 emailLabel={contactLabel ?? contactMailto}
+                preset={mailPreset}
                 cascade={window.stackOrder}
                 stackOrder={window.stackOrder}
                 onFocus={() => raise(window.id)}

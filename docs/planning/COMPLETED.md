@@ -6,6 +6,56 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## The contact footer asks, and MouseMail is a compose window
+
+**Date**: 2026-09-13
+
+**What was done**:
+
+- **The footer's reasons rail.** The invitation was a sentence ending in a link
+  called "here". It is now four reasons — Bug report, Feedback, Working together,
+  Other — sitting on the heading's line, flush to the footer's far edge, each one
+  a template.
+- **MouseMail composes rather than collects.** A To/From/Subject header band over
+  a writing surface, Send in the toolbar, the phase and the character count in
+  the status bar. The frame grew to `lg` to hold it.
+- **Templates prefill both fields.** Picking a reason writes that template's
+  subject and body. The rail downstairs and the pill row upstairs are one list
+  (`data/mailPresets.ts`), so the reason clicked is the pill selected.
+- **The subject reaches the inbox** as a line of the mail body, with its own
+  length cap enforced at the endpoint.
+
+**Key decisions**:
+
+- **The subject is not the mail's `Subject`.** SNS was chosen over SES precisely
+  so that nothing a stranger typed reaches a header field; putting the typed
+  subject there would hand back the mail-injection surface that choice removed.
+  It goes in the body, where a newline is harmless.
+- **Every trigger stays a real `mailto:`.** Each reason's anchor carries that
+  template as `?subject=&body=`, so a visitor with no script gets the same
+  template in their own mail client from the same click. The prerendered page
+  runs none of MouseMail, and a prerendered form is a form that cannot send.
+- **A template replaces prefill, never typing.** Each field remembers whether the
+  visitor has edited it. Swapping reasons freely rewrites text a template put
+  there and never touches a word someone typed.
+- **The rail reshapes on the footer's own width**, via a container query the
+  footer declares for itself: the same footer renders on the open page and inside
+  a CatOS window the reader can resize, and neither says anything about the
+  other. Below the width where the reasons fit beside the heading they become two
+  even columns; below that, one. In both, the cell carries a 44px floor, because a
+  box that wide is aimed at with a thumb as often as a pointer.
+
+**Deferred**:
+
+- Declaring the footer a container also makes it what `--text-title-1-size`'s
+  `cqi` resolves against, so "Let's talk" now sizes to the footer rather than to
+  the page around it. Inside a window the two are within a pixel of each other;
+  on the open page the heading is smaller than it was. Left as is — a heading
+  sized to its own band is the more defensible of the two.
+- Send is the toolbar's only control. A lone button in a bar built for several
+  reads thin, and the era's answer — a row of mode toggles beside it — needs
+  modes worth having.
+
 ## The Caddyfile exists once
 
 **Date**: 2026-09-11

@@ -231,6 +231,13 @@ inside the Canvas:
 
 ## Backlog
 
+### MouseMail — the toolbar holds one control
+
+Send is the only thing in a bar built for a row of them, which reads thinner than
+no bar at all. The era's answer is mode toggles beside it — plain text vs. rich,
+a priority flag, an attachment — and none of those mean anything here yet. Either
+find a second control worth having or move Send and drop the bar.
+
 ### CatOS — a battery indicator beside the clock
 
 The menu bar's right slot holds the clock and nothing else. A battery reading
