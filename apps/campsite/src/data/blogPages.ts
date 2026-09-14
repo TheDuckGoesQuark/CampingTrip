@@ -6,7 +6,7 @@ import type { DesktopItem } from "../types/desktop";
 import type { Post } from "../types/post";
 import type { Bookmark, Project } from "../types/project";
 import { bookmarks } from "./bookmarks";
-import { emailOf, MAILTO } from "./contactEmail";
+import { contactMailto, emailOf, MAILTO } from "./contactEmail";
 import { cv } from "./cv";
 import { findDesktopItem } from "./desktopItems";
 import { posts } from "./posts";
@@ -68,7 +68,10 @@ export function resolveBlogPage(ref: BlogRef): BlogPage | null {
       return { kind: "cv", cv };
     case "desk": {
       const item = findDesktopItem(ref.slug);
-      return item ? { kind: "desk", item } : null;
+      if (!item) return null;
+      // MouseMail with nowhere to send is a dead end, not a window.
+      if (item.kind === "mail" && contactMailto === undefined) return null;
+      return { kind: "desk", item };
     }
     case "about":
       return { kind: "about" };

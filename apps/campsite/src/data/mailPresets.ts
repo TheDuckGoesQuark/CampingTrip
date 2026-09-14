@@ -1,6 +1,13 @@
 import { Briefcase, Bug, ChatCircle, type Icon, PencilSimple } from "@jordanscamp/ds/icons";
 
 /**
+ * Here rather than beside the desktop item it names, so `routing/windows` can
+ * build the slug without importing `desktopItems` — which reaches back round
+ * through `routing/navigation` to the scene store.
+ */
+export const MOUSEMAIL_LABEL = "MouseMail";
+
+/**
  * The templates MouseMail offers. One list, because the contact footer's rail
  * and the compose window's own pill row are the same four choices: the pill a
  * visitor clicks downstairs is the pill that is selected upstairs, and a label

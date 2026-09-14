@@ -7,6 +7,7 @@ import {
   LinkedinLogo,
 } from "@jordanscamp/ds/icons";
 import { type MouseEvent, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { playWindowOpen } from "../../audio/soundEffects";
 import { contactMailto } from "../../data/contactEmail";
@@ -15,6 +16,7 @@ import { MAIL_PRESETS, type MailPreset, presetMailto } from "../../data/mailPres
 import { useAnchorFollows } from "../../hooks/useAnchorFollows";
 import { useArrivals } from "../../hooks/useArrivals";
 import { useDocumentId, useRenderTarget } from "../../prerender/renderTarget";
+import { WINDOW_MAIL } from "../../routing/windows";
 import { useSceneStore } from "../../store/sceneStore";
 import { asset } from "../../utils/assetPath";
 import { offsiteLinkProps } from "./offsiteLink";
@@ -43,17 +45,6 @@ const PILL_GLYPH_PX = 18;
 const SETTLE_MS = 500;
 
 /**
- * MouseMail is a window on the CatOS desktop, not a dialog this footer owns, so
- * opening it is a request to the desktop rather than local state — which is why
- * it needs nothing from the component. The desktop is always what this footer
- * is inside when a script is running.
- */
-function openMouseMail(preset?: MailPreset) {
-  useSceneStore.getState().openMail(preset?.id);
-  playWindowOpen();
-}
-
-/**
  * Read off the URL rather than stored beside it: a second field would be a fact
  * about a link the link already carries, and one more thing to forget to set.
  */
@@ -79,6 +70,18 @@ export default function ContactFooter() {
   const arrivals = useArrivals(banner, SETTLE_MS, followed);
   const live = useRenderTarget() === "live";
   const mailto = contactMailto;
+  const navigate = useNavigate();
+
+  /**
+   * MouseMail is a window on the CatOS desktop, not a dialog this footer owns.
+   * The desktop is always what this footer is inside when a script is running.
+   */
+  function openMouseMail(preset?: MailPreset) {
+    // Before the navigation, so the window mounts already on the template.
+    useSceneStore.getState().setMailPreset(preset?.id ?? null);
+    navigate(WINDOW_MAIL);
+    playWindowOpen();
+  }
 
   /**
    * Every trigger stays a real `mailto:` anchor and JS takes the click off it,

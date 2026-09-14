@@ -1,4 +1,6 @@
-import { isBrowserPath, parseBlogPath } from "./blogPaths";
+import { MOUSEMAIL_LABEL } from "../data/mailPresets";
+import { slugify } from "../data/slug";
+import { blogPaths, isBrowserPath, parseBlogPath } from "./blogPaths";
 
 /**
  * The browser is one window whatever page it holds, so it needs an id that is
@@ -8,12 +10,11 @@ import { isBrowserPath, parseBlogPath } from "./blogPaths";
 export const WINDOW_BROWSER = "browser";
 
 /**
- * MouseMail, for the same reason: it is an app rather than a page, so it has no
- * URL to be identified by. Deliberately *not* given one — a route would be
- * prerendered, and a prerendered form is a form that cannot send. The `mailto:`
- * in the contact footer is what a scriptless visitor gets instead.
+ * A path, not a prerendered page: `blogUrls()` is what the prerender iterates,
+ * and desk items are not on it. A prerendered form is a form that cannot send,
+ * and the `mailto:` in the contact footer is what a scriptless visitor gets.
  */
-export const WINDOW_MAIL = "mail";
+export const WINDOW_MAIL = blogPaths.desk(slugify(MOUSEMAIL_LABEL));
 
 /**
  * The window in front — the last one, since the stack renders back to front.

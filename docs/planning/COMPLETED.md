@@ -6,6 +6,60 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## MouseMail is its own window, with its own URL
+
+**Date**: 2026-09-14
+
+**What was done**:
+
+- **MouseMail's window id is now `/blog/desk/mousemail`** — a desk item's path
+  like Smittens or the bin — instead of the pathless `"mail"`.
+- **Two bugs fall out of that.** It now comes to the front when it is pressed,
+  and it survives CatNav closing instead of being swept away with it.
+- **The `mail` desktop-item kind stopped being a launcher.** `LaptopScreenOverlay`
+  lost its mail branch entirely — the `OpenWindow` union, the `openMail`
+  callback, the `pathFor` `Exclude<>` and the render fork all collapsed — and
+  `CatosWindow` gained a `case "mail"` beside image, text, video and bin.
+- **`sceneStore.openMail` became `setMailPreset`.** Opening the window is a
+  navigation now; the store only carries the template the visitor asked for.
+- **Regression coverage** for both symptoms, plus the invariant they rest on
+  (`pathForWindow(WINDOW_MAIL, …)` returns a path). All four new overlay tests
+  fail against the old pathless id.
+
+**Key decisions**:
+
+- **Both symptoms were one cause.** Every window operation in CatOS is expressed
+  as a navigation: raise calls `pathForWindow` and navigates, close navigates to
+  whatever is behind. A window with no path returns `null` from both, so raise
+  did nothing and close fell back to bare `/blog` — the one address that means
+  "empty desktop", which `applyOverlayState` honours by closing everything. So
+  CatNav never owned MouseMail; the fallback URL wiped the desktop.
+- **The original "deliberately no URL" was not load-bearing.** It reasoned that a
+  route would be prerendered and a prerendered form cannot send. But prerendering
+  is driven by `blogUrls()`, which already omits desk items and `/blog/about` —
+  both of which have paths and windows. Verified against a built `dist`: no
+  `blog/desk` file, nothing in `sitemap.xml`, and the `mailto:` fallback intact.
+- **`/blog/desk/mousemail` rather than a new `/blog/mail`.** Desk paths are
+  already excluded from the tab strip by `isBrowserPath`, so they are already
+  independent windows — which is exactly what MouseMail wanted to be. It also
+  fixes a latent bug: that path already resolved to a desk page whose window
+  rendered `null`, leaving an invisible frame in the stack.
+- **The template stays out of the URL.** A preset is what the visitor is part-way
+  through saying, not a place, and a shared link that put words in a stranger's
+  draft would be a strange thing to send. It lives in `mailPreset`, set by the
+  footer just before it navigates, and cleared when the window closes.
+- **`MOUSEMAIL_LABEL` lives in `data/mailPresets.ts`**, a leaf module, so
+  `routing/windows` can derive the slug without importing the desktop — which
+  reaches back round through `routing/navigation` to the scene store.
+
+**Deferred**:
+
+- The CatOS menu bar still has no MouseMail entry, and the homepage's "let me
+  know" still routes through the contact footer rather than the window's own URL.
+  Both are in TODO.md.
+
+---
+
 ## MouseMail sends over a wire, and says what happens next
 
 **Date**: 2026-09-14

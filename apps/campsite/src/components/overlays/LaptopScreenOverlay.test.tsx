@@ -6,7 +6,7 @@ import { MemoryRouter, useLocation } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { applyOverlayState } from "../../routing/overlays";
-import { WINDOW_BROWSER } from "../../routing/windows";
+import { WINDOW_BROWSER, WINDOW_MAIL } from "../../routing/windows";
 import { useSceneStore } from "../../store/sceneStore";
 import { useSessionStore } from "../../store/sessionStore";
 import LaptopScreenOverlay from "./LaptopScreenOverlay";
@@ -489,6 +489,39 @@ describe("LaptopScreenOverlay (CatOS)", () => {
       const before = currentPath();
       fireEvent.pointerDown(titleBarOf("Bin"));
       expect(currentPath()).toBe(before);
+    });
+
+    // None of this is special to MouseMail, which is what is being asserted.
+    describe("MouseMail", () => {
+      it("opens from its own path, like any other desk item", () => {
+        openStack([WINDOW_MAIL]);
+        renderOverlay();
+        expect(screen.getByRole("textbox", { name: /message/i })).toBeInTheDocument();
+      });
+
+      it("comes to the front when it is pressed", () => {
+        openStack([WINDOW_MAIL, BIN]);
+        renderWithPath();
+        fireEvent.pointerDown(titleBarOf("MouseMail"));
+        expect(currentPath()).toBe(WINDOW_MAIL);
+      });
+
+      it("survives CatNav closing, rather than being owned by it", () => {
+        openStack([WINDOW_MAIL, WINDOW_BROWSER], HOME);
+        renderWithPath();
+        fireEvent.click(closeLightOf("Jordan's Camp — CatNav"));
+        expect(useSceneStore.getState().openWindows).toEqual([WINDOW_MAIL]);
+        // Not bare /blog, which is the one address that means "close everything".
+        expect(currentPath()).toBe(WINDOW_MAIL);
+      });
+
+      it("forgets the template it was aimed at when it closes", () => {
+        openStack([WINDOW_MAIL]);
+        useSceneStore.setState({ mailPreset: "bug" });
+        renderWithPath();
+        fireEvent.click(closeLightOf("MouseMail"));
+        expect(useSceneStore.getState().mailPreset).toBeNull();
+      });
     });
   });
 });

@@ -49,14 +49,15 @@ people actually take — but close MouseMail by its own title bar mid-draft and
 reopen it, and everything typed is still sitting there. That is arguably a
 feature; it is not a decision anyone made.
 
-### MouseMail — only two ways in, and one of them is two hops
+### MouseMail — the menu bar still does not open it
 
-The desktop icon and the contact footer open it; the CatOS menu bar does not,
-though it is where "Close all windows" and "Touch grass" live and so is where
-someone looks for what CatOS can do. Separately, the homepage's "let me know"
-still jumps to the contact footer, so reaching MouseMail from the landing page
-means following a link and then following another — the footer link was the whole
-point of #123, and it now sits in front of a thing that could be opened directly.
+The desktop icon, the contact footer and now `/blog/desk/mousemail` itself open
+it; the CatOS menu bar does not, though it is where "Close all windows" and
+"Touch grass" live and so is where someone looks for what CatOS can do.
+Separately, the homepage's "let me know" still jumps to the contact footer, so
+reaching MouseMail from the landing page means following a link and then
+following another — the footer link was the whole point of #123, and it now sits
+in front of a thing that has its own URL to be linked straight to.
 
 Both are one-liners; the question is whether the landing page should skip the
 footer, or whether arriving at the banner first is the intended pause.

@@ -4,26 +4,24 @@ import { useNavigate } from "react-router-dom";
 
 import { playSoftClick, playWindowOpen } from "../../audio/soundEffects";
 import { iconOfDesktopItem, resolveBlogPage, type BlogPage } from "../../data/blogPages";
-import { contactMailto, contactLabel } from "../../data/contactEmail";
 import { desktopItems, desktopItemSlug } from "../../data/desktopItems";
 import { blogPaths, parseBlogPath } from "../../routing/blogPaths";
 import { routes } from "../../routing/navigation";
-import { frontWindow, isBrowserWindow, isMailWindow, pathForWindow } from "../../routing/windows";
+import { frontWindow, isBrowserWindow, pathForWindow } from "../../routing/windows";
 import { useSceneStore } from "../../store/sceneStore";
 import { useSessionStore } from "../../store/sessionStore";
 import type { DesktopItem } from "../../types/desktop";
 import CatosWindow from "../catos/CatosWindow";
-import MouseMailWindow from "../catos/MouseMailWindow";
 import VolumeMenu from "../catos/VolumeMenu";
 
 import styles from "../catos/catos.module.css";
 
 /** Place in the stack: 0 is the backmost window. */
-type OpenWindow = { id: string; stackOrder: number } & (
-  | { kind: "page"; page: BlogPage }
-  /** MouseMail shows no page, so it carries none. */
-  | { kind: "mail" }
-);
+interface OpenWindow {
+  id: string;
+  stackOrder: number;
+  page: BlogPage;
+}
 
 function pageAt(path: string | null): BlogPage | null {
   if (!path) return null;
@@ -32,7 +30,7 @@ function pageAt(path: string | null): BlogPage | null {
 }
 
 /** An app icon launches its target; everything else opens its own window. */
-function pathFor(item: Exclude<DesktopItem, { kind: "mail" }>): string {
+function pathFor(item: DesktopItem): string {
   return item.kind === "app" ? item.opens : blogPaths.desk(desktopItemSlug(item));
 }
 
@@ -55,7 +53,6 @@ export default function LaptopScreenOverlay() {
   const laptopFocused = useSceneStore((s) => s.laptopFocused);
   const openWindows = useSceneStore((s) => s.openWindows);
   const browserPath = useSceneStore((s) => s.browserPath);
-  const mailPreset = useSceneStore((s) => s.mailPreset);
   const [clock, setClock] = useState("");
   const prevFocused = useRef(false);
 
@@ -68,9 +65,8 @@ export default function LaptopScreenOverlay() {
     () =>
       openWindows
         .map((id, stackOrder): OpenWindow | null => {
-          if (isMailWindow(id)) return { id, stackOrder, kind: "mail" };
           const page = pageAt(isBrowserWindow(id) ? browserPath : id);
-          return page === null ? null : { id, stackOrder, kind: "page", page };
+          return page === null ? null : { id, stackOrder, page };
         })
         .filter((w): w is OpenWindow => w !== null)
         .sort((a, b) => a.id.localeCompare(b.id)),
@@ -109,22 +105,13 @@ export default function LaptopScreenOverlay() {
     navigate(routes.tent);
   }, [navigate]);
 
-  const openMail = useCallback(() => {
-    useSceneStore.getState().openMail();
-    playWindowOpen();
-  }, []);
-
   const launch = useCallback(
     (item: DesktopItem) => {
-      if (item.kind === "mail") {
-        openMail();
-        return;
-      }
       const path = pathFor(item);
       if (path === routes.tent) shutDown();
       else open(path);
     },
-    [open, openMail, shutDown],
+    [open, shutDown],
   );
 
   /**
@@ -248,34 +235,19 @@ export default function LaptopScreenOverlay() {
           ))}
         </div>
 
-        {windows.map((window) =>
-          window.kind === "mail" ? (
-            contactMailto === undefined ? null : (
-              <MouseMailWindow
-                key={window.id}
-                mailto={contactMailto}
-                emailLabel={contactLabel ?? contactMailto}
-                preset={mailPreset}
-                cascade={window.stackOrder}
-                stackOrder={window.stackOrder}
-                onFocus={() => raise(window.id)}
-                onClose={() => closeWindow(window.id)}
-              />
-            )
-          ) : (
-            <CatosWindow
-              key={window.id}
-              page={window.page}
-              // Both from the stack index, which is not a coincidence worth hiding:
-              // a window opens on the end of the stack, so its index there is also
-              // how many windows it has to step down and right of.
-              cascade={window.stackOrder}
-              stackOrder={window.stackOrder}
-              onFocus={() => raise(window.id)}
-              onClose={() => closeWindow(window.id)}
-            />
-          ),
-        )}
+        {windows.map((window) => (
+          <CatosWindow
+            key={window.id}
+            page={window.page}
+            // Both from the stack index, which is not a coincidence worth hiding:
+            // a window opens on the end of the stack, so its index there is also
+            // how many windows it has to step down and right of.
+            cascade={window.stackOrder}
+            stackOrder={window.stackOrder}
+            onFocus={() => raise(window.id)}
+            onClose={() => closeWindow(window.id)}
+          />
+        ))}
       </div>
     </Modal>
   );
