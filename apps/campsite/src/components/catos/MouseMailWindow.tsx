@@ -14,7 +14,7 @@ export interface MouseMailWindowProps extends WindowFrameProps {
 }
 
 const STATUS: Record<Phase, string> = {
-  editing: "Not sent",
+  editing: "Draft",
   sending: "Sending…",
   sent: "Sent",
   failed: "Couldn't send",
@@ -44,13 +44,19 @@ export default function MouseMailWindow({
   ...frame
 }: MouseMailWindowProps) {
   const compose = useCompose(preset);
-  const composing = compose.phase === "editing" || compose.phase === "sending";
+  // Not "editing or sending": during the transfer there is nothing to type into.
+  const composing = compose.phase === "editing";
 
   return (
     <Window size="lg" {...frame}>
       <Window.TitleBar title="MouseMail" onClose={onClose} />
       <Window.Body>
-        <MouseMailForm compose={compose} mailto={mailto} emailLabel={emailLabel} />
+        <MouseMailForm
+          compose={compose}
+          mailto={mailto}
+          emailLabel={emailLabel}
+          onClose={onClose}
+        />
       </Window.Body>
       <Window.StatusBar>
         <Text variant="label" tone="muted" as="span">

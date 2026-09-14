@@ -41,6 +41,14 @@ who would notice. There is no synthetic check on the endpoint, and a check that
 only asserts a 204 would not prove SNS delivered either. Whether that is worth a
 CloudWatch canary is a judgement about what a missed note costs, not a defect.
 
+### MouseMail — the window remembers a send it should have forgotten
+
+Closing MouseMail does not unmount it, so its compose state survives. A
+successful send now closes the window on `OK`, which hides this for the path
+people actually take — but close MouseMail by its own title bar mid-draft and
+reopen it, and everything typed is still sitting there. That is arguably a
+feature; it is not a decision anyone made.
+
 ### MouseMail — only two ways in, and one of them is two hops
 
 The desktop icon and the contact footer open it; the CatOS menu bar does not,
