@@ -6,6 +6,73 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## MouseMail sends over a wire, and says what happens next
+
+**Date**: 2026-09-14
+
+**What was done**:
+
+- **"Not sent" is now "Draft".** The old label named a failure that had not
+  happened; a message nobody has sent yet is a draft.
+- **The wait is drawn.** Sending replaces the compose surface with a 1995
+  file-copy dialog: a tower at one end, a globe at the other, an envelope hopping
+  a dotted line between them over a bar that fills a block at a time. Everything
+  steps rather than eases, on one 1.6s clock.
+- **The confirmation turns on the reply address.** Leave one and it is quoted
+  back with a promise to use it; leave none and the note is called a message in a
+  bottle, which is what it is.
+
+**Key decisions**:
+
+- **The sending phase is held open at a floor** (`SEND_FLOOR_MS`), because an
+  endpoint answering in 200ms would flash the bar and be gone. This is a
+  different floor from the endpoint's anti-spam dwell, which stays where it is —
+  holding the visitor there would punish someone who simply types fast. Under
+  reduced motion there is no animation to buy time for, so the floor is zero and
+  the graphic is hidden by the same media query that hides the blog's shimmer.
+- **A progress bar rather than an envelope folding and flying off.** Both were on
+  the table. The bar covers a wait of unknown length natively and lives entirely
+  inside the form body; the flight is a fixed-duration flourish that would have
+  to play after the response lands, leaving the wait itself still blank, and
+  would have to escape `Window.Body`'s overflow to fly anywhere.
+- **The bar fills by clipping, not by growing.** Its gradient is sized off its own
+  box, so a growing box would squash its blocks instead of uncovering them.
+  `clip-path: inset()` under `steps(20)` reveals one block per step.
+- **The live region is the transfer element itself**, not a wrapper around it.
+  A wrapper is another box between the window's page and the graphic, and that is
+  what its `min-height: 100%` then resolves against — which pinned the whole
+  transfer to the top of an otherwise empty window until it was removed.
+- **The character count now shows only while editing.** With the writing surface
+  gone during sending, "how much room is left" is a question about a window
+  nobody can type into.
+
+**The send outcome is a dialog over the draft, not a replacement for it**:
+
+- Sending puts a small window over MouseMail's page — its own title bar, the
+  transfer inside it — and switches the draft beneath to `inert`. The desktop
+  behind stays live: a file-copy dialog blocked its own application, not the
+  machine, and MouseMail is deliberately a window rather than a dialog.
+- The confirmation and the failure both land in that same small window. `OK` on
+  the confirmation closes MouseMail, the errand being done.
+- Because the draft is switched off rather than unmounted, a failed send now
+  hands the words back — "Back to my note" returns to them intact. That was one
+  of the two problems this work had previously logged in TODO.md; the other
+  (a closed-and-reopened MouseMail showing a stale confirmation) is now moot for
+  a successful send, which closes the window rather than leaving it.
+- Focus moves into the dialog on open but is not trapped, which follows from the
+  desktop staying live: there is nowhere it would be wrong to go.
+- The panel is app-local rather than a `Window`. That component earns its
+  geometry by being something you can drag, resize and maximise, and a transient
+  send dialog is none of those.
+
+**Deferred**:
+
+- The failure copy is a placeholder pending separate work on failure handling.
+  It keeps the `mailto:` the old failure screen offered, so the path that always
+  works has not gone anywhere in the meantime.
+
+---
+
 ## The contact footer asks, and MouseMail is a compose window
 
 **Date**: 2026-09-13

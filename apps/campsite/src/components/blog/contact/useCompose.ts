@@ -1,7 +1,17 @@
 import { useRef, useState } from "react";
 
 import { mailPreset, type PresetId } from "../../../data/mailPresets";
+import { useReducedMotion } from "../../../hooks/useReducedMotion";
 import { type Feedback, submitFeedback } from "./submitFeedback";
+
+/**
+ * How long the sending phase is held open at minimum, so the transfer screen
+ * gets its run: an endpoint answering in a fifth of a second would flash the bar
+ * and be gone before it read as anything.
+ */
+export const SEND_FLOOR_MS = 1600;
+
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export type Phase = "editing" | "sending" | "sent" | "failed";
 
@@ -20,6 +30,8 @@ export interface Compose {
   setEmail: (value: string) => void;
   setTrap: (value: string) => void;
   send: () => void;
+  /** Back to the draft, which is still intact behind whatever is covering it. */
+  resume: () => void;
 }
 
 /**
@@ -43,6 +55,7 @@ function replaceable(value: string, typed: boolean): boolean {
  * a reason in the contact footer opens this window already on that template.
  */
 export function useCompose(requested: PresetId | null = null): Compose {
+  const reduced = useReducedMotion();
   const [preset, setPreset] = useState<PresetId>();
   const [subject, setSubjectValue] = useState("");
   const [message, setMessageValue] = useState("");
@@ -91,9 +104,12 @@ export function useCompose(requested: PresetId | null = null): Compose {
       ...(subject.trim() === "" ? {} : { subject: subject.trim() }),
       ...(email.trim() === "" ? {} : { email: email.trim() }),
     };
-    // The dwell floor is the endpoint's to enforce; holding the person here
-    // would punish someone who simply types fast.
-    const result = await submitFeedback(feedback);
+    // Not the anti-spam dwell floor, which stays the endpoint's to enforce:
+    // holding the person here would punish someone who simply types fast.
+    const [result] = await Promise.all([
+      submitFeedback(feedback),
+      reduced ? Promise.resolve() : wait(SEND_FLOOR_MS),
+    ]);
     setPhase(result.ok ? "sent" : "failed");
   }
 
@@ -117,5 +133,6 @@ export function useCompose(requested: PresetId | null = null): Compose {
     setEmail,
     setTrap,
     send,
+    resume: () => setPhase("editing"),
   };
 }

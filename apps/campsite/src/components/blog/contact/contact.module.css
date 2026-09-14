@@ -7,12 +7,22 @@
 
 /* The header band and writing surface run to the frame's edges. Cancelled
    through the inset the frame names, so the number stays in the frame. */
-.compose {
+.stage {
   margin-inline: calc(-1 * var(--window-page-inset-inline, 0px));
   margin-block: calc(-1 * var(--window-page-inset-block, 0px));
   /* Both insets are backed out above, so filling the frame means standing that
      much taller than the page this sits in. */
   min-height: calc(100% + 2 * var(--window-page-inset-block, 0px));
+  display: flex;
+  flex-direction: column;
+  /* What the scrim is measured against; without it the scrim escapes to the
+     window frame and swallows the title bar. */
+  position: relative;
+}
+
+.compose {
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
 }
@@ -96,11 +106,134 @@
   background: var(--brand-surface-raised);
 }
 
-/* The outcome replaces the form, so it holds roughly the form's height and the
-   window does not jump as it swaps. */
-.outcome {
+.scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-l);
+  background: var(--brand-scrim);
+}
+
+/* Not built from `Window`: that component sizes itself as a share of the
+   viewport and earns it by being draggable, resizable and maximisable, none of
+   which a transient dialog is. */
+.dialog {
+  width: 100%;
+  max-width: 26rem;
+  background: var(--brand-surface-raised);
+  border: 2px solid var(--brand-border-strong);
+  box-shadow: var(--shadow-hard-3);
+}
+
+.dialog:focus-visible {
+  outline: 2px solid var(--brand-focus);
+  outline-offset: 2px;
+}
+
+.dialogTitle {
+  padding: var(--space-xs) var(--space-s);
+  background: var(--brand-subtle);
+  border-bottom: 2px solid var(--brand-border-strong);
+  box-shadow: var(--shadow-bevel-out);
+}
+
+.dialogBody {
   display: flex;
   flex-direction: column;
   gap: var(--space-s);
-  padding-block: var(--space-m);
+  padding: var(--space-m);
+}
+
+.dialogActions {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 var(--space-m) var(--space-m);
+}
+
+/* One 1.6s clock and one `steps(20, …)` below, repeated rather than shared:
+   `steps()` needs an integer where the gradient needs a percentage, and CSS can
+   derive neither from the other. The 1.6s is SEND_FLOOR_MS in useCompose.ts. */
+
+.transfer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-s);
+  width: 100%;
+}
+
+.wire {
+  display: flex;
+  align-items: center;
+  gap: var(--space-s);
+  color: var(--brand-text-muted);
+}
+
+.span {
+  position: relative;
+  flex: 1;
+  height: 2px;
+  background-image: repeating-linear-gradient(90deg, currentColor 0 2px, transparent 2px 9px);
+}
+
+.parcel {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translate(-50%, -50%);
+  color: var(--brand-solid);
+  animation: transferParcel 1.6s steps(20, end) forwards;
+}
+
+@keyframes transferParcel {
+  to {
+    left: 100%;
+  }
+}
+
+.ends {
+  display: flex;
+  justify-content: space-between;
+}
+
+.track {
+  position: relative;
+  height: 16px;
+  background: var(--brand-surface-sunken);
+  border: 2px solid var(--brand-border-strong);
+}
+
+/* Full width always, revealed by clipping rather than grown by width: the
+   gradient is sized off this element's own box, so a growing box would squash
+   its own blocks instead of uncovering them. */
+.blocks {
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    90deg,
+    var(--brand-solid) 0 3.5%,
+    transparent 3.5% 5%
+  );
+  clip-path: inset(0 100% 0 0);
+  animation: transferFill 1.6s steps(20, end) forwards;
+}
+
+@keyframes transferFill {
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* Forced colours as well as reduced motion: that mode strips the blocks, which
+   are a background, leaving an empty trough that reads as a stalled transfer.
+   The caption stays either way. */
+@media (prefers-reduced-motion: reduce), (forced-colors: active) {
+  .wire,
+  .ends,
+  .track {
+    display: none;
+  }
 }
