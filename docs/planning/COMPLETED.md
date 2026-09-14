@@ -14,8 +14,7 @@ History of what's been built, key decisions made, and what was deferred along th
 
 - **The footer's reasons rail.** The invitation was a sentence ending in a link
   called "here". It is now four reasons — Bug report, Feedback, Working together,
-  Other — sitting on the heading's line, flush to the footer's far edge, each one
-  a template.
+  Other — in a column at the footer's right edge, each one a template.
 - **MouseMail composes rather than collects.** A To/From/Subject header band over
   a writing surface, Send in the toolbar, the phase and the character count in
   the status bar. The frame grew to `lg` to hold it.
@@ -38,12 +37,15 @@ History of what's been built, key decisions made, and what was deferred along th
 - **A template replaces prefill, never typing.** Each field remembers whether the
   visitor has edited it. Swapping reasons freely rewrites text a template put
   there and never touches a word someone typed.
-- **The rail reshapes on the footer's own width**, via a container query the
-  footer declares for itself: the same footer renders on the open page and inside
-  a CatOS window the reader can resize, and neither says anything about the
-  other. Below the width where the reasons fit beside the heading they become two
-  even columns; below that, one. In both, the cell carries a 44px floor, because a
-  box that wide is aimed at with a thumb as often as a pointer.
+- **One rail shape at every width** — always a column, right-aligned while there
+  is room beside the text and full-width when there is not, where the portrait
+  centres over it too. A grid of reasons was the alternative; a single rule is
+  easier to hold and to keep true, and it costs only a taller footer on a phone.
+  Which state applies comes from a container query the footer declares for
+  itself, because the same footer renders on the open page and inside a CatOS
+  window the reader can resize, and neither says anything about the other. The
+  cells carry a 44px floor there, being aimed at with a thumb as often as a
+  pointer.
 
 **Deferred**:
 

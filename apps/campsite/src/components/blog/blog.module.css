@@ -669,9 +669,8 @@
 }
 
 .contactRow {
-  /* Beside the portrait while there is room for the rail's two columns under
-     the heading, below it when there is not. The basis is the wrap threshold
-     rather than a width — `flex-wrap` needs a number to decide against. */
+  /* Beside the portrait while there is room for the rail as well, below it when
+     there is not. The basis is the wrap threshold rather than a width. */
   flex: 1 1 18rem;
   min-width: 0;
   display: flex;
@@ -679,58 +678,42 @@
   gap: var(--space-s);
 }
 
-/* Wrapping here is the safety net, not a layout: the query below hands the rail
-   its own block before the two ever come to it. */
-.contactHeader {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-m);
-}
-
+/* A column at the footer's right edge, not a row across it: the reasons read as
+   a menu standing beside the page rather than as a strip laid over it. */
 .contactRail {
   margin: 0;
   padding: 0;
   list-style: none;
-  display: flex;
-  flex-wrap: wrap;
-  /* `flex: 1` instead would let the rail be squeezed narrower than the reasons
-     it holds, and they would wrap inside it, still on the heading's line. */
-  margin-inline-start: auto;
-  justify-content: flex-end;
+  display: grid;
   gap: var(--space-s);
+  align-content: start;
+  margin-inline-start: auto;
 }
 
 /* The cell stretches its one child, which is how the control gets a width: the
-   design system component takes no `className` to be given one directly. */
+   design system component takes no `className` to be given one directly. So the
+   column is as wide as its longest reason, and every reason is that wide. */
 .contactRail > li {
   display: grid;
 }
 
-/* Portrait, heading and the four reasons measure a little under 50rem end to
-   end; the rest is slack for a longer word or a fallback face. A container query
-   reads the content box, so this is the room inside the padding, not the
-   footer's own width. */
-@container contact-footer (width < 52rem) {
+/* Too narrow to carry the rail beside the text. Everything takes the full width
+   and stacks, and the portrait centres over it rather than hanging off one
+   edge. The number is the wrap threshold above plus the portrait and its gap. */
+@container contact-footer (width < 34rem) {
+  .contactPortrait {
+    margin-inline: auto;
+  }
+
   .contactRail {
     width: 100%;
     margin-inline-start: 0;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   /* At this width the reasons are aimed at with a thumb as often as a pointer.
      The floor sits on the cell, since the control stretches to fill it. */
   .contactRail > li {
     min-height: 44px;
-  }
-}
-
-/* Narrow enough that two columns would break the longest reason across lines.
-   One column reads as a list rather than as a squeezed grid. */
-@container contact-footer (width < 27rem) {
-  .contactRail {
-    grid-template-columns: minmax(0, 1fr);
   }
 }
 

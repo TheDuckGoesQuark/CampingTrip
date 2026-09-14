@@ -106,32 +106,9 @@ export default function ContactFooter() {
         height={PORTRAIT_PX}
       />
       <div className={styles.contactRow}>
-        <div className={styles.contactHeader}>
-          <Text variant="title-1" as="h2" id={headingId}>
-            {CONTACT_HEADING}
-          </Text>
-          {mailto === undefined ? null : (
-            <ul className={styles.contactRail} aria-label={RAIL_LABEL}>
-              {MAIL_PRESETS.map((preset) => (
-                <li key={preset.id}>
-                  <Button
-                    variant="subtle"
-                    size="sm"
-                    render={
-                      <a
-                        href={presetMailto(mailto, preset)}
-                        {...(live ? { onClick: (event) => intercept(event, preset) } : {})}
-                      />
-                    }
-                  >
-                    <Glyph glyph={preset.glyph} size={PILL_GLYPH_PX} />
-                    {preset.label}
-                  </Button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+        <Text variant="title-1" as="h2" id={headingId}>
+          {CONTACT_HEADING}
+        </Text>
         <ul className={styles.contactLinks}>
           {cv.links.map((link) => (
             <li key={link.url}>
@@ -147,6 +124,28 @@ export default function ContactFooter() {
           ))}
         </ul>
       </div>
+
+      {mailto === undefined ? null : (
+        <ul className={styles.contactRail} aria-label={RAIL_LABEL}>
+          {MAIL_PRESETS.map((preset) => (
+            <li key={preset.id}>
+              <Button
+                variant="subtle"
+                size="sm"
+                render={
+                  <a
+                    href={presetMailto(mailto, preset)}
+                    {...(live ? { onClick: (event) => intercept(event, preset) } : {})}
+                  />
+                }
+              >
+                <Glyph glyph={preset.glyph} size={PILL_GLYPH_PX} />
+                {preset.label}
+              </Button>
+            </li>
+          ))}
+        </ul>
+      )}
     </footer>
   );
 }
