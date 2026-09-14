@@ -6,12 +6,172 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## The send dialogs become design-system components
+
+**Date**: 2026-09-14
+
+**What was done**:
+
+- **`AlertDialog`** in `@jordanscamp/ds` — compound slots `AlertDialog.Title` /
+  `.Icon` / `.Body` / `.Actions`, matched by type so order does not matter.
+- **`LoadingDialog`** — the same frame with no actions, for a wait nobody can
+  act on.
+- **`TransferProgress`** moved out of campsite into the DS beside `Window` and
+  `DesktopIcon`, with `caption`, `from`, `to` and `durationMs` as props.
+- **`DialogFrame`**, unexported, shared by both so the chrome cannot drift.
+- **Stories and contract tests** for all three, and `SendDialog` rebuilt on top
+  of them — the sent and failed states now carry a mark on the left, and an
+  `AllVariants` story puts every body shape on one screen.
+- **`DialogFrame` squares off its own contents**, scoping `--radius-*` to none
+  the way `Window` does, so the buttons are hard-edged wherever the dialog is
+  put rather than only inside a window.
+- **The failure copy loses two lines.** "Your note is still behind this,
+  untouched" went, and the helper text under the copy button went with it — the
+  button now says "Copy the full message and paste into your email client",
+  which is what the helper was for.
+
+**Key decisions**:
+
+- **Not a `Modal` variant, and the component says so.** `Modal` portals to the
+  body, backdrops the viewport and traps focus. These cover their nearest
+  positioned ancestor and trap nothing, because a dialog of this era blocked its
+  own application rather than the machine. Building them on `Modal` would break
+  the CatOS illusion, so the constraint is written down where someone
+  "simplifying" it would read it. The cost is a contract on the call site:
+  without a `position: relative` ancestor the scrim escapes to the page.
+- **Two components over one.** They differ only in body content and whether
+  there are actions, so one composable dialog would have covered both — but the
+  call sites read better apart, and the shared frame is what stops the chrome
+  diverging.
+- **The animation duration is a prop, not a constant in two places.** It was
+  1.6s hard-coded in CSS with a comment pointing at `SEND_FLOOR_MS`. That
+  coupling could not survive the move into the DS, so `durationMs` sets a custom
+  property and `SendDialog` passes `SEND_FLOOR_MS` in. The `steps(20)` and the
+  gradient stops still cannot be derived from it.
+- **`tone` colours the icon only.** Colour never carries the outcome by itself;
+  the title and body do. A `tone` with no `AlertDialog.Icon` therefore shows
+  nothing, which is the honest result rather than a bug.
+- **No tone axis at all.** It began as info/success/danger, moved to `Badge`'s
+  neutral/brand/accent/danger, and then went entirely: the mark is always
+  `--brand-solid`. A prop whose every value renders the same colour is worse
+  than no prop. What happened is carried by the title, the body and the glyph's
+  own shape — a tick and a warning triangle are told apart by outline, not hue,
+  which is also why the icon stays `aria-hidden`.
+- **The copy button's label is short, and confirms.** A sentence-length label
+  wrapped and stranded the icon, which briefly justified an `align` axis on
+  `Button`; "Copy email contents" fits on one line, so that axis went too. On
+  click it swaps to a tick and "Copied" for two seconds, then offers the copy
+  again — Mantine is not a dependency of this workspace despite the stale note
+  in CLAUDE.md, so there is no `useClipboard` to reach for. It sits in the
+  actions row as the solid primary, with "Back" beside it.
+
+**Deferred**:
+
+- MouseMail's own three states are still only reachable through `MOCK_CONTACT`
+  and a server restart. Standing up Storybook in campsite was considered and
+  not taken — the DS stories cover the shapes, and a second Storybook is a
+  second thing to maintain.
+
+---
+
 ## MouseMail is its own window, with its own URL
 
 **Date**: 2026-09-14
 
 **What was done**:
 
+- **MouseMail's window id is now `/blog/desk/mousemail`** — a desk item's path
+  like Smittens or the bin — instead of the pathless `"mail"`.
+- **Two bugs fall out of that.** It now comes to the front when it is pressed,
+  and it survives CatNav closing instead of being swept away with it.
+- **The `mail` desktop-item kind stopped being a launcher.** `LaptopScreenOverlay`
+  lost its mail branch entirely — the `OpenWindow` union, the `openMail`
+  callback, the `pathFor` `Exclude<>` and the render fork all collapsed — and
+  `CatosWindow` gained a `case "mail"` beside image, text, video and bin.
+- **`sceneStore.openMail` became `setMailPreset`.** Opening the window is a
+  navigation now; the store only carries the template the visitor asked for.
+- **Regression coverage** for both symptoms, plus the invariant they rest on
+  (`pathForWindow(WINDOW_MAIL, …)` returns a path). All four new overlay tests
+  fail against the old pathless id.
+
+**Key decisions**:
+
+- **Both symptoms were one cause.** Every window operation in CatOS is expressed
+  as a navigation: raise calls `pathForWindow` and navigates, close navigates to
+  whatever is behind. A window with no path returns `null` from both, so raise
+  did nothing and close fell back to bare `/blog` — the one address that means
+  "empty desktop", which `applyOverlayState` honours by closing everything. So
+  CatNav never owned MouseMail; the fallback URL wiped the desktop.
+- **The original "deliberately no URL" was not load-bearing.** It reasoned that a
+  route would be prerendered and a prerendered form cannot send. But prerendering
+  is driven by `blogUrls()`, which already omits desk items and `/blog/about` —
+  both of which have paths and windows. Verified against a built `dist`: no
+  `blog/desk` file, nothing in `sitemap.xml`, and the `mailto:` fallback intact.
+- **`/blog/desk/mousemail` rather than a new `/blog/mail`.** Desk paths are
+  already excluded from the tab strip by `isBrowserPath`, so they are already
+  independent windows — which is exactly what MouseMail wanted to be. It also
+  fixes a latent bug: that path already resolved to a desk page whose window
+  rendered `null`, leaving an invisible frame in the stack.
+- **The template stays out of the URL.** A preset is what the visitor is part-way
+  through saying, not a place, and a shared link that put words in a stranger's
+  draft would be a strange thing to send. It lives in `mailPreset`, set by the
+  footer just before it navigates, and cleared when the window closes.
+- **`MOUSEMAIL_LABEL` lives in `data/mailPresets.ts`**, a leaf module, so
+  `routing/windows` can derive the slug without importing the desktop — which
+  reaches back round through `routing/navigation` to the scene store.
+
+**Deferred**:
+
+- The CatOS menu bar still has no MouseMail entry, and the homepage's "let me
+  know" still routes through the contact footer rather than the window's own URL.
+  Both are in TODO.md.
+
+---
+
+## A failed send says which failure, and hands the note over
+
+**Date**: 2026-09-14
+
+**What was done**:
+
+- **`submitFeedback` reports a reason** rather than a bare `{ ok: false }`:
+  `busy` (429), `refused` (other 4xx), `server` (5xx), `offline` (no answer).
+- **`useCompose` names the one refusal a person can trip.** It keeps the moment
+  it posted, so a `refused` that beat the dwell floor becomes `hasty`.
+- **The dialog explains, per reason.** Where trying again would help, the
+  sentence says so — "Back to my note" already leads to a Send that works, so
+  there is no second button.
+- **One copy button** puts `To:`, `Subject:` and the note on the clipboard as a
+  block to paste into any mail client. The `mailto:` link is gone, and with it
+  the `mailto` prop through MouseMailWindow → MouseMailForm → SendDialog.
+- **Shorter confirmation copy**, in Jordan's words, turning on whether a reply
+  address was left.
+- **The dev mock answers any status**, since the copy now turns on which.
+
+**Key decisions**:
+
+- **The status line is not a secret.** `submitFeedback`'s old comment said a
+  reason would tell a bot which check it tripped. True of the _endpoint_, which
+  still answers all of its checks with the same 400 — but not of this wrapper: a
+  bot reads the raw response and never runs our TypeScript.
+- **No stored "already sent" timestamp.** Nothing limits how often one visitor
+  may post — `reserved_concurrent_executions = 2` counts messages in flight
+  across everyone — so a local guess would be wrong in the common case. The
+  status answers it directly, and `busy` copy never implies a personal limit.
+- **Clipboard, not a rendered block.** The draft is already on screen behind the
+  dialog, so repeating it would only make the dialog tall. When the clipboard is
+  refused — no secure context, or permission denied — the text appears as a
+  selected read-only block instead, which is not a path the happy case pays for.
+- **The note is trimmed but its inner newlines are kept**: those are the
+  visitor's paragraphs. No `From` line, since the client they paste into
+  supplies their own address.
+
+**Deferred**:
+
+- The confirmation no longer quotes the reply address back, so a typo in it
+  goes unnoticed. Jordan's copy, deliberately — worth revisiting only if
+  someone reports a reply that never arrived.
+- Nothing rate-limits one sender. See the TODO item.
 - **MouseMail's window id is now `/blog/desk/mousemail`** — a desk item's path
   like Smittens or the bin — instead of the pathless `"mail"`.
 - **Two bugs fall out of that.** It now comes to the front when it is pressed,

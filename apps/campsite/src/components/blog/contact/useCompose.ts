@@ -2,7 +2,9 @@ import { useRef, useState } from "react";
 
 import { mailPreset, type PresetId } from "../../../data/mailPresets";
 import { useReducedMotion } from "../../../hooks/useReducedMotion";
-import { type Feedback, submitFeedback } from "./submitFeedback";
+import { type Feedback, type FailureReason, MIN_DWELL_MS, submitFeedback } from "./submitFeedback";
+
+export type Failure = FailureReason | "hasty";
 
 /**
  * How long the sending phase is held open at minimum, so the transfer screen
@@ -23,6 +25,7 @@ export interface Compose {
   email: string;
   trap: string;
   phase: Phase;
+  failure: Failure | undefined;
   messageError: string | undefined;
   choosePreset: (id: PresetId) => void;
   setSubject: (value: string) => void;
@@ -46,6 +49,15 @@ function replaceable(value: string, typed: boolean): boolean {
 }
 
 /**
+ * `accept` refuses all of its checks alike, on purpose. The dwell floor is the
+ * only one a real typist trips, and we hold the mount time — so that case can be
+ * named without the endpoint saying which check it was.
+ */
+function refine(reason: FailureReason, dwellMs: number): Failure {
+  return reason === "refused" && dwellMs < MIN_DWELL_MS ? "hasty" : reason;
+}
+
+/**
  * Everything the compose window holds. One hook rather than state inside the
  * form, because the window's own chrome is part of the form: Send is a toolbar
  * button and the phase and character count are status-bar text, so the frame
@@ -62,6 +74,7 @@ export function useCompose(requested: PresetId | null = null): Compose {
   const [email, setEmail] = useState("");
   const [trap, setTrap] = useState("");
   const [phase, setPhase] = useState<Phase>("editing");
+  const [failure, setFailure] = useState<Failure>();
   const [messageError, setMessageError] = useState<string>();
   const [typedSubject, setTypedSubject] = useState(false);
   const [typedMessage, setTypedMessage] = useState(false);
@@ -96,6 +109,7 @@ export function useCompose(requested: PresetId | null = null): Compose {
       return;
     }
     setMessageError(undefined);
+    setFailure(undefined);
     setPhase("sending");
     const feedback: Feedback = {
       message: message.trim(),
@@ -106,11 +120,18 @@ export function useCompose(requested: PresetId | null = null): Compose {
     };
     // Not the anti-spam dwell floor, which stays the endpoint's to enforce:
     // holding the person here would punish someone who simply types fast.
+    // The dwell the endpoint judged, which the send floor below outlasts.
+    const askedAt = Date.now();
     const [result] = await Promise.all([
       submitFeedback(feedback),
       reduced ? Promise.resolve() : wait(SEND_FLOOR_MS),
     ]);
-    setPhase(result.ok ? "sent" : "failed");
+    if (result.ok) {
+      setPhase("sent");
+      return;
+    }
+    setFailure(refine(result.reason, askedAt - mountedAt.current));
+    setPhase("failed");
   }
 
   return {
@@ -120,6 +141,7 @@ export function useCompose(requested: PresetId | null = null): Compose {
     email,
     trap,
     phase,
+    failure,
     messageError,
     choosePreset,
     setSubject: (value) => {

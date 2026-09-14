@@ -34,22 +34,35 @@ export interface Feedback {
   mountedAt: number;
 }
 
-export type SubmitResult = { ok: true } | { ok: false };
+/**
+ * Costs a bot nothing it lacked — it reads the raw response and never runs this.
+ * The endpoint still answers all of its own checks with one indistinct 400.
+ */
+export type FailureReason = "busy" | "refused" | "server" | "offline";
+
+export type SubmitResult = { ok: true } | { ok: false; reason: FailureReason };
 
 /**
- * Never throws and never reports *why* it failed: the caller's only useful move
- * is to offer the `mailto:` instead, and a reason would tell a bot which check
- * it tripped.
+ * `busy` is two in flight at once, never "you have sent too many": the cap is
+ * `reserved_concurrent_executions` in infra/contact.tf, and nothing limits one
+ * sender. The copy has to say so carefully.
  */
+function reasonFor(status: number): FailureReason {
+  if (status === 429) return "busy";
+  if (status >= 500) return "server";
+  return "refused";
+}
+
 export async function submitFeedback(feedback: Feedback): Promise<SubmitResult> {
+  let response: Response;
   try {
-    const response = await fetch(ENDPOINT, {
+    response = await fetch(ENDPOINT, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(feedback),
     });
-    return response.ok ? { ok: true } : { ok: false };
   } catch {
-    return { ok: false };
+    return { ok: false, reason: "offline" };
   }
+  return response.ok ? { ok: true } : { ok: false, reason: reasonFor(response.status) };
 }

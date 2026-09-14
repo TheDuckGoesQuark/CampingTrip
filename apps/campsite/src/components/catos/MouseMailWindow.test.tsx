@@ -1,14 +1,13 @@
-import { BrandProvider } from "@jordanscamp/ds";
+import { BrandProvider, COPIED_MS } from "@jordanscamp/ds";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { mailPreset, type PresetId } from "../../data/mailPresets";
-import { MESSAGE_LIMIT } from "../blog/contact/submitFeedback";
+import { MESSAGE_LIMIT, MIN_DWELL_MS } from "../blog/contact/submitFeedback";
 import { SEND_FLOOR_MS } from "../blog/contact/useCompose";
 import MouseMailWindow from "./MouseMailWindow";
 
-const MAILTO = "mailto:someone@example.com";
 const LABEL = "someone@example.com";
 
 /* Sending outlasts Testing Library's default wait. Derived, not picked, so
@@ -18,12 +17,29 @@ const SETTLED = { timeout: SEND_FLOOR_MS + 2000 };
 function mount(preset: PresetId | null = null, onClose: () => void = () => {}) {
   return render(
     <BrandProvider>
-      <MouseMailWindow mailto={MAILTO} emailLabel={LABEL} preset={preset} onClose={onClose} />
+      <MouseMailWindow emailLabel={LABEL} preset={preset} onClose={onClose} />
     </BrandProvider>,
   );
 }
 
+function refuseWith(status: number) {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async () => new Response(null, { status })),
+  );
+}
+
+// Shifted, not frozen: the send floor and `waitFor` both measure elapsed time,
+// so a `Date.now` that never moves is one that never settles.
+function pastTheDwellFloor() {
+  const real = Date.now.bind(Date);
+  vi.spyOn(Date, "now").mockImplementation(() => real() + MIN_DWELL_MS + 1);
+}
+
 const dialog = () => screen.getByRole("dialog");
+
+/** The dialog is up from the moment Send is pressed, so settle on the outcome. */
+const settledOnFailure = () => screen.findByRole("button", { name: /^back$/i }, SETTLED);
 const draft = (container: HTMLElement) => container.querySelector("[inert]");
 
 const subjectBox = () => screen.getByRole("textbox", { name: /subject/i });
@@ -41,6 +57,7 @@ describe("MouseMailWindow", () => {
   });
   afterEach(() => {
     vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
   it("shows the address the note goes to, in a field nobody can change", () => {
@@ -107,8 +124,10 @@ describe("MouseMailWindow", () => {
     mount();
     await userEvent.type(messageBox(), "smiled");
     await userEvent.click(sendButton());
-    expect(await screen.findByText(/thank you/i, undefined, SETTLED)).toBeInTheDocument();
-    expect(dialog()).toHaveTextContent(/thank you/i);
+    expect(
+      await screen.findByText(/thanks for your message/i, undefined, SETTLED),
+    ).toBeInTheDocument();
+    expect(dialog()).toHaveTextContent(/thanks for your message/i);
     expect(screen.getByText("Sent")).toBeInTheDocument();
   });
 
@@ -122,7 +141,7 @@ describe("MouseMailWindow", () => {
     // The count belongs to a surface nobody can reach right now.
     expect(screen.queryByText(new RegExp(`/ ${MESSAGE_LIMIT}`))).toBeNull();
     expect(draft(container)).not.toBeNull();
-    await screen.findByText(/thank you/i, undefined, SETTLED);
+    await screen.findByText(/thanks for your message/i, undefined, SETTLED);
   });
 
   // The draft is switched off rather than thrown away, which is the whole reason
@@ -134,7 +153,7 @@ describe("MouseMailWindow", () => {
     await screen.findByRole("dialog");
     expect(draft(container)).toContainElement(messageBox());
     expect(messageBox()).toHaveValue("the lantern flickers");
-    await screen.findByText(/thank you/i, undefined, SETTLED);
+    await screen.findByText(/thanks for your message/i, undefined, SETTLED);
   });
 
   it("closes MouseMail when the confirmation is dismissed", async () => {
@@ -142,46 +161,111 @@ describe("MouseMailWindow", () => {
     mount(null, onClose);
     await userEvent.type(messageBox(), "smiled");
     await userEvent.click(sendButton());
-    await screen.findByText(/thank you/i, undefined, SETTLED);
+    await screen.findByText(/thanks for your message/i, undefined, SETTLED);
     await userEvent.click(screen.getByRole("button", { name: /^ok$/i }));
     expect(onClose).toHaveBeenCalledOnce();
   });
 
-  it("promises a reply to the address that was left, and quotes it back", async () => {
+  it("promises a reply when an address was left", async () => {
     mount();
     await userEvent.type(messageBox(), "smiled");
     await userEvent.type(fromBox(), "a@b.com");
     await userEvent.click(sendButton());
-    await screen.findByText(/thank you/i, undefined, SETTLED);
-    expect(screen.getByText("a@b.com")).toBeInTheDocument();
-    expect(screen.getByText(/write back to/i)).toBeInTheDocument();
+    expect(await screen.findByText(/I'll usually reply/i, undefined, SETTLED)).toBeInTheDocument();
   });
 
-  it("says plainly that nothing comes back when no address was left", async () => {
+  it("promises only to read it when no address was left", async () => {
     mount();
     await userEvent.type(messageBox(), "smiled");
     await userEvent.click(sendButton());
-    await screen.findByText(/thank you/i, undefined, SETTLED);
-    expect(screen.getByText(/message in a bottle/i)).toBeInTheDocument();
-    expect(screen.queryByText(/write back to/i)).toBeNull();
+    expect(await screen.findByText(/I should see it/i, undefined, SETTLED)).toBeInTheDocument();
+    expect(screen.queryByText(/usually reply/i)).toBeNull();
   });
 
-  it("says the send failed, still offers the address, and hands the note back", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => new Response(null, { status: 400 })),
-    );
+  it("hands the note back untouched when the send fails", async () => {
+    refuseWith(400);
     const { container } = mount();
     await userEvent.type(messageBox(), "the lantern flickers");
     await userEvent.click(sendButton());
-    expect(await screen.findByText(/failed to send/i, undefined, SETTLED)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: LABEL })).toHaveAttribute("href", MAILTO);
+    await settledOnFailure();
     expect(screen.getByText("Couldn't send")).toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole("button", { name: /back to my note/i }));
+    await userEvent.click(screen.getByRole("button", { name: /^back$/i }));
     expect(screen.queryByRole("dialog")).toBeNull();
     expect(draft(container)).toBeNull();
     expect(messageBox()).toHaveValue("the lantern flickers");
+  });
+
+  describe("why it failed", () => {
+    async function attempt(status: number, prepare?: () => void) {
+      refuseWith(status);
+      mount();
+      await userEvent.type(subjectBox(), "Found a bug");
+      await userEvent.type(messageBox(), "the lantern flickers");
+      prepare?.();
+      await userEvent.click(sendButton());
+      await settledOnFailure();
+      return dialog();
+    }
+
+    it("blames the load rather than the sender on a 429", async () => {
+      const panel = await attempt(429);
+      expect(panel).toHaveTextContent(/too much at once/i);
+      expect(panel).not.toHaveTextContent(/you have sent|too many messages/i);
+    });
+
+    it("names the dwell floor when the send beat it", async () => {
+      const panel = await attempt(400);
+      expect(panel).toHaveTextContent(/couple of seconds/i);
+    });
+
+    it("says only that it was turned away once the dwell floor is clear", async () => {
+      const panel = await attempt(400, pastTheDwellFloor);
+      expect(panel).toHaveTextContent(/turned it away/i);
+      expect(panel).not.toHaveTextContent(/couple of seconds/i);
+    });
+
+    it("owns a 5xx", async () => {
+      expect(await attempt(503)).toHaveTextContent(/broke at my end/i);
+    });
+
+    it("points at the connection when nothing answers", async () => {
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(async () => {
+          throw new Error("no network");
+        }),
+      );
+      mount();
+      await userEvent.type(messageBox(), "smiled");
+      await userEvent.click(sendButton());
+      await settledOnFailure();
+      expect(dialog()).toHaveTextContent(/your connection/i);
+    });
+  });
+
+  describe("the hand-over", () => {
+    it("copies the address, subject and note as one block", async () => {
+      const writeText = vi.fn(async () => {});
+      vi.stubGlobal("navigator", { ...navigator, clipboard: { writeText } });
+      refuseWith(400);
+      mount();
+      await userEvent.type(subjectBox(), "Found a bug");
+      await userEvent.type(messageBox(), "the lantern flickers");
+      await userEvent.click(sendButton());
+      await settledOnFailure();
+
+      await userEvent.click(screen.getByRole("button", { name: /copy email contents/i }));
+      expect(writeText).toHaveBeenCalledWith(
+        `To: ${LABEL}\nSubject: Found a bug\n\nthe lantern flickers\n`,
+      );
+      expect(await screen.findByRole("button", { name: /^copied$/i })).toBeInTheDocument();
+      await waitFor(
+        () =>
+          expect(screen.getByRole("button", { name: /copy email contents/i })).toBeInTheDocument(),
+        { timeout: COPIED_MS + 1000 },
+      );
+    });
   });
 
   it("hides the honeypot from assistive tech as well as from the eye", () => {

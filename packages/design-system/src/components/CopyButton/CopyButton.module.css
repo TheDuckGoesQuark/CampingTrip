@@ -1,0 +1,18 @@
+/* One cell, both faces stacked in it: the grid takes the width of the wider,
+   so the swap costs no reflow. */
+.swap {
+  display: grid;
+  place-items: center;
+}
+
+.face {
+  grid-area: 1 / 1;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  white-space: nowrap;
+}
+
+.spent {
+  visibility: hidden;
+}
