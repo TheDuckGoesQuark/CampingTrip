@@ -1,12 +1,14 @@
 import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ReactNode } from "react";
+import { MemoryRouter, useLocation } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { contactLabel, contactMailto } from "../../data/contactEmail";
 import { cv } from "../../data/cv";
 import { MAIL_PRESETS, mailPreset, presetMailto } from "../../data/mailPresets";
 import { RenderTargetContext, type RenderTarget } from "../../prerender/renderTarget";
+import { blogPaths } from "../../routing/blogPaths";
 import { WINDOW_MAIL } from "../../routing/windows";
 import { useSceneStore } from "../../store/sceneStore";
 import { watchIntersections } from "../../test/intersection";
@@ -43,12 +45,25 @@ function invitation() {
 const MAILTO = contactMailto as string;
 const EMAIL_LABEL = contactLabel as string;
 
+const START = blogPaths.home;
+
+function PathProbe() {
+  return <span data-testid="path">{useLocation().pathname}</span>;
+}
+
 function at(target: RenderTarget, node: ReactNode) {
-  return render(<RenderTargetContext.Provider value={target}>{node}</RenderTargetContext.Provider>);
+  return render(
+    <RenderTargetContext.Provider value={target}>
+      <MemoryRouter initialEntries={[START]}>
+        {node}
+        <PathProbe />
+      </MemoryRouter>
+    </RenderTargetContext.Provider>,
+  );
 }
 
 const reason = (label: string) => screen.getByRole("link", { name: new RegExp(label, "i") });
-const openWindows = () => useSceneStore.getState().openWindows;
+const currentPath = () => screen.getByTestId("path").textContent;
 const askedFor = () => useSceneStore.getState().mailPreset;
 
 describe("ContactFooter", () => {
@@ -64,20 +79,21 @@ describe("ContactFooter", () => {
     });
 
     it("does not shimmer at anyone who has not reached it", () => {
-      render(<ContactFooter />);
+      at("live", <ContactFooter />);
       wait();
       expect(shimmer()).toBeNull();
     });
 
     it("shimmers once the visitor has settled on it", () => {
-      render(<ContactFooter />);
+      at("live", <ContactFooter />);
       observers.send(true);
       wait();
       expect(shimmer()).not.toBeNull();
     });
 
     it("shimmers again each time the invitation is followed", () => {
-      render(
+      at(
+        "live",
         <>
           <a href={`#${CONTACT_ID}`}>let me know</a>
           <ContactFooter />
@@ -149,10 +165,10 @@ describe("ContactFooter", () => {
         expect(screen.getByRole("link", { name: EMAIL_LABEL })).toHaveAttribute("href", MAILTO);
       });
 
-      it("opens no window, because there is no desktop to open one on", async () => {
+      it("goes nowhere, because there is no desktop to open a window on", async () => {
         at("static", <ContactFooter />);
         await userEvent.click(reason(mailPreset("bug").label));
-        expect(openWindows()).toEqual([]);
+        expect(currentPath()).toBe(START);
       });
     });
 
@@ -168,23 +184,22 @@ describe("ContactFooter", () => {
       it("opens MouseMail on the reason that was picked", async () => {
         at("live", <ContactFooter />);
         await userEvent.click(reason(mailPreset("work").label));
-        expect(openWindows()).toContain(WINDOW_MAIL);
+        expect(currentPath()).toBe(WINDOW_MAIL);
         expect(askedFor()).toBe("work");
       });
 
       it("opens the same window from the email address, on no template", async () => {
         at("live", <ContactFooter />);
         await userEvent.click(screen.getByRole("link", { name: EMAIL_LABEL }));
-        expect(openWindows()).toContain(WINDOW_MAIL);
+        expect(currentPath()).toBe(WINDOW_MAIL);
         expect(askedFor()).toBeNull();
       });
 
-      // `openMail` is idempotent, so a second click raises rather than stacks.
-      it("never opens a second copy", async () => {
+      it("re-aims the window a second reason is clicked on", async () => {
         at("live", <ContactFooter />);
         await userEvent.click(reason(mailPreset("bug").label));
         await userEvent.click(reason(mailPreset("feedback").label));
-        expect(openWindows().filter((id) => id === WINDOW_MAIL)).toHaveLength(1);
+        expect(currentPath()).toBe(WINDOW_MAIL);
         expect(askedFor()).toBe("feedback");
       });
 
@@ -192,7 +207,7 @@ describe("ContactFooter", () => {
         at("live", <ContactFooter />);
         const github = cv.links.find((link) => link.url.includes("github.com"));
         await userEvent.click(screen.getByRole("link", { name: github?.label as string }));
-        expect(openWindows()).toEqual([]);
+        expect(currentPath()).toBe(START);
       });
 
       // A reader holding a modifier wants a new tab or the address on the
@@ -205,7 +220,7 @@ describe("ContactFooter", () => {
         await user.keyboard("[ControlLeft>]");
         await user.click(reason(mailPreset("bug").label));
         await user.keyboard("[/ControlLeft]");
-        expect(openWindows()).toEqual([]);
+        expect(currentPath()).toBe(START);
       });
     });
   });

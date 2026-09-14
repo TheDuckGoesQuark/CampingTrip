@@ -4,9 +4,11 @@ import { blogPaths } from "./blogPaths";
 import {
   frontWindow,
   isBrowserWindow,
+  isMailWindow,
   pathForWindow,
   windowIdFor,
   WINDOW_BROWSER,
+  WINDOW_MAIL,
 } from "./windows";
 
 describe("windowIdFor", () => {
@@ -45,6 +47,16 @@ describe("pathForWindow", () => {
 
   it("gives nothing for an id that is not a blog path at all", () => {
     expect(pathForWindow("nonsense", null)).toBeNull();
+  });
+
+  // Raising and closing are both navigations, so a window whose id is not a
+  // path can never come to the front, nor be handed the address bar when the
+  // window in front of it closes.
+  it("gives MouseMail a path, so it raises and closes like every other window", () => {
+    expect(pathForWindow(WINDOW_MAIL, null)).toBe(WINDOW_MAIL);
+    expect(windowIdFor(WINDOW_MAIL)).toBe(WINDOW_MAIL);
+    expect(isMailWindow(WINDOW_MAIL)).toBe(true);
+    expect(isBrowserWindow(WINDOW_MAIL)).toBe(false);
   });
 });
 

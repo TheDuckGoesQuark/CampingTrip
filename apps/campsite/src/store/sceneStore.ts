@@ -1,7 +1,7 @@
 import { create } from "zustand";
 
 import type { PresetId } from "../data/mailPresets";
-import { frontWindow, isMailWindow, WINDOW_MAIL } from "../routing/windows";
+import { frontWindow, isMailWindow } from "../routing/windows";
 import type { SceneName, FocusTarget, OverlayKind } from "../types/scene";
 
 export interface SceneState {
@@ -34,6 +34,9 @@ export interface SceneState {
    * reason in the contact footer opens the window already on that one. Null
    * whenever they reached it by some other door, and cleared when it closes, so
    * opening MouseMail from the desktop never inherits a stranger's errand.
+   *
+   * Not in the URL beside the window's own path: a shared link that put words
+   * in a stranger's draft would be a strange thing to send.
    */
   mailPreset: PresetId | null;
   /** Page shown in the browser window, or null when it holds nothing yet. */
@@ -56,8 +59,8 @@ export interface SceneState {
   setBrowserPath: (p: string | null) => void;
   /** Opens a window if absent, and raises it either way. Idempotent. */
   raiseWindow: (id: string) => void;
-  /** Idempotent, like `raiseWindow` — a second call re-aims rather than stacks. */
-  openMail: (preset?: PresetId) => void;
+  /** Only the errand: opening the window itself is a navigation. */
+  setMailPreset: (preset: PresetId | null) => void;
   closeWindow: (id: string) => void;
   closeAllWindows: () => void;
   /** Idempotent — `applyOverlayState` calls it on every route change. */
@@ -105,13 +108,7 @@ export const useSceneStore = create<SceneState>()((set) => ({
         ? state
         : { openWindows: [...state.openWindows.filter((w) => w !== id), id] },
     ),
-  openMail: (preset) =>
-    set((state) => ({
-      mailPreset: preset ?? null,
-      ...(frontWindow(state.openWindows) === WINDOW_MAIL
-        ? {}
-        : { openWindows: [...state.openWindows.filter((w) => w !== WINDOW_MAIL), WINDOW_MAIL] }),
-    })),
+  setMailPreset: (preset) => set({ mailPreset: preset }),
   closeWindow: (id) =>
     set((state) => ({
       openWindows: state.openWindows.filter((w) => w !== id),

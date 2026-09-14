@@ -1,7 +1,10 @@
 import type { BlogPage } from "../../data/blogPages";
+import { contactLabel, contactMailto } from "../../data/contactEmail";
+import { useSceneStore } from "../../store/sceneStore";
 import AboutWindow from "./AboutWindow";
 import BinWindow from "./BinWindow";
 import BrowserWindow from "./BrowserWindow";
+import MouseMailWindow from "./MouseMailWindow";
 import PreviewWindow from "./PreviewWindow";
 import TextWindow from "./TextWindow";
 import VideoWindow from "./VideoWindow";
@@ -19,6 +22,9 @@ export interface CatosWindowProps extends WindowFrameProps {
  * adding a case here and a component, and nothing in the design system moves.
  */
 export default function CatosWindow({ page, onClose, ...frame }: CatosWindowProps) {
+  // Only MouseMail reads this, but a hook cannot live inside the switch below.
+  const preset = useSceneStore((s) => s.mailPreset);
+
   if (page.kind === "about") return <AboutWindow onClose={onClose} {...frame} />;
   if (page.kind !== "desk") return <BrowserWindow page={page} onClose={onClose} {...frame} />;
 
@@ -32,9 +38,19 @@ export default function CatosWindow({ page, onClose, ...frame }: CatosWindowProp
       return <VideoWindow item={item} onClose={onClose} {...frame} />;
     case "bin":
       return <BinWindow item={item} onClose={onClose} {...frame} />;
-    // These launch something else; neither is ever itself a desk window.
-    case "app":
     case "mail":
+      // Unreachable — `resolveBlogPage` excluded it. Here to narrow the type.
+      return contactMailto === undefined ? null : (
+        <MouseMailWindow
+          mailto={contactMailto}
+          emailLabel={contactLabel ?? contactMailto}
+          preset={preset}
+          onClose={onClose}
+          {...frame}
+        />
+      );
+    // An app launches something else; it is never itself a desk window.
+    case "app":
       return null;
   }
 }
