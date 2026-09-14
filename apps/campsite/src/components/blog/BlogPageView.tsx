@@ -7,6 +7,8 @@ import PostPage from "./PostPage";
 import ProjectPage from "./ProjectPage";
 import ToolPage from "./ToolPage";
 
+import styles from "./blog.module.css";
+
 /**
  * Renders whichever page the browser's active tab names. The one place that maps
  * a resolved `BlogPage` onto a component, so the overlay stays about chrome.
@@ -14,7 +16,9 @@ import ToolPage from "./ToolPage";
 export default function BlogPageView({ page }: { page: BrowserPage }) {
   return (
     <>
-      <PageBody page={page} />
+      <div className={styles.page}>
+        <PageBody page={page} />
+      </div>
       <ContactFooter />
     </>
   );

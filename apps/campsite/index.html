@@ -25,6 +25,20 @@
       html:not(.js) body {
         background: var(--brand-bg, #f4f1e8);
       }
+      /* Without the tent the reader is the whole document, and its footer
+         belongs on the viewport's floor. Every box between body and reader is a
+         column that passes the height on; stop at any one and it stops there. */
+      html:not(.js) body {
+        min-height: 100dvh;
+        display: flex;
+        flex-direction: column;
+      }
+      html:not(.js) body > .jc-brand,
+      html:not(.js) #reader {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
       /* The inset is published under the same names `Window.Body` uses, so a
          full-bleed banner reaches this document's edges too. */
       #reader {
