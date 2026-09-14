@@ -1,0 +1,84 @@
+/* `steps(20, …)` twice and one 5% gradient stop, repeated rather than shared:
+   `steps()` needs an integer where the gradient needs a percentage, and CSS can
+   derive neither from the other — nor either of them from the duration. */
+
+.transfer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-s);
+  width: 100%;
+}
+
+.wire {
+  display: flex;
+  align-items: center;
+  gap: var(--space-s);
+  color: var(--brand-text-muted);
+}
+
+.span {
+  position: relative;
+  flex: 1;
+  height: 2px;
+  background-image: repeating-linear-gradient(90deg, currentColor 0 2px, transparent 2px 9px);
+}
+
+.parcel {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translate(-50%, -50%);
+  color: var(--brand-solid);
+  animation: transferParcel var(--transfer-duration, 1600ms) steps(20, end) forwards;
+}
+
+@keyframes transferParcel {
+  to {
+    left: 100%;
+  }
+}
+
+.ends {
+  display: flex;
+  justify-content: space-between;
+}
+
+.track {
+  position: relative;
+  height: 16px;
+  background: var(--brand-surface-sunken);
+  border: 2px solid var(--brand-border-strong);
+}
+
+/* Full width always, revealed by clipping rather than grown by width: the
+   gradient is sized off this element's own box, so a growing box would squash
+   its own blocks instead of uncovering them. */
+.blocks {
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    90deg,
+    var(--brand-solid) 0 3.5%,
+    transparent 3.5% 5%
+  );
+  clip-path: inset(0 100% 0 0);
+  animation: transferFill var(--transfer-duration, 1600ms) steps(20, end) forwards;
+}
+
+@keyframes transferFill {
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* Forced colours as well as reduced motion: that mode strips the blocks, which
+   are a background, leaving an empty trough that reads as a stalled transfer.
+   The caption stays either way. */
+@media (prefers-reduced-motion: reduce), (forced-colors: active) {
+  .wire,
+  .ends,
+  .track {
+    display: none;
+  }
+}

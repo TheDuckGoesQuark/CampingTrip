@@ -6,6 +6,23 @@ All planned and deferred work, organised by priority.
 
 ## Next Up
 
+### Contact — nothing limits how often one sender may post
+
+`/api/contact` is public and unauthenticated, and the only ceiling anywhere is
+`reserved_concurrent_executions = 2` on the Lambda. That bounds the bill, which
+was the point, but it counts messages in flight across everyone rather than per
+sender: one script can post to the inbox as fast as it likes, serially, forever.
+The honeypot and the dwell floor stop the naive ones and nothing else.
+
+The cost is a flooded inbox rather than a large bill, so it is not urgent. Where
+the limiter would live is the awkward part: Caddy's `rate_limit` is not in the
+standard binary, so that route means maintaining a custom Caddy build, and doing
+it in the Lambda means state for what is currently a stateless function.
+
+Worth deciding before advertising the address more widely. MouseMail's `busy`
+copy says "handling too much at once" rather than "you have sent too many" — if
+a real per-sender limit lands, that wording should change with it.
+
 ### Infra — a Terraform run can break the deploy in the same push
 
 `terraform.yml` and `deploy.yml` both trigger on push to main and run

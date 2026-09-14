@@ -1,114 +1,133 @@
-import { Button, Text } from "@jordanscamp/ds";
-import { useEffect, useId, useRef } from "react";
+import { AlertDialog, Button, LoadingDialog, Text, TransferProgress } from "@jordanscamp/ds";
+import { Check, CheckCircle, Copy, WarningCircle } from "@jordanscamp/ds/icons";
+import { useEffect, useRef, useState } from "react";
 
-import TransferProgress from "./TransferProgress";
-import type { Compose } from "./useCompose";
+import { copyToClipboard, draftText } from "./draftText";
+import { type Compose, type Failure, SEND_FLOOR_MS } from "./useCompose";
 
 import styles from "./contact.module.css";
 
 export interface SendDialogProps {
   compose: Compose;
-  mailto: string;
   emailLabel: string;
   /** Closes MouseMail, not just this dialog. */
   onClose: () => void;
 }
 
-const TITLE: Record<string, string> = {
-  sending: "Sending",
-  sent: "Message sent",
-  failed: "Not sent",
-};
+const MARK_PX = 28;
+const GLYPH_PX = 14;
 
 /**
- * Covers the window's page rather than the viewport, so the desktop behind stays
- * live — a file-copy dialog blocked its own application, not the machine. Which
- * is also why focus is moved here on open but deliberately not trapped: there is
- * nowhere it would be wrong to go.
+ * Nothing rate-limits one sender, so no wording may imply it does. Retrying is
+ * offered in the sentence, not a button: "Back to my note" leads to a live Send.
  */
-export default function SendDialog({ compose, mailto, emailLabel, onClose }: SendDialogProps) {
-  const titleId = useId();
-  const panel = useRef<HTMLDivElement>(null);
+const EXPLANATION: Record<Failure, string> = {
+  busy: "The mailbox was handling too much at once. Worth trying again in a moment.",
+  hasty:
+    "That went off within a couple of seconds of the window opening, which reads as a bot. Try again and it should go through.",
+  refused: "The mailbox turned it away, and I can't say why without telling the bots too.",
+  server: "Something broke at my end, not yours.",
+  offline: "Nothing came back at all — worth a look at your connection.",
+};
 
-  // Send was the last thing focused and is inert now, so without this focus
-  // lands on the body and a keyboard reader loses their place.
-  useEffect(() => {
-    panel.current?.focus();
-  }, [compose.phase]);
-
-  return (
-    <div className={styles.scrim}>
-      <div
-        className={styles.dialog}
-        role="dialog"
-        aria-labelledby={titleId}
-        tabIndex={-1}
-        ref={panel}
-      >
-        <div className={styles.dialogTitle}>
-          <Text variant="label" as="span" id={titleId}>
-            {TITLE[compose.phase]}
-          </Text>
-        </div>
-        <div className={styles.dialogBody}>
-          <Outcome compose={compose} mailto={mailto} emailLabel={emailLabel} />
-        </div>
-        {compose.phase === "sending" ? null : (
-          <div className={styles.dialogActions}>
-            {compose.phase === "sent" ? (
-              <Button variant="default" size="sm" onClick={onClose}>
-                OK
-              </Button>
-            ) : (
-              <Button variant="default" size="sm" onClick={compose.resume}>
-                Back to my note
-              </Button>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function Outcome({
-  compose,
-  mailto,
-  emailLabel,
-}: {
-  compose: Compose;
-  mailto: string;
-  emailLabel: string;
-}) {
-  if (compose.phase === "sending") return <TransferProgress />;
-
-  if (compose.phase === "failed") {
+export default function SendDialog({ compose, emailLabel, onClose }: SendDialogProps) {
+  if (compose.phase === "sending") {
     return (
-      <>
-        <Text>The message failed to send. Your note is still behind this, untouched.</Text>
-        <Text>
-          My inbox works, if you would rather not wait: <a href={mailto}>{emailLabel}</a>
-        </Text>
-      </>
+      <LoadingDialog title="Sending">
+        <TransferProgress caption="Transferring… 1 of 1 message" durationMs={SEND_FLOOR_MS} />
+      </LoadingDialog>
     );
   }
 
-  const replyTo = compose.email.trim();
+  if (compose.phase === "failed") {
+    return <Failed compose={compose} emailLabel={emailLabel} />;
+  }
+
   return (
-    <>
-      <Text>Off it goes. Thank you — it genuinely made my day that you bothered.</Text>
-      {replyTo === "" ? (
+    <AlertDialog>
+      <AlertDialog.Title>Message sent</AlertDialog.Title>
+      <AlertDialog.Icon>
+        <CheckCircle size={MARK_PX} weight="fill" />
+      </AlertDialog.Icon>
+      <AlertDialog.Body>
         <Text>
-          No return address on this one, so it&apos;s a message in a bottle: I&apos;ll read it, and
-          you&apos;ll never hear a word back. Honestly, that&apos;s a perfectly good way to send
-          one.
+          {compose.email.trim() === ""
+            ? "Thanks for your message, I should see it within a few days!"
+            : "Thanks for your message, I'll usually reply within a few days!"}
         </Text>
-      ) : (
-        <Text>
-          You left me somewhere to write back to, so I will: <strong>{replyTo}</strong>. Give me a
-          few days — I&apos;m slow, but I do answer.
-        </Text>
-      )}
-    </>
+      </AlertDialog.Body>
+      <AlertDialog.Actions>
+        <Button variant="default" size="sm" onClick={onClose}>
+          OK
+        </Button>
+      </AlertDialog.Actions>
+    </AlertDialog>
+  );
+}
+
+/** Long enough to read "Copied", short enough that a second copy still reads. */
+export const COPIED_MS = 2000;
+
+function Failed({ compose, emailLabel }: { compose: Compose; emailLabel: string }) {
+  const [handOver, setHandOver] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const block = useRef<HTMLTextAreaElement>(null);
+  const text = draftText(emailLabel, compose.subject, compose.message);
+
+  // This exists only because the clipboard refused, so a keyboard copy is next.
+  useEffect(() => {
+    block.current?.select();
+  }, [handOver]);
+
+  useEffect(() => {
+    if (!copied) return;
+    const timer = setTimeout(() => setCopied(false), COPIED_MS);
+    return () => clearTimeout(timer);
+  }, [copied]);
+
+  async function copy() {
+    if (await copyToClipboard(text)) {
+      setCopied(true);
+      return;
+    }
+    setHandOver(true);
+  }
+
+  return (
+    <AlertDialog>
+      <AlertDialog.Title>Not sent</AlertDialog.Title>
+      <AlertDialog.Icon>
+        <WarningCircle size={MARK_PX} weight="fill" />
+      </AlertDialog.Icon>
+      <AlertDialog.Body>
+        <Text>{compose.failure === undefined ? "" : EXPLANATION[compose.failure]}</Text>
+        {handOver && (
+          <>
+            <Text variant="body-sm">Your browser would not let me reach the clipboard:</Text>
+            <textarea
+              className={styles.handOverText}
+              aria-label="Your message, to copy"
+              readOnly
+              value={text}
+              ref={block}
+              rows={6}
+            />
+          </>
+        )}
+      </AlertDialog.Body>
+      <AlertDialog.Actions>
+        <Button variant="default" size="sm" onClick={compose.resume}>
+          Back
+        </Button>
+        <Button variant="solid" size="sm" onClick={copy}>
+          {copied ? (
+            <Check size={GLYPH_PX} weight="bold" aria-hidden />
+          ) : (
+            <Copy size={GLYPH_PX} weight="bold" aria-hidden />
+          )}
+          {copied ? "Copied" : "Copy email contents"}
+        </Button>
+      </AlertDialog.Actions>
+    </AlertDialog>
   );
 }

@@ -7,7 +7,6 @@ import { type Phase, useCompose } from "../blog/contact/useCompose";
 import type { WindowFrameProps } from "./windowFrame";
 
 export interface MouseMailWindowProps extends WindowFrameProps {
-  mailto: string;
   emailLabel: string;
   preset?: PresetId | null;
   onClose: () => void;
@@ -37,7 +36,6 @@ const STATUS: Record<Phase, string> = {
  * it: the frame is as much part of this form as the fields are.
  */
 export default function MouseMailWindow({
-  mailto,
   emailLabel,
   preset = null,
   onClose,
@@ -51,12 +49,7 @@ export default function MouseMailWindow({
     <Window size="lg" {...frame}>
       <Window.TitleBar title="MouseMail" onClose={onClose} />
       <Window.Body>
-        <MouseMailForm
-          compose={compose}
-          mailto={mailto}
-          emailLabel={emailLabel}
-          onClose={onClose}
-        />
+        <MouseMailForm compose={compose} emailLabel={emailLabel} onClose={onClose} />
       </Window.Body>
       <Window.StatusBar>
         <Text variant="label" tone="muted" as="span">

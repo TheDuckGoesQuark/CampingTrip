@@ -5,9 +5,9 @@ import { defineConfig } from "vitest/config";
 /**
  * Answers `/api/contact` locally, so MouseMail can be driven without a deployed
  * endpoint. Off unless `MOCK_CONTACT` is set, and `apply: "serve"` besides, so
- * no build can carry it. `fail` answers 400 — the only way to reach the failure
- * screen without breaking something real; `MOCK_CONTACT_DELAY` sets how long it
- * takes to answer.
+ * no build can carry it. `fail` answers 400 and a bare status code answers
+ * itself — the failure copy turns on which one, so 429 and 503 have to be
+ * reachable too. `MOCK_CONTACT_DELAY` sets how long it takes to answer.
  *
  * It enforces neither the dwell nor the honeypot, so a send accepted here says
  * nothing about what the real endpoint would accept.
@@ -25,9 +25,9 @@ function mockContact(): Plugin {
         request.on("data", (chunk) => (body += chunk));
         request.on("end", () => {
           setTimeout(() => {
-            const failed = mode === "fail";
-            console.log(`[mock-contact] ${failed ? "400" : "204"} ← ${body}`);
-            response.statusCode = failed ? 400 : 204;
+            const status = mode === "fail" ? 400 : Number(mode) || 204;
+            console.log(`[mock-contact] ${status} ← ${body}`);
+            response.statusCode = status;
             response.end();
           }, delay);
         });

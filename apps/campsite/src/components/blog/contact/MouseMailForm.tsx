@@ -11,7 +11,6 @@ import styles from "./contact.module.css";
 
 export interface MouseMailFormProps {
   compose: Compose;
-  mailto: string;
   emailLabel: string;
   /** Closing MouseMail is how a finished send ends. */
   onClose: () => void;
@@ -19,12 +18,7 @@ export interface MouseMailFormProps {
 
 const GLYPH_PX = 14;
 
-export default function MouseMailForm({
-  compose,
-  mailto,
-  emailLabel,
-  onClose,
-}: MouseMailFormProps) {
+export default function MouseMailForm({ compose, emailLabel, onClose }: MouseMailFormProps) {
   const templatesId = useId();
   const errorId = useId();
   const busy = compose.phase !== "editing";
@@ -124,9 +118,7 @@ export default function MouseMailForm({
         />
       </div>
 
-      {busy && (
-        <SendDialog compose={compose} mailto={mailto} emailLabel={emailLabel} onClose={onClose} />
-      )}
+      {busy && <SendDialog compose={compose} emailLabel={emailLabel} onClose={onClose} />}
     </div>
   );
 }

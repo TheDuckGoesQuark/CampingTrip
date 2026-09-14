@@ -36,3 +36,9 @@ export {
   type MenuBarItemProps,
 } from "./components/desktop/MenuBar";
 export { DesktopIcon, type DesktopIconProps } from "./components/desktop/DesktopIcon";
+export { AlertDialog, type AlertDialogProps } from "./components/desktop/AlertDialog";
+export { LoadingDialog, type LoadingDialogProps } from "./components/desktop/LoadingDialog";
+export {
+  TransferProgress,
+  type TransferProgressProps,
+} from "./components/desktop/TransferProgress";

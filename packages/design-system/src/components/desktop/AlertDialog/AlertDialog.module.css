@@ -1,0 +1,22 @@
+.layout {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-m);
+}
+
+/* Fixed rather than shrink-to-fit, so a one-line body and a five-line one put
+   their text on the same left edge. */
+.icon {
+  flex: none;
+  display: flex;
+  line-height: 0;
+  color: var(--brand-solid);
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+}

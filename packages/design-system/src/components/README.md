@@ -80,6 +80,25 @@ Add the named export to [`../index.ts`](../index.ts).
     frame scopes the radius tokens to `--radius-none`, so brand components square
     off inside it without each call site opting in.
 
+  - **AlertDialog** — the outcome of something the person just did: an icon
+    beside an account of it, and what they can do next. Compound slots
+    (`AlertDialog.Title` / `.Icon` / `.Body` / `.Actions`) matched by type, so
+    order does not matter. The icon is always brand green and `aria-hidden`:
+    what happened is carried by the title, the body and the glyph's shape,
+    never by colour.
+  - **LoadingDialog** — the same frame with no actions, for a wait the person
+    cannot act on. `AlertDialog` is what replaces it when the work finishes.
+  - **TransferProgress** — a file-copy diagram of that era, for a
+    `LoadingDialog` body. `caption` is the only part announced; the diagram is
+    `aria-hidden`, and hidden outright under reduced motion or forced colours.
+    `durationMs` should match how long the caller holds the wait open.
+
+  Both dialogs share an unexported `DialogFrame`, so their chrome cannot drift.
+  Unlike `Modal` they do **not** portal and do **not** trap focus: they cover
+  their nearest positioned ancestor, the way a dialog of that era blocked its own
+  application rather than the machine. **A call site must supply
+  `position: relative`**, or the scrim escapes to the page.
+
 ## Styling
 
 - `cva()` maps variants → CSS-Module class names; the module defines them against

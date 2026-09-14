@@ -1,0 +1,54 @@
+.scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-l);
+  background: var(--brand-scrim);
+}
+
+/* Not built from `Window`: that component sizes itself as a share of the
+   viewport and earns it by being draggable, resizable and maximisable, none of
+   which a dialog does. */
+.dialog {
+  width: 100%;
+  max-width: 26rem;
+  background: var(--brand-surface-raised);
+  border: 2px solid var(--brand-border-strong);
+  box-shadow: var(--shadow-hard-3);
+
+  /* Scoped here rather than inherited from `Window`, so the dialog is hard-edged
+     wherever it is put — a story included. */
+  --radius-s: var(--radius-none);
+  --radius-m: var(--radius-none);
+  --radius-l: var(--radius-none);
+  --radius-xl: var(--radius-none);
+}
+
+.dialog:focus-visible {
+  outline: 2px solid var(--brand-focus);
+  outline-offset: 2px;
+}
+
+.title {
+  padding: var(--space-xs) var(--space-s);
+  background: var(--brand-subtle);
+  border-bottom: 2px solid var(--brand-border-strong);
+  box-shadow: var(--shadow-bevel-out);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+  padding: var(--space-m);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-s);
+  padding: 0 var(--space-m) var(--space-m);
+}
