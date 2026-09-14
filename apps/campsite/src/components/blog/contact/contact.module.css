@@ -105,16 +105,3 @@
   color: var(--brand-danger);
   background: var(--brand-surface-raised);
 }
-
-.handOverText {
-  width: 100%;
-  box-sizing: border-box;
-  padding: var(--space-s);
-  border: 2px solid var(--brand-border-strong);
-  background: var(--brand-surface-sunken);
-  color: var(--brand-text);
-  font-family: var(--font-mono);
-  font-size: var(--text-body-sm-size);
-  line-height: var(--text-body-sm-lh);
-  resize: vertical;
-}

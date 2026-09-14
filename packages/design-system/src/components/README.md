@@ -25,6 +25,10 @@ Add the named export to [`../index.ts`](../index.ts).
 - **Text** — owns the brand type scale; replaces Mantine `Text` + `Title`.
   `variant` (title-1..4 / body-lg/body/body-sm / label) × `tone` × `align`;
   titles render as `h1`–`h4` by default (override with `as`).
+- **CopyButton** — puts `value` on the clipboard and confirms it, then offers
+  the copy again. Its own component rather than a `copied` prop on `Button`:
+  both labels are laid out at once with the spent one hidden, so the button
+  holds one width across the swap and whatever sits beside it cannot jump.
 - **Badge** — status/label pill, never a control. `variant` (light/solid) × `tone`.
 - **Tag** — topic label, parallel to `Badge` rather than a variant of it: a Tag is
   routinely a link (`render`) and carries a `selected` state and an optional

@@ -15,6 +15,7 @@ export { Icon, ICON_NAMES, type IconProps, type IconName } from "./components/Ic
 export { TextField, type TextFieldProps } from "./components/form/TextField";
 export { TextArea, type TextAreaProps } from "./components/form/TextArea";
 export { Card, type CardProps } from "./components/Card";
+export { CopyButton, COPIED_MS, type CopyButtonProps } from "./components/CopyButton";
 export { Tag, type TagProps } from "./components/Tag";
 export { Tile, type TileProps } from "./components/Tile";
 

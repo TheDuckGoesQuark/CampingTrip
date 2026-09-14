@@ -1,11 +1,15 @@
-import { AlertDialog, Button, LoadingDialog, Text, TransferProgress } from "@jordanscamp/ds";
-import { Check, CheckCircle, Copy, WarningCircle } from "@jordanscamp/ds/icons";
-import { useEffect, useRef, useState } from "react";
+import {
+  AlertDialog,
+  Button,
+  CopyButton,
+  LoadingDialog,
+  Text,
+  TransferProgress,
+} from "@jordanscamp/ds";
+import { CheckCircle, WarningCircle } from "@jordanscamp/ds/icons";
 
-import { copyToClipboard, draftText } from "./draftText";
+import { draftText } from "./draftText";
 import { type Compose, type Failure, SEND_FLOOR_MS } from "./useCompose";
-
-import styles from "./contact.module.css";
 
 export interface SendDialogProps {
   compose: Compose;
@@ -15,7 +19,6 @@ export interface SendDialogProps {
 }
 
 const MARK_PX = 28;
-const GLYPH_PX = 14;
 
 /**
  * Nothing rate-limits one sender, so no wording may imply it does. Retrying is
@@ -65,33 +68,8 @@ export default function SendDialog({ compose, emailLabel, onClose }: SendDialogP
   );
 }
 
-/** Long enough to read "Copied", short enough that a second copy still reads. */
-export const COPIED_MS = 2000;
-
 function Failed({ compose, emailLabel }: { compose: Compose; emailLabel: string }) {
-  const [handOver, setHandOver] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const block = useRef<HTMLTextAreaElement>(null);
   const text = draftText(emailLabel, compose.subject, compose.message);
-
-  // This exists only because the clipboard refused, so a keyboard copy is next.
-  useEffect(() => {
-    block.current?.select();
-  }, [handOver]);
-
-  useEffect(() => {
-    if (!copied) return;
-    const timer = setTimeout(() => setCopied(false), COPIED_MS);
-    return () => clearTimeout(timer);
-  }, [copied]);
-
-  async function copy() {
-    if (await copyToClipboard(text)) {
-      setCopied(true);
-      return;
-    }
-    setHandOver(true);
-  }
 
   return (
     <AlertDialog>
@@ -101,32 +79,15 @@ function Failed({ compose, emailLabel }: { compose: Compose; emailLabel: string 
       </AlertDialog.Icon>
       <AlertDialog.Body>
         <Text>{compose.failure === undefined ? "" : EXPLANATION[compose.failure]}</Text>
-        {handOver && (
-          <>
-            <Text variant="body-sm">Your browser would not let me reach the clipboard:</Text>
-            <textarea
-              className={styles.handOverText}
-              aria-label="Your message, to copy"
-              readOnly
-              value={text}
-              ref={block}
-              rows={6}
-            />
-          </>
-        )}
+        <Text variant="body-sm" tone="muted">
+          Alternatively, copy everything and send from your own email client.
+        </Text>
       </AlertDialog.Body>
       <AlertDialog.Actions>
         <Button variant="default" size="sm" onClick={compose.resume}>
           Back
         </Button>
-        <Button variant="solid" size="sm" onClick={copy}>
-          {copied ? (
-            <Check size={GLYPH_PX} weight="bold" aria-hidden />
-          ) : (
-            <Copy size={GLYPH_PX} weight="bold" aria-hidden />
-          )}
-          {copied ? "Copied" : "Copy email contents"}
-        </Button>
+        <CopyButton value={text} label="Copy email contents" size="sm" />
       </AlertDialog.Actions>
     </AlertDialog>
   );

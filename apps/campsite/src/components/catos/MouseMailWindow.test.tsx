@@ -1,10 +1,9 @@
-import { BrandProvider } from "@jordanscamp/ds";
+import { BrandProvider, COPIED_MS } from "@jordanscamp/ds";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { mailPreset, type PresetId } from "../../data/mailPresets";
-import { COPIED_MS } from "../blog/contact/SendDialog";
 import { MESSAGE_LIMIT, MIN_DWELL_MS } from "../blog/contact/submitFeedback";
 import { SEND_FLOOR_MS } from "../blog/contact/useCompose";
 import MouseMailWindow from "./MouseMailWindow";
@@ -266,27 +265,6 @@ describe("MouseMailWindow", () => {
           expect(screen.getByRole("button", { name: /copy email contents/i })).toBeInTheDocument(),
         { timeout: COPIED_MS + 1000 },
       );
-    });
-
-    it("shows the text to copy by hand when the clipboard refuses", async () => {
-      vi.stubGlobal("navigator", {
-        ...navigator,
-        clipboard: {
-          writeText: async () => {
-            throw new Error("denied");
-          },
-        },
-      });
-      refuseWith(400);
-      mount();
-      await userEvent.type(messageBox(), "the lantern flickers");
-      await userEvent.click(sendButton());
-      await settledOnFailure();
-
-      await userEvent.click(screen.getByRole("button", { name: /copy email contents/i }));
-      const block = await screen.findByRole("textbox", { name: /to copy/i });
-      expect(block).toHaveValue(`To: ${LABEL}\n\nthe lantern flickers\n`);
-      expect(screen.queryByRole("button", { name: /^copied$/i })).toBeNull();
     });
   });
 

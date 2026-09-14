@@ -1,8 +1,9 @@
-import { CheckCircle, Copy, Info, WarningCircle } from "@phosphor-icons/react";
+import { CheckCircle, Info, WarningCircle } from "@phosphor-icons/react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import type { ReactNode } from "react";
 
 import { Button } from "../../Button";
+import { CopyButton } from "../../CopyButton";
 import { Text } from "../../Text";
 import { AlertDialog } from "./AlertDialog";
 
@@ -23,7 +24,6 @@ export default meta;
 type Story = StoryObj<typeof AlertDialog>;
 
 const MARK_PX = 28;
-const GLYPH_PX = 14;
 
 /** Title, body and one way out — no icon. */
 export const Default: Story = {
@@ -75,10 +75,7 @@ export const Failure: Story = {
         <Button variant="default" size="sm">
           Back
         </Button>
-        <Button variant="solid" size="sm">
-          <Copy size={GLYPH_PX} weight="bold" aria-hidden />
-          Copy email contents
-        </Button>
+        <CopyButton value="To: someone@example.com" label="Copy email contents" size="sm" />
       </AlertDialog.Actions>
     </AlertDialog>
   ),
@@ -187,10 +184,7 @@ export const AllVariants: Story = {
             <Button variant="default" size="sm">
               Back
             </Button>
-            <Button variant="solid" size="sm">
-              <Copy size={GLYPH_PX} weight="bold" aria-hidden />
-              Copy email contents
-            </Button>
+            <CopyButton value="To: someone@example.com" label="Copy email contents" size="sm" />
           </AlertDialog.Actions>
         </AlertDialog>
       </Cell>
