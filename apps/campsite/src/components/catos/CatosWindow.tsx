@@ -42,7 +42,6 @@ export default function CatosWindow({ page, onClose, ...frame }: CatosWindowProp
       // Unreachable — `resolveBlogPage` excluded it. Here to narrow the type.
       return contactMailto === undefined ? null : (
         <MouseMailWindow
-          mailto={contactMailto}
           emailLabel={contactLabel ?? contactMailto}
           preset={preset}
           onClose={onClose}
