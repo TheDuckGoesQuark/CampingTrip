@@ -69,6 +69,7 @@
 }
 
 .message {
+  composes: classic from "@jordanscamp/ds/scrollbars.module.css";
   flex: 1;
   min-height: 0;
   width: 100%;
