@@ -73,7 +73,7 @@ describe("MouseMailWindow", () => {
     expect(pill(mailPreset("work").label)).toHaveAttribute("aria-pressed", "true");
   });
 
-  it("sends from the toolbar, subject and all", async () => {
+  it("sends what was typed, subject and all", async () => {
     mount();
     await userEvent.click(pill(mailPreset("bug").label));
     await userEvent.type(messageBox(), "the lantern flickers");

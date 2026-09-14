@@ -1,5 +1,4 @@
-import { Button, Text, Window } from "@jordanscamp/ds";
-import { PaperPlaneTilt } from "@jordanscamp/ds/icons";
+import { Text, Window } from "@jordanscamp/ds";
 
 import type { PresetId } from "../../data/mailPresets";
 import MouseMailForm from "../blog/contact/MouseMailForm";
@@ -33,9 +32,9 @@ const STATUS: Record<Phase, string> = {
  * the desktop's to handle — which it already does for every window — rather than
  * Base UI's.
  *
- * Send is a toolbar button and the phase a status-bar line, which is why the
- * compose state is held out here and handed to the page: the frame is as much
- * part of this form as the fields are.
+ * The phase and the character count are status-bar lines, which is why the
+ * compose state is held out here and handed to the page rather than owned by
+ * it: the frame is as much part of this form as the fields are.
  */
 export default function MouseMailWindow({
   mailto,
@@ -50,19 +49,6 @@ export default function MouseMailWindow({
   return (
     <Window size="lg" {...frame}>
       <Window.TitleBar title="MouseMail" onClose={onClose} />
-      {composing && (
-        <Window.Toolbar>
-          <Button
-            variant="default"
-            size="sm"
-            onClick={compose.send}
-            disabled={compose.phase === "sending"}
-          >
-            <PaperPlaneTilt size={16} weight="bold" aria-hidden />
-            {compose.phase === "sending" ? "Sending…" : "Send"}
-          </Button>
-        </Window.Toolbar>
-      )}
       <Window.Body>
         <MouseMailForm compose={compose} mailto={mailto} emailLabel={emailLabel} />
       </Window.Body>

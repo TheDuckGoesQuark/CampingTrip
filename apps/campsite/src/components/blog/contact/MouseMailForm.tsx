@@ -1,5 +1,5 @@
-import { Tag, Text, TextField } from "@jordanscamp/ds";
-import type { Icon } from "@jordanscamp/ds/icons";
+import { Button, Tag, Text, TextField } from "@jordanscamp/ds";
+import { type Icon, PaperPlaneTilt } from "@jordanscamp/ds/icons";
 import { useId } from "react";
 
 import { MAIL_PRESETS } from "../../../data/mailPresets";
@@ -49,15 +49,10 @@ export default function MouseMailForm({ compose, mailto, emailLabel }: MouseMail
           selectable. Read-only rather than disabled: nothing here is switched off.
         */}
         <TextField label="To" value={emailLabel} readOnly />
-        {/*
-          One per row. Side by side saves a line, but only one carries a hint, so
-          the two wells would sit at different heights.
-        */}
         <TextField
           label="From"
           type="email"
-          optional
-          description="Only so I can reply — leave it blank and I won't."
+          optional="optional — only so I can reply"
           value={compose.email}
           onValueChange={compose.setEmail}
           disabled={sending}
@@ -100,6 +95,12 @@ export default function MouseMailForm({ compose, mailto, emailLabel }: MouseMail
             </li>
           ))}
         </ul>
+        <div className={styles.send}>
+          <Button variant="default" size="sm" onClick={compose.send} disabled={sending}>
+            <PaperPlaneTilt size={GLYPH_PX} weight="bold" aria-hidden />
+            {sending ? "Sending…" : "Send"}
+          </Button>
+        </div>
       </div>
 
       <div className={styles.surface}>

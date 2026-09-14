@@ -16,8 +16,8 @@ History of what's been built, key decisions made, and what was deferred along th
   called "here". It is now four reasons — Bug report, Feedback, Working together,
   Other — in a column at the footer's right edge, each one a template.
 - **MouseMail composes rather than collects.** A To/From/Subject header band over
-  a writing surface, Send in the toolbar, the phase and the character count in
-  the status bar. The frame grew to `lg` to hold it.
+  a writing surface, Send at the far end of the template bar, the phase and the
+  character count in the status bar. The frame grew to `lg` to hold it.
 - **Templates prefill both fields.** Picking a reason writes that template's
   subject and body. The rail downstairs and the pill row upstairs are one list
   (`data/mailPresets.ts`), so the reason clicked is the pill selected.
@@ -47,6 +47,13 @@ History of what's been built, key decisions made, and what was deferred along th
   cells carry a 44px floor there, being aimed at with a thumb as often as a
   pointer.
 
+**Also fixed**:
+
+- `FieldShell` ran the optional marker onto the end of the label in the
+  accessible name — "Emailoptional" — because the flex `gap` between them is
+  layout rather than text. A whitespace child fixes it and, being whitespace-only
+  in a flex container, changes nothing on screen.
+
 **Deferred**:
 
 - Declaring the footer a container also makes it what `--text-title-1-size`'s
@@ -54,9 +61,6 @@ History of what's been built, key decisions made, and what was deferred along th
   the page around it. Inside a window the two are within a pixel of each other;
   on the open page the heading is smaller than it was. Left as is — a heading
   sized to its own band is the more defensible of the two.
-- Send is the toolbar's only control. A lone button in a bar built for several
-  reads thin, and the era's answer — a row of mode toggles beside it — needs
-  modes worth having.
 
 ## The Caddyfile exists once
 

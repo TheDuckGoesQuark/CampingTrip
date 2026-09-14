@@ -45,6 +45,12 @@
   gap: var(--space-xs);
 }
 
+/* The one action in the bar, held at the end away from the templates so it is
+   never the thing a reader reaches for by accident. */
+.send {
+  margin-inline-start: auto;
+}
+
 .surface {
   flex: 1;
   min-height: 0;

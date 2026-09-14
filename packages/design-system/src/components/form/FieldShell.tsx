@@ -21,8 +21,12 @@ export interface FieldShellProps {
    * `aria-describedby` wiring it implies.
    */
   error?: string;
-  /** Marks the label, and nothing else — enforcement is the caller's. */
-  optional?: boolean;
+  /**
+   * Marks the label, and nothing else — enforcement is the caller's. A string
+   * replaces the word, for a field whose reason for being optional is shorter
+   * said than left to a hint below the label.
+   */
+  optional?: boolean | string;
   disabled?: boolean;
   /** Identifies the field on submit. */
   name?: string;
@@ -53,7 +57,14 @@ export function FieldShell({
     >
       <Field.Label className={styles.label}>
         {label}
-        {optional ? <span className={styles.optional}>optional</span> : null}
+        {/* The gap is layout, and layout is not text: without a space here the
+            accessible name runs the marker onto the end of the label. A flex
+            container drops a whitespace-only child, so this costs nothing on
+            screen. */}
+        {optional ? " " : null}
+        {optional ? (
+          <span className={styles.optional}>{optional === true ? "optional" : optional}</span>
+        ) : null}
       </Field.Label>
       {description === undefined ? null : (
         <Field.Description className={styles.description}>{description}</Field.Description>
