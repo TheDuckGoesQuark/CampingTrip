@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { useState } from "react";
 import { expect, userEvent, waitFor, within } from "storybook/test";
 
 import { Icon } from "../../Icon";
@@ -84,6 +85,31 @@ export const WithPanel: Story = {
   },
 };
 
+function AppearanceMenu() {
+  const [appearance, setAppearance] = useState("system");
+  return (
+    <MenuBar.Menu ariaLabel="Appearance" label={<Icon name="cat" size="md" />}>
+      <MenuBar.RadioGroup ariaLabel="Appearance" value={appearance} onValueChange={setAppearance}>
+        <MenuBar.RadioItem value="light">Light</MenuBar.RadioItem>
+        <MenuBar.RadioItem value="dark">Dark</MenuBar.RadioItem>
+        <MenuBar.RadioItem value="system">System</MenuBar.RadioItem>
+      </MenuBar.RadioGroup>
+    </MenuBar.Menu>
+  );
+}
+
+export const WithRadioGroup: Story = {
+  args: {
+    left: <Text variant="body-sm">CatOS</Text>,
+    right: (
+      <>
+        <AppearanceMenu />
+        <Text variant="body-sm">9:41</Text>
+      </>
+    ),
+  },
+};
+
 export const Interactive: Story = {
   ...WithPanel,
   play: async ({ canvasElement, step }) => {
@@ -113,6 +139,7 @@ export const AllVariants: Story = {
         <MenuBar.Action ariaLabel="Touch grass" title="Touch grass">
           <Icon name="door-arrow" size="md" />
         </MenuBar.Action>
+        <AppearanceMenu />
         {WithPanel.args?.right}
       </>
     ),

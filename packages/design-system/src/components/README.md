@@ -60,8 +60,9 @@ Add the named export to [`../index.ts`](../index.ts).
   hard-shadowed (`--radius-none`, `--shadow-hard-*`, `--shadow-bevel-*`) over a
   macOS-shaped layout. Pure chrome, no domain.
   - **MenuBar** — the top bar, plus the pull-downs that hang off it:
-    `MenuBar.Menu` wraps `MenuBar.Item` (optional right-aligned `shortcut` hint)
-    and `MenuBar.Separator`, on the Base UI Menu primitive. The popup portals to
+    `MenuBar.Menu` wraps `MenuBar.Item` (optional right-aligned `shortcut` hint),
+    `MenuBar.Separator`, and `MenuBar.RadioGroup` holding `MenuBar.RadioItem`s
+    (one of which is always ticked), on the Base UI Menu primitive. The popup portals to
     `<body>`, so it layers via `--layer-popup` — see
     [../tokens/README.md](../tokens/README.md).
   - **Window** — compound chrome whose subparts decide what kind of window it is.

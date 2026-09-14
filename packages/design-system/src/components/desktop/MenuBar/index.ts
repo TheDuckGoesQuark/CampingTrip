@@ -5,4 +5,6 @@ export {
   type MenuBarActionProps,
   type MenuBarPanelProps,
   type MenuBarItemProps,
+  type MenuBarRadioGroupProps,
+  type MenuBarRadioItemProps,
 } from "./MenuBar";

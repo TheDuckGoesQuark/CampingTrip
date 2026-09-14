@@ -6,6 +6,50 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## CatOS gets a light / dark / system switch
+
+**Date**: 2026-09-14
+
+**What was done**:
+
+- **`MenuBar.RadioGroup` + `MenuBar.RadioItem`** in `@jordanscamp/ds`, on Base
+  UI's radio menu parts: `menuitemradio` roles, a tick in a fixed-width slot so
+  labels stay in one column, closes on a pick like `MenuBar.Item`. Stories
+  (`WithRadioGroup`, folded into `AllVariants`) and tests.
+- **`appearance`** on the session store (`light | dark | system`, default
+  `system`), persisted with the rest of it.
+- **`useColorScheme`** resolves that to the DS's two schemes, following
+  `prefers-color-scheme` live when set to `system`.
+- **`AppearanceMenu`** on the CatOS menu bar between Touch grass and the volume:
+  a sun or a moon for the scheme in effect, dropping the three choices.
+- **`<Brand>`** replaces the bare `<BrandProvider>` in `main.tsx`, applying the
+  scheme only while the laptop is focused.
+- `MENU_GLYPH_PX` shared between the two glyph menus rather than declared twice.
+
+**Key decisions**:
+
+- **The blog was light-only before this, not system-following.** `BrandProvider`
+  defaulted to light and nothing read `prefers-color-scheme`; the dark tokens
+  existed unused. `system` is therefore a new behaviour, and it is the default
+  because a fresh visitor's OS is the best guess we have.
+- **Scoped to CatOS, not the app.** The preference is the laptop's; the tent has
+  its own night from the time-of-day arc, and its overlays would otherwise flip
+  to dark for a setting chosen somewhere else. `data-theme` still goes on
+  `<html>` (the DS needs that for body-portalled popups), so the scoping is by
+  _when_ it is set rather than _where_.
+- **Radio items, not three plain items with a check glyph.** `menuitemradio`
+  carries `aria-checked`, which is what a screen reader needs to say which one
+  is on; hand-drawing the tick would have said nothing.
+
+**Deferred**:
+
+- Leaving CatOS while dark reverts to light at the start of the takeover's 150ms
+  exit fade, so the desktop lightens as it goes. Holding the scheme until the
+  fade ends would need the modal to report when it has actually gone.
+- `MenuBar.Menu` always aligns its popup to the trigger's start edge; on the
+  right of the bar Base UI's collision handling keeps it on screen, but an
+  `align` prop would place it deliberately.
+
 ## The send dialogs become design-system components
 
 **Date**: 2026-09-14

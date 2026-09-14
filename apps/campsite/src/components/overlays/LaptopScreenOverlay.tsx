@@ -11,6 +11,7 @@ import { frontWindow, isBrowserWindow, pathForWindow } from "../../routing/windo
 import { useSceneStore } from "../../store/sceneStore";
 import { useSessionStore } from "../../store/sessionStore";
 import type { DesktopItem } from "../../types/desktop";
+import AppearanceMenu from "../catos/AppearanceMenu";
 import CatosWindow from "../catos/CatosWindow";
 import VolumeMenu from "../catos/VolumeMenu";
 
@@ -216,6 +217,7 @@ export default function LaptopScreenOverlay() {
                 <Icon name="door-arrow" size="md" />
                 Touch grass
               </MenuBar.Action>
+              <AppearanceMenu />
               {/* The tent's gear cluster is behind this takeover, so without a
                   volume here the only way to quieten the scene is to leave it. */}
               <VolumeMenu />

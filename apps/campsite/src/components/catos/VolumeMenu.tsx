@@ -3,11 +3,9 @@ import { SpeakerHigh, SpeakerLow, SpeakerNone, SpeakerSlash } from "@jordanscamp
 
 import { useSessionStore } from "../../store/sessionStore";
 import VolumeSlider from "../overlays/VolumeSlider";
+import { MENU_GLYPH_PX } from "./menuGlyph";
 
 import styles from "./catos.module.css";
-
-/** What the bar's other glyphs measure — `Icon size="md"`. */
-const GLYPH_PX = 16;
 
 export type VolumeLevel = "muted" | "quiet" | "mid" | "loud";
 
@@ -61,14 +59,17 @@ export default function VolumeMenu() {
   const Glyph = GLYPHS[volumeLevel(volume)];
 
   return (
-    <MenuBar.Panel ariaLabel={`Volume — ${percent}%`} label={<Glyph size={GLYPH_PX} aria-hidden />}>
+    <MenuBar.Panel
+      ariaLabel={`Volume — ${percent}%`}
+      label={<Glyph size={MENU_GLYPH_PX} aria-hidden />}
+    >
       <div className={styles.volumePanel}>
-        <SpeakerNone size={GLYPH_PX} aria-hidden />
+        <SpeakerNone size={MENU_GLYPH_PX} aria-hidden />
         <span className={styles.volumeTrack}>
           <VolumeRamp fraction={volume} />
           <VolumeSlider className={styles.volumeFader} />
         </span>
-        <SpeakerHigh size={GLYPH_PX} aria-hidden />
+        <SpeakerHigh size={MENU_GLYPH_PX} aria-hidden />
         <span className={styles.volumeReadout} aria-hidden>
           {percent}%
         </span>
