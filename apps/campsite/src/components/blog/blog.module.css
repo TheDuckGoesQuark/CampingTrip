@@ -4,6 +4,14 @@
  * from a design-system token.
  */
 
+/* The page proper, above the contact footer. Whichever container holds the
+   two — the CatOS window's body or the static document — lays them out as a
+   column and hands its height down; the slack on a short page goes here, so
+   the footer sits on the container's floor rather than under the last line. */
+.page {
+  flex: 1;
+}
+
 /* ── Homepage ──────────────────────────────────────────────── */
 
 /* A reading column with the feed beside it. The window is resizable, so the

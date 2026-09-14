@@ -74,6 +74,41 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## The contact footer sits on the floor of whatever holds it
+
+**Date**: 2026-09-14
+
+**What was done**:
+
+- **`BlogPageView` wraps the page in one `.page` element** (`flex: 1`) above
+  `ContactFooter`, so the two containers that render it have exactly two
+  children to lay out, whatever the page itself returns (`FeedPage` and `CvPage`
+  are fragments).
+- **CatNav's `.pageBody` is a column filling its body** — `min-height: 100%`,
+  `display: flex`, `flex-direction: column`. The body is a flex item of a
+  pixel-sized `.window`, so that percentage resolves.
+- **The static document grows a height chain** under `html:not(.js)`: `body`
+  is a `100dvh` column, and `.jc-brand` and `#reader` are `flex: 1` columns
+  passing it down.
+- **Verified on both surfaces** against the dev server and a `vite preview` of
+  `dist`: on a page shorter than its container the footer's bottom edge equals
+  the container's, the body reports no overflow so the grow box stays plain,
+  and a page taller than the container still scrolls with the footer last.
+
+**Key decisions**:
+
+- **The slack goes into the page, not the footer's margin.** `margin-top: auto`
+  on the footer would have replaced its `--space-xl` gap; a `flex: 1` sibling
+  keeps that gap as the minimum and absorbs the rest.
+- **Not `position: sticky` or `fixed`.** Sticky never engages on a footer that
+  is already in view, and fixed would float over the window's content and
+  ignore its scrollbar.
+- **The no-JS chain stays behind `:not(.js)`.** The tent's shell relies on
+  `overflow: hidden` at 100% height; the reader's document is a different
+  layout and keeps its own rules.
+
+---
+
 ## MouseMail is its own window, with its own URL
 
 **Date**: 2026-09-14

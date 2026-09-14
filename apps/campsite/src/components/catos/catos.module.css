@@ -109,9 +109,14 @@
   outline-offset: 2px;
 }
 
-/* A page is a document, so it opts back into selectable text. */
+/* A page is a document, so it opts back into selectable text. The frame's body
+   is a flex item of a pixel-sized window, so its height is definite and this
+   can fill it: a column the page's footer sits at the foot of. */
 .pageBody {
   user-select: text;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .rail {
