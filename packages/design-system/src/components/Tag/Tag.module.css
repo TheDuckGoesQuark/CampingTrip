@@ -30,9 +30,11 @@
   opacity: 0.75;
 }
 
+/* No `font: inherit` to strip the native control font: `.base` already names
+   every font longhand, and the shorthand would undo them from here, where it
+   outranks them. */
 .base:is(a, button) {
   cursor: pointer;
-  font: inherit;
   text-decoration: none;
 }
 .base:is(a, button):hover {

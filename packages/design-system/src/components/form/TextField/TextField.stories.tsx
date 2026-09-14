@@ -28,6 +28,7 @@ export const AllVariants: Story = {
       ))}
       <TextField label="With a hint" description="Only so I can reply." />
       <TextField label="Email address" optional />
+      <TextField label="From" optional="optional — only so I can reply" />
       <TextField label="Filled" defaultValue="jordan@example.com" />
       <TextField
         label="Invalid"

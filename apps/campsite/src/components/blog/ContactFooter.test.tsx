@@ -5,11 +5,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { contactLabel, contactMailto } from "../../data/contactEmail";
 import { cv } from "../../data/cv";
+import { MAIL_PRESETS, mailPreset, presetMailto } from "../../data/mailPresets";
 import { RenderTargetContext, type RenderTarget } from "../../prerender/renderTarget";
 import { WINDOW_MAIL } from "../../routing/windows";
 import { useSceneStore } from "../../store/sceneStore";
 import { watchIntersections } from "../../test/intersection";
-import ContactFooter, { CONTACT_HEADING, CONTACT_ID } from "./ContactFooter";
+import ContactFooter, { CONTACT_HEADING, CONTACT_ID, RAIL_LABEL } from "./ContactFooter";
 
 import styles from "./blog.module.css";
 
@@ -46,9 +47,9 @@ function at(target: RenderTarget, node: ReactNode) {
   return render(<RenderTargetContext.Provider value={target}>{node}</RenderTargetContext.Provider>);
 }
 
-/** The trigger the footer's own invitation offers. */
-const here = () => screen.getByRole("link", { name: "here" });
+const reason = (label: string) => screen.getByRole("link", { name: new RegExp(label, "i") });
 const openWindows = () => useSceneStore.getState().openWindows;
+const askedFor = () => useSceneStore.getState().mailPreset;
 
 describe("ContactFooter", () => {
   describe("the arrival shimmer", () => {
@@ -97,7 +98,7 @@ describe("ContactFooter", () => {
 
   // Real timers here: `userEvent` schedules its own, and the fake ones above
   // would leave every click awaiting a tick that never comes.
-  describe("the invitation to say something", () => {
+  describe("the rail of reasons", () => {
     beforeEach(() => {
       observers = watchIntersections();
       useSceneStore.getState().closeAllWindows();
@@ -108,15 +109,39 @@ describe("ContactFooter", () => {
       useSceneStore.getState().closeAllWindows();
     });
 
-    it("sits beside the links", () => {
+    it("names every reason it can start a note about", () => {
       at("live", <ContactFooter />);
-      expect(screen.getByText(/let me know/i)).toBeInTheDocument();
+      for (const preset of MAIL_PRESETS) {
+        expect(reason(preset.label)).toBeInTheDocument();
+      }
+    });
+
+    it("names the rail for a reader who cannot see it sits beside the heading", () => {
+      at("live", <ContactFooter />);
+      expect(screen.getByRole("list", { name: RAIL_LABEL })).toBeInTheDocument();
     });
 
     describe("prerendered, with no script running", () => {
-      it("leaves the invitation as a real mailto link", () => {
+      // The whole reason the rail is anchors: a visitor with no script gets the
+      // same template, in their own mail client, from the same click.
+      it("points each reason at a mailto carrying that template", () => {
         at("static", <ContactFooter />);
-        expect(here()).toHaveAttribute("href", MAILTO);
+        for (const preset of MAIL_PRESETS) {
+          expect(reason(preset.label)).toHaveAttribute("href", presetMailto(MAILTO, preset));
+        }
+      });
+
+      it("carries the subject and the body a template fills in", () => {
+        at("static", <ContactFooter />);
+        const href = reason(mailPreset("bug").label).getAttribute("href") ?? "";
+        const query = new URLSearchParams(href.slice(href.indexOf("?") + 1));
+        expect(query.get("subject")).toBe(mailPreset("bug").subject);
+        expect(query.get("body")).toBe(mailPreset("bug").body);
+      });
+
+      it("asks nothing of the free-form reason beyond the address", () => {
+        at("static", <ContactFooter />);
+        expect(reason(mailPreset("other").label)).toHaveAttribute("href", MAILTO);
       });
 
       it("leaves the email link alone", () => {
@@ -126,7 +151,7 @@ describe("ContactFooter", () => {
 
       it("opens no window, because there is no desktop to open one on", async () => {
         at("static", <ContactFooter />);
-        await userEvent.click(here());
+        await userEvent.click(reason(mailPreset("bug").label));
         expect(openWindows()).toEqual([]);
       });
     });
@@ -134,27 +159,33 @@ describe("ContactFooter", () => {
     describe("live", () => {
       it("keeps the mailto href, so a copied link still reaches me", () => {
         at("live", <ContactFooter />);
-        expect(here()).toHaveAttribute("href", MAILTO);
+        expect(reason(mailPreset("bug").label)).toHaveAttribute(
+          "href",
+          presetMailto(MAILTO, mailPreset("bug")),
+        );
       });
 
-      it("opens MouseMail instead of the mail client", async () => {
+      it("opens MouseMail on the reason that was picked", async () => {
         at("live", <ContactFooter />);
-        await userEvent.click(here());
+        await userEvent.click(reason(mailPreset("work").label));
         expect(openWindows()).toContain(WINDOW_MAIL);
+        expect(askedFor()).toBe("work");
       });
 
-      it("opens the same window from the email address", async () => {
+      it("opens the same window from the email address, on no template", async () => {
         at("live", <ContactFooter />);
         await userEvent.click(screen.getByRole("link", { name: EMAIL_LABEL }));
         expect(openWindows()).toContain(WINDOW_MAIL);
+        expect(askedFor()).toBeNull();
       });
 
-      // `raiseWindow` is idempotent, so a second click raises rather than stacks.
+      // `openMail` is idempotent, so a second click raises rather than stacks.
       it("never opens a second copy", async () => {
         at("live", <ContactFooter />);
-        await userEvent.click(here());
-        await userEvent.click(screen.getByRole("link", { name: EMAIL_LABEL }));
+        await userEvent.click(reason(mailPreset("bug").label));
+        await userEvent.click(reason(mailPreset("feedback").label));
         expect(openWindows().filter((id) => id === WINDOW_MAIL)).toHaveLength(1);
+        expect(askedFor()).toBe("feedback");
       });
 
       it("leaves the other profile links as plain links", async () => {
@@ -172,7 +203,7 @@ describe("ContactFooter", () => {
         const user = userEvent.setup();
         at("live", <ContactFooter />);
         await user.keyboard("[ControlLeft>]");
-        await user.click(here());
+        await user.click(reason(mailPreset("bug").label));
         await user.keyboard("[/ControlLeft]");
         expect(openWindows()).toEqual([]);
       });

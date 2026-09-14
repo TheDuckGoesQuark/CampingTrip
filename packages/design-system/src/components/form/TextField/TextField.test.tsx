@@ -51,7 +51,16 @@ describe("TextField", () => {
 
   it("says 'optional' in words rather than marking the required fields", () => {
     render(<TextField label="Email" optional />);
-    expect(screen.getByRole("textbox", { name: /optional/i })).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: "Email optional" })).toBeInTheDocument();
+  });
+
+  // The marker is part of the accessible name, so a caller saying why the field
+  // is optional says it to everyone rather than only to whoever can see it.
+  it("lets the marker say in what way the field is optional", () => {
+    render(<TextField label="From" optional="optional — only so I can reply" />);
+    expect(
+      screen.getByRole("textbox", { name: "From optional — only so I can reply" }),
+    ).toBeInTheDocument();
   });
 
   it("reports typing through onValueChange", async () => {

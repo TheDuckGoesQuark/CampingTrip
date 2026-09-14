@@ -6,6 +6,71 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## The contact footer asks, and MouseMail is a compose window
+
+**Date**: 2026-09-13
+
+**What was done**:
+
+- **The footer's reasons rail.** The invitation was a sentence ending in a link
+  called "here". It is now four reasons — Bug report, Feedback, Working together,
+  Other — in a column at the footer's right edge, each one a template.
+- **MouseMail composes rather than collects.** A To/From/Subject header band over
+  a writing surface, Send at the far end of the template bar, the phase and the
+  character count in the status bar. The frame grew to `lg` to hold it.
+- **Templates prefill both fields.** Picking a reason writes that template's
+  subject and body. The rail downstairs and the pill row upstairs are one list
+  (`data/mailPresets.ts`), so the reason clicked is the pill selected.
+- **The subject reaches the inbox** as a line of the mail body, with its own
+  length cap enforced at the endpoint.
+
+**Key decisions**:
+
+- **The subject is not the mail's `Subject`.** SNS was chosen over SES precisely
+  so that nothing a stranger typed reaches a header field; putting the typed
+  subject there would hand back the mail-injection surface that choice removed.
+  It goes in the body, where a newline is harmless.
+- **Every trigger stays a real `mailto:`.** Each reason's anchor carries that
+  template as `?subject=&body=`, so a visitor with no script gets the same
+  template in their own mail client from the same click. The prerendered page
+  runs none of MouseMail, and a prerendered form is a form that cannot send.
+- **A template replaces prefill, never typing.** Each field remembers whether the
+  visitor has edited it. Swapping reasons freely rewrites text a template put
+  there and never touches a word someone typed.
+- **One rail shape at every width** — always a column, right-aligned while there
+  is room beside the text and full-width when there is not, where the portrait
+  centres over it too. A grid of reasons was the alternative; a single rule is
+  easier to hold and to keep true, and it costs only a taller footer on a phone.
+  Which state applies comes from a container query the footer declares for
+  itself, because the same footer renders on the open page and inside a CatOS
+  window the reader can resize, and neither says anything about the other. The
+  cells carry a 44px floor there, being aimed at with a thumb as often as a
+  pointer.
+
+**Also fixed**:
+
+- `Tag.module.css` reset the native control font with the `font` shorthand, which
+  also cleared the `font-size` and `font-weight` the file set two declarations
+  earlier — and from a rule that outranked them. Every `Tag` rendered as a link
+  or a button, the blog's tag rails included, drew at the inherited 16px/400
+  rather than 12px/700, while a `<span>` tag beside it drew correctly. `.base`
+  already names every font longhand, so the reset was redundant as well as
+  harmful and simply goes. Not unit-tested: the design system's tests run with
+  Vitest's `css: false`, so no stylesheet reaches jsdom and any assertion on
+  computed type passes whether the rule is there or not.
+- `FieldShell` ran the optional marker onto the end of the label in the
+  accessible name — "Emailoptional" — because the flex `gap` between them is
+  layout rather than text. A whitespace child fixes it and, being whitespace-only
+  in a flex container, changes nothing on screen.
+
+**Deferred**:
+
+- Declaring the footer a container also makes it what `--text-title-1-size`'s
+  `cqi` resolves against, so "Let's talk" now sizes to the footer rather than to
+  the page around it. Inside a window the two are within a pixel of each other;
+  on the open page the heading is smaller than it was. Left as is — a heading
+  sized to its own band is the more defensible of the two.
+
 ## The Caddyfile exists once
 
 **Date**: 2026-09-11

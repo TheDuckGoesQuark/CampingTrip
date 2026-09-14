@@ -7,6 +7,9 @@ const ENDPOINT = "/api/contact";
 /** Long enough for anything worth reading, short enough to bound the payload. */
 export const MESSAGE_LIMIT = 4000;
 
+/** Mirrors `SUBJECT_LIMIT` in `infra/lambda/contact/accept.mjs`. */
+export const SUBJECT_LIMIT = 200;
+
 /**
  * How long a real person takes to read the form and type something. A submit
  * faster than this was not typed. The check is repeated server-side, because
@@ -17,6 +20,12 @@ export const MIN_DWELL_MS = 2000;
 
 export interface Feedback {
   message: string;
+  /**
+   * The subject line, when the visitor left one. It reaches me as a line of the
+   * mail body rather than as its `Subject`, because nothing a stranger typed
+   * goes anywhere a mail header could be — see `bodyFor` in the endpoint.
+   */
+  subject?: string;
   /** Optional: someone saying the site made them smile is owed no identity. */
   email?: string;
   /** The honeypot's value. A person never sees the field, so this stays empty. */

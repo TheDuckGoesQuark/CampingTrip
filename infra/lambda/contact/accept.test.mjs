@@ -1,7 +1,14 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { accept, bodyFor, MAX_BODY_BYTES, MESSAGE_LIMIT, MIN_DWELL_MS } from "./accept.mjs";
+import {
+  accept,
+  bodyFor,
+  MAX_BODY_BYTES,
+  MESSAGE_LIMIT,
+  MIN_DWELL_MS,
+  SUBJECT_LIMIT,
+} from "./accept.mjs";
 
 /** A request a real person would send, `now` minus a plausible dwell. */
 const NOW = 1_700_000_000_000;
@@ -28,6 +35,18 @@ describe("accept", () => {
     assert.equal(accept(good({ message: "  hello  " }), NOW).note, "hello");
   });
 
+  it("keeps a subject line, collapsed to the one line it is", () => {
+    assert.equal(
+      accept(good({ subject: "  Something\n  broken  " }), NOW).subject,
+      "Something broken",
+    );
+  });
+
+  it("treats a subject nobody filled in as no subject", () => {
+    assert.equal(accept(good()).subject, undefined);
+    assert.equal(accept(good({ subject: "   " }), NOW).subject, undefined);
+  });
+
   it("keeps an address that could be replied to", () => {
     assert.equal(accept(good({ email: " a@b.com " }), NOW).replyTo, "a@b.com");
   });
@@ -48,6 +67,8 @@ describe("accept", () => {
     refuses("a missing note", JSON.stringify({ trap: "", mountedAt: NOW - 9999 }));
     refuses("a note that is not a string", good({ message: 42 }));
     refuses("a note past the limit", good({ message: "x".repeat(MESSAGE_LIMIT + 1) }));
+    refuses("a subject past the limit", good({ subject: "x".repeat(SUBJECT_LIMIT + 1) }));
+    refuses("a subject that is not a string", good({ subject: 42 }));
     refuses("a body past the byte cap", good({ message: "x".repeat(MAX_BODY_BYTES) }));
     refuses("something that is not JSON", "not json");
     refuses("JSON that is not an object", JSON.stringify(["hi"]));
@@ -64,9 +85,15 @@ describe("accept", () => {
 });
 
 describe("bodyFor", () => {
-  it("puts the note first and says when there is no reply address", () => {
-    const body = bodyFor({ note: "hello", replyTo: undefined });
-    assert.match(body, /^hello\n/);
+  it("leads with the subject line and follows with the note", () => {
+    const body = bodyFor({ note: "hello", subject: "Something broken", replyTo: undefined });
+    assert.match(body, /^Subject: Something broken\n/);
+    assert.match(body, /\nhello\n/);
+  });
+
+  it("says so when there is neither a subject nor a reply address", () => {
+    const body = bodyFor({ note: "hello", subject: undefined, replyTo: undefined });
+    assert.match(body, /^No subject given\.\n/);
     assert.match(body, /No reply address given\./);
   });
 
@@ -78,6 +105,6 @@ describe("bodyFor", () => {
   // injection works, and here there is no header field to inject into.
   it("keeps a newline-stuffed note in the body, where newlines are harmless", () => {
     const note = "hi\nBcc: victim@example.com";
-    assert.ok(bodyFor({ note, replyTo: undefined }).startsWith(note));
+    assert.ok(bodyFor({ note, subject: undefined, replyTo: undefined }).includes(note));
   });
 });

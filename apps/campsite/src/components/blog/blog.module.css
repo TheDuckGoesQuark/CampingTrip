@@ -639,6 +639,12 @@
      window the reader can resize, so how much room it has says nothing about
      how wide the screen is. */
   flex-wrap: wrap;
+  /* The rail reshapes on this footer's width, not the viewport's: the same
+     footer renders on the open page and inside a resizable CatOS window, and
+     neither says anything about the other. Declared here rather than leaning on
+     the window's container, which the open page does not have. */
+  container-type: inline-size;
+  container-name: contact-footer;
 }
 
 /* An element of its own rather than more pseudo-elements on the banner: a CSS
@@ -663,18 +669,52 @@
 }
 
 .contactRow {
+  /* Beside the portrait while there is room for the rail as well, below it when
+     there is not. The basis is the wrap threshold rather than a width. */
+  flex: 1 1 18rem;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: var(--space-s);
 }
 
-/* Beside the links while there is room for a readable measure, below them when
-   there is not. The basis is the wrap threshold, not a width: `flex-wrap` needs
-   a number to decide against, and prose narrower than this stops being worth
-   reading. */
-.contactInvite {
-  flex: 1 1 18rem;
-  max-width: 32rem;
+/* A column at the footer's right edge, not a row across it: the reasons read as
+   a menu standing beside the page rather than as a strip laid over it. */
+.contactRail {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: var(--space-s);
+  align-content: start;
+  margin-inline-start: auto;
+}
+
+/* The cell stretches its one child, which is how the control gets a width: the
+   design system component takes no `className` to be given one directly. So the
+   column is as wide as its longest reason, and every reason is that wide. */
+.contactRail > li {
+  display: grid;
+}
+
+/* Too narrow to carry the rail beside the text. Everything takes the full width
+   and stacks, and the portrait centres over it rather than hanging off one
+   edge. The number is the wrap threshold above plus the portrait and its gap. */
+@container contact-footer (width < 34rem) {
+  .contactPortrait {
+    margin-inline: auto;
+  }
+
+  .contactRail {
+    width: 100%;
+    margin-inline-start: 0;
+  }
+
+  /* At this width the reasons are aimed at with a thumb as often as a pointer.
+     The floor sits on the cell, since the control stretches to fill it. */
+  .contactRail > li {
+    min-height: 44px;
+  }
 }
 
 .contactLinks {
