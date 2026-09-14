@@ -1,5 +1,5 @@
 import { Button, Tag, Text, TextField } from "@jordanscamp/ds";
-import { type Icon, PaperPlaneTilt } from "@jordanscamp/ds/icons";
+import { type Icon, PaperPlaneRight } from "@jordanscamp/ds/icons";
 import { useId } from "react";
 
 import { MAIL_PRESETS } from "../../../data/mailPresets";
@@ -96,8 +96,8 @@ export default function MouseMailForm({ compose, mailto, emailLabel }: MouseMail
           ))}
         </ul>
         <div className={styles.send}>
-          <Button variant="default" onClick={compose.send} disabled={sending}>
-            <PaperPlaneTilt size={GLYPH_PX} weight="bold" aria-hidden />
+          <Button variant="default" size="sm" onClick={compose.send} disabled={sending}>
+            <PaperPlaneRight size={GLYPH_PX} weight="bold" aria-hidden />
             {sending ? "Sending…" : "Send"}
           </Button>
         </div>

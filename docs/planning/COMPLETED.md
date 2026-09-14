@@ -49,6 +49,15 @@ History of what's been built, key decisions made, and what was deferred along th
 
 **Also fixed**:
 
+- `Tag.module.css` reset the native control font with the `font` shorthand, which
+  also cleared the `font-size` and `font-weight` the file set two declarations
+  earlier — and from a rule that outranked them. Every `Tag` rendered as a link
+  or a button, the blog's tag rails included, drew at the inherited 16px/400
+  rather than 12px/700, while a `<span>` tag beside it drew correctly. `.base`
+  already names every font longhand, so the reset was redundant as well as
+  harmful and simply goes. Not unit-tested: the design system's tests run with
+  Vitest's `css: false`, so no stylesheet reaches jsdom and any assertion on
+  computed type passes whether the rule is there or not.
 - `FieldShell` ran the optional marker onto the end of the label in the
   accessible name — "Emailoptional" — because the flex `gap` between them is
   layout rather than text. A whitespace child fixes it and, being whitespace-only
