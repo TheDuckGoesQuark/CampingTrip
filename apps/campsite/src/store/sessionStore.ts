@@ -1,6 +1,8 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+export type Appearance = "light" | "dark" | "system";
+
 interface SessionState {
   /** One-shots fired by something the visitor just did. */
   soundEnabled: boolean;
@@ -18,6 +20,10 @@ interface SessionState {
    *  file's slug. Persisted because a text editor that forgets your typing the
    *  moment you close the window reads as a bug rather than as a scene. */
   textEdits: Record<string, string>;
+  /** Which scheme CatOS wears. The laptop's setting, not the tent's: the tent
+   *  has its own night. Persisted because a preference that resets on every
+   *  visit is not a preference. */
+  appearance: Appearance;
   setSoundEnabled: (v: boolean) => void;
   setAmbienceEnabled: (v: boolean) => void;
   setEffectsEnabled: (v: boolean) => void;
@@ -27,6 +33,7 @@ interface SessionState {
   updateLastVisited: () => void;
   editText: (slug: string, body: string) => void;
   revertText: (slug: string) => void;
+  setAppearance: (a: Appearance) => void;
 }
 
 export const useSessionStore = create<SessionState>()(
@@ -39,6 +46,7 @@ export const useSessionStore = create<SessionState>()(
       hasCompletedWelcome: false,
       lastVisitedAt: null,
       textEdits: {},
+      appearance: "system",
       setSoundEnabled: (v) => set({ soundEnabled: v }),
       setAmbienceEnabled: (v) => set({ ambienceEnabled: v }),
       setEffectsEnabled: (v) => set({ effectsEnabled: v }),
@@ -52,6 +60,7 @@ export const useSessionStore = create<SessionState>()(
           const { [slug]: _dropped, ...rest } = s.textEdits;
           return { textEdits: rest };
         }),
+      setAppearance: (a) => set({ appearance: a }),
     }),
     { name: "campingtrip-session" },
   ),

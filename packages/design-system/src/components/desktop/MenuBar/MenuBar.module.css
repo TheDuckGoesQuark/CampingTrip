@@ -104,6 +104,15 @@
   flex: 1;
 }
 
+/* Kept the tick's width when the tick is not drawn, so the labels of a radio
+   run stay in one column whichever of them is chosen. */
+.tick {
+  display: inline-flex;
+  justify-content: center;
+  width: 12px;
+  flex-shrink: 0;
+}
+
 .shortcut {
   opacity: 0.6;
   font-family: var(--font-mono);

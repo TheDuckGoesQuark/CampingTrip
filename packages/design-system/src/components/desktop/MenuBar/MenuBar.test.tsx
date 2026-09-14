@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
 
 import { MenuBar } from "./MenuBar";
@@ -73,6 +74,65 @@ describe("MenuBar", () => {
       renderMenu();
       await user.click(screen.getByRole("button", { name: "CatOS" }));
       expect(await screen.findByRole("menuitem", { name: "Shut down" })).toBeInTheDocument();
+    });
+  });
+
+  describe("radio runs", () => {
+    function Appearance({ onPick = vi.fn() }: { onPick?: (value: string) => void }) {
+      const [value, setValue] = useState("light");
+      return (
+        <MenuBar
+          left={
+            <MenuBar.Menu label="View">
+              <MenuBar.RadioGroup
+                ariaLabel="Appearance"
+                value={value}
+                onValueChange={(next) => {
+                  setValue(next);
+                  onPick(next);
+                }}
+              >
+                <MenuBar.RadioItem value="light">Light</MenuBar.RadioItem>
+                <MenuBar.RadioItem value="dark">Dark</MenuBar.RadioItem>
+              </MenuBar.RadioGroup>
+            </MenuBar.Menu>
+          }
+        />
+      );
+    }
+    const openView = async () => {
+      const user = userEvent.setup();
+      await user.click(screen.getByRole("button", { name: "View" }));
+      await screen.findByRole("group", { name: "Appearance" });
+      return user;
+    };
+
+    it("ticks the chosen one and no other", async () => {
+      render(<Appearance />);
+      await openView();
+      expect(screen.getByRole("menuitemradio", { name: "Light" })).toHaveAttribute(
+        "aria-checked",
+        "true",
+      );
+      expect(screen.getByRole("menuitemradio", { name: "Dark" })).toHaveAttribute(
+        "aria-checked",
+        "false",
+      );
+    });
+
+    it("reports a pick, moves the tick to it, and shuts the menu", async () => {
+      const onPick = vi.fn();
+      render(<Appearance onPick={onPick} />);
+      const user = await openView();
+      await user.click(screen.getByRole("menuitemradio", { name: "Dark" }));
+      expect(onPick).toHaveBeenCalledWith("dark");
+      expect(screen.queryByRole("menu")).toBeNull();
+
+      await openView();
+      expect(screen.getByRole("menuitemradio", { name: "Dark" })).toHaveAttribute(
+        "aria-checked",
+        "true",
+      );
     });
   });
 

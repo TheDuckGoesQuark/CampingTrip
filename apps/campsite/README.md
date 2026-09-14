@@ -72,6 +72,21 @@ default also keeps 1.7 MB off the critical path. Where the recordings came
 from, how the loops were cut, and how to swap one out: [ambience
 beds](../../docs/ambience-beds.md).
 
+## Appearance: CatOS's colour scheme
+
+The design system ships light and dark token sets; CatOS chooses between them,
+the tent does not. The setting is `appearance` in the session store: `light`,
+`dark`, or `system` (the default), where `system` follows the OS's
+`prefers-color-scheme` and tracks it live. `useColorScheme` resolves the three
+to the two, and is what both the menu-bar glyph (a sun or a moon for whichever
+is in effect) and `<Brand>` read.
+
+`<Brand>` wraps the app in the DS's `<BrandProvider>` and hands it the resolved
+scheme only while the laptop is focused, so the takeover is what changes colour
+and the tent's own overlays stay light. Deep-linking into `/blog` with `dark`
+saved lands dark on the first paint after hydration; the prerendered reader is
+always light, since it renders with no session to read.
+
 ## The blog without JavaScript
 
 The build writes one HTML file per blog URL into `dist`, rendered by the same

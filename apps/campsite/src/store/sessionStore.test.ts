@@ -26,6 +26,17 @@ describe("useSessionStore", () => {
     expect(useSessionStore.getInitialState().ambienceEnabled).toBe(false);
   });
 
+  describe("appearance", () => {
+    it("follows the OS until the visitor picks", () => {
+      expect(useSessionStore.getInitialState().appearance).toBe("system");
+    });
+
+    it("keeps a pick", () => {
+      useSessionStore.getState().setAppearance("dark");
+      expect(useSessionStore.getState().appearance).toBe("dark");
+    });
+  });
+
   it("toggles sound on/off", () => {
     useSessionStore.getState().setSoundEnabled(false);
     expect(useSessionStore.getState().soundEnabled).toBe(false);

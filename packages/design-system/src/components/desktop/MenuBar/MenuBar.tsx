@@ -1,3 +1,4 @@
+import { Check } from "@phosphor-icons/react";
 import type { ReactNode } from "react";
 
 import { Menu } from "../../../primitives/Menu";
@@ -75,6 +76,58 @@ function Item({ onClick, disabled, shortcut, children }: MenuBarItemProps) {
 }
 Item.displayName = "MenuBar.Item";
 
+export interface MenuBarRadioGroupProps<T extends string> {
+  value: T;
+  onValueChange: (value: T) => void;
+  /** Names the group for assistive tech; without it the items are a bare run of radios. */
+  ariaLabel?: string;
+  children?: ReactNode;
+}
+
+/** A run of mutually exclusive choices, one of which is always ticked. */
+function RadioGroup<T extends string>({
+  value,
+  onValueChange,
+  ariaLabel,
+  children,
+}: MenuBarRadioGroupProps<T>) {
+  return (
+    <Menu.RadioGroup
+      value={value}
+      onValueChange={(next: T) => onValueChange(next)}
+      aria-label={ariaLabel}
+    >
+      {children}
+    </Menu.RadioGroup>
+  );
+}
+RadioGroup.displayName = "MenuBar.RadioGroup";
+
+export interface MenuBarRadioItemProps {
+  value: string;
+  disabled?: boolean;
+  children?: ReactNode;
+}
+
+/**
+ * One choice in a `MenuBar.RadioGroup`, ticked while it is the chosen one.
+ * Shuts the menu on a pick, as `MenuBar.Item` does: Base UI leaves a radio menu
+ * open by default, which suits a settings pane more than a pull-down.
+ */
+function RadioItem({ value, disabled, children }: MenuBarRadioItemProps) {
+  return (
+    <Menu.RadioItem className={styles.item} value={value} disabled={disabled} closeOnClick>
+      <span className={styles.tick} aria-hidden="true">
+        <Menu.RadioItemIndicator>
+          <Check size={12} weight="bold" />
+        </Menu.RadioItemIndicator>
+      </span>
+      <span className={styles.itemLabel}>{children}</span>
+    </Menu.RadioItem>
+  );
+}
+RadioItem.displayName = "MenuBar.RadioItem";
+
 export interface MenuBarActionProps {
   onClick?: () => void;
   /** Required when `children` is a glyph: without it the button has no name. */
@@ -143,5 +196,7 @@ export const MenuBar = Object.assign(Root, {
   Action,
   Panel,
   Item,
+  RadioGroup,
+  RadioItem,
   Separator: MenuSeparator,
 });
