@@ -53,6 +53,19 @@ point of #123, and it now sits in front of a thing that could be opened directly
 Both are one-liners; the question is whether the landing page should skip the
 footer, or whether arriving at the banner first is the intended pause.
 
+### Design system — a `Tag` that is a link or a button loses its type
+
+`Tag.module.css` ends with `.base:is(a, button) { font: inherit }`, which is
+there to strip the native control font. `font` is a shorthand, so it also resets
+the `font-size` and `font-weight` the same rule set two declarations earlier, and
+at higher specificity. Every navigable tag — the blog's tag rail, MouseMail's
+template pills — renders at the inherited 16px/400 instead of the 12px/700 the
+component asks for; a plain `<span>` tag renders correctly beside it.
+
+The fix is to name the longhand the reset actually wants (`font-family: inherit`)
+rather than the shorthand. It changes the look of every tag rail on the blog,
+which is why it is not a footnote to something else.
+
 ### Design system — `Text` has no `danger` tone
 
 `tone` offers default / muted / on-brand / link, so a form error cannot be

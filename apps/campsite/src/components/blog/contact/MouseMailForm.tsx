@@ -96,7 +96,7 @@ export default function MouseMailForm({ compose, mailto, emailLabel }: MouseMail
           ))}
         </ul>
         <div className={styles.send}>
-          <Button variant="default" size="sm" onClick={compose.send} disabled={sending}>
+          <Button variant="default" onClick={compose.send} disabled={sending}>
             <PaperPlaneTilt size={GLYPH_PX} weight="bold" aria-hidden />
             {sending ? "Sending…" : "Send"}
           </Button>
