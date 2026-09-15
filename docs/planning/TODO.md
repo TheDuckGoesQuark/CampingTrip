@@ -198,13 +198,23 @@ rather than content. Everything else in the junk drawer is built.
 
 ### Blog — the "Work with me? / Get to know me?" toggle
 
-The CV is live at `/blog/cv.html` and `/cv.pdf`; what is left is the way to land
-on it. The design cycle owns the form. Three constraints hold whatever it
+The CV is live at `/blog/cv.html` and `/cv.pdf`, and the homepage's professional
+column and its `See the full CV` link reach it — so this is about the way in the
+design cycle owns, not the only way in. Three constraints hold whatever it
 becomes, recorded in [cv-design.md](cv-design.md): the two views are two URLs
 (`/blog/cv.html` and `/blog/index.html`), the toggle's state is derived from the
 URL and never stored, and the prerendered reader must not depend on it.
 Candidates: a segmented control in CatNav's header, a `CV` icon on the desktop,
 a bookmark in the browser bar, or a choice on the welcome screen at `/`.
+
+### Blog — the professional rows all land on the top of the CV
+
+Each would read better anchored at its own role. The ids have to go through
+`useDocumentId`, because a built page holds the reader's copy of every id as well
+as the app's, and the link then crosses documents into the client-side router —
+which the dev server cannot prove, since it never renders the reader. Verify
+against a `vite preview` of `dist`, and extend `semantics.test.ts`, which today
+only asserts same-page fragments.
 
 ### Blog — the CV's narrative
 
