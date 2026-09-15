@@ -11,7 +11,7 @@ export const projects: Project[] = [
     year: 2025,
     icon: "images/projects/jordanscamp-site.webp",
     color: "#4a9eff",
-    tags: ["react", "three.js", "creative"],
+    tags: ["React", "Three.js", "Creative"],
     addedAt: "2026-01-15",
   },
   {
@@ -21,8 +21,9 @@ export const projects: Project[] = [
     year: 2026,
     // The same logo the laptop in the tent shows on its screen.
     icon: "images/logo.webp",
-    color: "#1a1a1a",
-    tags: ["rust", "react-native", "product"],
+    // Light, because the mark is dark and unreadable on the tile's own dark fill.
+    color: "#ffffff",
+    tags: ["Rust", "React-Native", "Product"],
     addedAt: "2026-02-01",
   },
   {
@@ -33,7 +34,7 @@ export const projects: Project[] = [
       "Google Photos quietly took away the ability to bulk-delete photos from a search, and their API can't delete at all — which drove me up the wall every time I wanted to clear out a day's worth of near-identical shots. So PhotoBroom is my answer: a Chrome extension that overlays a fast, keyboard-driven review right on top of Google Photos. Search a date, flick through with the arrow keys — keep, skip, or bin — then send the whole pile to the bin in one go.\n\nIt drives Google's own interface (the only way that's actually possible), runs entirely in your browser, and nothing's gone for good since the bin holds onto things for 60 days. A small, stubborn little tool born purely out of being annoyed at not being able to do a basic thing.",
     year: 2026,
     color: "#ffb347",
-    tags: ["chrome-extension", "tools"],
+    tags: ["Chrome-Extension", "Tools"],
     addedAt: "2026-06-29",
     listed: false,
   },
@@ -44,7 +45,7 @@ export const projects: Project[] = [
     year: 2026,
     glyph: "note",
     color: "#8a5cf6",
-    tags: ["guitar", "drums", "ableton"],
+    tags: ["Guitar", "Drums", "Ableton"],
     addedAt: "2026-09-14",
   },
 ];

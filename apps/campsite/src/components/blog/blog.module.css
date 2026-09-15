@@ -285,6 +285,11 @@
   border-top: 2px solid var(--brand-border-strong);
   margin-top: var(--space-l);
   padding-top: 20px;
+
+  /* `window-page` reads 780px where this reads 470, so the columns break on the
+     section. Named, so an unnamed query cannot land on it by accident. */
+  container-type: inline-size;
+  container-name: home-section;
 }
 
 .rule {
@@ -301,6 +306,39 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
+}
+
+.workGrid {
+  display: grid;
+  gap: var(--space-l);
+  margin-top: 14px;
+}
+
+.workColumn {
+  min-width: 0;
+}
+
+/* Side by side this would be a line between nothing, so the two-column state
+   drops it. */
+.workColumn + .workColumn {
+  border-top: 1px solid var(--brand-border);
+  padding-top: var(--space-l);
+}
+
+/* Below this a row's title wraps against its tile. */
+@container home-section (min-width: 30rem) {
+  .workGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .workColumn + .workColumn {
+    border-top: 0;
+    padding-top: 0;
+  }
+}
+
+.workMore {
+  margin-top: var(--space-l);
 }
 
 .toolGrid {
@@ -347,6 +385,22 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-xs);
+}
+
+/* The bar is hidden because a persistent one (Windows, Linux — macOS overlays)
+   would add back the card height this scrolling exists to save. */
+.rowTags {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.rowTags::-webkit-scrollbar {
+  display: none;
+}
+
+.rowTags > li {
+  flex-shrink: 0;
 }
 
 .summary {

@@ -6,6 +6,70 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## "Things I'm working on" splits into personal and professional, and offers the CV
+
+**Date**: 2026-09-15
+
+**What was done**:
+
+- **Two columns** under the section heading — `Personal` (the listed projects)
+  beside `Professional` (the featured CV roles) — stacking to one, with a rule
+  between the groups, when the section is narrower than `30rem`.
+- **`data/work.ts`** reconciles the two sources into one `WorkItem` row shape.
+  The personal column maps `listedProjects`; the professional column is written
+  out, with each role's `org` checked against `cv.experience` so the homepage
+  cannot advertise a job the CV does not list.
+- **`ProjectRow` became `WorkRow`**, and the project title dropped from `h3` to
+  `h4` to sit under each column's new `h3`. Rows carry no date.
+- **Logos** at `public/images/projects/`: `lindus-health.webp`,
+  `gravity-sketch.webp`, `st-andrews.webp`, each 104px (2× the 52px `--tile-md`)
+  and under 3.2kB. CatMap's tile went white — its mark is dark and was
+  unreadable on the old `#1a1a1a` fill.
+- **Tags** are `Kebab-Case` throughout both columns, and scroll sideways rather
+  than wrap: every strip is 27px tall whatever it holds.
+- **A `See my full CV →` footer** under the grid — the feed panel's `All posts →`
+  type, bold `body-sm` with the arrow, but none of its bar — and every
+  professional row lands on `/blog/cv.html` too.
+- **Tests**: `work.test.ts` pins both columns' contents — the role check drops a
+  miss rather than throwing, so without it a renamed org would silently shrink
+  the column — and asserts every named logo exists under `public/`.
+
+**Key decisions**:
+
+- **A container query on `.homeSection`, not `window-page`.** The room the grid
+  has is whatever the feed beside it leaves, which on a wide window is far less
+  than the window: the page container was 780px wide in a case where the section
+  was 470px, and a `window-page` query would have put two columns where there was
+  room for one.
+- **Each tile's colour is its logo's own background** — black for Lindus, white
+  for Gravity Sketch and St Andrews — so the square reads as one mark rather than
+  a logo pasted onto a swatch.
+- **The card says `Lindus`, the CV says `Lindus Health`.** `org` is the key into
+  the CV, `label` is what the card shows: a CV names the employer in full, a card
+  has room for what people call it.
+- **The homepage's tags are not the CV's.** These say what the work was to a
+  reader skimming; the CV's say what it was to a recruiter. The two sets differ
+  on purpose.
+- **MultiAgent Systems is written out in `work.ts`** rather than derived. It is
+  the MSc thesis, and the CV carries it as one line under Education rather than
+  an entry of its own, so there is nothing to look up.
+- **The tag strip hides its scrollbar.** A persistent one (Windows, Linux —
+  macOS overlays) would add its own height back to every card, which is the thing
+  the strip exists to prevent. It still scrolls by wheel, trackpad and touch.
+
+**Deferred**:
+
+- All three professional rows land on the top of the CV. Anchoring each at its
+  own role wants ids through `useDocumentId`, and a cross-document fragment into
+  the client-side router is not something the dev server can prove — see the
+  TODO item.
+- The scrolling tag strip is not keyboard-scrollable. Giving it `tabindex` would
+  put interactive content inside the `<a>` the card already is, which the HTML
+  spec disallows. Every tag is also on the page the card links to, so nothing is
+  only reachable by scrolling.
+
+---
+
 ## The homepage's project list gets faces, and says what it is
 
 **Date**: 2026-09-14

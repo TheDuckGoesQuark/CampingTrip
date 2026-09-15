@@ -2,12 +2,12 @@ import { Card, Icon, Link, Tag, Text, Tile } from "@jordanscamp/ds";
 import { Link as RouterLink } from "react-router-dom";
 
 import { bookmarks } from "../../data/bookmarks";
-import { listedProjects } from "../../data/projects";
 import { slugify } from "../../data/slug";
+import { personalWork, professionalWork, type WorkItem } from "../../data/work";
 import { useDocumentId } from "../../prerender/renderTarget";
 import { blogPaths } from "../../routing/blogPaths";
 import { routes } from "../../routing/navigation";
-import type { Bookmark, Project } from "../../types/project";
+import type { Bookmark } from "../../types/project";
 import { asset } from "../../utils/assetPath";
 import { CONTACT_ID } from "./ContactFooter";
 import FeedPanel from "./FeedPanel";
@@ -96,11 +96,17 @@ export default function HomePage() {
           <Text variant="title-3" as="h2">
             Things I'm working on
           </Text>
-          <ul className={styles.sectionBody}>
-            {listedProjects.map((project) => (
-              <ProjectRow key={project.title} project={project} />
-            ))}
-          </ul>
+          <div className={styles.workGrid}>
+            <WorkColumn heading="Personal" items={personalWork} />
+            <WorkColumn heading="Professional" items={professionalWork} />
+          </div>
+          <footer className={styles.workMore}>
+            <Link render={<RouterLink to={blogPaths.cv} />}>
+              <Text variant="body-sm" as="span">
+                <strong>See my full CV →</strong>
+              </Text>
+            </Link>
+          </footer>
         </section>
 
         <section className={styles.homeSection}>
@@ -186,30 +192,41 @@ function Mascot() {
   );
 }
 
-function ProjectRow({ project }: { project: Project }) {
+/** One of the two stacks. Its own heading, so the column is announced as a group. */
+function WorkColumn({ heading, items }: { heading: string; items: WorkItem[] }) {
+  return (
+    <div className={styles.workColumn}>
+      <Text variant="title-4" as="h3">
+        {heading}
+      </Text>
+      <ul className={styles.sectionBody}>
+        {items.map((item) => (
+          <WorkRow key={item.title} item={item} />
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function WorkRow({ item }: { item: WorkItem }) {
   return (
     <li>
-      <Card render={<RouterLink to={blogPaths.project(slugify(project.title))} />} padding="sm">
+      <Card render={<RouterLink to={item.to} />} padding="sm">
         <div className={styles.row}>
           <Tile
-            label={project.title}
-            color={project.color}
+            label={item.title}
+            color={item.color}
             size="md"
-            icon={project.icon && asset(project.icon)}
-            glyph={project.glyph}
+            icon={item.icon && asset(item.icon)}
+            glyph={item.glyph}
           />
           <div className={styles.rowBody}>
-            <div className={styles.titleLine}>
-              <Text variant="title-4" as="h3">
-                {project.title}
-              </Text>
-              <Text variant="label" tone="muted" as="span">
-                {project.year}
-              </Text>
-            </div>
-            {project.tags && project.tags.length > 0 && (
-              <ul className={styles.tagList}>
-                {project.tags.map((tag) => (
+            <Text variant="title-4" as="h4">
+              {item.title}
+            </Text>
+            {item.tags.length > 0 && (
+              <ul className={`${styles.tagList} ${styles.rowTags}`}>
+                {item.tags.map((tag) => (
                   <li key={tag}>
                     <Tag>{tag}</Tag>
                   </li>
