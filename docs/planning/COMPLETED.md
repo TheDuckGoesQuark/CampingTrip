@@ -6,6 +6,62 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## The CV is repositioned for senior/staff roles, and shaped for the parsers
+
+**Date**: 2026-09-15
+
+**What was done**:
+
+- **Positioning.** The headline and a three-paragraph Summary say what the CV is
+  for: reliable systems for regulated, high-stakes domains, owned from discovery
+  to operation, and what Jordan wants next. Two claims are set in `<strong>`.
+  The years of experience are derived (`yearsSince` in `formatDate.ts`) rather
+  than typed, so the figure cannot go stale on its own.
+- **Section order and headings** follow what resume parsers map most reliably:
+  Summary, Skills, Experience, Projects, Education, pinned as `CV_SECTIONS` in
+  `CvPage.tsx` and held by `CvPage.test.tsx` along with the single `h1` and the
+  month format.
+- **A Projects section** (`CvProject` in `types/cv.ts`) for CatMaps, this site
+  and PhotoBroom, in authored order rather than by date so CatMaps leads.
+- **Skills are the software lifecycle**: Research, Design, Build, Test,
+  Validate, Operate across the grid, with a full-width `Collaboration` row
+  (`SkillGroup.fullWidth`) closing it under a double-headed arrow.
+- **Organisations carry their mark and a link.** `Role.url` / `Role.logo` and
+  the same on `Education`; `work.ts` now reads the homepage's logos from the CV
+  rather than keeping its own copy, and `cv.test.ts` fails the build if a named
+  logo is missing or a URL is not `https`.
+- **Two links out of the Summary.** `Lindus Health` jumps to that role's card
+  (`RoleAnchorLink` + `roleAnchorId`, through `useDocumentId` so the built page's
+  two copies cannot collide), and `CatMaps` routes to its project page.
+- **A narrow layout of its own.** Under 600px of window the six stages become a
+  numbered pipeline, the numerals drawn with a CSS counter so no digit reaches
+  the markup, the PDF or a screen reader. `@container window-page`, so a dragged
+  window answers as well as a small screen — which meant publishing that same
+  named container on the prerendered reader in `index.html`.
+
+**Key decisions**:
+
+- Order and headings come from fetched guidance on Greenhouse-style parsers:
+  single column, plain standard headings, standard month-year dates, no icons or
+  tables in the text layer. Verified by reading `dist/cv.pdf` back with
+  `pdftotext` — one comma-joined list per stage, no chips, no interpuncts, no
+  numerals.
+- Decoration is drawn, never written: section separators, the lifecycle arrow
+  and the pipeline numerals are all CSS, so the paper form stays a plain
+  document.
+- Icons on section headings were tried and dropped in favour of those
+  separators.
+- All pre-2020 material kept in full, by decision: this is the reference
+  document, not the one-pager.
+- `yearsSince` is read when the module loads, so a deploy is what moves the
+  count on.
+
+**Deferred**: two `[DRAFT — …]` beats only Jordan can fill — the Lindus
+regulatory-compliance work and CatMaps' current status. Published as they are,
+by decision, and recorded in TODO.
+
+---
+
 ## "Things I'm working on" splits into personal and professional, and offers the CV
 
 **Date**: 2026-09-15

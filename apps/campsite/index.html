@@ -40,11 +40,20 @@
         flex-direction: column;
       }
       /* The inset is published under the same names `Window.Body` uses, so a
-         full-bleed banner reaches this document's edges too. */
+         full-bleed banner reaches this document's edges too, and the page is the
+         same named container, so a layout that answers to the window's width
+         answers to this document's without a second rule for scripts-off. */
       #reader {
+        container-type: inline-size;
+        container-name: window-page;
+
         --window-page-inset-block: 2rem;
         --window-page-inset-inline: 1rem;
 
+        /* An explicit basis, because `container-type` makes the inline size
+           ignore the contents, and a centred flex item would otherwise take its
+           width from them and collapse to nothing. */
+        width: 100%;
         max-width: 72ch;
         margin: 0 auto;
         padding: var(--window-page-inset-block) var(--window-page-inset-inline);

@@ -163,6 +163,7 @@ export interface PersonMeta {
   /** Profiles elsewhere. `mailto:` links are not profiles, so they go in `email`. */
   sameAs: string[];
   email?: string;
+  address?: string;
   knowsAbout: string[];
   /** ISO date. */
   dateModified: string;
@@ -253,6 +254,7 @@ function personOf(person: Cv): PersonMeta {
     jobTitle: person.experience.find((role) => !role.end)?.title,
     sameAs: urls.filter((url) => !url.startsWith(MAILTO)),
     email: emailOf(person),
+    address: person.location,
     knowsAbout: person.skills.flatMap((group) => group.items),
     dateModified: person.updated,
   };

@@ -41,6 +41,7 @@ function jsonLd(meta: PageMeta, url: string): object {
           url,
           sameAs: meta.person.sameAs,
           email: meta.person.email,
+          address: meta.person.address,
           knowsAbout: meta.person.knowsAbout,
         },
       };

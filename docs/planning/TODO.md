@@ -216,11 +216,13 @@ which the dev server cannot prove, since it never renders the reader. Verify
 against a `vite preview` of `dist`, and extend `semantics.test.ts`, which today
 only asserts same-page fragments.
 
-### Blog — the CV's narrative
+### Blog — the CV's remaining `[DRAFT — …]` beats
 
-The roles, skills and education in `cv.tsx` come from Jordan's document. The
-narrative's closing paragraph is a `[DRAFT — …]` beat, and the narrative is the
-place for an `Island` if the CV wants one interactive piece.
+Two bracketed beats are live on `/blog/cv.html` and in `/cv.pdf`, published
+knowingly: the regulatory-compliance bullet under Lindus Health (which
+frameworks, what was delivered, what it achieved) and what CatMaps has running
+today. Both need facts only Jordan has. The Summary is still the place for an
+`Island` if the CV wants one interactive piece.
 
 ### Blog — content to write
 

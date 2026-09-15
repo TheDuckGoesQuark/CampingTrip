@@ -41,12 +41,19 @@ describe("prerender entry", () => {
 
   it("puts the whole CV in the static page, so the PDF and a crawler get all of it", () => {
     const { html } = render(blogPaths.cv)!;
-    expect(html).toContain(cv.name);
+    const host = document.createElement("div");
+    host.innerHTML = html;
+    const text = host.textContent ?? "";
+    expect(text).toContain(cv.name);
     for (const role of cv.experience) {
-      expect(html).toContain(role.org);
-      for (const highlight of role.highlights) expect(html).toContain(highlight);
+      expect(text).toContain(role.org);
+      for (const highlight of role.highlights) expect(text).toContain(highlight);
     }
-    for (const entry of cv.education) expect(html).toContain(entry.institution);
+    for (const project of cv.projects) {
+      expect(text).toContain(project.name);
+      for (const highlight of project.highlights) expect(text).toContain(highlight);
+    }
+    for (const entry of cv.education) expect(text).toContain(entry.institution);
     expect(html).toContain(`href="${blogPaths.cvPdf}"`);
   });
 

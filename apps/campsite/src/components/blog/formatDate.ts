@@ -11,13 +11,22 @@ export function formatDate(iso: string, style: "long" | "short" = "long"): strin
   return new Date(iso).toLocaleDateString("en-GB", FORMATS[style]);
 }
 
-/** Month and year, for a span of time such as a job: "Mar 2022". */
+/* en-US, not the en-GB used elsewhere: en-GB writes September "Sept", which the
+   resume parsers behind job applications do not all read as a month. */
 export function monthYear(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-GB", {
+  return new Date(iso).toLocaleDateString("en-US", {
     month: "short",
     year: "numeric",
     timeZone: "UTC",
   });
+}
+
+export function yearsSince(iso: string, now: Date = new Date()): number {
+  const start = new Date(iso);
+  const years = now.getUTCFullYear() - start.getUTCFullYear();
+  const month = now.getUTCMonth() - start.getUTCMonth();
+  const beforeAnniversary = month < 0 || (month === 0 && now.getUTCDate() < start.getUTCDate());
+  return beforeAnniversary ? years - 1 : years;
 }
 
 /** Day of the month alone, for the date gutter down the side of a feed. */
