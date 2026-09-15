@@ -25,36 +25,34 @@ export const personalWork: WorkItem[] = listedProjects.map((project) => ({
 }));
 
 /* `org` is a key into the CV, not a label: a card for a job the CV has dropped
-   should not survive. The tags deliberately differ from that role's on the CV,
-   and each colour is its logo's own background rather than a chosen swatch. */
+   should not survive, and the logo is the CV's. The tags deliberately differ
+   from that role's on the CV, and each colour is its logo's own background
+   rather than a chosen swatch. */
 const FEATURED_ROLES: {
   org: string;
   label: string;
   color: string;
-  icon: string;
   tags: string[];
 }[] = [
   {
     org: "Lindus Health",
     label: "Lindus",
     color: "#000000",
-    icon: "images/projects/lindus-health.webp",
     tags: ["Clinical-Trials", "AI-Native", "Regulatory-Compliance"],
   },
   {
     org: "Gravity Sketch",
     label: "Gravity Sketch",
     color: "#ffffff",
-    icon: "images/projects/gravity-sketch.webp",
     tags: ["VR", "Design", "B2B", "B2C"],
   },
 ];
 
 export const professionalWork: WorkItem[] = [
-  ...FEATURED_ROLES.flatMap(({ org, label, color, icon, tags }) => {
-    const onTheCv = cv.experience.some((entry) => entry.org === org);
+  ...FEATURED_ROLES.flatMap(({ org, label, color, tags }) => {
+    const role = cv.experience.find((entry) => entry.org === org);
     // A drop rather than a throw: `work.test.ts` is where this is meant to fail.
-    return onTheCv ? [{ title: label, to: blogPaths.cv, tags, color, icon }] : [];
+    return role ? [{ title: label, to: blogPaths.cv, tags, color, icon: role.logo }] : [];
   }),
   {
     /* Written out because the CV carries the thesis as one line under Education
@@ -63,6 +61,6 @@ export const professionalWork: WorkItem[] = [
     to: blogPaths.cv,
     tags: ["Java", "JADE", "MSci-Thesis"],
     color: "#ffffff",
-    icon: "images/projects/st-andrews.webp",
+    icon: cv.education.find((entry) => entry.institution === "University of St Andrews")?.logo,
   },
 ];

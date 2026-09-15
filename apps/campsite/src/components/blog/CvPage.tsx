@@ -1,9 +1,13 @@
-import { Button, Link, Tag, Text } from "@jordanscamp/ds";
+import { Button, Icon, Link, Tag, Text, type IconName } from "@jordanscamp/ds";
+import type { ReactNode } from "react";
 
+import { useDocumentId } from "../../prerender/renderTarget";
 import { blogPaths } from "../../routing/blogPaths";
+import type { Cv, CvProject, Education, Role } from "../../types/cv";
 
 import "../../styles/blogProse.css";
-import type { Cv, Education, Role } from "../../types/cv";
+import { asset } from "../../utils/assetPath";
+import { roleAnchorId } from "../../utils/roleAnchor";
 import { formatDate, monthYear } from "./formatDate";
 import { offsiteLinkProps } from "./offsiteLink";
 
@@ -12,6 +16,11 @@ import styles from "./blog.module.css";
 export interface CvPageProps {
   cv: Cv;
 }
+
+/* Plain, conventional words: the resume parsers behind job applications map
+   sections by heading text, and a creative heading maps to nothing. */
+export const CV_SECTIONS = ["Summary", "Skills", "Experience", "Projects", "Education"] as const;
+export type CvSectionName = (typeof CV_SECTIONS)[number];
 
 /**
  * Two `time` elements rather than one string: a range has no single datetime,
@@ -27,11 +36,10 @@ function DateRange({ start, end }: { start: string; end?: string }) {
   );
 }
 
-/**
- * The CV: narrative first, then the conventional document. Plain markup below
- * the narrative, because this page is also printed to the PDF and read by
- * tooling that parses CVs.
- */
+function iconOfLink(url: string): IconName {
+  return url.startsWith("mailto:") ? "envelope" : "globe";
+}
+
 export default function CvPage({ cv }: CvPageProps) {
   return (
     <article className={styles.cv}>
@@ -40,87 +48,137 @@ export default function CvPage({ cv }: CvPageProps) {
         <Text variant="body-lg" tone="muted">
           {cv.headline}
         </Text>
-        <div className={styles.cvLinks}>
+        <ul className={styles.cvLinks}>
+          {cv.location && (
+            <li>
+              <Icon name="house" size="sm" />
+              <Text variant="body-sm" as="span">
+                {cv.location}
+              </Text>
+            </li>
+          )}
           {cv.links.map((link) => (
-            <Link key={link.url} href={link.url} {...offsiteLinkProps(link.url)}>
-              {link.label}
-            </Link>
+            <li key={link.url}>
+              <Icon name={iconOfLink(link.url)} size="sm" />
+              <Link href={link.url} {...offsiteLinkProps(link.url)}>
+                {link.label}
+              </Link>
+            </li>
           ))}
-          <Text variant="label" tone="muted" as="span">
-            Updated <time dateTime={cv.updated}>{formatDate(cv.updated)}</time>
-          </Text>
-        </div>
+        </ul>
         <div className={styles.cvActions}>
           <Button variant="default" size="sm" render={<a href={blogPaths.cvPdf} download />}>
             Download PDF
           </Button>
+          <Text variant="label" tone="muted" as="span">
+            Updated <time dateTime={cv.updated}>{formatDate(cv.updated)}</time>
+          </Text>
         </div>
       </header>
 
-      <div className="blog-prose">{cv.narrative}</div>
+      <CvSection name="Summary">
+        <div className="blog-prose">{cv.narrative}</div>
+      </CvSection>
 
-      <section className={styles.cvSection}>
-        <Text variant="title-2">Experience</Text>
-        {cv.experience.map((role) => (
-          <RoleEntry key={`${role.org} ${role.start}`} role={role} />
-        ))}
-      </section>
-
-      <section className={styles.cvSection}>
-        <Text variant="title-2">Skills</Text>
+      <CvSection name="Skills">
         <dl className={styles.cvSkills}>
           {cv.skills.map((group) => (
-            <div key={group.group} className={styles.cvSkillGroup}>
+            <div
+              key={group.group}
+              className={group.fullWidth ? styles.cvSkillGroupFull : styles.cvSkillGroup}
+            >
               <dt>
                 <Text variant="label" as="span">
                   {group.group}
                 </Text>
               </dt>
               <dd>
-                <Text variant="body-sm" as="span">
-                  {group.items.join(", ")}
-                </Text>
+                <ul className={styles.cvSkillItems}>
+                  {group.items.map((item) => (
+                    <li key={item}>
+                      <Text variant="body-sm" as="span">
+                        {item}
+                      </Text>
+                    </li>
+                  ))}
+                </ul>
               </dd>
             </div>
           ))}
         </dl>
-      </section>
+      </CvSection>
 
-      <section className={styles.cvSection}>
-        <Text variant="title-2">Education</Text>
+      <CvSection name="Experience">
+        {cv.experience.map((role) => (
+          <RoleEntry key={`${role.org} ${role.start}`} role={role} />
+        ))}
+      </CvSection>
+
+      <CvSection name="Projects">
+        {cv.projects.map((project) => (
+          <ProjectEntry key={project.name} project={project} />
+        ))}
+      </CvSection>
+
+      <CvSection name="Education">
         {cv.education.map((entry) => (
           <EducationEntry key={`${entry.institution} ${entry.start}`} entry={entry} />
         ))}
-      </section>
+      </CvSection>
     </article>
   );
 }
 
-function RoleEntry({ role }: { role: Role }) {
+function CvSection({ name, children }: { name: CvSectionName; children: ReactNode }) {
   return (
-    <div className={styles.cvRole}>
+    <section className={styles.cvSection}>
+      <Text variant="title-2">{name}</Text>
+      {children}
+    </section>
+  );
+}
+
+function RoleEntry({ role }: { role: Role }) {
+  const anchor = useDocumentId(roleAnchorId(role.org));
+  return (
+    <div className={styles.cvRole} id={anchor}>
       <div className={styles.cvRoleHead}>
         <Text variant="title-4" as="h3">
           {role.title}
         </Text>
-        <Text variant="label" tone="muted" as="span">
+        <Text variant="body-sm" tone="muted" as="span">
           <DateRange start={role.start} end={role.end} />
         </Text>
       </div>
-      <Text variant="body-sm" tone="muted">
-        {role.location ? `${role.org}, ${role.location}` : role.org}
-      </Text>
+      <OrgLine name={role.org} url={role.url} logo={role.logo} detail={role.location} />
       {role.summary && <Text>{role.summary}</Text>}
       {role.highlights.length > 0 && <Highlights items={role.highlights} />}
-      {role.tags.length > 0 && (
-        <ul className={styles.tagList}>
-          {role.tags.map((tag) => (
-            <li key={tag}>
-              <Tag>{tag}</Tag>
-            </li>
-          ))}
-        </ul>
+      <TagRow tags={role.tags} />
+    </div>
+  );
+}
+
+function ProjectEntry({ project }: { project: CvProject }) {
+  return (
+    <div className={styles.cvRole}>
+      <div className={styles.cvRoleHead}>
+        <Text variant="title-4" as="h3">
+          {project.name}
+        </Text>
+        <Text variant="body-sm" tone="muted" as="span">
+          <DateRange start={project.start} end={project.end} />
+        </Text>
+      </div>
+      {project.url && (
+        <Text variant="body-sm" tone="muted">
+          <Link href={project.url} {...offsiteLinkProps(project.url)}>
+            {project.url.replace(/^https?:\/\//, "")}
+          </Link>
+        </Text>
       )}
+      <Text>{project.summary}</Text>
+      {project.highlights.length > 0 && <Highlights items={project.highlights} />}
+      <TagRow tags={project.tags} />
     </div>
   );
 }
@@ -132,15 +190,44 @@ function EducationEntry({ entry }: { entry: Education }) {
         <Text variant="title-4" as="h3">
           {entry.qualification}
         </Text>
-        <Text variant="label" tone="muted" as="span">
+        <Text variant="body-sm" tone="muted" as="span">
           <DateRange start={entry.start} end={entry.end} />
         </Text>
       </div>
-      <Text variant="body-sm" tone="muted">
-        {entry.institution}
-      </Text>
+      <OrgLine name={entry.institution} url={entry.url} logo={entry.logo} />
       {entry.highlights && entry.highlights.length > 0 && <Highlights items={entry.highlights} />}
     </div>
+  );
+}
+
+/** The mark is decoration beside a name that already says who this is, so it has no alt text. */
+function OrgLine({
+  name,
+  url,
+  logo,
+  detail,
+}: {
+  name: string;
+  url?: string;
+  logo?: string;
+  detail?: string;
+}) {
+  return (
+    <Text variant="body-sm" tone="muted" as="div">
+      <span className={styles.cvOrg}>
+        {logo && (
+          <img className={styles.cvOrgLogo} src={asset(logo)} alt="" width={20} height={20} />
+        )}
+        {url ? (
+          <Link href={url} {...offsiteLinkProps(url)}>
+            {name}
+          </Link>
+        ) : (
+          name
+        )}
+        {detail && `, ${detail}`}
+      </span>
+    </Text>
   );
 }
 
@@ -150,6 +237,19 @@ function Highlights({ items }: { items: string[] }) {
       {items.map((item) => (
         <li key={item}>
           <Text as="span">{item}</Text>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function TagRow({ tags }: { tags: string[] }) {
+  if (tags.length === 0) return null;
+  return (
+    <ul className={styles.tagList}>
+      {tags.map((tag) => (
+        <li key={tag}>
+          <Tag>{tag}</Tag>
         </li>
       ))}
     </ul>

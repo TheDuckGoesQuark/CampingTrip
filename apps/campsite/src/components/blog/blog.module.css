@@ -619,10 +619,20 @@
 }
 
 .cvLinks {
+  margin: 0;
+  padding: 0;
+  list-style: none;
   display: flex;
-  align-items: baseline;
+  align-items: center;
   flex-wrap: wrap;
   gap: var(--space-m);
+}
+
+.cvLinks li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xxs);
+  color: var(--brand-text-muted);
 }
 
 .cvActions {
@@ -632,6 +642,10 @@
   flex-wrap: wrap;
 }
 
+.cvActions > :last-child {
+  margin-left: auto;
+}
+
 .cvSection {
   margin-top: var(--space-xl);
   display: flex;
@@ -639,11 +653,43 @@
   gap: var(--space-m);
 }
 
+/* Backgrounds rather than a glyph, so nothing lands in the PDF's text layer. */
+.cvSection::before {
+  content: "";
+  display: block;
+  height: 9px;
+  margin-bottom: var(--space-s);
+  background:
+    linear-gradient(
+        90deg,
+        transparent,
+        var(--brand-border-strong) 25%,
+        var(--brand-border-strong) 75%,
+        transparent
+      )
+      center / 100% 1px no-repeat,
+    linear-gradient(45deg, var(--brand-accent), var(--brand-accent)) center / 7px 7px no-repeat,
+    var(--brand-surface) center / 13px 13px no-repeat;
+}
+
 .cvRole,
 .cvEducation {
   display: flex;
   flex-direction: column;
   gap: var(--space-xs);
+}
+
+.cvOrg {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.cvOrgLogo {
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-s);
+  object-fit: cover;
 }
 
 .cvRoleHead {
@@ -662,21 +708,176 @@
   gap: var(--space-xxs);
 }
 
+/* 92px: narrow enough that all six lifecycle stages fit one row at this measure. */
 .cvSkills {
   margin: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: var(--space-m);
+  grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+  gap: var(--space-m) var(--space-s);
 }
 
 .cvSkillGroup {
   display: flex;
   flex-direction: column;
-  gap: var(--space-xxs);
+  gap: var(--space-xs);
+  padding-top: var(--space-xs);
+  border-top: 2px solid var(--brand-accent);
 }
 
 .cvSkillGroup dd {
   margin: 0;
+}
+
+.cvSkillItems {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xxs);
+}
+
+/* The shaft is inset by exactly the width of one arrowhead at each end. */
+.cvSkillGroupFull {
+  composes: cvSkillGroup;
+
+  grid-column: 1 / -1;
+  position: relative;
+  border-top: none;
+  padding-top: var(--space-m);
+  text-align: center;
+  background: linear-gradient(var(--brand-accent), var(--brand-accent)) no-repeat center top /
+    calc(75% - 16px) 2px;
+}
+
+.cvSkillGroupFull::before,
+.cvSkillGroupFull::after {
+  content: "";
+  position: absolute;
+  top: -3px;
+  border-block: 4px solid transparent;
+}
+
+.cvSkillGroupFull::before {
+  left: 12.5%;
+  border-right: 8px solid var(--brand-accent);
+}
+
+.cvSkillGroupFull::after {
+  right: 12.5%;
+  border-left: 8px solid var(--brand-accent);
+}
+
+.cvSkillGroupFull .cvSkillItems {
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-xxs) var(--space-xs);
+}
+
+.cvSkillGroupFull .cvSkillItems li:not(:last-child)::after {
+  content: "·";
+  margin-left: var(--space-xs);
+  color: var(--brand-text-muted);
+}
+
+/* Six stages need about 600px; under that the grid drops one and orphans it on a
+   row of its own. Rows instead, label beside list. A container query, not a media
+   query — the window can be dragged narrow on a wide screen. */
+@container window-page (max-width: 600px) {
+  .cvSkills {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-m);
+    counter-reset: stage;
+  }
+
+  .cvSkillGroup {
+    position: relative;
+    display: grid;
+    grid-template-columns: 20px 1fr;
+    gap: var(--space-xxs) var(--space-s);
+    align-items: start;
+    border-top: none;
+    padding-top: 0;
+  }
+
+  /* The number is drawn, never written: a stage's place in the order is its
+     position in the list, and a numeral in the markup would be read out and
+     parsed as one more skill. */
+  .cvSkillGroup::before {
+    counter-increment: stage;
+    content: counter(stage);
+    grid-row: 1;
+    grid-column: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: var(--radius-full);
+    background: var(--brand-accent);
+    color: var(--brand-text-on-brand);
+    font-size: 11px;
+    font-weight: var(--weight-bold);
+    line-height: 1;
+  }
+
+  /* The thread between one stage and the next, reaching through the row gap. */
+  .cvSkillGroup::after {
+    content: "";
+    position: absolute;
+    left: 9px;
+    top: 20px;
+    bottom: calc(-1 * var(--space-m));
+    width: 2px;
+    background: var(--brand-accent);
+    opacity: 0.35;
+  }
+
+  .cvSkillGroup:last-child::after,
+  .cvSkillGroup:has(+ .cvSkillGroupFull)::after {
+    display: none;
+  }
+
+  .cvSkills dt,
+  .cvSkills dd {
+    grid-column: 2;
+  }
+
+  .cvSkillItems {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--space-xxs) var(--space-xs);
+  }
+
+  .cvSkillItems li:not(:last-child)::after {
+    content: "·";
+    margin-left: var(--space-xs);
+    color: var(--brand-text-muted);
+  }
+
+  /* Not a stage in the sequence, so it takes no number and closes the list with
+     a plain rule instead. */
+  .cvSkillGroupFull {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-xs);
+    padding-top: var(--space-s);
+    border-top: 2px solid var(--brand-accent);
+    background: none;
+    text-align: center;
+  }
+
+  .cvSkillGroupFull::before,
+  .cvSkillGroupFull::after {
+    display: none;
+  }
+
+  .cvSkillGroupFull .cvSkillItems {
+    justify-content: center;
+  }
 }
 
 /* ── Contact footer ────────────────────────────────────────── */
@@ -815,5 +1016,51 @@
   .cvEducation,
   .cvSkillGroup {
     break-inside: avoid;
+  }
+
+  /* Chips print as a row of stray words to a parser; the skills list already
+     carries the keywords in a form it can map. */
+  .cv .tagList {
+    display: none;
+  }
+
+  /* A parser reads a grid left to right and interleaves the groups. */
+  .cvSkills {
+    grid-template-columns: 1fr;
+    gap: var(--space-xs);
+  }
+
+  .cvSkillGroup {
+    border-top: none;
+    padding-top: 0;
+  }
+
+  .cvSkillItems {
+    display: block;
+  }
+
+  .cvSkillItems li {
+    display: inline;
+  }
+
+  .cvSkillItems li:not(:last-child)::after {
+    content: ", ";
+  }
+
+  /* On paper the row is one more comma-joined group, arrowless and left-aligned
+     like the rest: a parser reads it in order and a dot is not a separator. */
+  .cvSkillGroupFull {
+    background: none;
+    text-align: left;
+  }
+
+  .cvSkillGroupFull::before,
+  .cvSkillGroupFull::after {
+    display: none;
+  }
+
+  .cvSkillGroupFull .cvSkillItems li:not(:last-child)::after {
+    content: ", ";
+    margin-left: 0;
   }
 }

@@ -31,7 +31,9 @@ never stored twice.
 | `name`, `headline` | string                                         | The headline is the one-line pitch; it becomes the meta description and the link-preview text                                         |
 | `narrative`        | `ReactNode`                                    | TSX, like a post body. Written first on the page. May contain `Island`s                                                               |
 | `links`            | `{ label, url }[]`                             | GitHub, LinkedIn, email. Become `sameAs` in the JSON-LD                                                                               |
+| `location`         | string                                         | Under the name, where a reader or a parser expects it; also `Person.address`                                                          |
 | `experience`       | `Role[]`                                       | `{ org, title, start, end?, location?, summary, highlights: string[], tags }`, newest first by sorting on `start`, so no caller sorts |
+| `projects`         | `CvProject[]`                                  | `{ name, summary, url?, start, end?, highlights, tags }`, in authored order: the one to talk about first sits at the top              |
 | `skills`           | `{ group, items: string[] }[]`                 | Grouped, so the print form can lay them out in columns                                                                                |
 | `education`        | `{ institution, qualification, start, end }[]` |                                                                                                                                       |
 | `updated`          | ISO date                                       | Shown on the page and used as `dateModified`                                                                                          |
@@ -47,14 +49,33 @@ until it has a resolver, a title, an icon, a page component and a
 `metaOfBlogPage` case. `blogUrls()` gets one more entry, and the test over it
 renders the page, so the static form is checked on every run.
 
-`CvPage.tsx` lays the page out narrative first:
+`CvPage.tsx` lays the page out in the order resume parsers map most reliably,
+under the plain headings they map by (`CV_SECTIONS` pins both, and a test holds
+them):
 
-1. Name, headline, links, and a `Download PDF` link to `/cv.pdf`.
-2. The narrative: how Jordan works and what they want next. This is where an
-   interactive piece belongs, through `Island` with a fallback that is the
-   complete content, because the fallback is what the PDF and the crawler get.
-3. The conventional CV: experience, skills, education. Plain markup, so it
-   prints and parses cleanly.
+1. Name, headline, location, links, and a `Download PDF` link to `/cv.pdf`.
+2. **Summary**: the narrative, how Jordan works and what they want next. This is
+   where an interactive piece belongs, through `Island` with a fallback that is
+   the complete content, because the fallback is what the PDF and the crawler
+   get.
+3. **Skills**, grouped. Above Experience because skills-based screening reads it
+   first; on paper the grid collapses to one column so a parser cannot
+   interleave the groups.
+4. **Experience**, **Projects**, **Education**. Plain markup, so it prints and
+   parses cleanly.
+
+The flair is bounded by the parser, so every piece of it is drawn rather than
+written: the section separators, the arrow over the Collaboration row and the
+numerals of the narrow view's pipeline are all CSS, and contact links carry an
+unlabelled inline-SVG `Icon`. None of it reaches the text layer. Role and
+project tags are chips on screen and hidden in print, since a parser would read
+them as stray words, and months are written `en-US` (`Sep`, not `Sept`).
+
+Under 600px of window the six stages stop being columns and become a numbered
+pipeline. That breakpoint is a `@container window-page` query rather than a
+media query, because the CatOS window can be dragged narrow on a wide screen —
+which is why `index.html` publishes the same named container on the prerendered
+reader.
 
 ## Rendering two: the prerendered HTML
 

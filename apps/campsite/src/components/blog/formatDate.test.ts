@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { dayOfMonth, formatDate, monthAndYear } from "./formatDate";
+import { dayOfMonth, formatDate, monthAndYear, yearsSince } from "./formatDate";
 
 describe("formatDate", () => {
   it("formats in UTC, so a reader west of Greenwich sees the authored day", () => {
@@ -17,5 +17,13 @@ describe("the feed's date gutter", () => {
   it("splits a date into a padded day and a short month and year", () => {
     expect(dayOfMonth("2026-07-02")).toBe("02");
     expect(monthAndYear("2026-07-02")).toBe("JUL 26");
+  });
+});
+
+describe("yearsSince", () => {
+  it("counts whole years only, so the count turns on the anniversary", () => {
+    expect(yearsSince("2014-09-01", new Date("2026-08-31T00:00:00Z"))).toBe(11);
+    expect(yearsSince("2014-09-01", new Date("2026-09-01T00:00:00Z"))).toBe(12);
+    expect(yearsSince("2014-09-01", new Date("2027-08-31T00:00:00Z"))).toBe(12);
   });
 });
