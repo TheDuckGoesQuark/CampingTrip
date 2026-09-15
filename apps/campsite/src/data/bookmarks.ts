@@ -6,7 +6,7 @@ export const bookmarks: Bookmark[] = [
     url: "https://mynoise.net/NoiseMachines/campingRainNoiseGenerator.php",
     blurb:
       "A curated sound generation site that's helped me get fixated on things since 2010. Linking straight to the rain on a tent sound, but there's a whole library from coffee shop to binaural beats.",
-    icon: "images/bookmarks/mynoise.png",
+    icon: "images/bookmarks/mynoise.webp",
     color: "#e8762b",
     addedAt: "2026-03-03",
   },

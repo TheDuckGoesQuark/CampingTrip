@@ -12,6 +12,13 @@
   line-height: 1;
 }
 
+.image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .sm {
   width: var(--tile-sm);
   height: var(--tile-sm);

@@ -6,6 +6,63 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## The homepage's project list gets faces, and says what it is
+
+**Date**: 2026-09-14
+
+**What was done**:
+
+- **`Tile` draws an image or a glyph** before falling back to the initial, with
+  the same `icon` / `glyph` precedence `DesktopIcon` already uses. An image gets
+  an empty alt: the tile is decorative and its label sits beside it.
+- **`note` glyph** in the `Icon` set — a beamed pair of quavers, stroked like the
+  rest.
+- **`Project.icon` and `Project.url` are optional**, and `Project.glyph` is new.
+  A project page with no `url` shows no visit button.
+- **Section retitled** "Things I'm working on"; the intro's "This website is
+  trying to do both" line is gone.
+- **Data**: Camping Trip is now `JordansCamp.Site` (`react`, `three.js`,
+  `creative`) with a 104px WebP crop of the tent scene at
+  `public/images/projects/`; CatMap (`rust`, `react-native`, `product`) reuses
+  `images/logo.webp`, the same file the laptop in the tent shows on its screen;
+  Music Production (`guitar`, `drums`, `ableton`) is new, with the `note` glyph
+  and no URL.
+- **Tests**: `projects.test.ts` checks every named icon exists under `public/`;
+  the overlay and prerender tests follow the slug from `camping-trip` to
+  `jordanscamp-site`.
+
+**Key decisions**:
+
+- **Reuse the laptop's logo rather than downsize a copy.** It is already
+  fetched for the scene, so the blog gets it from cache, and there is one CatMap
+  logo in the repo rather than two that can drift.
+- **PhotoBroom is unlisted, not removed.** Its project page is routed off the
+  same `projects` array as the section, so `listed: false` keeps the page and
+  the legacy `/blog/photobroom` redirect while `listedProjects` leaves it off
+  "working on".
+- **Bookmark tiles take their image too.** myNoise's mark is a 128px WebP;
+  Eyezmaze's is its native 76px PNG, since upscaling pixel art gains nothing.
+  `bookmarks.test.ts` checks the files exist, as `projects.test.ts` does.
+- **CatMap keeps its title.** The request wrote both CatMap and CatMaps; the
+  existing slug is referenced by several tests and the title matched the logo,
+  so only the explicitly requested rename (Camping Trip) was made.
+- **The slug changed with the title.** Slugs are derived from titles by design,
+  so `/blog/projects/camping-trip.html` now 404s. Nothing in the repo linked to
+  it; an external link would need a redirect.
+
+- **Whole-card links, as `PostSummaryCard` does it.** Each project row and each
+  tool chip is a `Card` rendered as a `RouterLink`, so the DS's own hover and
+  focus affordances apply and the heading sits inside the link that names it.
+  The tool grid is a wrapping flex row, so a chip is as wide as its label.
+- The "Things I keep coming back to" note under the tools heading is gone.
+
+**Deferred**:
+
+- A redirect from the old `camping-trip` slug, if any inbound link exists.
+- Music Production has nothing to link to yet; add `url` when there is.
+
+---
+
 ## CatOS gets a light / dark / system switch
 
 **Date**: 2026-09-14

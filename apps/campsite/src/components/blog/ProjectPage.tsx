@@ -59,18 +59,19 @@ export default function ProjectPage({ project }: ProjectPageProps) {
       <footer className={styles.projectActions}>
         {/* The campsite is one of the projects, and a new tab at the origin
             would reload the site the reader is standing in. */}
-        {isThisSite(project.url) ? (
-          <Button render={<RouterLink to={routes.tent} />} variant="subtle">
-            Touch grass →
-          </Button>
-        ) : (
-          <Button
-            render={<a href={project.url} target="_blank" rel="noopener noreferrer" />}
-            variant="subtle"
-          >
-            Visit Project →
-          </Button>
-        )}
+        {project.url &&
+          (isThisSite(project.url) ? (
+            <Button render={<RouterLink to={routes.tent} />} variant="subtle">
+              Touch grass →
+            </Button>
+          ) : (
+            <Button
+              render={<a href={project.url} target="_blank" rel="noopener noreferrer" />}
+              variant="subtle"
+            >
+              Visit Project →
+            </Button>
+          ))}
         {project.github && (
           <Button
             render={<a href={project.github} target="_blank" rel="noopener noreferrer" />}
