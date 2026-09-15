@@ -21,6 +21,21 @@ describe("Tile", () => {
     expect(container.firstElementChild?.getAttribute("style")).toContain("--brand-solid");
   });
 
+  it("draws the image over the initial, with an empty alt since the label sits beside it", () => {
+    const { container } = render(<Tile label="CatMap" icon="/logo.webp" />);
+    const img = container.querySelector("img");
+    expect(img).toHaveAttribute("src", "/logo.webp");
+    expect(img).toHaveAttribute("alt", "");
+    expect(container.firstElementChild?.textContent).toBe("");
+  });
+
+  it("draws the glyph when there is no image", () => {
+    const { container } = render(<Tile label="Music" glyph="note" />);
+    expect(container.querySelector("svg path")).not.toBeNull();
+    expect(container.querySelector("img")).toBeNull();
+    expect(container.firstElementChild?.textContent).toBe("");
+  });
+
   it("applies a distinct class per size", () => {
     const { container } = render(
       <>

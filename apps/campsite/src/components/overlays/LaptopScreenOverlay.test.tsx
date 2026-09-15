@@ -12,7 +12,7 @@ import { useSessionStore } from "../../store/sessionStore";
 import LaptopScreenOverlay from "./LaptopScreenOverlay";
 
 const HOME = "/blog/index.html";
-const CAMPING_TRIP = "/blog/projects/camping-trip.html";
+const CAMPING_TRIP = "/blog/projects/jordanscamp-site.html";
 const CATMAP = "/blog/projects/catmap.html";
 const MUSIC_TAG = "/blog/tags/music.html";
 
@@ -238,7 +238,7 @@ describe("LaptopScreenOverlay (CatOS)", () => {
   it("launches CatNav from the desktop rather than listing content there", () => {
     useSceneStore.setState({ laptopFocused: true });
     renderWithPath();
-    expect(screen.queryByText("Camping Trip")).toBeNull();
+    expect(screen.queryByText("JordansCamp.Site")).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: /CatNav/ }));
     expect(currentPath()).toBe(HOME);
   });
@@ -300,7 +300,7 @@ describe("LaptopScreenOverlay (CatOS)", () => {
       renderOverlay();
       expect(screen.getAllByRole("tab")).toHaveLength(2);
       expect(screen.getByRole("tab", { name: /CatMap/ })).toHaveAttribute("aria-selected", "true");
-      expect(screen.getByRole("tab", { name: /Camping Trip/ })).toHaveAttribute(
+      expect(screen.getByRole("tab", { name: /JordansCamp\.Site/ })).toHaveAttribute(
         "aria-selected",
         "false",
       );
@@ -321,7 +321,7 @@ describe("LaptopScreenOverlay (CatOS)", () => {
     it("drops a background tab from the strip without changing the address", () => {
       openTabs([CAMPING_TRIP, CATMAP], CATMAP);
       renderOverlay();
-      fireEvent.click(screen.getByRole("button", { name: "Close Camping Trip" }));
+      fireEvent.click(screen.getByRole("button", { name: "Close JordansCamp.Site" }));
       expect(useSceneStore.getState().openBlogPaths).toEqual([CATMAP]);
       expect(screen.getByText(`https://jordanscamp.site${CATMAP}`)).toBeInTheDocument();
     });
@@ -367,7 +367,7 @@ describe("LaptopScreenOverlay (CatOS)", () => {
     it("selecting a background tab navigates to its route", () => {
       openTabs([CAMPING_TRIP, CATMAP], CATMAP);
       renderWithPath();
-      fireEvent.click(screen.getByRole("tab", { name: /Camping Trip/ }));
+      fireEvent.click(screen.getByRole("tab", { name: /JordansCamp\.Site/ }));
       expect(currentPath()).toBe(CAMPING_TRIP);
     });
   });

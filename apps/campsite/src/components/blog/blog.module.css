@@ -44,9 +44,12 @@
    beside it leaves, not the width of the window, so the page can be wide while
    this column is not. */
 /* One width for the masthead and the prose under it, set once here. Both fill
-   it, so the cat's right edge and the paragraph's are the same edge. */
+   it, so the cat's right edge and the paragraph's are the same edge. Centred so
+   the column sits in the middle of whatever room `.homeMain` has beside the
+   feed, rather than jammed against its left edge. */
 .homeHeader {
   max-width: var(--measure);
+  margin-inline: auto;
 }
 
 .masthead {
@@ -274,7 +277,11 @@
 }
 
 /* A `<hr>` here would announce a second time the break `<section>` already is. */
+/* Same width and centring as `.homeHeader`, so its divider lines up under the
+   header's own edges rather than spanning the wider `.homeMain`. */
 .homeSection {
+  max-width: var(--measure);
+  margin-inline: auto;
   border-top: 2px solid var(--brand-border-strong);
   margin-top: var(--space-l);
   padding-top: 20px;
@@ -296,18 +303,12 @@
   gap: 14px;
 }
 
-.sectionNote {
-  margin: var(--space-xs) 0 14px;
-}
-
-/* Two cards in a narrow window, more as it widens — these are chips, not prose,
-   so they genuinely benefit from the room. */
 .toolGrid {
-  margin: 0;
+  margin: 14px 0 0;
   padding: 0;
   list-style: none;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: var(--space-s);
 }
 

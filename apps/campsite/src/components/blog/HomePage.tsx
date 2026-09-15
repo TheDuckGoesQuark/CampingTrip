@@ -2,7 +2,7 @@ import { Card, Icon, Link, Tag, Text, Tile } from "@jordanscamp/ds";
 import { Link as RouterLink } from "react-router-dom";
 
 import { bookmarks } from "../../data/bookmarks";
-import { projects } from "../../data/projects";
+import { listedProjects } from "../../data/projects";
 import { slugify } from "../../data/slug";
 import { useDocumentId } from "../../prerender/renderTarget";
 import { blogPaths } from "../../routing/blogPaths";
@@ -61,8 +61,7 @@ export default function HomePage() {
 
           <Text>
             I'm Jordan. I love making people's lives easier and more fun. I also love solving
-            complex problems with easy to follow systems.{" "}
-            <strong>This website is trying to do both.</strong>
+            complex problems with easy to follow systems.
           </Text>
           <div className={styles.paragraphGap}>
             <Text>
@@ -95,10 +94,10 @@ export default function HomePage() {
 
         <section className={styles.homeSection}>
           <Text variant="title-3" as="h2">
-            Things I'm proud of
+            Things I'm working on
           </Text>
           <ul className={styles.sectionBody}>
-            {projects.map((project) => (
+            {listedProjects.map((project) => (
               <ProjectRow key={project.title} project={project} />
             ))}
           </ul>
@@ -108,11 +107,6 @@ export default function HomePage() {
           <Text variant="title-3" as="h2">
             Things I think are cool
           </Text>
-          <div className={styles.sectionNote}>
-            <Text variant="body-sm" tone="muted">
-              Things I keep coming back to, and would nudge at you across a table.
-            </Text>
-          </div>
           <ul className={styles.toolGrid}>
             {bookmarks.map((bookmark) => (
               <ToolCard key={bookmark.title} bookmark={bookmark} />
@@ -194,30 +188,37 @@ function Mascot() {
 
 function ProjectRow({ project }: { project: Project }) {
   return (
-    <li className={styles.row}>
-      {/* A project's `icon` path is not shipped, so the letter tile is what draws. */}
-      <Tile label={project.title} color={project.color} size="md" />
-      <div className={styles.rowBody}>
-        <div className={styles.titleLine}>
-          <Text variant="title-4" as="h3">
-            <Link render={<RouterLink to={blogPaths.project(slugify(project.title))} />}>
-              {project.title}
-            </Link>
-          </Text>
-          <Text variant="label" tone="muted" as="span">
-            {project.year}
-          </Text>
+    <li>
+      <Card render={<RouterLink to={blogPaths.project(slugify(project.title))} />} padding="sm">
+        <div className={styles.row}>
+          <Tile
+            label={project.title}
+            color={project.color}
+            size="md"
+            icon={project.icon && asset(project.icon)}
+            glyph={project.glyph}
+          />
+          <div className={styles.rowBody}>
+            <div className={styles.titleLine}>
+              <Text variant="title-4" as="h3">
+                {project.title}
+              </Text>
+              <Text variant="label" tone="muted" as="span">
+                {project.year}
+              </Text>
+            </div>
+            {project.tags && project.tags.length > 0 && (
+              <ul className={styles.tagList}>
+                {project.tags.map((tag) => (
+                  <li key={tag}>
+                    <Tag>{tag}</Tag>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
-        {project.tags && project.tags.length > 0 && (
-          <ul className={styles.tagList}>
-            {project.tags.map((tag) => (
-              <li key={tag}>
-                <Tag>{tag}</Tag>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+      </Card>
     </li>
   );
 }
@@ -225,14 +226,21 @@ function ProjectRow({ project }: { project: Project }) {
 function ToolCard({ bookmark }: { bookmark: Bookmark }) {
   return (
     <li>
-      <Card tone="sunken" padding="sm">
+      <Card
+        render={<RouterLink to={blogPaths.tool(slugify(bookmark.title))} />}
+        tone="sunken"
+        padding="sm"
+      >
         <div className={styles.toolCard}>
-          <Tile label={bookmark.title} color={bookmark.color} size="sm" />
-          <Link render={<RouterLink to={blogPaths.tool(slugify(bookmark.title))} />}>
-            <Text variant="body-sm" as="span">
-              <strong>{bookmark.title}</strong>
-            </Text>
-          </Link>
+          <Tile
+            label={bookmark.title}
+            color={bookmark.color}
+            size="sm"
+            icon={asset(bookmark.icon)}
+          />
+          <Text variant="body-sm" as="span">
+            <strong>{bookmark.title}</strong>
+          </Text>
         </div>
       </Card>
     </li>

@@ -51,7 +51,7 @@ describe("prerender entry", () => {
   });
 
   it("points the campsite project at the tent, not at a reload of this site", () => {
-    const { html } = render(blogPaths.project("camping-trip"))!;
+    const { html } = render(blogPaths.project("jordanscamp-site"))!;
     expect(html).toContain('href="/"');
     expect(html).not.toContain('href="https://jordanscamp.site/"');
   });
