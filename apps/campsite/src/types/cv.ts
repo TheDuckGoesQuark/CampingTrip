@@ -1,5 +1,13 @@
 import type { ReactNode } from "react";
 
+export interface Achievement {
+  name: string;
+  outcome: string;
+  feature?: string;
+  difficulty?: string;
+  approach?: string;
+}
+
 /** One job. `highlights` are plain strings so the PDF and the JSON-LD can carry them. */
 export interface Role {
   org: string;
@@ -14,9 +22,9 @@ export interface Role {
   location?: string;
   /** A short role, an internship say, can go without one. */
   summary?: string;
+  achievements?: Achievement[];
+  /** Whatever is a single line and not a project: a course taught, a club founded. */
   highlights: string[];
-  /** Shown on screen only; the print form has no chips. */
-  tags: string[];
 }
 
 export interface CvProject {
@@ -26,7 +34,6 @@ export interface CvProject {
   start: string;
   end?: string;
   highlights: string[];
-  tags: string[];
 }
 
 export interface SkillGroup {
@@ -45,6 +52,18 @@ export interface Education {
   end: string;
   /** Coursework and projects worth a line each. */
   highlights?: string[];
+}
+
+/** `quote` carries no surrounding quotation marks; the markup supplies them. */
+export interface Commendation {
+  /** Verbatim. Square brackets mark a substitution, an ellipsis marks a cut. */
+  quote: string;
+  /**
+   * By role, never by name: these were written in an internal channel by people
+   * who did not write them for publication.
+   */
+  attribution: string;
+  url?: string;
 }
 
 export interface CvLink {
@@ -72,6 +91,10 @@ export interface Cv {
   projects: CvProject[];
   skills: SkillGroup[];
   education: Education[];
+  /** Authored order. Empty hides the section rather than printing an empty one. */
+  commendations: Commendation[];
+  /** Says where the quotes came from, so role-only attribution does not read as evasion. */
+  commendationsNote?: string;
   /** ISO date, shown on the page and used as `dateModified`. */
   updated: string;
 }

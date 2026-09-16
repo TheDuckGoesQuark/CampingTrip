@@ -1,9 +1,9 @@
-import { Button, Icon, Link, Tag, Text, type IconName } from "@jordanscamp/ds";
-import type { ReactNode } from "react";
+import { Button, Icon, Link, Text, type IconName } from "@jordanscamp/ds";
+import { Fragment, type ReactNode } from "react";
 
 import { useDocumentId } from "../../prerender/renderTarget";
 import { blogPaths } from "../../routing/blogPaths";
-import type { Cv, CvProject, Education, Role } from "../../types/cv";
+import type { Achievement, Commendation, Cv, CvProject, Education, Role } from "../../types/cv";
 
 import "../../styles/blogProse.css";
 import { asset } from "../../utils/assetPath";
@@ -19,7 +19,14 @@ export interface CvPageProps {
 
 /* Plain, conventional words: the resume parsers behind job applications map
    sections by heading text, and a creative heading maps to nothing. */
-export const CV_SECTIONS = ["Summary", "Skills", "Experience", "Projects", "Education"] as const;
+export const CV_SECTIONS = [
+  "Summary",
+  "Skills",
+  "Experience",
+  "Projects",
+  "Education",
+  "Commendations",
+] as const;
 export type CvSectionName = (typeof CV_SECTIONS)[number];
 
 /**
@@ -125,6 +132,19 @@ export default function CvPage({ cv }: CvPageProps) {
           <EducationEntry key={`${entry.institution} ${entry.start}`} entry={entry} />
         ))}
       </CvSection>
+
+      {cv.commendations.length > 0 && (
+        <CvSection name="Commendations">
+          {cv.commendationsNote && (
+            <Text variant="body-sm" tone="muted">
+              {cv.commendationsNote}
+            </Text>
+          )}
+          {cv.commendations.map((commendation) => (
+            <CommendationEntry key={commendation.quote} commendation={commendation} />
+          ))}
+        </CvSection>
+      )}
     </article>
   );
 }
@@ -152,8 +172,10 @@ function RoleEntry({ role }: { role: Role }) {
       </div>
       <OrgLine name={role.org} url={role.url} logo={role.logo} detail={role.location} />
       {role.summary && <Text>{role.summary}</Text>}
+      {role.achievements?.map((achievement) => (
+        <AchievementEntry key={achievement.name} achievement={achievement} />
+      ))}
       {role.highlights.length > 0 && <Highlights items={role.highlights} />}
-      <TagRow tags={role.tags} />
     </div>
   );
 }
@@ -178,7 +200,6 @@ function ProjectEntry({ project }: { project: CvProject }) {
       )}
       <Text>{project.summary}</Text>
       {project.highlights.length > 0 && <Highlights items={project.highlights} />}
-      <TagRow tags={project.tags} />
     </div>
   );
 }
@@ -196,6 +217,75 @@ function EducationEntry({ entry }: { entry: Education }) {
       </div>
       <OrgLine name={entry.institution} url={entry.url} logo={entry.logo} />
       {entry.highlights && entry.highlights.length > 0 && <Highlights items={entry.highlights} />}
+    </div>
+  );
+}
+
+/**
+ * `figure` + `figcaption` is how the spec attributes a quotation: the attribution is
+ * about the quote, not part of what was said, so it sits outside the `blockquote`.
+ * The name is not a `cite` — that element is for the title of a work, not a person.
+ */
+function CommendationEntry({ commendation }: { commendation: Commendation }) {
+  const { quote, attribution, url } = commendation;
+  return (
+    <figure className={styles.cvCommendation}>
+      <blockquote className={styles.cvQuote} cite={url}>
+        <Text>{quote}</Text>
+      </blockquote>
+      <figcaption className={styles.cvAttribution}>
+        <Text variant="body-sm" tone="muted" as="span">
+          {url ? (
+            <Link href={url} {...offsiteLinkProps(url)}>
+              {attribution}
+            </Link>
+          ) : (
+            attribution
+          )}
+        </Text>
+      </figcaption>
+    </figure>
+  );
+}
+
+/* Outcome leads so a reader taking only the first facet of each still has the role. */
+const FACETS = [
+  ["Outcome", (a: Achievement) => a.outcome],
+  ["Feature", (a: Achievement) => a.feature],
+  ["Difficulty", (a: Achievement) => a.difficulty],
+  ["Approach", (a: Achievement) => a.approach],
+] as const;
+
+/**
+ * `dt`/`dd` arrive as fragments rather than wrapped in a `div`, so every label and
+ * value is a direct child of the grid the `dl` establishes.
+ */
+function AchievementEntry({ achievement }: { achievement: Achievement }) {
+  return (
+    <div className={styles.cvAchievement}>
+      <Text variant="title-4" as="h4">
+        {achievement.name}
+      </Text>
+      <dl className={styles.cvFacets}>
+        {FACETS.map(([label, read]) => {
+          const value = read(achievement);
+          if (!value) return null;
+          return (
+            <Fragment key={label}>
+              <dt>
+                <Text variant="label" as="span">
+                  {label}
+                </Text>
+              </dt>
+              <dd>
+                <Text variant="body-sm" as="span">
+                  {value}
+                </Text>
+              </dd>
+            </Fragment>
+          );
+        })}
+      </dl>
     </div>
   );
 }
@@ -237,19 +327,6 @@ function Highlights({ items }: { items: string[] }) {
       {items.map((item) => (
         <li key={item}>
           <Text as="span">{item}</Text>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-function TagRow({ tags }: { tags: string[] }) {
-  if (tags.length === 0) return null;
-  return (
-    <ul className={styles.tagList}>
-      {tags.map((tag) => (
-        <li key={tag}>
-          <Tag>{tag}</Tag>
         </li>
       ))}
     </ul>
