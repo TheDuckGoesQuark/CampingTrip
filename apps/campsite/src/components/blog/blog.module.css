@@ -708,6 +708,65 @@
   gap: var(--space-xxs);
 }
 
+.cvAchievement {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xxs);
+  margin-top: var(--space-s);
+}
+
+.cvFacets {
+  margin: 0;
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--space-xxs) var(--space-m);
+  align-items: baseline;
+}
+
+.cvFacets dt {
+  color: var(--brand-text-muted);
+}
+
+.cvFacets dd {
+  margin: 0;
+}
+
+/* Narrow, the label column leaves the value no measure to read on. */
+@container window-page (max-width: 600px) {
+  .cvFacets {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .cvFacets dd:not(:last-child) {
+    margin-bottom: var(--space-xs);
+  }
+}
+
+.cvCommendation {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+/* A rule rather than quotation marks: a glyph here would land in the PDF's text
+   layer between the attribution and the words it belongs to. */
+.cvQuote {
+  margin: 0;
+  padding-left: var(--space-m);
+  border-left: 2px solid var(--brand-border-strong);
+}
+
+.cvAttribution {
+  padding-left: var(--space-m);
+}
+
+.cvAttribution::before {
+  content: "\2014\00a0";
+  color: var(--brand-text-muted);
+}
+
 /* 92px: narrow enough that all six lifecycle stages fit one row at this measure. */
 .cvSkills {
   margin: 0;
@@ -1012,16 +1071,31 @@
     break-after: avoid;
   }
 
-  .cvRole,
   .cvEducation,
+  .cvCommendation,
   .cvSkillGroup {
     break-inside: avoid;
   }
 
-  /* Chips print as a row of stray words to a parser; the skills list already
-     carries the keywords in a form it can map. */
-  .cv .tagList {
-    display: none;
+  /* Split across a page, the labels lose the name they belong to. */
+  .cvAchievement {
+    break-inside: avoid;
+  }
+
+  .cvAchievement > :first-child {
+    break-after: avoid;
+  }
+
+  /* A role taller than a page cannot honour `break-inside: avoid`, and asking
+     for it only ends the page before it early. Holding the heading, the
+     organisation and the summary to the bullets under them is what that rule
+     was for, and a single bullet is short enough to keep whole. */
+  .cvRole > :nth-child(-n + 3) {
+    break-after: avoid;
+  }
+
+  .cvHighlights li {
+    break-inside: avoid;
   }
 
   /* A parser reads a grid left to right and interleaves the groups. */

@@ -25,7 +25,31 @@ describe("CvPage", () => {
   it("uses the standard section headings, in order", () => {
     renderCv();
     const headings = screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent);
-    expect(headings).toEqual([...CV_SECTIONS]);
+    expect(headings).toEqual(
+      CV_SECTIONS.filter((name) => name !== "Commendations" || cv.commendations.length > 0),
+    );
+  });
+
+  it("attributes a commendation outside the quote, and never as a cite", () => {
+    renderCv();
+    const quote = document.querySelector("blockquote")!;
+    const caption = document.querySelector("figure > figcaption")!;
+    const [first] = cv.commendations;
+
+    expect(quote.textContent).toBe(first.quote);
+    expect(caption.textContent).toBe(first.attribution);
+    expect(quote.textContent).not.toContain(first.attribution);
+    expect(document.querySelector("cite")).toBeNull();
+  });
+
+  it("names nobody, and no employer, in the commendations", () => {
+    const text = [
+      cv.commendationsNote ?? "",
+      ...cv.commendations.flatMap((c) => [c.quote, c.attribution]),
+    ].join(" ");
+    expect(text).not.toMatch(/Lindus|Citrus/i);
+    // Quoted verbatim from an internal channel, so a stray @name would republish one.
+    expect(text).not.toContain("@");
   });
 
   it("writes every date as a month a parser recognises", () => {
@@ -79,6 +103,28 @@ describe("CvPage", () => {
         expect(within(skills).getByText(item)).toBeInTheDocument();
       }
     }
+  });
+
+  it("names every achievement at a level under its role, skipping none", () => {
+    renderCv();
+    const levels = [...document.querySelectorAll("h1,h2,h3,h4")].map((h) => Number(h.tagName[1]));
+    for (const [i, level] of levels.entries()) {
+      if (i > 0) expect(level).toBeLessThanOrEqual(levels[i - 1] + 1);
+    }
+  });
+
+  it("labels each achievement facet against its own value, and omits the empty ones", () => {
+    renderCv();
+    const lindus = cv.experience.find((role) => role.org === "Lindus Health")!;
+    const fireTeam = lindus.achievements!.find((a) => a.name === "The Fire Team")!;
+    const heading = screen.getByRole("heading", { name: fireTeam.name, level: 4 });
+    const facets = heading.parentElement!.querySelector("dl")!;
+    const labels = [...facets.querySelectorAll("dt")].map((dt) => dt.textContent);
+
+    // A founded team has no feature, so that pair is absent rather than empty.
+    expect(labels).toEqual(["Outcome", "Difficulty", "Approach"]);
+    expect(facets.querySelectorAll("dd")).toHaveLength(labels.length);
+    expect(facets.querySelector("dd")!.textContent).toBe(fireTeam.outcome);
   });
 
   it("routes the narrative's CatMaps mention to the project page, not the product site", () => {

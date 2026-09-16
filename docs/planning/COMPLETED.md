@@ -6,6 +6,70 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## The Lindus Health experience is written from evidence, and the CV takes Commendations
+
+**Date**: 2026-09-16
+
+**What was done**:
+
+- **The Lindus Health role is rewritten from its source material** — a Linear
+  work map, the monitoring plans and e-signature technical docs, and the ePRO
+  correction proposal — rather than from memory. Eleven structured achievements and two plain lines replace seven bullets,
+  ordered systems first, then the function Jordan founded, then the
+  company-wide work. Form-level monitoring, the form-engine rebuild,
+  e-signatures, the ePRO correction proposal and the visual-QA CI workflow were
+  absent from the CV entirely and are the largest things in it.
+- **The work is structured, not prose.** `Achievement` in `types/cv.ts` tells
+  every piece of work the same way — Outcome, Feature, Difficulty, Approach —
+  under its own name, rendered as a two-column `dl` with `dt`/`dd` arriving as
+  fragments so each is a direct grid child. Outcome leads because it is the
+  point, and a reader taking only the first facet of each still has the whole
+  role. `Role.highlights` survives alongside it for the lines that are not
+  projects: a course taught, a club founded.
+- **Only `outcome` is required.** The Fire Team was a function rather than a
+  feature, so that pair is absent rather than empty, and a test holds it.
+- **Clinical vocabulary carries its own gloss.** Source data verification,
+  drug-safety reporting, MedDRA, participant diaries and the export work are all
+  written so a reader outside trials learns what they are in the clause that
+  names them, and outcomes replaced feature lists where the features were the
+  jargon.
+- **The regulatory `[DRAFT — …]` beat is filled**, and the frameworks live in
+  the Validate skills group — Good Clinical Practice, 21 CFR Part 11, ICH
+  E6(R3), EMA Annex 11, MHRA GxP data integrity, ALCOA++ — where a screener
+  looks for them, rather than inside a sentence.
+- **Role and project chips are gone**, along with `Role.tags`, `CvProject.tags`,
+  `TagRow` and the print rule that hid them. The homepage keeps its own tags in
+  `work.ts` and never read these.
+- **A Commendations section** (`Commendation` in `types/cv.ts`, last in
+  `CV_SECTIONS`). `figure` holds the quote and its attribution, with the
+  attribution in a `figcaption` outside the `blockquote` because it is about the
+  quote rather than part of what was said, and the name is never a `cite` — that
+  element names a work, not a person. The em dash is a CSS `::before`, so it
+  stays out of the PDF's text layer like the rest of the page's flair.
+- **The section renders only when `cv.commendations` has entries**, so the
+  scaffolding could land ahead of the quotes without publishing an empty heading
+  to the live page and the PDF.
+- **`break-inside: avoid` came off `.cvRole`.** A role taller than a page cannot
+  honour it and only ends the preceding page early; the first three children now
+  take `break-after: avoid` and individual bullets stay whole instead. The PDF
+  went from seven pages back to six while the content grew.
+
+**Key decisions**:
+
+- **No sponsor study is named.** The count (more than 25) is the asset; the
+  names are Lindus client relationships, and this page is indexed and printed.
+- **Ticket and project counts stay off the page.** 426 issues and ~50 projects
+  read as throughput, which argues the opposite of the seniority case; studies
+  led, studies touched and date spans carry it instead.
+- **Empty beats an honest placeholder here.** The existing `[DRAFT — …]` beats
+  are one line inside a section that is otherwise real; a whole section of them
+  is not the same trade.
+
+**Deferred**: the quotes themselves, a print-density pass on the six-page PDF,
+and every experience entry below Lindus Health — all in TODO.md.
+
+---
+
 ## The CV is repositioned for senior/staff roles, and shaped for the parsers
 
 **Date**: 2026-09-15

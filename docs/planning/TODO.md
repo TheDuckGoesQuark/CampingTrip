@@ -216,13 +216,53 @@ which the dev server cannot prove, since it never renders the reader. Verify
 against a `vite preview` of `dist`, and extend `semantics.test.ts`, which today
 only asserts same-page fragments.
 
-### Blog — the CV's remaining `[DRAFT — …]` beats
+### Blog — the CV's remaining `[DRAFT — …]` beat
 
-Two bracketed beats are live on `/blog/cv.html` and in `/cv.pdf`, published
-knowingly: the regulatory-compliance bullet under Lindus Health (which
-frameworks, what was delivered, what it achieved) and what CatMaps has running
-today. Both need facts only Jordan has. The Summary is still the place for an
-`Island` if the CV wants one interactive piece.
+One bracketed beat is live on `/blog/cv.html` and in `/cv.pdf`, published
+knowingly: what CatMaps has running today. It needs facts only Jordan has. The
+Summary is still the place for an `Island` if the CV wants one interactive
+piece.
+
+### Blog — the commendation attributions are inferred, not confirmed
+
+Five quotes are live, verbatim from an internal Slack channel with every name,
+sponsor study and product name stripped. The roles attached to them — a clinical
+research lead, two product designers, the lead of the incident response team,
+two engineers — were inferred from what each message says about its author, not
+looked up. Jordan knows the real ones and should correct them. The two designer
+quotes are by the same person, so one of them wants a different voice or a
+distinguishing role.
+
+Nobody was asked. Attribution is by role and the section names no employer, so
+no individual is identified, but anyone who wrote one would recognise their own
+words. Worth asking the five for a line written knowingly, which could then be
+quoted with a name and be stronger for it.
+
+### Blog — the CV PDF spends two pages on every one it needs
+
+`/cv.pdf` is six A4 pages for about 1,480 words: roughly 250 words a page where
+a dense CV carries 600–700. The content is near three pages' worth and the print
+stylesheet spends six. Dropping `break-inside: avoid` from `.cvRole` already
+recovered one page, so the rest is the space scale, the section separator's
+height and the print heading sizes rather than anything structural. Worth a
+print-density pass on its own, measured with `pdfinfo` and
+`pdftotext | wc -w` rather than by eye.
+
+### Blog — Participant diaries has no Difficulty or Approach
+
+`Participant diaries` carries `[DRAFT — …]` in both facets, published knowingly.
+It needs what made the rebuild hard and how Jordan went at it, which is the half
+of the frame carrying the seniority argument.
+
+### Blog — only Lindus Health uses the structured form
+
+`Role.achievements` is optional, so Gravity Sketch and below still render
+`highlights` as plain bullets and the page mixes two shapes. Their content needs
+the same treatment before the frame reads as a decision rather than an accident.
+Gravity Sketch's bullets carry no numbers or named outcomes; Improbable has two
+purely technical lines; Skyscanner, AMNiiS, Imagine Software and American
+Express have none at all. `AMNiiS — Lead Backend Engineer` is a leadership title
+with an empty body, which reads as a gap rather than a credential.
 
 ### Blog — content to write
 
