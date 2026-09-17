@@ -22,10 +22,17 @@ export const blogPaths = {
   /** The CV. There is one, so it is a file beside `index.html`, not a directory. */
   cv: `${ROOT}/cv.html`,
   /**
+   * The same CV cut to bullets. Its own URL, not a parameter on `cv`: a static
+   * host serves one file per path, so a `?view=` would hand every crawler,
+   * unfurler and printer the same document.
+   */
+  cvCondensed: `${ROOT}/cv-condensed.html`,
+  /**
    * The CV as a file, printed from the page at build time. Off `/blog` and short
    * enough to say aloud, because it is handed over rather than browsed to.
    */
   cvPdf: "/cv.pdf",
+  cvCondensedPdf: "/cv-condensed.pdf",
   /**
    * Desktop items. No `.html`: the extension is there to be *seen* in the
    * address bar, and none of these windows has one.
@@ -44,6 +51,7 @@ export type BlogRef =
   | { kind: "project"; slug: string }
   | { kind: "tool"; slug: string }
   | { kind: "cv" }
+  | { kind: "cvCondensed" }
   | { kind: "desk"; slug: string }
   | { kind: "about" };
 
@@ -74,6 +82,7 @@ export function parseBlogPath(path: string): BlogRef | null {
     const name = stripHtml(directory);
     if (name === "index") return { kind: "home" };
     if (name === "cv") return { kind: "cv" };
+    if (name === "cv-condensed") return { kind: "cvCondensed" };
     if (name === "about") return { kind: "about" };
     return null;
   }
@@ -110,6 +119,8 @@ export function blogPathFor(ref: BlogRef): string {
       return blogPaths.tool(ref.slug);
     case "cv":
       return blogPaths.cv;
+    case "cvCondensed":
+      return blogPaths.cvCondensed;
     case "desk":
       return blogPaths.desk(ref.slug);
     case "about":

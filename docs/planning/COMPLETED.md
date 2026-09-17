@@ -6,6 +6,62 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## The CV comes in two lengths, off one data module
+
+**Date**: 2026-09-17
+
+**What was done**:
+
+- **A second CV page**, `cvCondensed`, at `/blog/cv-condensed.html` (Caddy also
+  answers `/cv-condensed`), prerendered like every other blog page and printed to
+  `/cv-condensed.pdf` by the same `build:pdf` step. Everything is a bullet: no
+  narrative, no achievement facets, no commendations.
+- **A switch on both CVs.** `CvHeader`, extracted from `CvPage`, carries the
+  identity block, the matching PDF link and, out at the end of the name's line, a
+  switch between the lengths built on the design system's `SegmentedNav`.
+- **Four fields on the existing types** rather than a second data module:
+  `Cv.profile`, `Role.short`, `Achievement.short` and `CvProject.short`.
+- **`build:pdf` enforces the two-page budget** and prints the file before it
+  judges it, so a failure leaves the document to look at.
+- **A parity test**, `src/prerender/cvParity.test.tsx`, asserting the
+  prerendered copy and the app's own render of each CV carry identical text and
+  identical off-page links, and that the static copy's ids are exactly the
+  live ones under a `reader-` prefix.
+
+**Key decisions**:
+
+- **Two URLs, not one page with a control.** A static host serves one file per
+  path, so a `?view=` or a JS toggle would hand every crawler, unfurler and
+  printer the same document — and a toggle holding both copies in the DOM would
+  put the CV on the paper twice. This is the constraint `cv-design.md` already
+  recorded for the other toggle, applied here.
+- **`Achievement.short` doubles as the selection.** An achievement reaches the
+  condensed CV by carrying a `short` and leaves it by losing one, so narrowing
+  the document is an edit in `cv.tsx` rather than a rule elsewhere guessing
+  which of Lindus's twelve matter.
+- **A role with no achievements falls back to its `highlights`**, which are
+  already one line each, so nothing had to be written twice to get those roles
+  onto the page.
+- **Both pages stay `schema.org/ProfilePage` and self-canonical.** They are two
+  documents about the same person, not two copies of one, and an ATS landing on
+  either still finds the `Person`.
+- **The print-density rules are scoped to `.cvCondensed`.** The full CV's
+  layout is untouched, so the open TODO about its length is still open and
+  still measures what it measured.
+
+**Deferred**:
+
+- Gravity Sketch contributes six bullets to the condensed CV against Lindus's
+  seven, because the fallback takes all of its `highlights`. That resolves when
+  the roles below Lindus get the structured form — see the TODO item.
+
+**Verified**: `pnpm -r test`, `pnpm -r exec tsc -b`, `pnpm lint`, `pnpm fmt`, and
+a full `build` + `build:pdf` — `/cv-condensed.pdf` renders inside its two A4
+pages, and a script checked its text against `cv.tsx` for every org, title,
+skill, project, qualification and `short` with nothing missing.
+
+---
+
 ## The design system gets a segmented control
 
 **Date**: 2026-09-17

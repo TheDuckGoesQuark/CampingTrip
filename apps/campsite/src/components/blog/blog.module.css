@@ -635,6 +635,14 @@
   color: var(--brand-text-muted);
 }
 
+.cvIdentity {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-s) var(--space-m);
+}
+
 .cvActions {
   display: flex;
   align-items: center;
@@ -958,17 +966,20 @@
   background: var(--brand-surface-sunken);
   box-shadow: var(--shadow-bevel-out);
   position: relative;
-  display: flex;
-  align-items: flex-start;
+  /* Three fixed tracks rather than wrapping flex items. Flex decides a wrap on
+     each item's `flex-basis`, never on what the item could live with, so the
+     point where the footer reshapes is a sum over child widths that the queries
+     below would then have to restate as a literal and keep equal by hand. Here
+     the queries move the children between these tracks and none of them has to
+     know how wide a child is. */
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
   gap: var(--space-l);
-  /* Wrap rather than a viewport breakpoint: this footer sits inside a CatOS
-     window the reader can resize, so how much room it has says nothing about
-     how wide the screen is. */
-  flex-wrap: wrap;
-  /* The rail reshapes on this footer's width, not the viewport's: the same
-     footer renders on the open page and inside a resizable CatOS window, and
-     neither says anything about the other. Declared here rather than leaning on
-     the window's container, which the open page does not have. */
+  /* It reshapes on this footer's width, not the viewport's: the same footer
+     renders on the open page and inside a resizable CatOS window, and neither
+     says anything about the other. Declared here rather than leaning on the
+     window's container, which the open page does not have. */
   container-type: inline-size;
   container-name: contact-footer;
 }
@@ -988,16 +999,12 @@
    component and the border sits outside it rather than eating into it. */
 .contactPortrait {
   box-sizing: content-box;
-  flex-shrink: 0;
   border: 2px solid var(--brand-border-strong);
   box-shadow: var(--shadow-hard-2);
   object-fit: cover;
 }
 
 .contactRow {
-  /* Beside the portrait while there is room for the rail as well, below it when
-     there is not. The basis is the wrap threshold rather than a width. */
-  flex: 1 1 18rem;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -1013,7 +1020,6 @@
   display: grid;
   gap: var(--space-s);
   align-content: start;
-  margin-inline-start: auto;
 }
 
 /* The cell stretches its one child, which is how the control gets a width: the
@@ -1023,23 +1029,31 @@
   display: grid;
 }
 
-/* Too narrow to carry the rail beside the text. Everything takes the full width
-   and stacks, and the portrait centres over it rather than hanging off one
-   edge. The number is the wrap threshold above plus the portrait and its gap. */
-@container contact-footer (width < 34rem) {
-  .contactPortrait {
-    margin-inline: auto;
-  }
-
+/* Below this the text column would be no wider than the rail standing beside
+   it, which reads as two menus rather than a heading with a menu. The rail
+   takes a row of its own instead. */
+@container contact-footer (width < 38rem) {
   .contactRail {
-    width: 100%;
-    margin-inline-start: 0;
+    grid-column: 1 / -1;
   }
 
   /* At this width the reasons are aimed at with a thumb as often as a pointer.
      The floor sits on the cell, since the control stretches to fill it. */
   .contactRail > li {
     min-height: 44px;
+  }
+}
+
+/* No room for the portrait beside the text either, so everything stacks. The
+   portrait centres over the column rather than hanging off one edge. */
+@container contact-footer (width < 27rem) {
+  .contactPortrait {
+    grid-column: 1 / -1;
+    justify-self: center;
+  }
+
+  .contactRow {
+    grid-column: 1 / -1;
   }
 }
 
@@ -1058,6 +1072,74 @@
   gap: var(--space-xs);
 }
 
+.cvCondensed {
+  max-width: 720px;
+}
+
+.cvShortSection {
+  margin-top: var(--space-l);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+}
+
+.cvShortRole {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xxs);
+  overflow-wrap: break-word;
+}
+
+.cvShortList {
+  margin: 0;
+  padding-left: var(--space-l);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xxs);
+}
+
+.cvShortSection > .cvShortList {
+  padding-left: var(--space-m);
+  gap: var(--space-xs);
+}
+
+.cvShortDates {
+  color: var(--brand-text-muted);
+  white-space: nowrap;
+}
+
+/* Not the full CV's chip grid: a parser reads a run of items as one field. */
+.cvShortSkills {
+  margin: 0;
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--space-xxs) var(--space-m);
+  align-items: baseline;
+}
+
+.cvShortSkills > div {
+  display: contents;
+}
+
+.cvShortSkills dt {
+  color: var(--brand-text-muted);
+}
+
+.cvShortSkills dd {
+  margin: 0;
+}
+
+@container window-page (max-width: 600px) {
+  .cvShortSkills {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .cvShortSkills dd:not(:last-child) {
+    margin-bottom: var(--space-xs);
+  }
+}
+
 /* On paper the page is the document: no download control, a role never
    straddles a page break, and a heading never ends a page on its own. */
 @media print {
@@ -1067,6 +1149,12 @@
 
   .cvActions,
   .contact {
+    display: none;
+  }
+
+  /* The only `nav` on the name's line is the switch between the two CVs, and
+     paper is one of them already. */
+  .cvIdentity nav {
     display: none;
   }
 
@@ -1097,8 +1185,30 @@
     break-after: avoid;
   }
 
-  .cvHighlights li {
+  .cvHighlights li,
+  .cvShortList li {
     break-inside: avoid;
+  }
+
+  /* Not `break-inside: avoid`: the first role is taller than the space left under
+     Skills, so asking for it only ends page one early and buys a third. */
+  .cvShortRole > :nth-child(-n + 2) {
+    break-after: avoid;
+  }
+
+  /* `build:pdf` fails rather than ship a third page; a line bought back is a bullet kept. */
+  .cvCondensed .cvShortSection {
+    margin-top: var(--space-m);
+    gap: var(--space-xs);
+  }
+
+  .cvCondensed .cvShortRole,
+  .cvCondensed .cvShortList {
+    gap: 0;
+  }
+
+  .cvCondensed .cvShortSection > .cvShortList {
+    gap: var(--space-xxs);
   }
 
   /* A parser reads a grid left to right and interleaves the groups. */

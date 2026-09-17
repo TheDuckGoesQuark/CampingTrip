@@ -1,11 +1,7 @@
-import { Button, Icon, Link, Text, type IconName } from "@jordanscamp/ds";
+import { Link, Text } from "@jordanscamp/ds";
 import { Fragment, type ReactNode } from "react";
 
-import { mailtoOf } from "../../data/contactEmail";
-import { mailPreset } from "../../data/mailPresets";
-import { useMouseMailIntercept } from "../../hooks/useMouseMailIntercept";
 import { useDocumentId } from "../../prerender/renderTarget";
-import { blogPaths } from "../../routing/blogPaths";
 import type {
   Achievement,
   Commendation,
@@ -19,7 +15,8 @@ import type {
 import "../../styles/blogProse.css";
 import { asset } from "../../utils/assetPath";
 import { roleAnchorId } from "../../utils/roleAnchor";
-import { formatDate, monthYear } from "./formatDate";
+import CvHeader from "./CvHeader";
+import { monthYear } from "./formatDate";
 import { offsiteLinkProps } from "./offsiteLink";
 
 import styles from "./blog.module.css";
@@ -54,58 +51,10 @@ function DateRange({ start, end }: { start: string; end?: string }) {
   );
 }
 
-function iconOfLink(url: string): IconName {
-  return url.startsWith("mailto:") ? "envelope" : "globe";
-}
-
-/** A reader who mails from a CV is here about work, so the address opens on that template. */
-const HIRING = mailPreset("work");
-
 export default function CvPage({ cv }: CvPageProps) {
-  const mailto = mailtoOf(cv);
-  const interceptProps = useMouseMailIntercept();
-
   return (
     <article className={styles.cv}>
-      <header className={styles.cvHeader}>
-        <Text variant="title-1">{cv.name}</Text>
-        <Text variant="body-lg" tone="muted">
-          {cv.headline}
-        </Text>
-        <ul className={styles.cvLinks}>
-          {cv.location && (
-            <li>
-              <Icon name="house" size="sm" />
-              <Text variant="body-sm" as="span">
-                {cv.location}
-              </Text>
-            </li>
-          )}
-          {cv.links.map((link) => {
-            const hiring = link.url === mailto;
-            return (
-              <li key={link.url}>
-                <Icon name={iconOfLink(link.url)} size="sm" />
-                <Link
-                  href={link.url}
-                  {...offsiteLinkProps(link.url)}
-                  {...(hiring ? interceptProps(HIRING) : {})}
-                >
-                  {link.label}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-        <div className={styles.cvActions}>
-          <Button variant="default" size="sm" render={<a href={blogPaths.cvPdf} download />}>
-            Download PDF
-          </Button>
-          <Text variant="label" tone="muted" as="span">
-            Updated <time dateTime={cv.updated}>{formatDate(cv.updated)}</time>
-          </Text>
-        </div>
-      </header>
+      <CvHeader cv={cv} variant="full" />
 
       <CvSection name="Summary">
         <div className="blog-prose">{cv.narrative}</div>

@@ -1,5 +1,6 @@
 import type { BrowserPage } from "../../data/blogPages";
 import ContactFooter from "./ContactFooter";
+import CvCondensedPage from "./CvCondensedPage";
 import CvPage from "./CvPage";
 import FeedPage from "./FeedPage";
 import HomePage from "./HomePage";
@@ -40,5 +41,7 @@ function PageBody({ page }: { page: BrowserPage }) {
       return <ToolPage bookmark={page.bookmark} />;
     case "cv":
       return <CvPage cv={page.cv} />;
+    case "cvCondensed":
+      return <CvCondensedPage cv={page.cv} />;
   }
 }

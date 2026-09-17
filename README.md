@@ -73,8 +73,11 @@ Americanisms deliberately left unenforced, and why, is commented in
   crawlers and link unfurlers that never run JavaScript still get the page. The
   same React components render both the file and the CatOS window. See
   [apps/campsite/README.md](apps/campsite/README.md#the-blog-without-javascript).
-  The CV at `/blog/cv.html` is also printed to `/cv.pdf` by
-  `pnpm --filter campsite build:pdf`, a separate step CI runs after the build.
+  The CV is prerendered twice — `/blog/cv.html` in full and
+  `/blog/cv-condensed.html` cut to bullets — and each is printed to its own PDF
+  (`/cv.pdf`, `/cv-condensed.pdf`) by `pnpm --filter campsite build:pdf`, a
+  separate step CI runs after the build. The condensed one is held to two A4
+  pages there; the step fails rather than ship a third.
 - **Hosting**: Caddy (auto-TLS static file server) on a single EC2 instance
 - **Infrastructure**: Terraform on AWS (EC2, S3, Route53)
 - **CI/CD**: GitHub Actions — lint, test, build, deploy on push to main

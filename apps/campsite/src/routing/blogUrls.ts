@@ -16,6 +16,7 @@ export function blogUrls(): string[] {
     blogPaths.home,
     blogPaths.archive,
     blogPaths.cv,
+    blogPaths.cvCondensed,
     ...published.map((post) => blogPaths.post(slugify(post.title))),
     ...tagsOf(published).map(({ tag }) => blogPaths.tag(tag)),
     ...projects.map((project) => blogPaths.project(slugify(project.title))),

@@ -20,6 +20,13 @@ import "../styles/blogProse.css";
 export { blogUrls, CONTACT_HEADING, cv, FEED_PATH, ORIGIN };
 export const CV_PATH = blogPaths.cv;
 export const CV_PDF_PATH = blogPaths.cvPdf;
+export const CV_CONDENSED_PATH = blogPaths.cvCondensed;
+export const CV_CONDENSED_PDF_PATH = blogPaths.cvCondensedPdf;
+
+export const CV_DOCUMENTS = [
+  { page: CV_PATH, pdf: CV_PDF_PATH, maxPages: undefined },
+  { page: CV_CONDENSED_PATH, pdf: CV_CONDENSED_PDF_PATH, maxPages: 2 },
+];
 
 export interface RenderedPage {
   head: string;
