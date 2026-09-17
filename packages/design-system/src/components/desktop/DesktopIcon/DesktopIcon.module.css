@@ -4,7 +4,7 @@
   flex-direction: column;
   align-items: center;
   gap: var(--space-s);
-  width: 120px;
+  width: var(--desktop-icon-width);
   padding: var(--space-s);
   border: 1px solid transparent;
   border-radius: var(--radius-none);

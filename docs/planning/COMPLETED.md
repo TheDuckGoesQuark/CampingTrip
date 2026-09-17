@@ -6,6 +6,60 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## The desktop's icons wrap into columns instead of running off the bottom
+
+**Date**: 2026-09-17
+
+**What was done**:
+
+- **The CatOS icon field wraps.** Icons fill the first column downwards, and a
+  column with no room left for another icon starts a new one to its right. The
+  container is `display: grid` with `grid-auto-flow: column` and
+  `grid-template-rows: repeat(auto-fill, <cell>)`, which divides the field's
+  definite height (it is absolutely positioned top-to-bottom) into as many cells
+  as fit.
+- **`.rail` became `.iconField`.** It is two-dimensional now, and the old name
+  described a single column.
+- **The cell size is a design-system token.** `--desktop-icon-width` and
+  `--desktop-icon-cell-height` live beside `--menubar-height` in
+  `tokens/dimensions.css`; `DesktopIcon` takes its width from the first, and the
+  app's grid takes both. The height is a `calc()` over `--tile-lg`, `--space-s`
+  and the `body-sm` type scale rather than a measured constant, so it cannot
+  drift from the icon it is sizing.
+
+**Why**: on a short viewport the seven icons ran past the bottom of the screen,
+and the container composed the design system's `hidden` scrollbar class — so the
+overflow was scrollable but nothing on screen said so. The Bin and
+`DO_NOT_OPEN.txt` were simply gone.
+
+**Key decisions**:
+
+- **Grid, not `flex-flow: column wrap`.** Column-wrapping flex lays the columns
+  out but does not grow the container's width to hold them, so wrapped columns
+  paint outside the box and take its hit-testing with them. Grid sizes implicit
+  columns correctly, and `width: max-content` then keeps the box exactly as wide
+  as the columns it grew.
+- **Wrapping rather than a scrollbar.** A scrollbar would have answered the
+  literal report, but a desktop that scrolls its icon field is not a desktop.
+  Wrapping also retired the workaround in `desktopItems.ts` that kept the way
+  out high in the list because anything low was below the fold.
+- **The bar is now `classic`, not `hidden`.** Wrapping leaves overflow possible
+  only on a screen too short for a single cell, and silently clipping there is
+  the failure this layout exists to prevent.
+- **Windows may cover a wrapped column.** They are draggable and closable above
+  768px, which is how any desktop recovers an icon under a window. Below 768px a
+  window is fixed and covers the field entirely — unchanged, and already
+  recorded as accepted behaviour.
+
+**Verified**: measured in Chromium against a `vite preview` of the built site at
+1440x900, 1440x600, 1280x420 and 900x300 — 2, 3, 4 and 7 columns respectively,
+every icon fully on screen in all four. Vitest runs with `css: false` here, so a
+unit test asserting any of this would pass vacuously.
+
+**Deferred**: nothing.
+
+---
+
 ## Prose is British English, and the editor and CI now agree on it
 
 **Date**: 2026-09-17

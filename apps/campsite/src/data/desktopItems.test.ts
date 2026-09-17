@@ -26,12 +26,12 @@ describe("desktopItems", () => {
     expect(findDesktopItem("not-on-the-desktop")).toBeUndefined();
   });
 
-  it("launches one page and leaves by one door, so the rail is not an index", () => {
+  it("launches one page and leaves by one door, so the desktop is not an index", () => {
     const launchers = desktopItems.filter((item) => item.kind === "app");
     expect(launchers.map((item) => item.opens)).toEqual([blogPaths.home, routes.tent]);
   });
 
-  it("keeps the way outside above the junk, so a short rail still shows it", () => {
+  it("keeps the way outside above the junk, so it lands top-left on any screen", () => {
     const outside = desktopItems.findIndex(
       (item) => item.kind === "app" && item.opens === routes.tent,
     );

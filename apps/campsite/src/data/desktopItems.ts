@@ -8,13 +8,13 @@ import { slugify } from "./slug";
  * The desktop's contents. Everything worth reading lives in the browser now, so
  * what is left here is the junk drawer — which is the point of a desktop.
  *
- * The rail is 148px wide and an icon is 120px, so about five of these are
- * visible before it scrolls.
+ * Order is reading order on the desktop: the field fills its first column
+ * downwards before starting another to the right, so what is first here is
+ * top-left on any screen.
  */
 export const desktopItems: DesktopItem[] = [
   { kind: "app", label: "CatNav", opens: blogPaths.home, glyph: "globe" },
-  // High in the rail, because the rail scrolls and a way out below the fold is
-  // not one. It is the joke rather than the reliable door — see the menu bar.
+  // The joke rather than the reliable door — see the menu bar.
   { kind: "app", label: "Touch Grass", opens: routes.tent, glyph: "grass" },
   { kind: "mail", label: MOUSEMAIL_LABEL },
   {

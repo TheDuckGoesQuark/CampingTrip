@@ -309,6 +309,17 @@ inside the Canvas:
 
 ## Backlog
 
+### Design system — nothing catches a drifted `--desktop-icon-cell-height`
+
+The icon field's grid cell is a `calc()` over `--tile-lg`, `--space-s` and the
+`body-sm` type scale, which is right only while `DesktopIcon` is a tile, one
+gap, and a label clamped to two lines. Change any of those — a third label line,
+a badge that adds height — and icons overflow their cells with nothing failing.
+Vitest runs with `css: false`, so the check has to be a rendered one: a
+Storybook play function or a Playwright assertion that an icon's measured height
+is no greater than the token. Worth doing whenever a rendered-CSS check exists
+for anything else, rather than standing one up for this alone.
+
 ### Repo — five Americanisms cannot be enforced inside `.ts`/`.tsx`/`.css`
 
 `cspell` checks an identifier, a CSS property and a comment with the same rule,
