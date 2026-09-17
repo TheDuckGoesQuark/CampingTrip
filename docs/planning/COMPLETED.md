@@ -6,6 +6,61 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## Design-system enforcement gets a third layer, for reinvention
+
+**Date**: 2026-09-17
+
+**What was done**:
+
+- **`scripts/ds-guard/`** — a Node-only checker that reads the DS's exported
+  names from its barrel and compares them against the names app code claims for
+  itself (declared components, plus the CSS-module classes a file actually
+  references). Reports `reinvented-component` (a name matching a DS export the
+  file never imports), `missing-primitive` (a control the DS has no export for)
+  and `unused-export`, then closes with two coverage numbers.
+- **`scripts/oxlint/ds-plugin.mjs`** — an oxlint JS plugin with
+  `ds/no-bespoke-control` (a control `role` on a plain DOM element) and
+  `ds/no-inline-icon` (a literal `<svg>`), wired through `jsPlugins`. Both are
+  errors at top level with an opt-out override for the DS package, tests, and a
+  named grandfather list of three files.
+- **A baseline ratchet.** `baseline.json` accepts today's findings; CI fails on
+  anything new _and_ on any accepted entry that no longer occurs, so paying off
+  debt means deleting its line.
+- **Wired into `pnpm validate` and CI** beside the dependency-graph step, with
+  fixtures and tests under `node --test`.
+
+**Key decisions**:
+
+- **A third layer rather than more lint rules.** Reaching past the DS (raw
+  utility class, inline style) and reaching around it (importing the library the
+  DS wraps) are both defined by something _present_ in a file or an import edge,
+  which is why oxlint and dependency-cruiser catch them. Reinvention is defined
+  by an _absence_ — no banned token, no import edge at all — so it needs the DS's
+  export list held against the consumer tree, which is a cross-file question.
+- **Head-noun matching, and compound exports matched only whole.** A `photoCard`
+  is a card; a `cardBody` is a body. Matching every word buried the real findings
+  under their own modifier classes. Indexing a compound export under its head
+  noun made `TextArea` claim `PicnicArea` and `MenuBar` claim `ProgressBar`.
+- **A style belongs to a file only if the file references it.** Stylesheets are
+  shared across a directory here, and attributing every class in
+  `blog.module.css` to every file in `blog/` blamed `formatDate.ts` for building
+  a Card.
+- **Composition is explicitly not reinvention.** A file declaring `PhotoCard`
+  while importing `Card` is doing the intended thing, so the import suppresses
+  the finding.
+- **Zero new dependencies.** oxlint's `jsPlugins` carries the per-file rules and
+  plain Node carries the rest, so the checker runs the same in a repo on ESLint.
+
+**Deferred**:
+
+- The baselined findings are real and unfixed — see the TODO entry.
+  `SceneControls` is the worked example: a `<div role="switch">` with a
+  hand-written keydown, a local `ControlButton`, and four inline glyphs.
+- `missing-primitive` names the controls the DS never grew (switch, slider,
+  spinner, menu, pill). Each is a DS PR, not a lint fix.
+
+---
+
 ## The footer's CV row stands upright, and GitHub takes it back on the CV
 
 **Date**: 2026-09-17

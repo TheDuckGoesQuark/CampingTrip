@@ -1,0 +1,8 @@
+{
+  "plugins": ["react"],
+  "jsPlugins": ["../../oxlint/ds-plugin.js"],
+  "rules": {
+    "ds/no-bespoke-control": "error",
+    "ds/no-inline-icon": "error"
+  }
+}

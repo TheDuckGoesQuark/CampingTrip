@@ -40,6 +40,15 @@ jobs:
       - name: Dependency graph
         run: pnpm check-deps
 
+      # Reinvention check: app code that rebuilds something the design system
+      # already exports. Graph rules cannot see it — there is no import edge to
+      # forbid. See scripts/ds-guard/README.md.
+      - name: Design-system guard
+        run: pnpm ds-guard
+
+      - name: Design-system guard tests
+        run: pnpm ds-guard:test
+
       - name: Type check
         run: pnpm -r exec tsc -b
 

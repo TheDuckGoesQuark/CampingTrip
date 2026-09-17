@@ -16,7 +16,9 @@
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
     "check-deps": "depcruise apps packages",
-    "validate": "pnpm fmt:check && pnpm lint && pnpm spell && pnpm check-deps && pnpm -r exec tsc -b && pnpm -r test",
+    "ds-guard": "node scripts/ds-guard/ds-guard.mjs",
+    "ds-guard:test": "node --test scripts/ds-guard/ds-guard.test.mjs",
+    "validate": "pnpm fmt:check && pnpm lint && pnpm spell && pnpm check-deps && pnpm ds-guard && pnpm -r exec tsc -b && pnpm -r test && pnpm ds-guard:test",
     "spell": "cspell lint --no-progress .",
     "spell:words": "cspell lint --no-progress --words-only --unique . | sort -f"
   },

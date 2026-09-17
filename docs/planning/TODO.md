@@ -310,6 +310,27 @@ inside the Canvas:
 
 ## Backlog
 
+### The design system has gaps the apps filled themselves
+
+`pnpm ds-guard` reports them; `scripts/ds-guard/baseline.json` is the accepted
+list, and an entry deleted from it must stay fixed. Two kinds:
+
+`missing-primitive` — a control the DS exports nothing for, so every app that
+wanted one built it. `ToggleSwitch` and `VolumeSlider` in `overlays/` are the
+clearest: both hand-write keyboard behaviour that `@base-ui/react` already
+ships, and the switch is a `<div role="switch">` with its own keydown handler.
+`Spinner` (photobroom), the `catos` menus and the tab bar's `pill` are the rest.
+Each is a DS PR — a primitive over the Base UI component, then a styled export —
+not something a lint rule can fix.
+
+`reinvented-component` — a local name matching something the DS already exports.
+`SceneControls` alone carries a `ControlButton`, four inline glyph components and
+a `.button` class, with `Button` and `Icon` sitting in `@jordanscamp/ds`.
+`photobroom/overlay/ui.tsx` declares its own `Button` outright.
+
+Worth doing in DS-first order: land `Switch` and `Slider`, then migrate
+`SceneControls`, which clears most of the baseline in one change.
+
 ### Design system — nothing catches a drifted `--desktop-icon-cell-height`
 
 The icon field's grid cell is a `calc()` over `--tile-lg`, `--space-s` and the
