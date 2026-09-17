@@ -5,7 +5,8 @@ export interface Achievement {
   outcome: string;
   feature?: string;
   difficulty?: string;
-  approach?: string;
+  /** Markup, not plain text: a course or paper named here carries its own link. */
+  approach?: ReactNode;
 }
 
 /** One job. `highlights` are plain strings so the PDF and the JSON-LD can carry them. */

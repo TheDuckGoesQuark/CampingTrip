@@ -116,20 +116,27 @@ describe("CvPage", () => {
   it("labels each achievement facet against its own value, and omits the empty ones", () => {
     renderCv();
     const lindus = cv.experience.find((role) => role.org === "Lindus Health")!;
-    const fireTeam = lindus.achievements!.find((a) => a.name === "The Fire Team")!;
-    const heading = screen.getByRole("heading", { name: fireTeam.name, level: 4 });
+    const course = lindus.achievements!.find((a) => a.name === "Spreading the Joy (of React)")!;
+    const heading = screen.getByRole("heading", { name: course.name, level: 4 });
     const facets = heading.parentElement!.querySelector("dl")!;
     const labels = [...facets.querySelectorAll("dt")].map((dt) => dt.textContent);
 
-    // A founded team has no feature, so that pair is absent rather than empty.
-    expect(labels).toEqual(["Outcome", "Difficulty", "Approach"]);
+    // Taking a course has no feature and no difficulty, so those pairs are absent rather than empty.
+    expect(labels).toEqual(["Outcome", "Approach"]);
     expect(facets.querySelectorAll("dd")).toHaveLength(labels.length);
-    expect(facets.querySelector("dd")!.textContent).toBe(fireTeam.outcome);
+    expect(facets.querySelector("dd")!.textContent).toBe(course.outcome);
   });
 
   it("routes the narrative's CatMaps mention to the project page, not the product site", () => {
     renderCv();
     const link = screen.getByRole("link", { name: "CatMaps" });
     expect(link).toHaveAttribute("href", "/blog/projects/catmap.html");
+  });
+
+  it("carries a link named inside an achievement facet offsite", () => {
+    renderCv();
+    const link = screen.getByRole("link", { name: "Joy of React" });
+    expect(link).toHaveAttribute("href", "https://www.joyofreact.com");
+    expect(link).toHaveAttribute("rel", "noopener noreferrer");
   });
 });

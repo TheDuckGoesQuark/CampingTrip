@@ -2,10 +2,13 @@ import { Link } from "@jordanscamp/ds";
 import { Link as RouterLink } from "react-router-dom";
 
 import { yearsSince } from "../components/blog/formatDate";
+import { offsiteLinkProps } from "../components/blog/offsiteLink";
 import RoleAnchorLink from "../components/blog/RoleAnchorLink";
 import { blogPaths } from "../routing/blogPaths";
 import type { Commendation, Cv, CvProject, Role } from "../types/cv";
 import { slugify } from "./slug";
+
+const JOY_OF_REACT_URL = "https://www.joyofreact.com";
 
 const roles: Role[] = [
   {
@@ -15,123 +18,135 @@ const roles: Role[] = [
     title: "Senior Software Engineer",
     start: "2024-01-01",
     summary:
-      "Clinical trials software: the platform doctors, clinic staff, statisticians and participants run a study on, where a defect reaches patients and regulators.",
+      "Clinical trials software: the platform doctors, clinic staff, statisticians and participants run a study on, where a bug can stop a drug reaching market.",
     achievements: [
       {
-        name: "AI-native workflows",
+        name: "Enabling AI-Native Workflows",
         outcome:
-          "PMs prototype in the live application and iterate in minutes rather than days, so engineering stopped being the bottleneck on exploring an idea.",
+          "Enabled rapid prototyping, removed engineering as a bottleneck, and increased fidelity of prototypes which now serve as handover documents from PMs and designers.",
         feature:
-          "The workflows the company now works in, including the component rubric that makes LLM-written UI predictable.",
-        difficulty:
-          "An LLM writing UI invents its own structure unless the rules it should follow are written down.",
-        approach: "Designed them and rolled them out across the company.",
+          "Isolated UI from application concerns, with well defined guidance utilizing strict rubrics to construct human readable and near-production ready prototype code with LLMs without engineering input.",
+        difficulty: "",
+        approach:
+          "Researched into front-end architecture patterns and led workshops to understand existing designer workflows to build something that is familiar to the user but far more powerful.",
       },
       {
         name: "The Fire Team",
         outcome:
-          "Roughly 85 production escalations answered across more than 25 sponsor studies, with the team\u2019s own workload shrinking as the causes went away.",
-        difficulty: "Urgent work crowds out the fixes that would stop it recurring.",
-        approach:
-          "Founded and led it \u2014 nine people across engineering and deployment, working alongside study teams rather than behind a ticket queue \u2014 and deliberately interleaved permanent fixes with the urgent ones.",
-      },
-      {
-        name: "Serious medical event reporting",
-        outcome:
-          "Doctors and clinic staff report serious events inside the deadlines regulators set, and I have owned drug safety on the platform for the two years since.",
+          "Roughly 85 production escalations answered across more than 25 live studies, with the team\u2019s own workload shrinking as the causes went away.",
         feature:
-          "The reporting workflow, and AI-assisted coding against MedDRA, the dictionary regulators require those events to be classified in.",
+          "Alerting to proactively address failures, and self-serve flows for issues driven by functionality gaps.",
         difficulty:
-          "Every state the workflow can reach had to be defined and tested exhaustively, because an edit can land at any point and has to propagate from there. That took sustained work with the clinical domain experts.",
+          "Urgent work crowds out fixes that would stop it recurring, and so required careful prioritization and constant context switching.",
         approach:
-          "Flow-charted every transition we should expect, then built it so the types carry those states \u2014 a later edit cannot be made without answering for the flows already there.",
+          "Assembled and led nine incredible people across engineering and deployment, working alongside study teams to prioritize rather than behind a ticket queue.",
       },
       {
-        name: "The design system",
+        name: "Serious Medical Event Reporting",
         outcome:
-          "Designers make and review their own code changes without engineering, which removed weeks from each project and freed engineers for state, performance and correctness.",
+          "Doctors and clinic staff report serious events well inside the regulatory deadlines, ensuring trials ran safely.",
         feature:
-          "Semantic tokens, a primitive layer over Base UI, variant-driven components and Storybook documentation.",
-        difficulty: "Application code will invent its own visual chrome unless something stops it.",
-        approach:
-          "Grew it across two generations of the platform, folding in each capability once it had earned its place, with linting and dependency rules holding the boundary.",
-      },
-      {
-        name: "Form-level monitoring",
-        outcome:
-          "Cut the monitors\u2019 workload, and sponsors now ask for it by name when choosing us for a trial.",
-        feature:
-          "Decides which recorded answers a person must check against the original clinical record, and holds the trail of who checked what and when.",
+          "The adverse event reporting workflow, with layers of permissions and escalation protocols, bolstered by an AI-assisted coding against MedDRA.",
         difficulty:
-          "It had to reach a study that was already running, where a data migration is a risk nobody wants to take.",
+          "Incredibly high risk: an unaccounted for path could result in death, or a dangerous drug progressing into larger scale trials. Therefore every state the workflow could reach had to be defined and tested exhaustively.",
         approach:
-          "Built the plans as rules on the study-rule engine we already had rather than a second engine beside it, and made risk-based sampling select deterministically with no stored state.",
+          "Flow-charted every transition we should expect, then built it so the types carry those states - a later refactor cannot be made without addressing all existing state transitions.",
       },
       {
-        name: "The form engine",
+        name: "Correcting Participant-Reported Data",
         outcome:
-          "The slowest operation on a large form went from seconds to milliseconds, and submitting one went from minutes to seconds, with nothing it could previously do removed.",
+          "Two hours a day of support-team time recovered, and moved the audit trail into the platform.",
         feature:
-          "The platform\u2019s most complex and most used feature: what every questionnaire and clinical form is built from.",
-        difficulty: "No off-the-shelf form library could carry what a trial form has to do.",
-        approach:
-          "Research and measurement rather than instinct, then changing where state lives and what has to re-render.",
-      },
-      {
-        name: "E-signatures",
-        outcome:
-          "A doctor\u2019s sign-off on a participant\u2019s record stands up to inspection on its own.",
-        feature:
-          "Four properties holding at once: authentication, non-repudiation, an unbreakable link to the signed content, and a timestamp carrying date, time and time zone.",
-        difficulty:
-          "A signature has to break visibly the moment the data under it changes, and a stored flag would make every future write path responsible for that.",
-        approach:
-          "Designed the schema, domain logic and public API end to end. Signatures are append-only, and validity is recomputed on every read from the data covered.",
-      },
-      {
-        name: "Correcting participant-reported data",
-        outcome:
-          "Recovered most of two hours a day of support-team time, and moved the audit trail into the platform.",
-        feature:
-          "A request-and-approval flow for changing data a participant submitted, recording the reason and the approver against the change.",
+          "A request-and-approval flow for changing participant datapoints, recording the reason and the approver against the change as per regulatory requirements.",
         difficulty:
           "Less the engineering than everything around it: the regulatory case, the rollout and the comms, and winning development time for a problem I had raised alongside other work. Clinicians are trained to scrutinise, and a tool that edits their data has to earn its way past that.",
         approach:
           "Wrote the proposal, designed the approval step as one engine other trial workflows could plug into, and phased it so two days of work removed a third of the overhead before any migration.",
       },
       {
-        name: "Participant diaries",
+        name: "Form-Level Monitoring",
         outcome:
-          "Fewer support issues out of a running study, and clinic staff can keep participants on the study\u2019s plan with their data arriving when it should.",
-        feature: "The schedule of questionnaires each participant works through over a trial.",
-        difficulty: "[DRAFT \u2014 what made this hard.]",
-        approach: "[DRAFT \u2014 how you went about it.]",
+          "Turned source data verification from an improvised manual process into a codified, configurable platform feature. It's been a factor in winning new business, and returning sponsors now expect it as standard.",
+        feature:
+          "Configurable risk-based monitoring to determine responses that require human scrutiny, clearly logged for audits and is able to respond to later edits and queries.",
+        difficulty:
+          "It had to reach a study that was already running, where a data migration is a risk nobody wants to take.",
+        approach:
+          "Extended existing study state predicate engine rather than a bespoke module, and made risk-based sampling select deterministically with no stored state.",
       },
       {
-        name: "Study data for analysis",
+        name: "The Form Engine",
         outcome:
-          "Statisticians and data teams went from waiting on an engineer to assemble each dataset by hand to analysing a study in near-real time, so problems surface while there is still time to act on them.",
-        feature: "An automated, standardised dataset derived from the platform\u2019s own data.",
+          "The slowest edits on a large complex form went from seconds to milliseconds, and submission went from minutes to seconds, with no feature loss.",
+        feature:
+          "The platform\u2019s most complex and most used feature: the form. Derived values, chains of conditional questions, cross-form validation, drafts, per-field permissions, repeating groups, and much more.",
+        difficulty:
+          "No off-the-shelf form library supported everything we need, and provided the guarantees for state we would rely on. Sharing form logic with the server for submission validation also required a novel implementation.",
+        approach:
+          "Research and measurement of existing and proposed solutions rather than instinct, and applying isolation of concerns and invariant testing to guarantee system correctness and performance.",
+      },
+      {
+        name: "CFR Part 11 Compliant E-signatures",
+        outcome:
+          "No expensive vendor lock-in, and a fully flexible compliant model for E-Signatures that can be applied to any aspect of the trial lifecycle.",
+        feature:
+          "Four properties holding at once: authentication, non-repudiation, an unbreakable link to the signed content, and a timestamp carrying date, time and time zone. Used for PI attestation on patient consent, and more use cases anticipated.",
+        difficulty:
+          "Implementation has to hold up to intense regulatory scrutiny. Future write paths to data attested by signatures risk violating our compliance.",
+        approach:
+          "Regulatory research before designing the schema, domain logic and public API end to end. Signatures are append-only so intrinsically auditable, and validity is recomputed on every read from the data covered rather than stored and potentially made stale.",
+      },
+      {
+        name: "Participant diaries",
+        outcome:
+          "Fewer support issues out of live studies, and clinicians can autonomously keep participants on protocol.",
+        feature:
+          "Studies are designed to handle deviations due to participant behavior, but there's always unforeseen edge cases. This project added schedule management tooling to the UI that previously required engineers to hand-edit data through admin portals in an inconsistent and risky manner.",
+        difficulty:
+          "Studies are designed against a timeline, and defining how to recover that timeline in a broadly applicable manner required a careful understanding of all the scenarios that had occurred or could be preempted.",
+        approach:
+          "Collating all previous support requests, and designing the tooling with trial coordinators directly involved allowed us to gain trust in the solution and scope it correctly.",
+      },
+      {
+        name: "Standardized Self-Serve Data Exports",
+        outcome:
+          "Statisticians and data teams went from waiting on an engineer to assemble each dataset by hand to analyzing a study in near-real time, so problems surface immediately rather than weeks later.",
+        feature: "An automated, standardized dataset derived from the platform\u2019s own data.",
         difficulty:
           "Agreeing the standard itself, and handling studies whose schedule changes version by version underneath it.",
         approach:
-          "Built on the industry's existing data standards rather than inventing one, with our own additions where they fell short, and made every recorded value addressable so a dataset is derived rather than assembled.",
+          "Built on the industry's existing data standards (CDISC's SDTM) rather than inventing one, with our own additions where they fell short, and made every recorded value addressable so a dataset is derived rather than assembled.",
       },
       {
         name: "Visual review in CI",
-        outcome: "Releases stopped finishing in a scramble of missed visual states.",
+        outcome: "Releases stopped finishing in a scramble to repair missed paths during final QA.",
         feature:
           "A component change surfaces everything it alters across the application, and a designer approves it before it reaches main.",
         difficulty:
-          "Visual QA was a treadmill where each fix broke an earlier one, and nobody saw it until release.",
+          "Visual QA was a treadmill where each fix broke an earlier one, and nobody saw it until release. Vendor solutions fell short in practice.",
         approach:
-          "Diagnosed it as a feedback problem rather than a care problem, and moved the feedback in front of the merge.",
+          "Diagnosed it as a feedback problem rather than a care problem, and moved the feedback in front of the merge. A curated pipeline of regression tooling allowed us to build a review workflow that aligned with our way of working",
+      },
+      {
+        name: "Spreading the Joy (of React)",
+        outcome: "Inspired other engineers and raised our code quality across engineering.",
+        approach: (
+          <>
+            Turned instinct into deeper understanding by completing Josh Comeau's{" "}
+            <Link href={JOY_OF_REACT_URL} {...offsiteLinkProps(JOY_OF_REACT_URL)}>
+              Joy of React
+            </Link>{" "}
+            course, and relayed the content as interactive workshops to the rest of engineering.
+          </>
+        ),
+      },
+      {
+        name: "Inspiring health and positivity",
+        outcome:
+          "Founded the Lindus running club, whose social runs raise money for charity and are among the best-attended events of the year.",
       },
     ],
-    highlights: [
-      "Taught modern React back to the engineers as a run of interactive workshops.",
-      "Founded the Lindus running club, whose social runs raise money for charity and are among the best-attended events of the year.",
-    ],
+    highlights: [],
   },
   {
     org: "Gravity Sketch",
