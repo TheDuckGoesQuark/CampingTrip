@@ -1,7 +1,7 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "plugins": ["typescript", "unicorn", "oxc", "import", "react", "promise", "jsx-a11y"],
-  "jsPlugins": ["./scripts/oxlint/ds-plugin.js"],
+  "jsPlugins": ["./scripts/oxlint/ds-plugin.mjs"],
   "categories": {
     "correctness": "error",
     "suspicious": "warn",
@@ -21,7 +21,7 @@
     "import/no-unassigned-import": ["warn", { "allow": ["**/*.css"] }],
     "react/forbid-dom-props": ["error", { "forbid": ["style"] }],
 
-    // Reinvention rules from ./scripts/oxlint/ds-plugin.js. They live at top
+    // Reinvention rules from ./scripts/oxlint/ds-plugin.mjs. They live at top
     // level with opt-out overrides below rather than being scoped to apps/**,
     // because oxlint does not reliably re-apply a plugin rule declared only in
     // an override block.

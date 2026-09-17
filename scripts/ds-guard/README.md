@@ -42,7 +42,7 @@ belong in whatever linter the repo already runs. Layer 3 needs the whole picture
 and is what lives in this directory.
 
 The layers are deliberately redundant where they overlap. The oxlint plugin in
-`../oxlint/ds-plugin.js` flags `<div role="switch">` the moment it is typed,
+`../oxlint/ds-plugin.mjs` flags `<div role="switch">` the moment it is typed,
 which is where a fix is cheapest; ds-guard flags the same component again from
 the repo-wide view, which is where it cannot be ignored.
 
@@ -125,7 +125,7 @@ or neither.
 3. Read the `missing-primitive` findings before anything else. They are the
    design system's backlog, written by the app.
 4. Add `ds-guard` to CI next to the dependency-graph step.
-5. Port `../oxlint/ds-plugin.js` if the repo runs oxlint; under ESLint the same
+5. Port `../oxlint/ds-plugin.mjs` if the repo runs oxlint; under ESLint the same
    two rules transfer almost verbatim, as both take an ESTree-shaped visitor.
 
 ### `config.json`
