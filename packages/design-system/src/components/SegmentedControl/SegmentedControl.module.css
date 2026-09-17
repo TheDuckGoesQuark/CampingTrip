@@ -1,0 +1,52 @@
+.track {
+  margin: 0;
+  padding: var(--space-xxxs);
+  list-style: none;
+  display: inline-flex;
+  border: 1px solid var(--brand-border-strong);
+  border-radius: var(--radius-m);
+  background: var(--brand-subtle);
+}
+
+.segment {
+  display: block;
+  /* Concentric with the track: its radius, less the inset a segment sits in. */
+  border-radius: calc(var(--radius-m) - var(--space-xxxs));
+  padding: var(--space-xxs) var(--space-s);
+  border: none;
+  background: transparent;
+  font-family: var(--font-sans);
+  font-size: var(--text-label-size);
+  font-weight: var(--weight-bold);
+  line-height: 1.4;
+  white-space: nowrap;
+  text-decoration: none;
+  color: var(--brand-text-muted);
+}
+
+.segment:is(a, button) {
+  cursor: pointer;
+}
+
+.segment:is(a, button):hover {
+  background: var(--brand-subtle-hover);
+  color: var(--brand-text);
+}
+
+.segment:is(a, button):focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
+/* `aria-current` is the navigable flavour's selected state, `data-pressed` the
+   toggle group's. One rule: which one is on the element is the only difference. */
+.segment[aria-current],
+.segment[data-pressed] {
+  background: var(--brand-solid);
+  color: var(--brand-text-on-brand);
+}
+
+.segment[data-disabled] {
+  color: var(--brand-text-disabled);
+  cursor: not-allowed;
+}

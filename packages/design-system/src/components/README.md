@@ -33,6 +33,12 @@ Add the named export to [`../index.ts`](../index.ts).
 - **Tag** — topic label, parallel to `Badge` rather than a variant of it: a Tag is
   routinely a link (`render`) and carries a `selected` state and an optional
   `count`, so it needs its own element and ARIA.
+- **SegmentedControl / SegmentedNav** — mutually exclusive choices drawn as one
+  control. Two components, one stylesheet, because the difference is semantic
+  rather than visual: `SegmentedControl` is a Base UI toggle group whose segments
+  change state in place, `SegmentedNav` is a `nav` of links marking one
+  `aria-current` and so still works with no scripts. The group takes a single
+  string where Base UI takes an array, since one segment is always chosen.
 - **Icon** — one stroked glyph from a closed named set, sized `sm`/`md`/`lg` and
   coloured by `currentColor`. Unlabelled icons are hidden from assistive tech;
   pass `label` for a glyph that is the only thing naming its control.

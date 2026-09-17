@@ -6,6 +6,44 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## The design system gets a segmented control
+
+**Date**: 2026-09-17
+
+**What was done**:
+
+- **`SegmentedControl`** — a Base UI toggle group, styled as one track of
+  segments. Takes a single `value`/`defaultValue`/`onValueChange` string where
+  Base UI takes an array, and reports only a real choice, so the control cannot
+  land on nothing when the chosen segment is clicked again.
+- **`SegmentedNav`** — the same look over a set of addresses: a `nav` of links,
+  the one in view a `span` with `aria-current="page"`.
+- **`src/primitives/ToggleGroup.ts`**, shimming `@base-ui/react/toggle-group` and
+  `@base-ui/react/toggle`, since only `primitives/**` may import Base UI.
+
+**Key decisions**:
+
+- **Two components, not one with a mode.** The DS rubric sends a different ARIA
+  role to a parallel component rather than a variant, and the difference here is
+  exactly that: a group of toggle buttons reporting `aria-pressed` against a set
+  of links reporting `aria-current`. One is a state, the other an address, and
+  only the second survives with scripts off.
+- **One stylesheet across both**, because the visual is a single idea and
+  splitting it would guarantee drift.
+- **Promoted at one consumer, against the rule of three**, deliberately and with
+  Jordan's call: the tracker already holds a second consumer in the
+  "Work with me? / Get to know me?" toggle.
+- **No `size` axis.** Nothing needs a second size yet, and a speculative variant
+  is API to keep correct forever.
+
+**Verified**: `pnpm -r test`, `pnpm -r exec tsc -b`, `pnpm lint`, and
+`pnpm check-deps` — the Base UI chokepoint rule passes, which is what proves the
+primitive shim is carrying the import rather than the component.
+
+---
+
+---
+
 ## Design-system enforcement gets a third layer, for reinvention
 
 **Date**: 2026-09-17
