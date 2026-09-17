@@ -239,10 +239,15 @@ function localComponents(source) {
   return [...names];
 }
 
-function designSystemImports(source, packageName) {
+/** Inside the design system itself, components are imported by relative path
+ *  (`../atoms/Button`), so filtering on the package specifier finds nothing.
+ *  `anySource` drops that filter — a named import of a DS export, in a file that
+ *  is part of the DS, is that export by construction. */
+function designSystemImports(source, packageName, { anySource = false } = {}) {
   const names = new Set();
+  const from = anySource ? `[^"']+` : `${packageName}(?:/[^"']*)?`;
   const pattern = new RegExp(
-    `import\\s*(?:type\\s*)?\\{([^}]*)\\}\\s*from\\s*["']${packageName}(?:/[^"']*)?["']`,
+    `import\\s*(?:type\\s*)?\\{([^}]*)\\}\\s*from\\s*["']${from}["']`,
     "gu",
   );
   for (const [, body] of source.matchAll(pattern)) {
@@ -284,7 +289,7 @@ function analyse(config) {
     return exportByName.get(parts.join("")) ?? exportByName.get(headNoun(subject));
   };
 
-  const files = collectFiles(consumers, {
+  const scan = {
     extensions: config.extensions ?? [".ts", ".tsx"],
     exclude: config.exclude ?? [
       "node_modules",
@@ -293,11 +298,29 @@ function analyse(config) {
       "\\.stories\\.",
       "/dist/",
     ],
-  });
+  };
+
+  const files = collectFiles(consumers, scan);
+
+  // Counted towards usage but never judged for reinvention. A design system that
+  // ships whole screens is its own biggest consumer, and without this every atom
+  // those screens compose reads as an export nobody imports.
+  const usageOnly = collectFiles(config.usageScopes ?? [], scan);
 
   const findings = [];
   const usage = new Map([...exports_].map((name) => [name, 0]));
   let filesImportingDs = 0;
+
+  for (const file of usageOnly) {
+    const imported = designSystemImports(
+      readFileSync(join(ROOT, file), "utf8"),
+      designSystem.package,
+      { anySource: true },
+    );
+    for (const name of imported) {
+      if (usage.has(name)) usage.set(name, usage.get(name) + 1);
+    }
+  }
 
   for (const file of files) {
     const source = readFileSync(join(ROOT, file), "utf8");

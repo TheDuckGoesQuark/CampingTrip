@@ -65,6 +65,8 @@ describe("gaps", () => {
   });
 });
 
+const PLUGIN = join(HERE, "../oxlint/ds-plugin.mjs");
+
 describe("the oxlint plugin", () => {
   // A rule that quietly stops matching is indistinguishable from a clean repo,
   // which is the failure this whole kit exists to prevent. Run it for real.
@@ -86,11 +88,17 @@ describe("the oxlint plugin", () => {
     }
   }
 
-  test("flags a hand-built control and an inline icon", () => {
-    const out = lint();
-    assert.match(out, /ds\(no-bespoke-control\)/u);
-    assert.match(out, /ds\(no-inline-icon\)/u);
-  });
+  // Skipped only where the plugin was deliberately not vendored — a repo on
+  // ESLint ports the rules instead. Anywhere the file exists, the test runs.
+  test(
+    "flags a hand-built control and an inline icon",
+    { skip: existsSync(PLUGIN) ? false : "no oxlint plugin vendored here" },
+    () => {
+      const out = lint();
+      assert.match(out, /ds\(no-bespoke-control\)/u);
+      assert.match(out, /ds\(no-inline-icon\)/u);
+    },
+  );
 });
 
 describe("baseline", () => {

@@ -115,6 +115,11 @@ pnpm ds-guard:test            # the guard's own tests, fixtures included
 
 ## Adopting it in another repo
 
+The canonical copy lives in the `ds-enforcement` skill
+(`~/.claude/skills/ds-enforcement/assets/scripts/`), and this directory is a
+vendored copy of it. Fix a bug there first, then re-copy, or the copies drift —
+which is the whole problem this tool exists to catch.
+
 The script depends on nothing but Node, so it runs the same under oxlint, ESLint
 or neither.
 
@@ -130,15 +135,16 @@ or neither.
 
 ### `config.json`
 
-| Key                    | Meaning                                                                                 |
-| ---------------------- | --------------------------------------------------------------------------------------- |
-| `designSystem.package` | The import specifier consumers use, e.g. `@jordanscamp/ds`. Subpaths count.             |
-| `designSystem.barrels` | Public entry point(s), relative to the repo root. Exported names are read from here.    |
-| `consumers`            | Directories of application code to scan.                                                |
-| `styleSources`         | `cssModules` or `reactNativeStyleSheet`.                                                |
-| `extensions`           | File extensions to scan. Defaults to `.ts`/`.tsx`.                                      |
-| `exclude`              | Regexes tested against repo-relative paths. Defaults exclude tests, stories and `dist`. |
-| `baseline`             | Baseline filename, relative to this config.                                             |
+| Key                    | Meaning                                                                                                                                                                                        |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `designSystem.package` | The import specifier consumers use, e.g. `@jordanscamp/ds`. Subpaths count.                                                                                                                    |
+| `designSystem.barrels` | Public entry point(s), relative to the repo root. Exported names are read from here.                                                                                                           |
+| `consumers`            | Directories of application code to scan.                                                                                                                                                       |
+| `usageScopes`          | Directories counted towards usage but never judged for reinvention. A DS that ships whole screens is its own biggest consumer; without this, every atom those screens compose reads as unused. |
+| `styleSources`         | `cssModules` or `reactNativeStyleSheet`.                                                                                                                                                       |
+| `extensions`           | File extensions to scan. Defaults to `.ts`/`.tsx`.                                                                                                                                             |
+| `exclude`              | Regexes tested against repo-relative paths. Defaults exclude tests, stories and `dist`.                                                                                                        |
+| `baseline`             | Baseline filename, relative to this config.                                                                                                                                                    |
 
 Adding a styling mechanism means adding one function to `STYLE_EXTRACTORS`: it
 takes a file and its source, and returns the style names that file claims. Every
