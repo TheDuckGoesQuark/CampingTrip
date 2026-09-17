@@ -22,6 +22,9 @@ The whole workspace is React 19; Mantine is v9.
 - Build (all): `pnpm -r build`
 - Tests (all): `pnpm -r test`
 - Lint / format / dep-graph: `pnpm lint`, `pnpm fmt`, `pnpm check-deps`
+- Spelling: `pnpm spell` — prose is British English, code keeps its API's
+  spelling. See the Language section of `README.md`; unknown-but-correct words
+  go in `project-words.txt`, and `pnpm spell:words` lists candidates.
 - Design system stories: `pnpm --filter @jordanscamp/ds storybook`
 - PhotoBroom extension bundle: `pnpm --filter photobroom build:overlay`
   (outputs `extensions/photobroom/overlay.js`)

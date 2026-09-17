@@ -1,7 +1,11 @@
 #!/bin/sh
-# Blocks commits that aren't formatted or that have lint errors.
-# oxfmt + oxlint are fast (Rust), so we check the whole repo.
+# Blocks commits that aren't formatted, that have lint errors, or that spell
+# prose in American English.
+# oxfmt + oxlint are fast (Rust), so we check the whole repo. cspell is Node
+# and the slowest of the three, but close enough to them to get the same
+# whole-repo treatment rather than a staged-files dance.
 # Bypass in a pinch with `git commit --no-verify`.
 set -e
 pnpm fmt:check
 pnpm lint
+pnpm spell

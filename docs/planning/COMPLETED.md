@@ -6,6 +6,74 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## Prose is British English, and the editor and CI now agree on it
+
+**Date**: 2026-09-17
+
+**What was done**:
+
+- **`cspell.json` is the single rule.** The VS Code Code Spell Checker
+  extension and the new `pnpm spell` read the same file, so the editor cannot
+  disagree with CI. That is why cspell was chosen over a faster Rust checker:
+  the extension _is_ cspell, and nothing else can stop it flagging British
+  spellings in the editor. oxlint was considered and cannot do it — its rule
+  set has no spelling plugin.
+- **`language: "en-GB"` stops British spellings being errors, but does not
+  enforce British.** cspell's `en-GB` dictionary _accepts_ most American forms
+  rather than rejecting them; only `behavior`, `defense` and `analyzing` fell
+  out of it unaided. Enforcement is therefore a curated `flagWords` list in
+  `us:gb` form, so the editor offers the British spelling as the fix.
+- **Prose was corrected across the tree**, most of it in `data/cv.tsx` — the CV
+  said `utilizing`, `prioritization`, `prioritize`, `participant behavior`,
+  `Standardized Self-Serve Data Exports`, `analyzing`, `standardized`.
+  `ARCHITECTURE.md` and the design system's component README followed. A second
+  pass fixed the `center`/`colors` that sit in `.ts`/`.tsx` comments, which the
+  linter deliberately cannot see.
+- **`paralax` was a genuine misspelling**, not a dialect choice: `paralaxMul` in
+  `CameraController.tsx` and the `ARCHITECTURE.md` line naming it. Renamed to
+  `parallaxMul`.
+- **Gating is editor, pre-commit and CI.** `pnpm spell` joins `.githooks/pre-commit`
+  and `validate`, and gets its own CI step after Lint. It runs the whole tree in
+  under two seconds, which is what made the pre-commit hook affordable.
+- **`project-words.txt` is tracked, and `.vscode/settings.json` points the
+  extension at it** with `scope: "workspace"`. Accepting a word from the
+  editor's lightbulb therefore writes to the repo, not to a personal dictionary
+  that would still fail CI for a fresh clone.
+
+**Key decisions**:
+
+- **Five Americanisms are deliberately unenforced: `color`, `center`, `gray`,
+  `license`, `normalize`.** cspell applies one rule to an identifier, a CSS
+  property and a comment alike, and cannot tell prose from code inside a source
+  file. Banning these would flag `align-items: center`, photobroom's `gray`
+  button colour, `String.prototype.normalize` and the MIT License. The list and
+  the reasoning are commented in `cspell.json` so the absence does not read as
+  an oversight.
+- **Markdown gets the full list, including `color` and `center`.** It is the one
+  place code and prose are syntactically separable, so fenced blocks, inline
+  code and link targets are excluded by pattern and what remains is English.
+- **`centered` stays American wherever it is the DS Modal's variant value.** It
+  is in the public API (`ModalVariant = "centered" | "takeover" | "bare"`) and
+  the matching CSS class. The component README now backticks the values instead
+  of naming them in prose, which is both accurate and invisible to the checker.
+- **`COMPLETED.md` and `docs/planning/archive/` are exempt.** They quote the
+  real symbol names of code that no longer exists — a Django app's
+  `serializers`, a `visualization` panel — so correcting them would make the
+  record wrong rather than British.
+- **`behaviour` is enforced despite the platform spelling it `behavior`.** Two
+  ignore patterns carve out the CSS properties (`overscroll-behavior`,
+  `scroll-behavior`) and the DOM option bag (`scrollBehavior`,
+  `behavior: "smooth"`), which is cheap because the repo has only a handful.
+
+**Deferred**:
+
+- Prose inside `.ts`/`.tsx`/`.css` still relies on review for those five words.
+  Closing it needs a checker that parses TypeScript and walks only comments,
+  string literals and JSX text. Filed in `TODO.md` under Backlog. Not urgent —
+  the whole repo held only fifteen Americanisms when the rule went in.
+
+---
+
 ## The Lindus Health experience is written from evidence, and the CV takes Commendations
 
 **Date**: 2026-09-16

@@ -1,0 +1,215 @@
+{
+  "$schema": "https://raw.githubusercontent.com/streetsidesoftware/cspell/main/cspell.schema.json",
+  "version": "0.2",
+
+  // British English for all prose; code keeps whatever spelling its API uses.
+  // cspell's `en-GB` dictionary ACCEPTS most American forms rather than
+  // rejecting them, so the dictionary alone does not enforce a dialect — it
+  // only stops British spellings being reported as errors. Enforcement is
+  // `flagWords` below.
+  "language": "en-GB",
+  "useGitignore": true,
+
+  "dictionaryDefinitions": [
+    {
+      "name": "project",
+      "path": "./project-words.txt",
+      "addWords": true
+    }
+  ],
+  "dictionaries": [
+    "project",
+    "typescript",
+    "node",
+    "css",
+    "html",
+    "fonts",
+    "filetypes",
+    "softwareTerms",
+    "npm",
+    "bash"
+  ],
+
+  "ignorePaths": [
+    "node_modules",
+    "**/dist/**",
+    "**/coverage/**",
+    "**/storybook-static/**",
+    "pnpm-lock.yaml",
+    "yarn.lock",
+    "extensions/photobroom/overlay.js",
+    "apps/campsite/public/**",
+    "cspell.json",
+    "project-words.txt",
+
+    // An append-only log of work already done. Its entries quote the real
+    // symbol names of code that no longer exists (a Django app's
+    // `serializers`, `visualization`), so "correcting" them would make the
+    // record wrong rather than British.
+    "docs/planning/COMPLETED.md",
+    "docs/planning/archive/**"
+  ],
+
+  "ignoreRegExpList": [
+    "Urls",
+    "Email",
+    "Base64MultiLine",
+    "Base64SingleLine",
+    "CSSHexValue",
+    "CStyleHexValue",
+    "CommitHash",
+    "UUID",
+    "CssBehaviourProps",
+    "DomBehaviourApis"
+  ],
+
+  "patterns": [
+    // `behaviour` is enforced in prose, but the CSS property and the DOM option
+    // bag are spelled `behavior` by the platform and cannot be renamed. cspell
+    // splits on the hyphen, so `overscroll-behavior` would otherwise be
+    // reported as a forbidden word.
+    {
+      "name": "CssBehaviourProps",
+      "pattern": "/\\b(?:overscroll|scroll|overflow-anchor)-behavior\\b/g"
+    },
+    {
+      "name": "DomBehaviourApis",
+      "pattern": "/\\b(?:scrollBehavior|ScrollBehavior|behavior:\\s*[\"']?(?:smooth|auto|instant))\\b/g"
+    },
+
+    // Used by the markdown override, so that a fenced command or a backticked
+    // CSS property is read as code and not as prose.
+    {
+      "name": "MarkdownCodeFence",
+      "pattern": "/^\\s*```[\\s\\S]*?^\\s*```/gm"
+    },
+    {
+      "name": "MarkdownInlineCode",
+      "pattern": "/`[^`\\n]+`/g"
+    },
+    {
+      "name": "MarkdownLinkTarget",
+      "pattern": "/\\]\\([^)]*\\)/g"
+    }
+  ],
+
+  // Americanisms banned everywhere, `us:gb` giving cspell the replacement to
+  // suggest. A word belongs here only if it has NO meaning as code in this
+  // repo — cspell checks identifiers, CSS properties and string literals as
+  // readily as it checks comments, and there is no way to scope a rule to
+  // prose inside a `.tsx` file. So the following are deliberately ABSENT, and
+  // must stay absent:
+  //
+  //   color, center   — CSS properties and flex/grid values, ~580 uses
+  //   gray            — photobroom's ButtonColor union (`<Button color="gray">`)
+  //   centered        — a value in the DS Modal's public API (ModalVariant)
+  //   license         — "MIT License" is a proper noun, and British English
+  //                     splits licence (noun) / license (verb) anyway
+  //   normalize       — String.prototype.normalize
+  //   dialog, meter   — HTML elements
+  //   program         — spelled the same in British English for software
+  //
+  // `color` and `center` ARE enforced in markdown, where the override below
+  // can tell code from prose. Everything else on that list is unenforceable,
+  // and prose in code files relies on review instead.
+  "flagWords": [
+    "analyze:analyse",
+    "analyzed:analysed",
+    "analyzes:analyses",
+    "analyzing:analysing",
+    "apologize:apologise",
+    "behavior:behaviour",
+    "behaviors:behaviours",
+    "customizable:customisable",
+    "customize:customise",
+    "customized:customised",
+    "customizing:customising",
+    "defense:defence",
+    "emphasize:emphasise",
+    "emphasized:emphasised",
+    "favor:favour",
+    "favorite:favourite",
+    "favorites:favourites",
+    "flavor:flavour",
+    "fueled:fuelled",
+    "honor:honour",
+    "humor:humour",
+    "initialize:initialise",
+    "initialized:initialised",
+    "initializing:initialising",
+    "labeled:labelled",
+    "labeling:labelling",
+    "labor:labour",
+    "maximize:maximise",
+    "maximized:maximised",
+    "maximizing:maximising",
+    "minimize:minimise",
+    "minimized:minimised",
+    "minimizing:minimising",
+    "modeled:modelled",
+    "modeling:modelling",
+    "neighbor:neighbour",
+    "neighbors:neighbours",
+    "offense:offence",
+    "optimization:optimisation",
+    "optimizations:optimisations",
+    "optimize:optimise",
+    "optimized:optimised",
+    "optimizes:optimises",
+    "optimizing:optimising",
+    "organization:organisation",
+    "organizational:organisational",
+    "organize:organise",
+    "organized:organised",
+    "organizing:organising",
+    "pretense:pretence",
+    "prioritization:prioritisation",
+    "prioritize:prioritise",
+    "prioritized:prioritised",
+    "prioritizing:prioritising",
+    "realize:realise",
+    "realized:realised",
+    "recognizable:recognisable",
+    "recognize:recognise",
+    "recognized:recognised",
+    "recognizing:recognising",
+    "rumor:rumour",
+    "savor:savour",
+    "specialize:specialise",
+    "specialized:specialised",
+    "standardize:standardise",
+    "standardized:standardised",
+    "summarize:summarise",
+    "summarized:summarised",
+    "summarizing:summarising",
+    "traveled:travelled",
+    "traveling:travelling",
+    "utilize:utilise",
+    "utilized:utilised",
+    "utilizing:utilising",
+    "vapor:vapour",
+    "visualization:visualisation",
+    "visualizations:visualisations",
+    "visualize:visualise",
+    "visualized:visualised"
+  ],
+
+  "overrides": [
+    {
+      // Markdown is the one place code and prose are syntactically separable:
+      // with fences, inline code and link targets ignored, what remains is
+      // English, so `color` and `center` can be enforced here.
+      "filename": ["**/*.md"],
+      "ignoreRegExpList": ["MarkdownCodeFence", "MarkdownInlineCode", "MarkdownLinkTarget"],
+      "flagWords": [
+        "center:centre",
+        "centered:centred",
+        "centering:centring",
+        "color:colour",
+        "colored:coloured",
+        "coloring:colouring",
+        "colors:colours"
+      ]
+    }
+  ]
+}

@@ -32,6 +32,11 @@ jobs:
       - name: Lint
         run: pnpm lint
 
+      # British English in prose; code keeps its API's spelling. Configured in
+      # cspell.json, which the editor extension reads too.
+      - name: Spell check
+        run: pnpm spell
+
       - name: Dependency graph
         run: pnpm check-deps
 

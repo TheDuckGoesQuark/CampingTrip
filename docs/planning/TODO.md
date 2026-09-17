@@ -309,6 +309,23 @@ inside the Canvas:
 
 ## Backlog
 
+### Repo — five Americanisms cannot be enforced inside `.ts`/`.tsx`/`.css`
+
+`cspell` checks an identifier, a CSS property and a comment with the same rule,
+and has no way to tell prose from code inside a source file. So `color`,
+`center`, `gray`, `license` and `normalize` are deliberately absent from
+`flagWords`: banning them would flag `align-items: center`, Mantine's `gray`
+token, `String.prototype.normalize` and the MIT License. Prose written in those
+files therefore relies on review, and only markdown — where fences and inline
+code are separable — gets the full list.
+
+Closing the gap needs a checker that parses TypeScript and walks only comments,
+string literals and JSX text. An oxlint rule would be the natural home, but
+oxlint has no spelling plugin and adding one is upstream work. A small custom
+AST pass over comments and JSX text is the tractable version. Not urgent: the
+whole repo was 15 Americanisms when the rule went in, so review has been
+holding the line by itself.
+
 ### CatOS — a battery indicator beside the clock
 
 The menu bar's right slot holds the clock and nothing else. A battery reading

@@ -31,7 +31,7 @@ export function applyMoireFix(obj: THREE.Object3D) {
  *  1. Caps metalness so scene lights contribute a diffuse component
  *  2. Adds warm emissive to simulate ambient tent-light bounce
  *  3. Bumps roughness for softer, broader reflections
- *  4. Lightens pure-black base colors so there's something to shade
+ *  4. Lightens pure-black base colours so there's something to shade
  */
 export function fixDarkMetallics(mesh: THREE.Mesh) {
   const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
@@ -48,7 +48,7 @@ export function fixDarkMetallics(mesh: THREE.Mesh) {
     stdMat.emissive = new THREE.Color(0x331a08);
     stdMat.emissiveIntensity = 0.25;
 
-    // Lighten pure-black base colors so there's something to shade
+    // Lighten pure-black base colours so there's something to shade
     const hsl = { h: 0, s: 0, l: 0 };
     stdMat.color.getHSL(hsl);
     if (hsl.l < 0.08) {

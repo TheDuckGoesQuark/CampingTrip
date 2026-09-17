@@ -33,7 +33,21 @@ pnpm --filter campsite models:optimise  # recompress public/models after adding 
 pnpm -r build         # build all frontend apps
 pnpm -r test          # run all frontend tests
 pnpm -r exec tsc -b   # typecheck all apps
+pnpm spell            # spell-check prose (British English)
 ```
+
+## Language
+
+Prose is British English — comments, docs, JSDoc, test names and anything a
+reader sees. Code keeps whatever spelling its API uses, so `color`, `center` and
+photobroom's `gray` button colour stay as they are, and the design system's
+`centered` modal variant keeps its name.
+
+`cspell.json` holds the rule, and the VS Code Code Spell Checker extension reads
+the same file, so the editor and CI agree. An unknown-but-correct word belongs in
+the tracked `project-words.txt`, never in a personal dictionary. The list of
+Americanisms deliberately left unenforced, and why, is commented in
+`cspell.json` itself.
 
 ## Tech stack
 
