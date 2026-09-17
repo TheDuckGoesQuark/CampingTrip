@@ -34,7 +34,15 @@ pnpm -r build         # build all frontend apps
 pnpm -r test          # run all frontend tests
 pnpm -r exec tsc -b   # typecheck all apps
 pnpm spell            # spell-check prose (British English)
+pnpm check-deps       # dependency-graph rules
+pnpm ds-guard         # design-system reinvention check
 ```
+
+Design-system enforcement runs in three layers: `.oxlintrc.json` for per-file
+rules, `.dependency-cruiser.cjs` for import-graph rules, and `pnpm ds-guard` for
+app code that rebuilds something the DS already exports — which the first two
+cannot see, because there is no import edge to forbid. See
+[`scripts/ds-guard/README.md`](scripts/ds-guard/README.md).
 
 ## Language
 

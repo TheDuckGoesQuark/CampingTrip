@@ -1,0 +1,27 @@
+{
+  "comment": "Violations ds-guard accepts today, so the checks can be adopted on a repo that already has debt. CI fails on anything not listed here, and on any entry listed here that no longer occurs — so removing debt means deleting its line. Regenerate with `pnpm ds-guard --update-baseline`.",
+  "accepted": [
+    "missing-primitive|apps/campsite/src/components/blog/contact/SendDialog.tsx|component:SendDialog",
+    "missing-primitive|apps/campsite/src/components/catos/AppearanceMenu.tsx|component:AppearanceMenu",
+    "missing-primitive|apps/campsite/src/components/catos/VolumeMenu.tsx|component:VolumeMenu",
+    "missing-primitive|apps/campsite/src/components/overlays/LaptopScreenOverlay.tsx|style:iconField",
+    "missing-primitive|apps/campsite/src/components/overlays/OverlayTabBar.tsx|style:pill",
+    "missing-primitive|apps/campsite/src/components/overlays/SceneControls.tsx|component:ToggleSwitch",
+    "missing-primitive|apps/campsite/src/components/overlays/SceneControls.tsx|style:switch",
+    "missing-primitive|apps/campsite/src/components/overlays/VolumeSlider.tsx|component:VolumeSlider",
+    "missing-primitive|apps/photobroom/src/overlay/ui.tsx|component:Spinner",
+    "reinvented-component|apps/campsite/src/components/blog/ToolPage.tsx|style:toolIcon",
+    "reinvented-component|apps/campsite/src/components/catos/CatosWindow.tsx|component:CatosWindow",
+    "reinvented-component|apps/campsite/src/components/overlays/MusicPlayerOverlay.tsx|component:WheelButton",
+    "reinvented-component|apps/campsite/src/components/overlays/PhotoBroomPage.tsx|style:card",
+    "reinvented-component|apps/campsite/src/components/overlays/PhotoBroomPage.tsx|style:coffeeCard",
+    "reinvented-component|apps/campsite/src/components/overlays/SceneControls.tsx|component:ControlButton",
+    "reinvented-component|apps/campsite/src/components/overlays/SceneControls.tsx|component:GearIcon",
+    "reinvented-component|apps/campsite/src/components/overlays/SceneControls.tsx|component:SparkleIcon",
+    "reinvented-component|apps/campsite/src/components/overlays/SceneControls.tsx|component:SpeakerOffIcon",
+    "reinvented-component|apps/campsite/src/components/overlays/SceneControls.tsx|component:SpeakerOnIcon",
+    "reinvented-component|apps/campsite/src/components/overlays/SceneControls.tsx|style:button",
+    "reinvented-component|apps/photobroom/src/overlay/PhotoCard.tsx|component:PhotoCard",
+    "reinvented-component|apps/photobroom/src/overlay/ui.tsx|component:Button"
+  ]
+}

@@ -1,0 +1,11 @@
+.card {
+  padding: 8px;
+}
+
+.cardBody {
+  display: flex;
+}
+
+.prose {
+  max-width: 60ch;
+}

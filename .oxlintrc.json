@@ -1,6 +1,7 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "plugins": ["typescript", "unicorn", "oxc", "import", "react", "promise", "jsx-a11y"],
+  "jsPlugins": ["./scripts/oxlint/ds-plugin.mjs"],
   "categories": {
     "correctness": "error",
     "suspicious": "warn",
@@ -20,6 +21,13 @@
     "import/no-unassigned-import": ["warn", { "allow": ["**/*.css"] }],
     "react/forbid-dom-props": ["error", { "forbid": ["style"] }],
 
+    // Reinvention rules from ./scripts/oxlint/ds-plugin.mjs. They live at top
+    // level with opt-out overrides below rather than being scoped to apps/**,
+    // because oxlint does not reliably re-apply a plugin rule declared only in
+    // an override block.
+    "ds/no-bespoke-control": "error",
+    "ds/no-inline-icon": "error",
+
     // Both rules read an element in isolation, so they cannot see that the DS's
     // `render={<a href=… />}` takes its accessible name from the children of the
     // component wrapping it. Every Card/Tag/Link/Button call site trips them.
@@ -35,6 +43,36 @@
     "jsx-a11y/prefer-tag-over-role": "off"
   },
   "overrides": [
+    {
+      // The design system is where controls and icons are supposed to be built,
+      // so the two reinvention rules are inverted here: this is the sanctioned
+      // home for a role-bearing element and a raw <svg>.
+      "files": ["packages/design-system/**/*.{ts,tsx}"],
+      "rules": {
+        "ds/no-bespoke-control": "off",
+        "ds/no-inline-icon": "off"
+      }
+    },
+    {
+      // GRANDFATHERED bespoke controls and inline icons. A shrinking list —
+      // delete an entry when its component moves onto the DS.
+      //
+      //  - SceneControls: a <div role="switch"> with a hand-written keydown, and
+      //    six inline glyphs. Both have DS answers (a Switch over the Base UI
+      //    primitive; Icon) and are the worked example in scripts/ds-guard/README.md.
+      //  - TimeOfDayArc: an arc-shaped dial. The role is genuine — no DS
+      //    component draws a radial control — but its glyph is not.
+      //  - VolumeMenu: inline speaker glyphs, pending an Icon entry.
+      "files": [
+        "apps/campsite/src/components/overlays/SceneControls.tsx",
+        "apps/campsite/src/components/overlays/TimeOfDayArc.tsx",
+        "apps/campsite/src/components/catos/VolumeMenu.tsx"
+      ],
+      "rules": {
+        "ds/no-bespoke-control": "off",
+        "ds/no-inline-icon": "off"
+      }
+    },
     {
       // The DS owns visual identity and uses inline style for dynamic geometry.
       // It must stay domain-agnostic: no imports from apps, routing, state, or
@@ -140,6 +178,8 @@
       // Tests and stories define local render helpers and ship fixture markup.
       "files": ["**/*.test.{ts,tsx}", "**/*.spec.{ts,tsx}", "**/*.stories.{ts,tsx}"],
       "rules": {
+        "ds/no-bespoke-control": "off",
+        "ds/no-inline-icon": "off",
         "react/forbid-dom-props": "off",
         "max-lines": "off",
         "max-lines-per-function": "off",
@@ -149,6 +189,7 @@
   ],
   "ignorePatterns": [
     "**/dist/**",
+    "scripts/ds-guard/__fixtures__/**",
     "**/node_modules/**",
     "**/storybook-static/**",
     "**/coverage/**",

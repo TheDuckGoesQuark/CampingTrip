@@ -1,0 +1,19 @@
+{
+  "designSystem": {
+    "package": "@jordanscamp/ds",
+    "barrels": ["packages/design-system/src/index.ts"]
+  },
+  "consumers": ["apps/campsite/src", "apps/photobroom/src"],
+  "styleSources": "cssModules",
+  "extensions": [".ts", ".tsx"],
+  "exclude": [
+    "node_modules",
+    "\\.test\\.",
+    "\\.spec\\.",
+    "\\.stories\\.",
+    "/dist/",
+    "/prerender/",
+    "apps/campsite/src/data/"
+  ],
+  "baseline": "baseline.json"
+}

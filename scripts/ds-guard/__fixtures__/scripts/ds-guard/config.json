@@ -1,0 +1,9 @@
+{
+  "designSystem": {
+    "package": "@demo/ds",
+    "barrels": ["packages/design-system/src/index.ts"]
+  },
+  "consumers": ["apps/demo/src"],
+  "styleSources": "cssModules",
+  "baseline": "baseline.json"
+}
