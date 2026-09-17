@@ -1,10 +1,11 @@
 import { Button, Link, Text } from "@jordanscamp/ds";
 import {
   Envelope,
+  GithubLogo,
   type Icon,
+  IdentificationCard,
   Link as LinkGlyph,
   LinkedinLogo,
-  ReadCvLogo,
 } from "@jordanscamp/ds/icons";
 import { useRef } from "react";
 import { Link as RouterLink } from "react-router-dom";
@@ -31,10 +32,17 @@ export const CONTACT_HEADING = "Let's talk";
 /** The rail carries no visible label, so this is the only thing naming it. */
 export const RAIL_LABEL = "Ways to get in touch";
 
-export const CV_LINK_LABEL = "Read my CV";
+export const CV_LINK_LABEL = "CV";
 
-/** GitHub is on the CV and in the page head, but code is no answer to "let's talk". */
-const WAYS_TO_TALK = cv.links.filter((link) => !link.url.includes("github.com"));
+/**
+ * Code is no answer to "let's talk", so GitHub gives its row to the CV link. On
+ * the CV there is no link to make, and it takes the row back rather than leave
+ * the strip a row shorter than the portrait beside it.
+ */
+function waysToTalk(page: BrowserPage): typeof cv.links {
+  if (page.kind === "cv") return cv.links;
+  return cv.links.filter((link) => !link.url.includes("github.com"));
+}
 
 const HEADING_ID = "contact-heading";
 
@@ -56,6 +64,7 @@ const SETTLE_MS = 500;
 function glyphFor(url: string): Icon {
   if (url.startsWith("mailto:")) return Envelope;
   if (url.includes("linkedin.com")) return LinkedinLogo;
+  if (url.includes("github.com")) return GithubLogo;
   return LinkGlyph;
 }
 
@@ -95,7 +104,7 @@ export default function ContactFooter({ page }: { page: BrowserPage }) {
           {CONTACT_HEADING}
         </Text>
         <ul className={styles.contactLinks}>
-          {WAYS_TO_TALK.map((link) => (
+          {waysToTalk(page).map((link) => (
             <li key={link.url}>
               <Glyph glyph={glyphFor(link.url)} size={GLYPH_PX} />
               <Link
@@ -109,7 +118,7 @@ export default function ContactFooter({ page }: { page: BrowserPage }) {
           ))}
           {page.kind === "cv" ? null : (
             <li>
-              <Glyph glyph={ReadCvLogo} size={GLYPH_PX} />
+              <Glyph glyph={IdentificationCard} size={GLYPH_PX} />
               <Link render={<RouterLink to={blogPaths.cv} />}>{CV_LINK_LABEL}</Link>
             </li>
           )}
