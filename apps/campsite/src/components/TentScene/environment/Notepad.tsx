@@ -16,7 +16,7 @@ const REST_POS: [number, number, number] = [-0.7, 0.4, -0.7];
 const REST_ROT: [number, number, number] = [0.1, Math.PI * 0.48, 0.3];
 const REST_SCALE: [number, number, number] = [0.004, 0.004, 0.004];
 
-// Focused transform (centered in front of camera, angled toward viewer)
+// Focused transform (centred in front of camera, angled toward viewer)
 const FOCUS_POS: [number, number, number] = [0, 1.8, 1.2];
 const FOCUS_ROT: [number, number, number] = [-0.3, 0, 0];
 const FOCUS_SCALE: [number, number, number] = [0.012, 0.012, 0.012];

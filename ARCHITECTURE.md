@@ -159,7 +159,7 @@ Canvas → shadows: on, antialias: on, alpha: off
 4. **Campfire** — Flickers point light via layered sine waves
 5. **RainSystem** — Cycles 600 particle positions with wind + gravity
 6. **WalkingCat** — State machine: walk → pause → reverse → walk
-7. **OutdoorScene** — Updates sky gradient vertex colors, star/cloud opacity
+7. **OutdoorScene** — Updates sky gradient vertex colours, star/cloud opacity
 
 ### Lighting System
 
@@ -167,8 +167,8 @@ Seven independent lights with time-of-day keyframe animation:
 
 | Light          | Role                       | Key Behaviour                      |
 | -------------- | -------------------------- | ---------------------------------- |
-| Ambient        | Base fill                  | Color shifts warm↔cool across day  |
-| Hemisphere     | Sky/ground bounce          | Sky color tracks time of day       |
+| Ambient        | Base fill                  | Colour shifts warm↔cool across day |
+| Hemisphere     | Sky/ground bounce          | Sky colour tracks time of day      |
 | Main Point     | Lantern / string lights    | Brightest at night (4.5 intensity) |
 | Warm Fill      | Camera-area fill           | Subtle depth cue                   |
 | Campfire Point | Outdoor warmth             | Brighter at night                  |
@@ -209,13 +209,13 @@ The `TimeOfDayArc` UI allows dragging to set time manually. When the user drags:
 
 Five named camera positions for different focus targets:
 
-| Target    | Position             | Use                       |
-| --------- | -------------------- | ------------------------- |
-| `default` | Elevated, centered   | Normal exploration        |
-| `lantern` | Mid-height, closer   | Looking at ceiling lights |
-| `laptop`  | Low, left            | Looking at laptop/desk    |
-| `door`    | Mid-height, centered | Looking out the tent door |
-| `guitar`  | Low, right           | Looking at guitar         |
+| Target    | Position            | Use                       |
+| --------- | ------------------- | ------------------------- |
+| `default` | Elevated, centred   | Normal exploration        |
+| `lantern` | Mid-height, closer  | Looking at ceiling lights |
+| `laptop`  | Low, left           | Looking at laptop/desk    |
+| `door`    | Mid-height, centred | Looking out the tent door |
+| `guitar`  | Low, right          | Looking at guitar         |
 
 Transitions between presets use GSAP tweens (0.8–1.0s, `power2.inOut`).
 
@@ -226,7 +226,7 @@ Two layers of mouse-driven camera movement:
 1. **Position parallax** (POS_X=0.12, POS_Y=0.08) — Camera shifts WITH mouse. Subtle depth effect.
 2. **Look-at parallax** (LOOK_X=0.8, LOOK_Y=0.4) — Look target shifts WITH mouse. The primary "looking around" feel.
 
-When focusing on an object (not `default`), parallax is dampened to 15% via `paralaxMul`.
+When focusing on an object (not `default`), parallax is dampened to 15% via `parallaxMul`.
 
 ### Input Sources
 
@@ -362,7 +362,7 @@ The dark environment preset makes metallic objects too dark. A correction patter
 - Increase roughness (min 0.35) — softer, broader highlights
 - Add warm emissive (#331a08) — simulates ambient light bounce
 - Increase envMapIntensity (3.0) — catches available reflections
-- Lighten near-black base colors (min lightness 0.25) — gives something to shade
+- Lighten near-black base colours (min lightness 0.25) — gives something to shade
 
 Used by MokaPot, Laptop, and other metallic objects.
 

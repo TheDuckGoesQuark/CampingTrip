@@ -154,7 +154,7 @@ function pluckString(
   const buffer = ac.createBuffer(1, totalSamples, sr);
   const data = buffer.getChannelData(0);
 
-  // Initialize the delay line with noise burst
+  // Initialise the delay line with noise burst
   for (let i = 0; i < periodSamples; i++) {
     data[i] = Math.random() * 2 - 1;
   }

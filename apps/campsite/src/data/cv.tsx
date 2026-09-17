@@ -30,7 +30,7 @@ const roles: Role[] = [
         outcome:
           "Enabled rapid prototyping, removed engineering as a bottleneck, and increased fidelity of prototypes which now serve as handover documents from PMs and designers.",
         feature:
-          "Isolated UI from application concerns, with well defined guidance utilizing strict rubrics to construct human readable and near-production ready prototype code with LLMs without engineering input.",
+          "Isolated UI from application concerns, with well defined guidance utilising strict rubrics to construct human readable and near-production ready prototype code with LLMs without engineering input.",
         difficulty: "",
         approach:
           "Researched into front-end architecture patterns and led workshops to understand existing designer workflows to build something that is familiar to the user but far more powerful.",
@@ -42,9 +42,9 @@ const roles: Role[] = [
         feature:
           "Alerting to proactively address failures, and self-serve flows for issues driven by functionality gaps.",
         difficulty:
-          "Urgent work crowds out fixes that would stop it recurring, and so required careful prioritization and constant context switching.",
+          "Urgent work crowds out fixes that would stop it recurring, and so required careful prioritisation and constant context switching.",
         approach:
-          "Assembled and led nine incredible people across engineering and deployment, working alongside study teams to prioritize rather than behind a ticket queue.",
+          "Assembled and led nine incredible people across engineering and deployment, working alongside study teams to prioritise rather than behind a ticket queue.",
       },
       {
         name: "Serious Medical Event Reporting",
@@ -106,17 +106,17 @@ const roles: Role[] = [
         outcome:
           "Fewer support issues out of live studies, and clinicians can autonomously keep participants on protocol.",
         feature:
-          "Studies are designed to handle deviations due to participant behavior, but there's always unforeseen edge cases. This project added schedule management tooling to the UI that previously required engineers to hand-edit data through admin portals in an inconsistent and risky manner.",
+          "Studies are designed to handle deviations due to participant behaviour, but there's always unforeseen edge cases. This project added schedule management tooling to the UI that previously required engineers to hand-edit data through admin portals in an inconsistent and risky manner.",
         difficulty:
           "Studies are designed against a timeline, and defining how to recover that timeline in a broadly applicable manner required a careful understanding of all the scenarios that had occurred or could be preempted.",
         approach:
           "Collating all previous support requests, and designing the tooling with trial coordinators directly involved allowed us to gain trust in the solution and scope it correctly.",
       },
       {
-        name: "Standardized Self-Serve Data Exports",
+        name: "Standardised Self-Serve Data Exports",
         outcome:
-          "Statisticians and data teams went from waiting on an engineer to assemble each dataset by hand to analyzing a study in near-real time, so problems surface immediately rather than weeks later.",
-        feature: "An automated, standardized dataset derived from the platform\u2019s own data.",
+          "Statisticians and data teams went from waiting on an engineer to assemble each dataset by hand to analysing a study in near-real time, so problems surface immediately rather than weeks later.",
+        feature: "An automated, standardised dataset derived from the platform\u2019s own data.",
         difficulty:
           "Agreeing the standard itself, and handling studies whose schedule changes version by version underneath it.",
         approach:

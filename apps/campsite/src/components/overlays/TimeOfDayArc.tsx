@@ -28,13 +28,13 @@ const KEY_LABELS: { t: number; label: string }[] = [
 
 /** Convert a page-space pointer position to arc progress (0–1). */
 function pointerToProgress(clientX: number, clientY: number, containerRect: DOMRect): number {
-  // Pointer relative to the arc center (CX, CY) in SVG coords
+  // Pointer relative to the arc centre (CX, CY) in SVG coords
   const svgX = clientX - containerRect.left - 14; // 14 = container left offset
   const svgY = clientY - containerRect.top - 14;
   const dx = svgX - CX;
   const dy = svgY - CY;
 
-  // atan2 gives angle from center; convert to arc parameter
+  // atan2 gives angle from centre; convert to arc parameter
   // Arc goes from bottom (angle = π/2) to right (angle = 0)
   let angle = Math.atan2(dy, dx);
   if (angle < 0) angle += Math.PI * 2;

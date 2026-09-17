@@ -87,7 +87,7 @@ export default function CameraController() {
   const lookAt = useRef(CAMERA_PRESETS.default.target.clone());
   const basePos = useRef(CAMERA_PRESETS.default.pos.clone());
   const baseTarget = useRef(CAMERA_PRESETS.default.target.clone());
-  const paralaxMul = useRef(1);
+  const parallaxMul = useRef(1);
   const prevFocus = useRef<FocusTarget>("default");
 
   // Focus target transitions
@@ -102,7 +102,7 @@ export default function CameraController() {
 
       gsap.killTweensOf(basePos.current);
       gsap.killTweensOf(baseTarget.current);
-      gsap.killTweensOf(paralaxMul);
+      gsap.killTweensOf(parallaxMul);
 
       // Honour prefers-reduced-motion: snap instead of animating.
       const rm = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 1;
@@ -122,13 +122,13 @@ export default function CameraController() {
           duration: 0.8 * rm,
           ease: "power2.inOut",
         });
-        gsap.to(paralaxMul, { current: 1, duration: 0.6 * rm, ease: "power2.in" });
+        gsap.to(parallaxMul, { current: 1, duration: 0.6 * rm, ease: "power2.in" });
       } else {
         // Mobile: fully zero out parallax so focus preset camera angles work correctly
         const targetMul = isMobile ? 0 : 0.15;
-        gsap.to(paralaxMul, { current: targetMul, duration: 0.4 * rm, ease: "power2.out" });
+        gsap.to(parallaxMul, { current: targetMul, duration: 0.4 * rm, ease: "power2.out" });
 
-        // Mobile: smoothly center the accumulated angle so the focus view faces forward
+        // Mobile: smoothly centre the accumulated angle so the focus view faces forward
         if (isMobile) {
           gsap.to(angleRef.current, {
             x: 0,
@@ -156,7 +156,7 @@ export default function CameraController() {
     });
   }, []);
 
-  // Laptop focus: animate camera to center on open, restore on close
+  // Laptop focus: animate camera to centre on open, restore on close
   useEffect(() => {
     let prev = laptopUp(useSceneStore.getState());
     return useSceneStore.subscribe((state) => {
@@ -167,7 +167,7 @@ export default function CameraController() {
       prev = focused;
 
       if (focused && isMobile) {
-        // Save current angle and animate to center
+        // Save current angle and animate to centre
         savedAngleRef.current.x = angleRef.current.x;
         savedAngleRef.current.y = angleRef.current.y;
         gsap.to(angleRef.current, { x: 0, y: 0, duration: 0.8, ease: "power2.inOut" });
@@ -311,7 +311,7 @@ export default function CameraController() {
 
     time.current += delta;
     const t = time.current;
-    const mul = paralaxMul.current;
+    const mul = parallaxMul.current;
 
     // Merge inputs
     if (isMobile) {

@@ -1,0 +1,23 @@
+{
+  // The repo's cspell.json is the single source of truth for spelling — it
+  // drives this extension and `pnpm spell` alike, so the editor and CI cannot
+  // disagree. These keys only point the extension at it and widen the file
+  // types it reads; the dialect, dictionary and rules all live in cspell.json.
+  "cSpell.enabled": true,
+  "cSpell.enabledFileTypes": {
+    "*": true
+  },
+
+  // Unknown words go in the tracked project-words.txt, not into a personal
+  // user-level dictionary — otherwise a word accepted from the lightbulb here
+  // still fails CI.
+  "cSpell.customDictionaries": {
+    "project": {
+      "name": "project",
+      "path": "${workspaceFolder}/project-words.txt",
+      "addWords": true,
+      "scope": "workspace"
+    }
+  },
+  "cSpell.addWordTo": "cspell"
+}

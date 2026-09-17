@@ -77,7 +77,7 @@ describe("pointerToProgress", () => {
   const rect = { left: 0, top: 0 };
 
   it("returns 0 for pointer at bottom of arc", () => {
-    // Bottom of arc: angle = π/2 from center
+    // Bottom of arc: angle = π/2 from centre
     const centerX = CX + 14;
     const centerY = CY + 14;
     const p = pointerToProgress(centerX, centerY + RADIUS, rect);
