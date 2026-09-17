@@ -32,6 +32,8 @@ export interface CvProject {
   name: string;
   summary: string;
   url?: string;
+  /** Shown in place of the bare `url`, where the link runs deeper than it reads. */
+  urlLabel?: string;
   start: string;
   end?: string;
   highlights: string[];
@@ -43,6 +45,13 @@ export interface SkillGroup {
   fullWidth?: boolean;
 }
 
+export interface Coursework {
+  subject: string;
+  detail: string;
+  /** The write-up, not the repository: it is the part worth a reader's click. */
+  url?: string;
+}
+
 export interface Education {
   institution: string;
   url?: string;
@@ -52,7 +61,7 @@ export interface Education {
   start: string;
   end: string;
   /** Coursework and projects worth a line each. */
-  highlights?: string[];
+  coursework?: Coursework[];
 }
 
 /** `quote` carries no surrounding quotation marks; the markup supplies them. */

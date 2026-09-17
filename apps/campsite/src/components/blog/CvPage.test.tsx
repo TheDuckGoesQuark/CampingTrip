@@ -1,9 +1,18 @@
 import { render, screen, within } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
-import { describe, expect, it } from "vitest";
+import userEvent from "@testing-library/user-event";
+import { MemoryRouter, useLocation } from "react-router-dom";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { contactLabel, contactMailto } from "../../data/contactEmail";
 import { cv } from "../../data/cv";
+import { mailPreset } from "../../data/mailPresets";
+import { RenderTargetContext, type RenderTarget } from "../../prerender/renderTarget";
+import { blogPaths } from "../../routing/blogPaths";
+import { WINDOW_MAIL } from "../../routing/windows";
+import { useSceneStore } from "../../store/sceneStore";
 import CvPage, { CV_SECTIONS } from "./CvPage";
+
+vi.mock("../../audio/soundEffects", () => ({ playWindowOpen: vi.fn() }));
 
 // The narrative's links go through react-router's `Link`, which needs a router ancestor.
 function renderCv() {
@@ -13,6 +22,25 @@ function renderCv() {
     </MemoryRouter>,
   );
 }
+
+function PathProbe() {
+  return <span data-testid="path">{useLocation().pathname}</span>;
+}
+
+function renderCvAt(target: RenderTarget) {
+  return render(
+    <RenderTargetContext.Provider value={target}>
+      <MemoryRouter initialEntries={[blogPaths.cv]}>
+        <CvPage cv={cv} />
+        <PathProbe />
+      </MemoryRouter>
+    </RenderTargetContext.Provider>,
+  );
+}
+
+const emailLink = () => screen.getByRole("link", { name: contactLabel as string });
+const currentPath = () => screen.getByTestId("path").textContent;
+const askedFor = () => useSceneStore.getState().mailPreset;
 
 describe("CvPage", () => {
   it("heads the document with the name alone", () => {
@@ -131,6 +159,50 @@ describe("CvPage", () => {
     renderCv();
     const link = screen.getByRole("link", { name: "CatMaps" });
     expect(link).toHaveAttribute("href", "/blog/projects/catmap.html");
+  });
+
+  describe("the header's email address", () => {
+    beforeEach(() => {
+      useSceneStore.getState().setMailPreset(null);
+    });
+
+    it("opens MouseMail on the hiring template", async () => {
+      renderCvAt("live");
+      await userEvent.click(emailLink());
+
+      expect(currentPath()).toBe(WINDOW_MAIL);
+      expect(askedFor()).toBe(mailPreset("work").id);
+    });
+
+    it("stays an untouched mailto on the static copy", async () => {
+      renderCvAt("static");
+      expect(emailLink()).toHaveAttribute("href", contactMailto);
+
+      await userEvent.click(emailLink());
+      expect(currentPath()).toBe(blogPaths.cv);
+      expect(askedFor()).toBeNull();
+    });
+
+    it("leaves the address itself clickable in a mail client", () => {
+      renderCvAt("live");
+      expect(emailLink()).toHaveAttribute("href", contactMailto);
+    });
+  });
+
+  it("hangs each coursework link on its subject, and leaves the unlinked ones as text", () => {
+    renderCv();
+    const education = screen.getByRole("heading", { name: "Education" }).parentElement!;
+
+    const lines = within(education).getAllByRole("listitem");
+
+    for (const { subject, detail, url } of cv.education.flatMap((e) => e.coursework ?? [])) {
+      const line = lines.find((li) => li.textContent?.startsWith(`${subject}:`))!;
+      expect(line.textContent).toBe(`${subject}: ${detail}`);
+
+      const link = within(line).queryByRole("link");
+      if (url === undefined) expect(link).toBeNull();
+      else expect(link).toHaveAttribute("href", url);
+    }
   });
 
   it("carries a link named inside an achievement facet offsite", () => {

@@ -1,9 +1,20 @@
 import { Button, Icon, Link, Text, type IconName } from "@jordanscamp/ds";
 import { Fragment, type ReactNode } from "react";
 
+import { mailtoOf } from "../../data/contactEmail";
+import { mailPreset } from "../../data/mailPresets";
+import { useMouseMailIntercept } from "../../hooks/useMouseMailIntercept";
 import { useDocumentId } from "../../prerender/renderTarget";
 import { blogPaths } from "../../routing/blogPaths";
-import type { Achievement, Commendation, Cv, CvProject, Education, Role } from "../../types/cv";
+import type {
+  Achievement,
+  Commendation,
+  Coursework,
+  Cv,
+  CvProject,
+  Education,
+  Role,
+} from "../../types/cv";
 
 import "../../styles/blogProse.css";
 import { asset } from "../../utils/assetPath";
@@ -47,7 +58,13 @@ function iconOfLink(url: string): IconName {
   return url.startsWith("mailto:") ? "envelope" : "globe";
 }
 
+/** A reader who mails from a CV is here about work, so the address opens on that template. */
+const HIRING = mailPreset("work");
+
 export default function CvPage({ cv }: CvPageProps) {
+  const mailto = mailtoOf(cv);
+  const interceptProps = useMouseMailIntercept();
+
   return (
     <article className={styles.cv}>
       <header className={styles.cvHeader}>
@@ -64,14 +81,21 @@ export default function CvPage({ cv }: CvPageProps) {
               </Text>
             </li>
           )}
-          {cv.links.map((link) => (
-            <li key={link.url}>
-              <Icon name={iconOfLink(link.url)} size="sm" />
-              <Link href={link.url} {...offsiteLinkProps(link.url)}>
-                {link.label}
-              </Link>
-            </li>
-          ))}
+          {cv.links.map((link) => {
+            const hiring = link.url === mailto;
+            return (
+              <li key={link.url}>
+                <Icon name={iconOfLink(link.url)} size="sm" />
+                <Link
+                  href={link.url}
+                  {...offsiteLinkProps(link.url)}
+                  {...(hiring ? interceptProps(HIRING) : {})}
+                >
+                  {link.label}
+                </Link>
+              </li>
+            );
+          })}
         </ul>
         <div className={styles.cvActions}>
           <Button variant="default" size="sm" render={<a href={blogPaths.cvPdf} download />}>
@@ -194,7 +218,7 @@ function ProjectEntry({ project }: { project: CvProject }) {
       {project.url && (
         <Text variant="body-sm" tone="muted">
           <Link href={project.url} {...offsiteLinkProps(project.url)}>
-            {project.url.replace(/^https?:\/\//, "")}
+            {project.urlLabel ?? project.url.replace(/^https?:\/\//, "")}
           </Link>
         </Text>
       )}
@@ -216,8 +240,32 @@ function EducationEntry({ entry }: { entry: Education }) {
         </Text>
       </div>
       <OrgLine name={entry.institution} url={entry.url} logo={entry.logo} />
-      {entry.highlights && entry.highlights.length > 0 && <Highlights items={entry.highlights} />}
+      {entry.coursework && entry.coursework.length > 0 && (
+        <CourseworkList items={entry.coursework} />
+      )}
     </div>
+  );
+}
+
+/** The subject carries the link so the line stays prose, rather than trailing a bare URL. */
+function CourseworkList({ items }: { items: Coursework[] }) {
+  return (
+    <ul className={styles.cvHighlights}>
+      {items.map(({ subject, detail, url }) => (
+        <li key={subject}>
+          <Text variant="body-sm" as="span">
+            {url ? (
+              <Link href={url} {...offsiteLinkProps(url)}>
+                {subject}
+              </Link>
+            ) : (
+              subject
+            )}
+            {`: ${detail}`}
+          </Text>
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -326,7 +374,9 @@ function Highlights({ items }: { items: string[] }) {
     <ul className={styles.cvHighlights}>
       {items.map((item) => (
         <li key={item}>
-          <Text as="span">{item}</Text>
+          <Text variant="body-sm" as="span">
+            {item}
+          </Text>
         </li>
       ))}
     </ul>

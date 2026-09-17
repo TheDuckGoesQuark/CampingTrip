@@ -10,6 +10,11 @@ import { slugify } from "./slug";
 
 const JOY_OF_REACT_URL = "https://www.joyofreact.com";
 
+const report = (repo: string, path = "report/report.pdf") =>
+  `https://github.com/TheDuckGoesQuark/${repo}/blob/master/${path}`;
+
+const DISSERTATION_URL = report("UnconventionalChess", "Docs/report/report.pdf");
+
 const roles: Role[] = [
   {
     org: "Lindus Health",
@@ -211,34 +216,43 @@ const roles: Role[] = [
 
 const projects: CvProject[] = [
   {
-    name: "Catmaps",
+    name: "CatMaps",
     summary:
-      "An app for reuniting lost pets with their owners: photograph an animal you have found and match it against the animals reported missing nearby.",
+      "An app for reuniting lost pets with their owners. Photograph an animal you have seen on the street and it will be matched against the animals reported missing nearby. Also a testing ground for building AI-assisted development workflows that reliably produce high quality correct code.",
     url: "https://catmaps.me",
-    start: "2026-02-01",
+    start: "2026-08-01",
     highlights: [
       "Rust backend and a React Native app, chosen to learn systems programming on a product with real stakes for its users.",
-      "[DRAFT — what is built and running today, what is next, and how you are making it exhaustive and reliable (typed API contracts, property tests, observability?).]",
+      "Currently in the process of being deployed to the app store.",
+      "Exhaustively testable by design, through the use of minimal state, and expressing logic as a series of deterministic finite state machines.",
+      "User safety and joy is core to the product philosophy.",
     ],
   },
   {
-    name: "Jordan's Camp",
-    summary:
-      "This site: a personal platform built in the open as a monorepo with its own design system.",
+    name: "Jordan's Campsite",
+    summary: "This site: a fun personal platform to express myself on the web.",
     url: "https://jordanscamp.site",
     start: "2025-01-01",
     highlights: [
-      "React 19 and Mantine, with a Storybook-documented design system shared across the apps.",
-      "Every blog page, this CV and its PDF are prerendered and readable without JavaScript, and structural accessibility rules are asserted over the shipped HTML in CI.",
+      "A creative outlet and testing ground for ideas, and a home for blogs to inspire and share my experience.",
+      "Inspired by interactive click and point video games (Firewatch, Undertale, to name a couple), where interactions are designed to encourage exploration and pleasantly reward with surprise.",
     ],
   },
   {
-    name: "PhotoBroom",
+    name: "Unconventional Chess",
     summary:
-      "A Chrome extension for keyboard-driven bulk review and deletion in Google Photos, where the official API cannot delete.",
-    url: "https://jordanscamp.site/blog/photobroom",
-    start: "2026-06-01",
-    highlights: [],
+      "My Masters dissertation: a chess game where every piece is its own agent, and the team argues out loud, in English, over which move to play.",
+    url: DISSERTATION_URL,
+    urlLabel: "github.com/TheDuckGoesQuark/UnconventionalChess",
+    start: "2019-09-01",
+    end: "2020-06-01",
+    highlights: [
+      "One agent per piece, each with a personality whose underlying values score every candidate move. Agents propose, justify, counter-propose and compromise, and only the piece under discussion may move, so the conversation is what decides the game.",
+      "No central planner: the agents reach one shared decision per turn purely by message passing, while the set of participants changes underneath them as pieces are captured.",
+      "Every message carries both its English surface form and structured fields for the intent behind it, so agents disagree on the data rather than by parsing each other's prose.",
+      "Built on JADE following the FIPA interaction protocols, with a token-passing speaker election over a conversation state machine keeping the agents in step.",
+      "Evaluated twice over: every agent move scored against Stockfish across five games, and a questionnaire adapted from the Game Engagement Questionnaire.",
+    ],
   },
 ];
 
@@ -429,17 +443,53 @@ export const cv: Cv = {
       institution: "University of St Andrews",
       url: "https://www.st-andrews.ac.uk",
       logo: "images/projects/st-andrews.webp",
-      qualification: "MSc Computer Science, First Class",
+      qualification: "MSci Computer Science, First Class",
       start: "2015-08-01",
       end: "2020-06-01",
-      highlights: [
-        "Machine Learning: evaluated regression and classification models using CART and gradient descent algorithms.",
-        "Data Ethics: performed critical analysis of GDPR and the DPIA process with reference to case studies.",
-        "Networking: developed a zone-based routed protocol for IoT devices using a locator-identifier address scheme.",
-        "Signal Analysis: researched image compression, and determined a person's heart rate from video.",
-        "AI: created a strategy game for collaborative agents with personality and humorous dialogue.",
-        "Distributed Systems: implemented a three-tier distributed token-ring social network with failure recovery.",
-        "Computer Graphics: experimented with shading and projection methods to model faces with OpenGL.",
+      coursework: [
+        {
+          subject: "Machine learning, regression",
+          detail:
+            "cleansed and processed real-world data to produce a regression model, and evaluated its performance.",
+          url: report("mlregression"),
+        },
+        {
+          subject: "Machine learning, classification",
+          detail: "evaluated classification models using CART and gradient descent algorithms.",
+          url: report("mlclassification"),
+        },
+        {
+          subject: "Networking",
+          detail:
+            "developed a zone-based routed protocol for IoT devices using a locator-identifier address scheme.",
+        },
+        {
+          subject: "Distributed systems",
+          detail:
+            "implemented a three-tier distributed token-ring social network with failure recovery.",
+          url: report("ringdistsys"),
+        },
+        {
+          subject: "Signal analysis",
+          detail: "researched image compression, and determined a person's heart rate from video.",
+          url: report("ImageProcessing"),
+        },
+        {
+          subject: "Computer graphics",
+          detail: "experimented with shading and projection methods to model faces with OpenGL.",
+          url: report("Interactive3DModelling"),
+        },
+        {
+          subject: "Data ethics",
+          detail:
+            "performed critical analysis of GDPR and the DPIA process with reference to case studies.",
+          url: report("DPIAEthics"),
+        },
+        {
+          subject: "Physics and mathematics",
+          detail:
+            "a joint Computer Science and Physics degree before specialising - mechanics, thermodynamics, waves and optics, gravitation, quantum phenomena and special relativity, with multivariate calculus, complex numbers and matrices.",
+        },
       ],
     },
   ],

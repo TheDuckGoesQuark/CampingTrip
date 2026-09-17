@@ -677,6 +677,9 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-xs);
+  /* A URL is one unbreakable token, so a deep link to a file in a repository
+     runs past the column on a phone unless it may break mid-word. */
+  overflow-wrap: break-word;
 }
 
 .cvOrg {
