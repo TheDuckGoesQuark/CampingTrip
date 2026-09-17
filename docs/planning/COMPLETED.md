@@ -6,6 +6,49 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## The contact footer carries a link to the CV, and drops GitHub
+
+**Date**: 2026-09-17
+
+**What was done**:
+
+- **`ContactFooter` offers `Read my CV`** as a third item in its profile list,
+  beside the email address and LinkedIn. A `ReadCvLogo` glyph and a `RouterLink`
+  to `blogPaths.cv` — no `offsiteLinkProps`, because the CV is a page on this
+  site and a new tab for it would be wrong.
+- **It is absent on the CV itself.** `BlogPageView` passes the `BrowserPage` it
+  already resolved down to the footer, and the item renders only when
+  `page.kind !== "cv"`.
+- **GitHub left the strip.** A profile of Jordan's code is no answer to "let's
+  talk", and a fourth row ran on past the portrait beside it. It is filtered out
+  of `cv.links` in the footer alone, so the CV's own header row and the
+  `schema.org/Person` still carry it.
+
+**Key decisions**:
+
+- **The page comes in as a prop, not off `useLocation`.** Reading the router
+  would have been prop-free, but the app's URL is not always the page the footer
+  is under: opening MouseMail moves the location to `/blog/desk/mousemail` while
+  the CV stays rendered behind it, and the link would reappear on the page it is
+  meant to be absent from.
+- **In the profile list rather than the pill rail.** The rail is labelled "Ways
+  to get in touch" and every pill on it opens MouseMail; a page link there would
+  break that promise. The list is already a set of places to find Jordan.
+- **GitHub is filtered, not deleted.** `cv.links` is the single source the CV
+  header and the page head both read, so dropping the entry there would have
+  taken GitHub off the CV and out of `sameAs` as well. The footer narrows the
+  list instead. `glyphFor` lost its GitHub branch with it, since no URL reaching
+  it can be a `github.com` one any more.
+
+**Verified**: the footer's own suite, `tsc -b`, and the prerendered output —
+`dist/blog/index.html` and `dist/blog/posts/index.html` carry the link,
+`dist/blog/cv.html` does not. `build:pdf` still renders, so the footer is still
+off the paper. Driven in a browser against both a `vite preview` of `dist` and
+the dev server: the link navigates in-tab and opens a CatNav tab, the same as
+the homepage's `See my full CV`.
+
+---
+
 ## The desktop's icons wrap into columns instead of running off the bottom
 
 **Date**: 2026-09-17

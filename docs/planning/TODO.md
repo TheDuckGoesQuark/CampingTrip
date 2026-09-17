@@ -199,8 +199,9 @@ rather than content. Everything else in the junk drawer is built.
 ### Blog — the "Work with me? / Get to know me?" toggle
 
 The CV is live at `/blog/cv.html` and `/cv.pdf`, and the homepage's professional
-column and its `See the full CV` link reach it — so this is about the way in the
-design cycle owns, not the only way in. Three constraints hold whatever it
+column, its `See the full CV` link and the contact footer on every other page
+reach it — so this is about the way in the design cycle owns, not the only way
+in. Three constraints hold whatever it
 becomes, recorded in [cv-design.md](cv-design.md): the two views are two URLs
 (`/blog/cv.html` and `/blog/index.html`), the toggle's state is derived from the
 URL and never stored, and the prerendered reader must not depend on it.
