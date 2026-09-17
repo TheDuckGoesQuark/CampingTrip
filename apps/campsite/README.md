@@ -121,19 +121,41 @@ Rules this puts on anything rendered inside the blog window:
   surface holding a document takes neither, so a reader can see there is more
   below.
 
-### The CV, and its PDF
+### The CV, and its PDFs
 
-`src/data/cv.tsx` is the one source for the CV. It renders as the `cv` page at
-`/blog/cv.html` (Caddy also answers `/cv`), whose prerendered head is a
-`schema.org/ProfilePage` around a `Person`, and as `dist/cv.pdf`, which
-`pnpm --filter campsite build:pdf` prints from the prerendered page with
+`src/data/cv.tsx` is the one source for the CV, and it renders two documents.
+The `cv` page at `/blog/cv.html` (Caddy also answers `/cv`) is the full one; the
+`cvCondensed` page at `/blog/cv-condensed.html` (`/cv-condensed`) is the same
+material cut to bullets. Each has a prerendered head that is a
+`schema.org/ProfilePage` around a `Person`, each carries a switch to the other,
+and each prints to its own PDF — `dist/cv.pdf` and `dist/cv-condensed.pdf`.
+
+`pnpm --filter campsite build:pdf` prints both from the prerendered pages with
 JavaScript disabled, through the print stylesheet. That is a separate command
 from `build` because it needs a Chromium (`pnpm exec playwright install
 chromium`); CI and the deploy run it after the build, a local build does not.
-The script fails if the PDF's text lacks the name, headline or first role, so a
-print stylesheet change cannot ship a blank document. It also fails if that
-page clips its own overflow or hides the document scrollbar, since a stylesheet
-that strands a scriptless reader at the fold still prints perfectly.
+The script fails if a PDF's text lacks the name, headline or first role, so a
+print stylesheet change cannot ship a blank document. It also fails if a page
+clips its own overflow or hides the document scrollbar, since a stylesheet that
+strands a scriptless reader at the fold still prints perfectly. And it fails if
+the condensed PDF runs past two A4 pages, which is the only thing that would
+notice the document stopping being what it is for.
+
+#### What the condensed CV takes, and how to steer it
+
+Nothing is duplicated between the two: the `short` fields hold shorter
+sentences, not copies of longer ones.
+
+| On the condensed page      | Comes from                                                                                                 |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| The opening paragraph      | `cv.profile` — the narrative in two or three sentences, as plain text                                      |
+| A role's context line      | `role.short`, falling back to `role.summary`                                                               |
+| A role's bullets           | the `short` of each achievement that has one; a role naming no achievements falls back to its `highlights` |
+| A project, a qualification | one line each, from `project.short ?? project.summary`                                                     |
+
+So an achievement reaches the condensed CV by being given a `short`, and leaves
+it by having that removed. When the two-page check fails, that is the knob —
+not the budget.
 
 ## 3D model credits
 

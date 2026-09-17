@@ -24,9 +24,12 @@ const roles: Role[] = [
     start: "2024-01-01",
     summary:
       "Clinical trials software: the platform doctors, clinic staff, statisticians and participants run a study on, where a bug can stop a drug reaching market.",
+    short: "Clinical trials software, where a defect reaches patients and regulators.",
     achievements: [
       {
         name: "Enabling AI-Native Workflows",
+        short:
+          "Designed the AI-native front-end workflow that lets designers and PMs ship production-ready UI, removing engineering as the prototyping bottleneck.",
         outcome:
           "Enabled rapid prototyping, removed engineering as a bottleneck, and increased fidelity of prototypes which now serve as handover documents from PMs and designers.",
         feature:
@@ -37,6 +40,8 @@ const roles: Role[] = [
       },
       {
         name: "The Fire Team",
+        short:
+          "Founded and led a nine-person incident response team across engineering and deployment: roughly 85 escalations answered across more than 25 live studies, with its own workload shrinking as the causes went away.",
         outcome:
           "Roughly 85 production escalations answered across more than 25 live studies, with the team\u2019s own workload shrinking as the causes went away.",
         feature:
@@ -48,6 +53,8 @@ const roles: Role[] = [
       },
       {
         name: "Serious Medical Event Reporting",
+        short:
+          "Built adverse event reporting to regulatory deadlines, with every state the workflow can reach carried in the types, so a later refactor cannot skip one.",
         outcome:
           "Doctors and clinic staff report serious events well inside the regulatory deadlines, ensuring trials ran safely.",
         feature:
@@ -70,6 +77,8 @@ const roles: Role[] = [
       },
       {
         name: "Form-Level Monitoring",
+        short:
+          "Turned source data verification into a configurable risk-based platform feature. It has been a factor in winning new business, and returning sponsors now expect it as standard.",
         outcome:
           "Turned source data verification from an improvised manual process into a codified, configurable platform feature. It's been a factor in winning new business, and returning sponsors now expect it as standard.",
         feature:
@@ -81,6 +90,8 @@ const roles: Role[] = [
       },
       {
         name: "The Form Engine",
+        short:
+          "Rebuilt the platform\u2019s most used feature, the form: the slowest edits went from seconds to milliseconds and submission from minutes to seconds, with no feature loss.",
         outcome:
           "The slowest edits on a large complex form went from seconds to milliseconds, and submission went from minutes to seconds, with no feature loss.",
         feature:
@@ -92,6 +103,8 @@ const roles: Role[] = [
       },
       {
         name: "CFR Part 11 Compliant E-signatures",
+        short:
+          "Delivered 21 CFR Part 11 compliant e-signatures in-house rather than by vendor: append-only, and revalidated on every read from the data they cover.",
         outcome:
           "No expensive vendor lock-in, and a fully flexible compliant model for E-Signatures that can be applied to any aspect of the trial lifecycle.",
         feature:
@@ -114,6 +127,8 @@ const roles: Role[] = [
       },
       {
         name: "Standardised Self-Serve Data Exports",
+        short:
+          "Standardised self-serve data exports on CDISC SDTM, so statisticians analyse a study in near-real time instead of waiting on an engineer to assemble each dataset.",
         outcome:
           "Statisticians and data teams went from waiting on an engineer to assemble each dataset by hand to analysing a study in near-real time, so problems surface immediately rather than weeks later.",
         feature: "An automated, standardised dataset derived from the platform\u2019s own data.",
@@ -219,6 +234,8 @@ const projects: CvProject[] = [
     name: "CatMaps",
     summary:
       "An app for reuniting lost pets with their owners. Photograph an animal you have seen on the street and it will be matched against the animals reported missing nearby. Also a testing ground for building AI-assisted development workflows that reliably produce high quality correct code.",
+    short:
+      "A missing-pet finder in Rust and React Native: photograph an animal you have seen, and it is matched against those reported missing nearby.",
     url: "https://catmaps.me",
     start: "2026-08-01",
     highlights: [
@@ -231,6 +248,7 @@ const projects: CvProject[] = [
   {
     name: "Jordan's Campsite",
     summary: "This site: a fun personal platform to express myself on the web.",
+    short: "This site: a personal platform, and a testing ground for ideas.",
     url: "https://jordanscamp.site",
     start: "2025-01-01",
     highlights: [
@@ -242,6 +260,8 @@ const projects: CvProject[] = [
     name: "Unconventional Chess",
     summary:
       "My Masters dissertation: a chess game where every piece is its own agent, and the team argues out loud, in English, over which move to play.",
+    short:
+      "My Masters dissertation: a chess game where every piece is its own agent, arguing out loud over which move to play.",
     url: DISSERTATION_URL,
     urlLabel: "github.com/TheDuckGoesQuark/UnconventionalChess",
     start: "2019-09-01",
@@ -295,6 +315,12 @@ const CATMAPS_PROJECT_SLUG = slugify("CatMap");
 /* Read at build, not at the visit: a deploy is what moves the count on. */
 const YEARS_BUILDING = yearsSince("2014-09-01");
 
+const PROFILE = [
+  `Senior software engineer with ${YEARS_BUILDING} years building products, nearly three of them in clinical trials, where a defect reaches patients and regulators.`,
+  "I own systems end to end: the research with clinicians, the specification, the build, and the operation, including founding the team that answers when a live study breaks.",
+  "I want to work where correctness is the product: energy, climate, scientific tooling and safety-critical software.",
+].join(" ");
+
 export const cv: Cv = {
   name: "Jordan Mackie",
   headline:
@@ -308,6 +334,7 @@ export const cv: Cv = {
     { label: "LinkedIn", url: "https://www.linkedin.com/in/jordan-mackie/" },
     { label: "GitHub", url: "https://github.com/TheDuckGoesQuark" },
   ],
+  profile: PROFILE,
   narrative: (
     <>
       <p>

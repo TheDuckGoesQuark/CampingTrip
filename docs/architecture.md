@@ -37,14 +37,20 @@ time as plain HTML — one file per URL, plus a sitemap, robots and an Atom feed
 by `apps/campsite/scripts/prerender.mjs`. Caddy's `try_files {path} {path}.html
 /index.html` serves a prerendered file when one exists and the shell otherwise,
 so search crawlers, link unfurlers and AI bots read the same content a person
-sees in the CatOS browser, without a second copy of it to keep in sync. The CV
-page is also printed to `/cv.pdf` in CI, from that same prerendered HTML.
+sees in the CatOS browser, without a second copy of it to keep in sync. Each CV
+page is also printed to a PDF in CI, from that same prerendered HTML.
+
+The CV is two documents off one data module: `/blog/cv.html` in full, and
+`/blog/cv-condensed.html` cut to bullets and held to two A4 pages by
+`build:pdf`, which fails rather than print a third. They are two URLs rather
+than one page with a control, because a static host serves one file per path —
+a `?view=` would hand every crawler, unfurler and printer the same document.
 
 #### Both copies of a page are in the document at once
 
 `index.html` does not remove the prerendered markup once the app boots — it
 hides it with `html.js #reader { display: none }`, because printing renders that
-copy and not the app's, and `build:pdf` prints `/cv.pdf` from it. So a live blog
+copy and not the app's, and `build:pdf` prints the CVs' PDFs from it. So a live blog
 page holds the same markup twice, and every `id` in it exists twice.
 
 That makes a bare in-page anchor resolve to the hidden copy: `#contact` finds

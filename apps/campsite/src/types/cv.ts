@@ -3,6 +3,9 @@ import type { ReactNode } from "react";
 export interface Achievement {
   name: string;
   outcome: string;
+  /** One bullet. Its presence is also the selection: the condensed CV prints
+      the achievements carrying one and no others. */
+  short?: string;
   feature?: string;
   difficulty?: string;
   /** Markup, not plain text: a course or paper named here carries its own link. */
@@ -23,6 +26,8 @@ export interface Role {
   location?: string;
   /** A short role, an internship say, can go without one. */
   summary?: string;
+  /** The condensed CV's context line; it falls back to `summary`. */
+  short?: string;
   achievements?: Achievement[];
   /** Whatever is a single line and not a project: a course taught, a club founded. */
   highlights: string[];
@@ -31,6 +36,8 @@ export interface Role {
 export interface CvProject {
   name: string;
   summary: string;
+  /** The condensed CV's line for this project; it falls back to `summary`. */
+  short?: string;
   url?: string;
   /** Shown in place of the bare `url`, where the link runs deeper than it reads. */
   urlLabel?: string;
@@ -83,9 +90,10 @@ export interface CvLink {
 }
 
 /**
- * The CV. One module renders three ways: the CatOS page, the prerendered HTML
- * with its `schema.org/Person`, and the PDF printed from that HTML. Anything
- * derivable from these fields is derived, never stored twice.
+ * The CV. One module renders two documents, the full and the condensed, each
+ * three ways: the CatOS page, the prerendered HTML with its `schema.org/Person`,
+ * and the PDF printed from that HTML. Anything derivable is derived, never
+ * stored twice; a `short` holds a different sentence, not a copy of a longer one.
  */
 export interface Cv {
   name: string;
@@ -94,6 +102,9 @@ export interface Cv {
   location?: string;
   /** Written first on the page, TSX like a post body. May hold `Island`s. */
   narrative: ReactNode;
+  /** `narrative` in two or three sentences. Plain text, not TSX: a link in that
+      document's first paragraph is a reader sent away before the bullets. */
+  profile: string;
   links: CvLink[];
   /** Newest first. */
   experience: Role[];

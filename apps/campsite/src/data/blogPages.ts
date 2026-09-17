@@ -23,6 +23,7 @@ export type BlogPage =
   | { kind: "project"; project: Project }
   | { kind: "tool"; bookmark: Bookmark }
   | { kind: "cv"; cv: Cv }
+  | { kind: "cvCondensed"; cv: Cv }
   | { kind: "desk"; item: DesktopItem }
   | { kind: "about" };
 
@@ -66,6 +67,8 @@ export function resolveBlogPage(ref: BlogRef): BlogPage | null {
     }
     case "cv":
       return { kind: "cv", cv };
+    case "cvCondensed":
+      return { kind: "cvCondensed", cv };
     case "desk": {
       const item = findDesktopItem(ref.slug);
       if (!item) return null;
@@ -95,6 +98,8 @@ export function titleOfBlogPage(page: BlogPage): string {
       return page.bookmark.title;
     case "cv":
       return "CV";
+    case "cvCondensed":
+      return "CV (condensed)";
     case "desk":
       return page.item.label;
     case "about":
@@ -118,6 +123,7 @@ export function iconOfBlogPage(page: BlogPage): IconName {
     case "tool":
       return "cassette";
     case "cv":
+    case "cvCondensed":
       return "document";
     case "desk":
       return iconOfDesktopItem(page.item);
@@ -243,6 +249,16 @@ export function metaOfBlogPage(page: BrowserPage): PageMeta {
         kind: "profile",
         person: personOf(page.cv),
         alternate: { type: "application/pdf", path: blogPaths.cvPdf },
+      };
+    // A second document about the same person, not a copy: an ATS landing here
+    // still has to find the `Person`, so it is self-canonical and a `profile` too.
+    case "cvCondensed":
+      return {
+        title: `${page.cv.name} (condensed CV)`,
+        description: page.cv.headline,
+        kind: "profile",
+        person: personOf(page.cv),
+        alternate: { type: "application/pdf", path: blogPaths.cvCondensedPdf },
       };
   }
 }

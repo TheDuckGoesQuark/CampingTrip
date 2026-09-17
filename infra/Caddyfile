@@ -16,11 +16,12 @@ jordanscamp.site {
 
     # Caching the shell, a prerendered page or the CV's PDF pins visitors to a
     # stale deploy: none of them is fingerprinted.
-    @shell path / *.html /cv.pdf
+    @shell path / *.html /cv.pdf /cv-condensed.pdf
     header @shell Cache-Control "no-cache"
 
     # Short enough to say aloud or put on paper.
     redir /cv /blog/cv.html permanent
+    redir /cv-condensed /blog/cv-condensed.html permanent
 
     # Same-origin, so the form posts without CORS ever entering the picture.
     #

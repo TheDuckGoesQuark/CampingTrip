@@ -201,12 +201,22 @@ rather than content. Everything else in the junk drawer is built.
 The CV is live at `/blog/cv.html` and `/cv.pdf`, and the homepage's professional
 column, its `See the full CV` link and the contact footer on every other page
 reach it — so this is about the way in the design cycle owns, not the only way
-in. Three constraints hold whatever it
+in. Whatever it becomes, `SegmentedNav` in `@jordanscamp/ds` is what draws it:
+the CV's own length switch is its first consumer, and this toggle is the second
+the design system was promoted for. Three constraints hold whatever it
 becomes, recorded in [cv-design.md](cv-design.md): the two views are two URLs
 (`/blog/cv.html` and `/blog/index.html`), the toggle's state is derived from the
 URL and never stored, and the prerendered reader must not depend on it.
 Candidates: a segmented control in CatNav's header, a `CV` icon on the desktop,
 a bookmark in the browser bar, or a choice on the welcome screen at `/`.
+
+### Blog — the contact footer offers the CV from the condensed CV
+
+`ContactFooter` hides its `Read my CV` item on `page.kind === "cv"`. The
+condensed CV is its own kind, so the footer offers a reader already on a CV a
+link to the other one, which the length switch in the header already does
+better. A one-line fix once both changes are on main: the guard wants to cover
+`cvCondensed` too.
 
 ### Blog — the professional rows all land on the top of the CV
 
@@ -249,6 +259,10 @@ height and the print heading sizes rather than anything structural. Worth a
 print-density pass on its own, measured with `pdfinfo` and
 `pdftotext | wc -w` rather than by eye.
 
+The condensed CV's `@media print` block in `blog.module.css` is a worked example
+of the same levers — collapsed gaps, a smaller section margin, no separator —
+scoped to `.cvCondensed` so it says nothing about the full page yet.
+
 ### Blog — Participant diaries has no Difficulty or Approach
 
 `Participant diaries` carries `[DRAFT — …]` in both facets, published knowingly.
@@ -264,6 +278,13 @@ Gravity Sketch's bullets carry no numbers or named outcomes; Improbable has two
 purely technical lines; Skyscanner, AMNiiS, Imagine Software and American
 Express have none at all. `AMNiiS — Lead Backend Engineer` is a leadership title
 with an empty body, which reads as a gap rather than a credential.
+
+It also decides what the condensed CV prints for them. `condensedBullets` takes
+the `short` of each achievement a role names, and falls back to the whole of
+`highlights` for a role naming none — so Gravity Sketch contributes six bullets
+against Lindus Health's seven, which is not the weighting either deserves.
+Giving those roles achievements is what fixes it; a cap on the fallback would
+only hide it.
 
 ### Blog — content to write
 
