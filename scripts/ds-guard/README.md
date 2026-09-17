@@ -115,13 +115,10 @@ pnpm ds-guard:test            # the guard's own tests, fixtures included
 
 ## Adopting it in another repo
 
-The canonical copy lives in the `ds-enforcement` skill
-(`~/.claude/skills/ds-enforcement/assets/scripts/`), and this directory is a
-vendored copy of it. Fix a bug there first, then re-copy, or the copies drift —
-which is the whole problem this tool exists to catch.
-
 The script depends on nothing but Node, so it runs the same under oxlint, ESLint
-or neither.
+or neither. Copying it into a second repo forks it, so whichever copy is treated
+as authoritative, changes have to be carried to the others deliberately — two
+copies drifting apart is the problem this tool exists to catch.
 
 1. Copy `ds-guard.mjs`, `ds-guard.test.mjs` and `__fixtures__/` into the target
    repo, keeping them two directories below the repo root — config paths resolve
