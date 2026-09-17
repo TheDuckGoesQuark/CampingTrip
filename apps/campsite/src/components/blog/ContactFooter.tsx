@@ -1,13 +1,15 @@
 import { Button, Link, Text } from "@jordanscamp/ds";
 import {
   Envelope,
-  GithubLogo,
   type Icon,
   Link as LinkGlyph,
   LinkedinLogo,
+  ReadCvLogo,
 } from "@jordanscamp/ds/icons";
 import { useRef } from "react";
+import { Link as RouterLink } from "react-router-dom";
 
+import type { BrowserPage } from "../../data/blogPages";
 import { contactMailto } from "../../data/contactEmail";
 import { cv } from "../../data/cv";
 import { MAIL_PRESETS, presetMailto } from "../../data/mailPresets";
@@ -15,6 +17,7 @@ import { useAnchorFollows } from "../../hooks/useAnchorFollows";
 import { useArrivals } from "../../hooks/useArrivals";
 import { useMouseMailIntercept } from "../../hooks/useMouseMailIntercept";
 import { useDocumentId } from "../../prerender/renderTarget";
+import { blogPaths } from "../../routing/blogPaths";
 import { asset } from "../../utils/assetPath";
 import { offsiteLinkProps } from "./offsiteLink";
 
@@ -27,6 +30,11 @@ export const CONTACT_HEADING = "Let's talk";
 
 /** The rail carries no visible label, so this is the only thing naming it. */
 export const RAIL_LABEL = "Ways to get in touch";
+
+export const CV_LINK_LABEL = "Read my CV";
+
+/** GitHub is on the CV and in the page head, but code is no answer to "let's talk". */
+const WAYS_TO_TALK = cv.links.filter((link) => !link.url.includes("github.com"));
 
 const HEADING_ID = "contact-heading";
 
@@ -48,18 +56,22 @@ const SETTLE_MS = 500;
 function glyphFor(url: string): Icon {
   if (url.startsWith("mailto:")) return Envelope;
   if (url.includes("linkedin.com")) return LinkedinLogo;
-  if (url.includes("github.com")) return GithubLogo;
   return LinkGlyph;
 }
 
 /**
  * `cv.links` is the one list, so this strip, the CV's own header row and the
  * `schema.org/Person` in the page head cannot disagree about how to reach me.
+ * This strip shows the subset worth talking to, never a different address.
  *
  * A plain `footer`, not `role="contentinfo"`: it sits inside `main`, where that
  * landmark does not apply.
+ *
+ * `page` rather than `useLocation`: the address is not always the page this
+ * footer is under. Opening MouseMail moves it to the window's own path while the
+ * page stays rendered behind, and the CV would offer a link to itself.
  */
-export default function ContactFooter() {
+export default function ContactFooter({ page }: { page: BrowserPage }) {
   const anchor = useDocumentId(CONTACT_ID);
   const headingId = useDocumentId(HEADING_ID);
   const banner = useRef<HTMLElement>(null);
@@ -83,7 +95,7 @@ export default function ContactFooter() {
           {CONTACT_HEADING}
         </Text>
         <ul className={styles.contactLinks}>
-          {cv.links.map((link) => (
+          {WAYS_TO_TALK.map((link) => (
             <li key={link.url}>
               <Glyph glyph={glyphFor(link.url)} size={GLYPH_PX} />
               <Link
@@ -95,6 +107,12 @@ export default function ContactFooter() {
               </Link>
             </li>
           ))}
+          {page.kind === "cv" ? null : (
+            <li>
+              <Glyph glyph={ReadCvLogo} size={GLYPH_PX} />
+              <Link render={<RouterLink to={blogPaths.cv} />}>{CV_LINK_LABEL}</Link>
+            </li>
+          )}
         </ul>
       </div>
 

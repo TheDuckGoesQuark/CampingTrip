@@ -19,7 +19,7 @@ export default function BlogPageView({ page }: { page: BrowserPage }) {
       <div className={styles.page}>
         <PageBody page={page} />
       </div>
-      <ContactFooter />
+      <ContactFooter page={page} />
     </>
   );
 }
