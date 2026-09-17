@@ -41,7 +41,7 @@ function pathFor(item: DesktopItem): string {
  * faux-desktop chrome with the campsite's content.
  *
  * The split: the browser owns everything worth reading, the desktop owns
- * everything else. So the rail launches CatNav, a junk drawer and the way
+ * everything else. So the desktop launches CatNav, a junk drawer and the way
  * outside, and CatNav opens a homepage rather than treating the desktop as its
  * new-tab page.
  *
@@ -226,7 +226,7 @@ export default function LaptopScreenOverlay() {
           }
         />
 
-        <div className={styles.rail}>
+        <div className={styles.iconField}>
           {desktopItems.map((item) => (
             <DesktopIcon
               key={item.label}

@@ -1,6 +1,7 @@
 /*
- * The non-browser windows and the desktop rail. Inline `style` is forbidden on
- * DOM nodes in app code (react/forbid-dom-props), so layout lives here.
+ * The non-browser windows and the desktop's icon field. Inline `style` is
+ * forbidden on DOM nodes in app code (react/forbid-dom-props), so layout lives
+ * here.
  */
 
 /* ── The desktop itself ────────────────────────────────────── */
@@ -119,17 +120,34 @@
   flex-direction: column;
 }
 
-.rail {
-  composes: hidden from "@jordanscamp/ds/scrollbars.module.css";
+/* A desktop icon field: icons fill the first column downwards, and a column
+   that runs out of screen starts another to its right, so nothing lands below
+   the fold. `auto-fill` divides a definite height into cells, which the top and
+   bottom offsets give it; `grid-auto-flow: column` is what fills down before
+   across. Grid rather than `flex-flow: column wrap`, which lays the columns out
+   but does not grow the container's width to hold them — the wrapped columns
+   paint outside the box and take its clicks with them.
+
+   `width: max-content` keeps the box exactly as wide as the columns it grew, so
+   the wallpaper either side of them stays wallpaper.
+
+   The bar stays visible, unlike the skinned scrollers elsewhere: wrapping means
+   overflow only survives a screen too short for a single cell, and silently
+   clipping the icons there is the failure this layout exists to prevent. */
+.iconField {
+  composes: classic from "@jordanscamp/ds/scrollbars.module.css";
   position: absolute;
   top: 36px;
   left: 0;
-  width: 148px;
   bottom: 0;
-  overflow-y: auto;
+  max-width: 100%;
+  width: max-content;
+  overflow: auto;
   padding: var(--space-s) var(--space-s);
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: repeat(auto-fill, var(--desktop-icon-cell-height));
+  grid-auto-columns: var(--desktop-icon-width);
   gap: var(--space-xxs);
 }
 

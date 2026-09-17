@@ -18,6 +18,16 @@
      components/desktop/Window/geometry.ts; the two must agree. */
   --menubar-height: 26px;
 
+  /* A `DesktopIcon` and the cell an icon field lays one out in. The cell is the
+     icon at its tallest — tile, gap, and a label clamped to two lines — derived
+     rather than measured, so it cannot drift from the parts below it. A
+     one-line label leaves slack at the foot of its cell, which is what keeps
+     every icon in a field on the same baseline. */
+  --desktop-icon-width: 120px;
+  --desktop-icon-cell-height: calc(
+    var(--tile-lg) + var(--space-s) * 3 + var(--text-body-sm-size) * var(--text-body-sm-lh) * 2
+  );
+
   /* Icon glyphs — the `Icon` size scale. Stroke is in viewBox user units, so
      one value holds an even optical weight across the three sizes. */
   --icon-sm: 12px;
