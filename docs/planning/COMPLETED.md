@@ -6,6 +6,39 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## The footer's CV row stands upright, and GitHub takes it back on the CV
+
+**Date**: 2026-09-17
+
+**What was done**:
+
+- **`IdentificationCard` replaces `ReadCvLogo`.** Phosphor draws its CV glyph
+  tilted, which read as a mistake beside an upright envelope and LinkedIn mark.
+  The card is upright and landscape, so it matches the footprint of the two
+  above it — a portrait page glyph sat visibly narrower.
+- **The row says `CV`.** It matches the page's own title, its tab label and the
+  URL, and it reads as a label beside `LinkedIn` rather than an invitation.
+- **GitHub returns on the CV.** `waysToTalk` gives GitHub's row to the CV link
+  everywhere the link has somewhere to go, and hands it back on the CV itself.
+
+**Key decisions**:
+
+- **Three rows on every page, rather than a strip that shortens.** With the CV
+  link hidden and GitHub filtered, the CV's own footer came up a row shorter
+  than the portrait beside it — the same imbalance that took GitHub out in the
+  first place, in the other direction. Trading the row keeps both pages level.
+- **`Resume` was considered and dropped.** Clearer to US readers, but it splits
+  from the page title and the URL, and reads as an American import on a site
+  whose prose is linted for British English.
+
+**Verified**: the footer's suite covers both pages and asserts the strip is the
+same height on each. That height assertion was checked against a deliberately
+broken `waysToTalk` to confirm it fails when it should, since a count read off
+an empty query passes vacuously. Driven in a browser against a `vite preview` of
+`dist`: `CV` on a post, `GitHub` on the CV, three rows either way.
+
+---
+
 ## The contact footer carries a link to the CV, and drops GitHub
 
 **Date**: 2026-09-17

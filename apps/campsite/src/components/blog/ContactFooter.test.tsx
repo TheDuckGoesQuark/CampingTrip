@@ -1,4 +1,4 @@
-import { act, render, screen } from "@testing-library/react";
+import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ReactNode } from "react";
 import { MemoryRouter, useLocation } from "react-router-dom";
@@ -72,6 +72,13 @@ function at(target: RenderTarget, node: ReactNode) {
   );
 }
 
+/** The strip is the list the rail is not: only the rail carries a name. */
+function rowsInStrip(): number {
+  const rail = screen.getByRole("list", { name: RAIL_LABEL });
+  const strip = screen.getAllByRole("list").find((list) => list !== rail);
+  return within(strip as HTMLElement).getAllByRole("listitem").length;
+}
+
 const reason = (label: string) => screen.getByRole("link", { name: new RegExp(label, "i") });
 const currentPath = () => screen.getByTestId("path").textContent;
 const askedFor = () => useSceneStore.getState().mailPreset;
@@ -122,11 +129,31 @@ describe("ContactFooter", () => {
     });
   });
 
-  it("leaves GitHub to the CV, which is not a way to start a conversation", () => {
-    at("live", <ContactFooter page={ELSEWHERE} />);
+  describe("GitHub, which trades its row for the CV link", () => {
     const github = cv.links.find((link) => link.url.includes("github.com"));
-    expect(github).toBeDefined();
-    expect(screen.queryByRole("link", { name: github?.label as string })).toBeNull();
+    const githubLink = () => screen.queryByRole("link", { name: github?.label as string });
+
+    it("is in the one list either way, so the CV and the page head keep it", () => {
+      expect(github).toBeDefined();
+    });
+
+    it("stands aside anywhere the CV link has somewhere to go", () => {
+      at("live", <ContactFooter page={ELSEWHERE} />);
+      expect(githubLink()).toBeNull();
+    });
+
+    it("takes the row back on the CV, where there is no link to make", () => {
+      at("live", <ContactFooter page={ON_THE_CV} />);
+      expect(githubLink()).toBeInTheDocument();
+    });
+
+    it("keeps the strip the same height on either page", () => {
+      const { unmount } = at("live", <ContactFooter page={ELSEWHERE} />);
+      const elsewhere = rowsInStrip();
+      unmount();
+      at("live", <ContactFooter page={ON_THE_CV} />);
+      expect(rowsInStrip()).toBe(elsewhere);
+    });
   });
 
   describe("the link to the CV", () => {
