@@ -6,6 +6,49 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## The contact footer reshapes on one threshold per stage
+
+**Date**: 2026-09-17
+
+**What was done**:
+
+`.contact` in `blog.module.css` is a three-column grid rather than a row of
+wrapping flex items, and the container queries move children between those
+tracks instead of restyling a line flexbox had already broken.
+
+**The bug**: flexbox decides a wrap on each item's `flex-basis`, not on what the
+item could live with, so `flex: 1 1 18rem` on the text column put the wrap at
+`132 + 24 + 288 + 24 + 156 = 624px = 39rem` — a sum over child widths. The
+container query that restyled the wrapped rail said `34rem`, derived by hand and
+under-counted, since it omitted the rail and one gap. Between 34rem and 39rem the
+rail had dropped to its own line but kept `width: auto` and
+`margin-inline-start: auto`, so it hung alone at the right edge under the links.
+Jordan hit it at a footer width of about 37.8rem.
+
+**Key decisions**:
+
+- **Grid over moving the 34rem to 39rem.** The one-number fix was measured and
+  works, but leaves the same shape: a literal derived from child widths, which
+  goes stale the moment a mail preset gets a longer label. With explicit tracks
+  no threshold is computed from anything, and a band where one has fired and the
+  other has not cannot exist.
+- **The queries style children, never the container.** A container query cannot
+  restyle its own container in the queried axis — Chromium silently ignores a
+  `grid-template-columns` change applied to `.contact` from inside
+  `@container contact-footer`, which leaves the layout two-column and overflowing
+  below 18rem. Both stages reposition via `grid-column` on descendants.
+- **Thresholds are statements, not sums.** 38rem is "below this the text column
+  is no wider than the rail beside it"; 27rem is "no room for the portrait beside
+  the text either".
+
+**Verified**: stepped a `vite preview` of `dist` from 1400px to 320px on
+`/blog/cv.html` and `/blog/index.html` — the rail never sits on its own row at
+less than full width, and neither the footer nor the document overflows at any
+width. Reshape points land at 37.75rem and 26.75rem, each one event rather than
+two. Jordan confirmed it by hand in the preview.
+
+---
+
 ## The CV comes in two lengths, off one data module
 
 **Date**: 2026-09-17
