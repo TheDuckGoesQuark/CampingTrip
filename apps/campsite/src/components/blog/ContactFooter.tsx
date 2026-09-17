@@ -6,18 +6,15 @@ import {
   Link as LinkGlyph,
   LinkedinLogo,
 } from "@jordanscamp/ds/icons";
-import { type MouseEvent, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useRef } from "react";
 
-import { playWindowOpen } from "../../audio/soundEffects";
 import { contactMailto } from "../../data/contactEmail";
 import { cv } from "../../data/cv";
-import { MAIL_PRESETS, type MailPreset, presetMailto } from "../../data/mailPresets";
+import { MAIL_PRESETS, presetMailto } from "../../data/mailPresets";
 import { useAnchorFollows } from "../../hooks/useAnchorFollows";
 import { useArrivals } from "../../hooks/useArrivals";
-import { useDocumentId, useRenderTarget } from "../../prerender/renderTarget";
-import { WINDOW_MAIL } from "../../routing/windows";
-import { useSceneStore } from "../../store/sceneStore";
+import { useMouseMailIntercept } from "../../hooks/useMouseMailIntercept";
+import { useDocumentId } from "../../prerender/renderTarget";
 import { asset } from "../../utils/assetPath";
 import { offsiteLinkProps } from "./offsiteLink";
 
@@ -68,35 +65,8 @@ export default function ContactFooter() {
   const banner = useRef<HTMLElement>(null);
   const followed = useAnchorFollows(`#${anchor}`);
   const arrivals = useArrivals(banner, SETTLE_MS, followed);
-  const live = useRenderTarget() === "live";
   const mailto = contactMailto;
-  const navigate = useNavigate();
-
-  /**
-   * MouseMail is a window on the CatOS desktop, not a dialog this footer owns.
-   * The desktop is always what this footer is inside when a script is running.
-   */
-  function openMouseMail(preset?: MailPreset) {
-    // Before the navigation, so the window mounts already on the template.
-    useSceneStore.getState().setMailPreset(preset?.id ?? null);
-    navigate(WINDOW_MAIL);
-    playWindowOpen();
-  }
-
-  /**
-   * Every trigger stays a real `mailto:` anchor and JS takes the click off it,
-   * so the prerendered page — where none of this runs — still reaches me, and a
-   * right-click still offers the address to copy. A `button` would be the
-   * plainer control, but the scriptless answer would then be no answer at all.
-   */
-  function intercept(event: MouseEvent<HTMLAnchorElement>, preset?: MailPreset) {
-    // A modified click means the reader wants the browser's behaviour, not ours.
-    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-    event.preventDefault();
-    openMouseMail(preset);
-  }
-
-  const interceptProps = live && mailto !== undefined ? { onClick: intercept } : {};
+  const interceptProps = useMouseMailIntercept();
 
   return (
     <footer ref={banner} id={anchor} className={styles.contact} aria-labelledby={headingId}>
@@ -119,7 +89,7 @@ export default function ContactFooter() {
               <Link
                 href={link.url}
                 {...offsiteLinkProps(link.url)}
-                {...(link.url === mailto ? interceptProps : {})}
+                {...(link.url === mailto ? interceptProps() : {})}
               >
                 {link.label}
               </Link>
@@ -135,12 +105,7 @@ export default function ContactFooter() {
               <Button
                 variant="subtle"
                 size="sm"
-                render={
-                  <a
-                    href={presetMailto(mailto, preset)}
-                    {...(live ? { onClick: (event) => intercept(event, preset) } : {})}
-                  />
-                }
+                render={<a href={presetMailto(mailto, preset)} {...interceptProps(preset)} />}
               >
                 <Glyph glyph={preset.glyph} size={PILL_GLYPH_PX} />
                 {preset.label}
