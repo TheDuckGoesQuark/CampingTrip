@@ -63,7 +63,7 @@ describe("desktopItems", () => {
       )
       .map((line) => line.split("|")[1].trim());
 
-    expect(MODEL_CREDITS.map((credit) => credit.model).toSorted()).toEqual(table.toSorted());
+    expect(MODEL_CREDITS.map((credit) => credit.model).sort()).toEqual(table.sort());
   });
 
   it("names the same recordings as the ambience doc, which carries the licence", () => {
