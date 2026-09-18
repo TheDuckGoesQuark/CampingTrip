@@ -92,7 +92,7 @@ function TentScene({ visible, paused }: TentSceneProps) {
         camera={{ position: [0, 2.8, 3.5], fov: 69, near: 0.1, far: 200 }}
         gl={{ antialias: !isMobile, alpha: false }}
         style={{ width: "100%", height: "100dvh", display: "block", touchAction: "manipulation" }}
-        aria-label="Interactive 3D tent scene — use Tab to navigate objects, Enter to interact"
+        aria-label="Interactive 3D tent scene. Use Tab to navigate objects, Enter to interact"
         role="application"
         onCreated={onCreated}
       >
@@ -173,7 +173,7 @@ function TentScene({ visible, paused }: TentSceneProps) {
             borderRadius: 4,
           }}
         >
-          DEBUG MODE — orbit with mouse, Alt+D to toggle
+          DEBUG MODE: orbit with mouse, Alt+D to toggle
         </div>
       )}
 

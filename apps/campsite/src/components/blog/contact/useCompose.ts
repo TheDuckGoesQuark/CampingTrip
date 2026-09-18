@@ -105,7 +105,7 @@ export function useCompose(requested: PresetId | null = null): Compose {
 
   async function send() {
     if (message.trim() === "") {
-      setMessageError("Add a note first — anything at all.");
+      setMessageError("Add a note first, anything at all.");
       return;
     }
     setMessageError(undefined);

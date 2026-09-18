@@ -15,7 +15,7 @@ above the ring of stones,
 each one a tiny universe
 that dies before it's known.
 
-The wood pops — a percussion
+The wood pops, a percussion
 only night can hear,
 while somewhere past the treeline
 a creek runs cold and clear.
@@ -33,7 +33,7 @@ than a thousand tangled lines.`,
 
 Just you and a blank editor and the quiet thrill of thinking: what if I could make this?
 
-I've been building this little camping scene for weeks now. It started as a test of Three.js and turned into something I actually care about. Every object in the tent is a thing I love — the guitar, the moka pot, the notepad you're reading right now.
+I've been building this little camping scene for weeks now. It started as a test of Three.js and turned into something I actually care about. Every object in the tent is a thing I love: the guitar, the moka pot, the notepad you're reading right now.
 
 Maybe that's the whole point. We make things to say: this is what I notice. This is what I find beautiful.`,
   },

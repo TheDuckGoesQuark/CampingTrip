@@ -19,7 +19,7 @@ export const growAndSystems: Post = {
         I only recently worked out why: it is the cleanest lesson in systems thinking I have ever
         been handed, and it arrived wrapped in something with absolutely no stakes.
       </p>
-      <p>[DRAFT — the bridge to how this shows up in how you build things now.]</p>
+      <p>[DRAFT: the bridge to how this shows up in how you build things now.]</p>
     </>
   ),
 };

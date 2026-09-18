@@ -19,7 +19,7 @@ export const Default: Story = {
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <Text>A themed dialog on Base UI — focus trapped, Escape to close, focus returns.</Text>
+        <Text>A themed dialog on Base UI: focus trapped, Escape to close, focus returns.</Text>
       </Modal.Body>
       <Modal.Footer>
         <Modal.Close render={<Button variant="ghost">Cancel</Button>} />

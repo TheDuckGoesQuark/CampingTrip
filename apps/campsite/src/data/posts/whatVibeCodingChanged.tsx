@@ -11,7 +11,7 @@ export const whatVibeCodingChanged: Post = {
     <>
       <p>
         The thing nobody warned me about is how much of my after-hours energy used to go on
-        friction. Not on the idea — the idea was always cheap, I have dozens — but on the forty
+        friction. Not on the idea (the idea was always cheap, I have dozens) but on the forty
         minutes between having it and being allowed to try it. Which version of the library. Which
         config key moved. Which build step needs a flag it didn't need last year.
       </p>
@@ -37,7 +37,7 @@ export const whatVibeCodingChanged: Post = {
           </p>
         }
       />
-      <p>[DRAFT — the closing beat: what you'd tell someone who hasn't tried it yet.]</p>
+      <p>[DRAFT: the closing beat, what you'd tell someone who hasn't tried it yet.]</p>
     </>
   ),
 };

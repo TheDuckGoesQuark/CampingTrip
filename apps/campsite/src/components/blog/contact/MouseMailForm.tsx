@@ -36,7 +36,7 @@ export default function MouseMailForm({ compose, emailLabel, onClose }: MouseMai
           <TextField
             label="From"
             type="email"
-            optional="optional — only so I can reply"
+            optional="optional, only so I can reply"
             value={compose.email}
             onValueChange={compose.setEmail}
           />

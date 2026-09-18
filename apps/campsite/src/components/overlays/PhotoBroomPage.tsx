@@ -24,7 +24,7 @@ export default function PhotoBroomPage() {
         <Text variant="body-lg" tone="muted" as="p">
           <span className={styles.lede}>
             PhotoBroom overlays a fast, keyboard-driven review on top of Google Photos search
-            results. Flick through photos — keep, skip, or bin — then send the binned ones to
+            results. Flick through photos (keep, skip, or bin), then send the binned ones to
             Google's bin in one go. Nothing is deleted until you confirm, and the bin is recoverable
             for 60 days.
           </span>
@@ -39,7 +39,7 @@ export default function PhotoBroomPage() {
           />
           <Shot
             src="images/screenshots/review.webp"
-            caption="2. Review each photo with the arrow keys — bin, skip, or keep."
+            caption="2. Review each photo with the arrow keys: bin, skip, or keep."
           />
           <Shot
             src="images/screenshots/confirm.webp"
@@ -47,7 +47,7 @@ export default function PhotoBroomPage() {
           />
           <Shot
             src="images/screenshots/done.webp"
-            caption="4. Done — and re-reviewed photos are remembered next time."
+            caption="4. Done, and re-reviewed photos are remembered next time."
           />
         </div>
       </Section>
@@ -56,7 +56,7 @@ export default function PhotoBroomPage() {
         <Text tone="muted" as="p">
           Google Photos has no bulk "delete everything from this search" button, and its API can't
           delete photos at all. So PhotoBroom works the only way that's actually possible: as an
-          extension that drives the Google Photos web page itself — using Google's own multi-select
+          extension that drives the Google Photos web page itself, using Google's own multi-select
           and "Move to bin", just faster and with a nicer review UI.
         </Text>
         <div className={styles.card}>
@@ -65,7 +65,7 @@ export default function PhotoBroomPage() {
             <Text variant="body-sm" tone="muted" as="p">
               It runs entirely in your browser, on{" "}
               <code className={styles.code}>photos.google.com</code>, while you're logged in. No
-              photos, tokens, or data are ever sent anywhere — there's no PhotoBroom server.
+              photos, tokens, or data are ever sent anywhere. There's no PhotoBroom server.
             </Text>
           </div>
         </div>
@@ -73,8 +73,8 @@ export default function PhotoBroomPage() {
 
       <Section title="Install it (load unpacked)">
         <Text tone="muted" as="p">
-          PhotoBroom isn't on the Chrome Web Store (see below), so you load it yourself — a
-          one-time, two-minute setup.
+          PhotoBroom isn't on the Chrome Web Store (see below), so you load it yourself: a one-time,
+          two-minute setup.
         </Text>
         <div className={styles.steps}>
           <Step n={1}>
@@ -97,7 +97,7 @@ export default function PhotoBroomPage() {
           </Step>
           <Step n={4}>
             <Text as="p">
-              That's it — PhotoBroom is now active on Google Photos. After pulling updates, re-run
+              That's it. PhotoBroom is now active on Google Photos. After pulling updates, re-run
               the build command and hit <b>reload</b> ↻ on the extension.
             </Text>
           </Step>
@@ -112,7 +112,7 @@ export default function PhotoBroomPage() {
               <Link href="https://photos.google.com" target="_blank" rel="noopener noreferrer">
                 photos.google.com
               </Link>{" "}
-              and search for what you want to thin out — a date like{" "}
+              and search for what you want to thin out: a date like{" "}
               <code className={styles.code}>June 29</code>, a place, or anything else.
             </Text>
           </Step>
@@ -164,7 +164,7 @@ export default function PhotoBroomPage() {
           <li>
             <Text variant="body-sm" tone="muted" as="span">
               All the Google-Photos-specific selectors live in one place, so if Google changes their
-              markup it's a quick, single-spot fix — with a test suite guarding the contract.
+              markup it's a quick, single-spot fix, with a test suite guarding the contract.
             </Text>
           </li>
           <li>
@@ -181,7 +181,7 @@ export default function PhotoBroomPage() {
           Automating another site's interface almost certainly runs against Google's Terms of
           Service, and the Web Store wouldn't accept it. PhotoBroom is a personal tool: you run it
           on your own account, at your own discretion. Because Google's "Move to bin" is fully
-          reversible for 60 days, the blast radius of a mistake is small — but treat it as the
+          reversible for 60 days, the blast radius of a mistake is small, but treat it as the
           unofficial, use-at-your-own-risk helper that it is.
         </Text>
       </Section>
