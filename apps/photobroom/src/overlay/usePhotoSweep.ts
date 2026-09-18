@@ -116,7 +116,7 @@ export function usePhotoSweep() {
         signal,
       );
       if (selected === 0) {
-        throw new Error("Couldn't select any photos — Google's grid may have changed.");
+        throw new Error("Couldn't select any photos. Google's grid may have changed.");
       }
       dispatch({ type: "deleting", status: `Moving ${selected} to bin…` });
       await moveSelectedToBin(signal);
@@ -125,7 +125,7 @@ export function usePhotoSweep() {
         type: "done",
         status:
           shortfall > 0
-            ? `Moved ${selected} to bin (${shortfall} couldn't be selected — try those again).`
+            ? `Moved ${selected} to bin (${shortfall} couldn't be selected, try those again).`
             : `Moved ${selected} to bin.`,
       });
     } catch (e) {

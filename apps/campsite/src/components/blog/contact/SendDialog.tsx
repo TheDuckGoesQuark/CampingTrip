@@ -30,7 +30,7 @@ const EXPLANATION: Record<Failure, string> = {
     "That went off within a couple of seconds of the window opening, which reads as a bot. Try again and it should go through.",
   refused: "The mailbox turned it away, and I can't say why without telling the bots too.",
   server: "Something broke at my end, not yours.",
-  offline: "Nothing came back at all — worth a look at your connection.",
+  offline: "Nothing came back at all. Worth a look at your connection.",
 };
 
 export default function SendDialog({ compose, emailLabel, onClose }: SendDialogProps) {

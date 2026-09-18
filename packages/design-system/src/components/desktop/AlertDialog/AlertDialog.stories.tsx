@@ -178,7 +178,7 @@ export const AllVariants: Story = {
             <WarningCircle size={MARK_PX} weight="fill" />
           </AlertDialog.Icon>
           <AlertDialog.Body>
-            <Text>Nothing came back at all — worth a look at your connection.</Text>
+            <Text>Nothing came back at all. Worth a look at your connection.</Text>
           </AlertDialog.Body>
           <AlertDialog.Actions>
             <Button variant="default" size="sm">

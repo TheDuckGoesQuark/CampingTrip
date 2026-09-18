@@ -13,7 +13,7 @@ export const recordsForBuildingATentTo: Post = {
         a campfire shader. That last one is the trouble with working on something for long enough:
         the music stops being music and becomes a timestamp.
       </p>
-      <p>[DRAFT — the actual list, and one line each on where in the build it landed.]</p>
+      <p>[DRAFT: the actual list, and one line each on where in the build it landed.]</p>
     </>
   ),
 };

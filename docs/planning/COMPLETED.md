@@ -6,6 +6,57 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## Credits a visitor can open, and prose that stops sounding machine-written
+
+**Date**: 2026-09-18
+
+**What was done**:
+
+The JordansCamp.Site project page lost its Source button, the art credits gained
+a home on the site itself, every em dash in reader-facing prose was replaced with
+the mark that names the join, and the project description was rewritten to a
+four-beat story shape.
+
+**The credits had to move before the link could go**:
+
+Dropping `github` from the JordansCamp.Site entry orphaned the sentence saying
+the art was "all credited in the GitHub repo", and the models are CC-BY, where
+attribution is a licence condition rather than a courtesy. So the credits are now
+`credits.txt`, the last item on the CatOS desktop, built from a `MODEL_CREDITS`
+list rather than hand-copied prose.
+
+That leaves the same facts in two places, the README table and the desktop file,
+because they serve two readers. A test reads the README table and asserts it
+names exactly the models `MODEL_CREDITS` names, so the two cannot drift. The test
+was checked against a deliberately altered model name before being kept.
+
+**Em dashes**:
+
+Removed from prose a visitor reads: project and bookmark descriptions, the
+notepad, blog posts, the PhotoBroom page, form and error copy, the meta
+description. Each one took the mark its relationship called for rather than a
+blanket substitution, so a list took a colon, a landed thought took a full stop,
+an interrupting aside took brackets and a loose continuation took a comma.
+
+Deliberately kept: window titles and control labels (`Volume — 40%`,
+`Jordan's Camp — CatNav`), where the character is the Mac title separator rather
+than punctuation; code comments and planning docs, which no visitor reads; and
+the minimise glyph in PhotoBroom's overlay, which is an icon.
+
+The rule itself lives in GlobalKnowledge, not here: a new `emdash` rule in
+`comment-guard.py` that reads every line of a code file rather than comment lines
+only, since prose in a React app lives in string literals and JSX text. A
+`comment-guard: allow-line` marker exempts a single line for the glyph cases.
+
+**Deferred**:
+
+- Whether the window-title separators should go too. They are test-coupled and
+  read as chrome rather than voice, so they were left.
+- The bulk of the em dashes in code comments and in this file. No reader, and the
+  hook now catches new ones.
+
+---
+
 ## A page the browser opens places itself, and a card lands on its CV entry
 
 **Date**: 2026-09-18
