@@ -231,6 +231,10 @@ globalThis.IntersectionObserver = class implements IntersectionObserver {
   }
 };
 
+// ─── Mock scrollIntoView ─────────────────────────────────────────
+// jsdom has no layout, so the method is absent rather than inert: a call throws.
+Element.prototype.scrollIntoView = vi.fn();
+
 // ─── Mock HTMLMediaElement ───────────────────────────────────────
 HTMLMediaElement.prototype.play = vi.fn().mockResolvedValue(undefined);
 HTMLMediaElement.prototype.pause = vi.fn();

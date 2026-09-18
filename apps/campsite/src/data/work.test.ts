@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { blogPaths } from "../routing/blogPaths";
+import { projectAnchorId, roleAnchorId } from "../utils/cvAnchors";
 import { cv } from "./cv";
 import { personalWork, professionalWork } from "./work";
 
@@ -41,5 +42,15 @@ describe("the homepage's two columns", () => {
   it("sends the professional column to the CV and the personal one to project pages", () => {
     for (const item of professionalWork) expect(item.to).toBe(blogPaths.cv);
     for (const item of personalWork) expect(item.to).toMatch(/^\/blog\/projects\//);
+  });
+
+  it("lands each professional card on an entry the CV actually renders", () => {
+    const ids = new Set([
+      ...cv.experience.map((role) => roleAnchorId(role.org)),
+      ...cv.projects.map((project) => projectAnchorId(project.name)),
+    ]);
+    for (const item of professionalWork) {
+      expect(ids, item.title).toContain(item.anchor);
+    }
   });
 });
