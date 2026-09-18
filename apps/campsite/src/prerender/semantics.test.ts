@@ -111,6 +111,22 @@ describe("prerendered page structure", () => {
     }
   });
 
+  /* Without JS the reader's copy is the only one in the document, so a link
+     between two prerendered pages must name reader ids — an agreement across
+     documents that neither page can check alone. */
+  it("resolves every cross-page link to a target on the page it names", () => {
+    const rendered = new Map(pages().map(({ path, html }) => [path, parse(html)]));
+    for (const [path, root] of rendered) {
+      for (const a of root.querySelectorAll('a[href*="#"]:not([href^="#"])')) {
+        const [target, id] = a.getAttribute("href")!.split("#");
+        const page = rendered.get(target);
+        // Off-site and non-prerendered targets are nobody's promise to keep.
+        if (!page) continue;
+        expect(page.querySelector(`[id="${id}"]`), `${path} → ${target}#${id}`).not.toBeNull();
+      }
+    }
+  });
+
   it("names every nav, so two on a page can be told apart", () => {
     for (const { path, html } of pages()) {
       for (const nav of parse(html).querySelectorAll("nav")) {

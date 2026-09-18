@@ -1,6 +1,7 @@
 import type { IconName } from "@jordanscamp/ds";
 
 import { blogPaths } from "../routing/blogPaths";
+import { projectAnchorId, roleAnchorId } from "../utils/cvAnchors";
 import { cv } from "./cv";
 import { listedProjects } from "./projects";
 import { slugify } from "./slug";
@@ -8,6 +9,12 @@ import { slugify } from "./slug";
 export interface WorkItem {
   title: string;
   to: string;
+  /**
+   * The entry on that page, as a bare id rather than a fragment on `to`: a built
+   * page holds the reader's copy of every id beside the app's, and only the
+   * renderer knows which of the two it is linking into. See `useDocumentId`.
+   */
+  anchor?: string;
   tags: string[];
   color?: string;
   /** Public-directory path, before `asset()`. */
@@ -48,19 +55,35 @@ const FEATURED_ROLES: {
   },
 ];
 
+/* The CV files the dissertation under the game's name; this column names the
+   subject, which is what a reader scanning for skills is after. */
+const THESIS = "Unconventional Chess";
+
 export const professionalWork: WorkItem[] = [
   ...FEATURED_ROLES.flatMap(({ org, label, color, tags }) => {
     const role = cv.experience.find((entry) => entry.org === org);
     // A drop rather than a throw: `work.test.ts` is where this is meant to fail.
-    return role ? [{ title: label, to: blogPaths.cv, tags, color, icon: role.logo }] : [];
+    return role
+      ? [
+          {
+            title: label,
+            to: blogPaths.cv,
+            anchor: roleAnchorId(org),
+            tags,
+            color,
+            icon: role.logo,
+          },
+        ]
+      : [];
   }),
-  {
-    /* Written out because the CV carries the thesis as one line under Education
-       rather than an entry of its own, so there is nothing to look up. */
-    title: "MultiAgent Systems",
-    to: blogPaths.cv,
-    tags: ["Java", "JADE", "MSci-Thesis"],
-    color: "#ffffff",
-    icon: cv.education.find((entry) => entry.institution === "University of St Andrews")?.logo,
-  },
+  ...cv.projects
+    .filter((project) => project.name === THESIS)
+    .map((project) => ({
+      title: "MultiAgent Systems",
+      to: blogPaths.cv,
+      anchor: projectAnchorId(project.name),
+      tags: ["Java", "JADE", "MSci-Thesis"],
+      color: "#ffffff",
+      icon: cv.education.find((entry) => entry.institution === "University of St Andrews")?.logo,
+    })),
 ];

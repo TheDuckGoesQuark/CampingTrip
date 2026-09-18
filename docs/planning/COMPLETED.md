@@ -6,6 +6,74 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## A page the browser opens places itself, and a card lands on its CV entry
+
+**Date**: 2026-09-18
+
+**What was done**:
+
+CatNav's page scroll is now placed on navigation, the window frame compensates
+its own inset when an anchor lands, and the homepage's professional cards link to
+the CV entry each one is about rather than the top of the CV.
+
+**Three bugs, one of them the cause of another**:
+
+- **A page opened at the last page's offset.** `Window.Body` is one scroll
+  container reused across every navigation, and nothing reset it — so following
+  "See my full CV" from partway down the homepage opened the CV with the name
+  scrolled off the top. Measured at 556px of carry-over from a homepage scrolled
+  to 900.
+- **An anchor landed flush against the chrome.** `scrollIntoView` brings a target
+  to the scrollport's edge, which sits _inside_ `.body`'s padding, so the role's
+  title touched the address bar with nothing above it.
+- **The professional cards all pointed at `/blog/cv.html`** with no fragment, and
+  the CV's project entries had no ids to point at.
+
+**Key decisions**:
+
+- **`scroll-padding-block-start` on the frame, not `scroll-margin-top` on the
+  targets.** The frame owns the inset, so the frame owns the compensation; it is
+  the same token as the padding it offsets, and it holds for every anchor in
+  every window rather than for the entries someone remembered to mark.
+- **One effect covers both the reset and the fragment.** A router navigation
+  moves the address without the browser's own fragment handling running, so the
+  fragment case needed JS anyway — and "scroll to the fragment, else to the top
+  of the page" is the same sentence a real browser's rule is.
+- **`behavior: "instant"`.** `.body` sets `scroll-behavior: smooth` under
+  `prefers-reduced-motion: no-preference`, which is right for a move _within_ a
+  page and wrong for one arriving: the smooth version animates the new page past
+  content the visitor never asked to see.
+- **The thesis card is derived from the CV's project entry**, filtered the way
+  `FEATURED_ROLES` filters roles, rather than hardcoded. A card whose anchor the
+  CV no longer renders now fails in `work.test.ts` instead of becoming a dead
+  fragment no type can catch.
+- **`WorkItem` carries `anchor` beside `to`, not a spelled-out fragment.** A
+  built page holds the reader's copy of every id as well as the app's, so which
+  of the two a link should name is a fact about the render — `useWorkHref` in
+  `HomePage` resolves it through `useDocumentId`. Spelled into the data instead,
+  the prerendered homepage linked `#role-lindus-health` while the prerendered CV
+  only carried `#reader-role-lindus-health`: three fragments that worked under
+  the router and went nowhere for a reader without JS. `semantics.test.ts` now
+  resolves cross-page fragments against the page they name, which is what catches
+  that; it previously checked same-page ones only.
+- **`Element.prototype.scrollIntoView` stubbed in `src/test/setup.ts`.** jsdom has
+  no layout and so ships no scrolling at all — the method is absent, not inert.
+
+**Deferred**:
+
+- **The personal column keeps its project pages.** Asked and decided: those pages
+  carry more than the CV does, and PhotoBroom and Music Production have no CV
+  entry to land on. A "See this on my CV" link from a project page to its entry
+  is the version worth revisiting, and it needs a name mapping —
+  `projects.ts` says "CatMap" and "JordansCamp.Site" where the CV says "CatMaps"
+  and "Jordan's Campsite".
+- **No scroll restoration on Back.** A real browser returns you to where you were
+  in the page you are going back to; this returns you to its top.
+- **The address bar drops the fragment**, since `browserPath` is the pathname
+  alone. Showing it would be one more piece of the illusion.
+
+---
+
 ## The contact footer reshapes on one threshold per stage
 
 **Date**: 2026-09-17

@@ -14,7 +14,7 @@ import type {
 
 import "../../styles/blogProse.css";
 import { asset } from "../../utils/assetPath";
-import { roleAnchorId } from "../../utils/roleAnchor";
+import { projectAnchorId, roleAnchorId } from "../../utils/cvAnchors";
 import CvHeader from "./CvHeader";
 import { monthYear } from "./formatDate";
 import { offsiteLinkProps } from "./offsiteLink";
@@ -154,8 +154,9 @@ function RoleEntry({ role }: { role: Role }) {
 }
 
 function ProjectEntry({ project }: { project: CvProject }) {
+  const anchor = useDocumentId(projectAnchorId(project.name));
   return (
-    <div className={styles.cvRole}>
+    <div className={styles.cvRole} id={anchor}>
       <div className={styles.cvRoleHead}>
         <Text variant="title-4" as="h3">
           {project.name}

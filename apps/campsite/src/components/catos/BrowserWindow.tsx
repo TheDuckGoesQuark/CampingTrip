@@ -1,5 +1,5 @@
 import { Icon, Window } from "@jordanscamp/ds";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { playSoftClick } from "../../audio/soundEffects";
@@ -38,7 +38,7 @@ export interface BrowserWindowProps extends WindowFrameProps {
  */
 export default function BrowserWindow({ page, onClose, ...frame }: BrowserWindowProps) {
   const navigate = useNavigate();
-  const { key: locationKey } = useLocation();
+  const { hash, key: locationKey } = useLocation();
   const browserPath = useSceneStore((s) => s.browserPath);
   const openBlogPaths = useSceneStore((s) => s.openBlogPaths);
   const [reloadCount, setReloadCount] = useState(0);
@@ -71,6 +71,25 @@ export default function BrowserWindow({ page, onClose, ...frame }: BrowserWindow
     },
     [navigate],
   );
+
+  /**
+   * A router navigation moves the address without the browser's own fragment
+   * handling running, and every page shares the one scroll container, so a page
+   * that does not place itself opens at wherever the last one was left.
+   *
+   * Instant, against the frame's `scroll-behavior: smooth`: that is for a move
+   * within a page, and would animate an arriving one past content nobody asked
+   * to see.
+   */
+  const pageBody = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const fragment = hash ? document.getElementById(hash.slice(1)) : null;
+    (fragment ?? pageBody.current)?.scrollIntoView({
+      behavior: "instant",
+      block: "start",
+      inline: "nearest",
+    });
+  }, [browserPath, hash, reloadCount]);
 
   /**
    * A visitor who deep-linked straight to a page has nothing behind them, and a
@@ -106,7 +125,7 @@ export default function BrowserWindow({ page, onClose, ...frame }: BrowserWindow
       />
       <Window.Body flush>
         {/* Re-keyed so the reload control actually remounts the page. */}
-        <div key={`${browserPath}:${reloadCount}`} className={styles.pageBody}>
+        <div ref={pageBody} key={`${browserPath}:${reloadCount}`} className={styles.pageBody}>
           <BlogPageView page={page} />
         </div>
       </Window.Body>

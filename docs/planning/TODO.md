@@ -218,15 +218,6 @@ link to the other one, which the length switch in the header already does
 better. A one-line fix once both changes are on main: the guard wants to cover
 `cvCondensed` too.
 
-### Blog — the professional rows all land on the top of the CV
-
-Each would read better anchored at its own role. The ids have to go through
-`useDocumentId`, because a built page holds the reader's copy of every id as well
-as the app's, and the link then crosses documents into the client-side router —
-which the dev server cannot prove, since it never renders the reader. Verify
-against a `vite preview` of `dist`, and extend `semantics.test.ts`, which today
-only asserts same-page fragments.
-
 ### Blog — the CV's remaining `[DRAFT — …]` beat
 
 One bracketed beat is live on `/blog/cv.html` and in `/cv.pdf`, published

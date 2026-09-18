@@ -126,6 +126,7 @@ Sakala
 sayable
 scopable
 scriptless
+scrollport
 scrollytelling
 SDTM
 Sketchfab

@@ -208,10 +208,16 @@ function WorkColumn({ heading, items }: { heading: string; items: WorkItem[] }) 
   );
 }
 
+function useWorkHref({ to, anchor }: WorkItem): string {
+  const id = useDocumentId(anchor ?? "");
+  return anchor ? `${to}#${id}` : to;
+}
+
 function WorkRow({ item }: { item: WorkItem }) {
+  const href = useWorkHref(item);
   return (
     <li>
-      <Card render={<RouterLink to={item.to} />} padding="sm">
+      <Card render={<RouterLink to={href} />} padding="sm">
         <div className={styles.row}>
           <Tile
             label={item.title}
