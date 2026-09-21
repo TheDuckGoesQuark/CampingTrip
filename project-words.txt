@@ -136,6 +136,7 @@ smoothstep
 smoothsteps
 standfirst
 Stockfish
+Strava
 svceof
 swapfile
 swapon

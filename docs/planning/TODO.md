@@ -322,6 +322,16 @@ inside the Canvas:
 
 ## Backlog
 
+### Blog: a project page cannot reach its CV entry
+
+Deferred when the personal column kept its project pages: a "See this on my CV"
+link needs a mapping from a `projects.tsx` title to a `CvProject` name. CatMaps
+no longer needs one, since both now spell it the same way, but
+`JordansCamp.Site` and "Jordan's Campsite" still disagree, and PhotoBroom and
+Music Production have no CV entry to land on at all. So the link wants either
+an explicit optional `cvName` on `Project`, or to appear only where a name
+matches.
+
 ### The design system has gaps the apps filled themselves
 
 `pnpm ds-guard` reports them; `scripts/ds-guard/baseline.json` is the accepted

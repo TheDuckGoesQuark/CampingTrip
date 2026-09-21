@@ -56,3 +56,34 @@
 .blog-prose a:hover {
   color: var(--brand-link-hover);
 }
+
+.blog-prose .run-strip {
+  margin: var(--space-l) 0;
+}
+
+/* Portrait share cards, so they stay side by side all the way down: three
+   stacked phone screenshots would push the rest of the page off-screen. */
+.blog-prose .run-strip ul {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-s);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.blog-prose .run-strip img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 2px solid var(--brand-border-strong);
+  box-shadow: var(--shadow-hard-1);
+}
+
+.blog-prose .run-strip figcaption {
+  margin-top: var(--space-s);
+  font-family: var(--font-text);
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-lh);
+  color: var(--brand-text-muted);
+}

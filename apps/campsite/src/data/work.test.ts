@@ -14,7 +14,7 @@ describe("the homepage's two columns", () => {
   it("shows every listed project down the personal column", () => {
     expect(personalWork.map((item) => item.title)).toEqual([
       "JordansCamp.Site",
-      "CatMap",
+      "CatMaps",
       "Music Production",
     ]);
   });

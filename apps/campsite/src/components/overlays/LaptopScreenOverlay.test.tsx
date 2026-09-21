@@ -13,7 +13,7 @@ import LaptopScreenOverlay from "./LaptopScreenOverlay";
 
 const HOME = "/blog/index.html";
 const CAMPING_TRIP = "/blog/projects/jordanscamp-site.html";
-const CATMAP = "/blog/projects/catmap.html";
+const CATMAPS = "/blog/projects/catmaps.html";
 const MUSIC_TAG = "/blog/tags/music.html";
 
 /** A router seeded at `path`, so a test can tell "went to /" from "started there". */
@@ -296,10 +296,10 @@ describe("LaptopScreenOverlay (CatOS)", () => {
     });
 
     it("renders one tab per open page, marking the active one", () => {
-      openTabs([CAMPING_TRIP, CATMAP], CATMAP);
+      openTabs([CAMPING_TRIP, CATMAPS], CATMAPS);
       renderOverlay();
       expect(screen.getAllByRole("tab")).toHaveLength(2);
-      expect(screen.getByRole("tab", { name: /CatMap/ })).toHaveAttribute("aria-selected", "true");
+      expect(screen.getByRole("tab", { name: /CatMaps/ })).toHaveAttribute("aria-selected", "true");
       expect(screen.getByRole("tab", { name: /JordansCamp\.Site/ })).toHaveAttribute(
         "aria-selected",
         "false",
@@ -313,59 +313,59 @@ describe("LaptopScreenOverlay (CatOS)", () => {
     });
 
     it("skips a path that names nothing that exists", () => {
-      openTabs([CATMAP, "/blog/posts/not-a-real-post.html"], CATMAP);
+      openTabs([CATMAPS, "/blog/posts/not-a-real-post.html"], CATMAPS);
       renderOverlay();
       expect(screen.getAllByRole("tab")).toHaveLength(1);
     });
 
     it("drops a background tab from the strip without changing the address", () => {
-      openTabs([CAMPING_TRIP, CATMAP], CATMAP);
+      openTabs([CAMPING_TRIP, CATMAPS], CATMAPS);
       renderOverlay();
       fireEvent.click(screen.getByRole("button", { name: "Close JordansCamp.Site" }));
-      expect(useSceneStore.getState().openBlogPaths).toEqual([CATMAP]);
-      expect(screen.getByText(`https://jordanscamp.site${CATMAP}`)).toBeInTheDocument();
+      expect(useSceneStore.getState().openBlogPaths).toEqual([CATMAPS]);
+      expect(screen.getByText(`https://jordanscamp.site${CATMAPS}`)).toBeInTheDocument();
     });
 
     // Discarding the strip is applyOverlayState's job, covered in
     // routing/overlays.test.ts; the window's own job is to navigate there.
     it("closing the whole window navigates back to the bare blog route", () => {
-      openTabs([CAMPING_TRIP, CATMAP], CATMAP);
+      openTabs([CAMPING_TRIP, CATMAPS], CATMAPS);
       renderWithPath();
       fireEvent.click(screen.getByRole("button", { name: "Close" }));
       expect(currentPath()).toBe("/blog");
     });
 
     it("closing the last remaining tab navigates back to the bare blog route", () => {
-      openTabs([CATMAP], CATMAP);
+      openTabs([CATMAPS], CATMAPS);
       renderWithPath();
-      fireEvent.click(screen.getByRole("button", { name: "Close CatMap" }));
+      fireEvent.click(screen.getByRole("button", { name: "Close CatMaps" }));
       expect(currentPath()).toBe("/blog");
     });
 
     it("closing the active tab hands focus to its neighbour", () => {
-      openTabs([CAMPING_TRIP, CATMAP], CATMAP);
+      openTabs([CAMPING_TRIP, CATMAPS], CATMAPS);
       renderWithPath();
-      fireEvent.click(screen.getByRole("button", { name: "Close CatMap" }));
+      fireEvent.click(screen.getByRole("button", { name: "Close CatMaps" }));
       expect(currentPath()).toBe(CAMPING_TRIP);
     });
 
     it("the new-tab control opens the homepage, keeping the strip intact", () => {
-      openTabs([CAMPING_TRIP, CATMAP], CATMAP);
+      openTabs([CAMPING_TRIP, CATMAPS], CATMAPS);
       renderWithPath();
       fireEvent.click(screen.getByRole("button", { name: "New tab" }));
       expect(currentPath()).toBe(HOME);
-      expect(useSceneStore.getState().openBlogPaths).toEqual([CAMPING_TRIP, CATMAP]);
+      expect(useSceneStore.getState().openBlogPaths).toEqual([CAMPING_TRIP, CATMAPS]);
     });
 
     it("the red light discards the strip, ending the browsing session", () => {
-      openTabs([CAMPING_TRIP, CATMAP], CATMAP);
+      openTabs([CAMPING_TRIP, CATMAPS], CATMAPS);
       renderWithPath();
       fireEvent.click(screen.getByRole("button", { name: "Close" }));
       expect(useSceneStore.getState().openBlogPaths).toEqual([]);
     });
 
     it("selecting a background tab navigates to its route", () => {
-      openTabs([CAMPING_TRIP, CATMAP], CATMAP);
+      openTabs([CAMPING_TRIP, CATMAPS], CATMAPS);
       renderWithPath();
       fireEvent.click(screen.getByRole("tab", { name: /JordansCamp\.Site/ }));
       expect(currentPath()).toBe(CAMPING_TRIP);
