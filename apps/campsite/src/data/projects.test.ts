@@ -16,7 +16,8 @@ describe("projects data", () => {
   it("each project has the required fields", () => {
     for (const project of projects) {
       expect(typeof project.title).toBe("string");
-      expect(typeof project.description).toBe("string");
+      // A description is prose or, where it needs images, the TSX that holds it.
+      expect(project.description === null || project.description === undefined).toBe(false);
       expect(typeof project.year).toBe("number");
       if (project.color !== undefined) {
         expect(typeof project.color).toBe("string");

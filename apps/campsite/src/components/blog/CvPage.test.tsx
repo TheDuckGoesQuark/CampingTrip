@@ -158,7 +158,7 @@ describe("CvPage", () => {
   it("routes the narrative's CatMaps mention to the project page, not the product site", () => {
     renderCv();
     const link = screen.getByRole("link", { name: "CatMaps" });
-    expect(link).toHaveAttribute("href", "/blog/projects/catmap.html");
+    expect(link).toHaveAttribute("href", "/blog/projects/catmaps.html");
   });
 
   describe("the header's email address", () => {

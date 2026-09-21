@@ -16,7 +16,7 @@ describe("blogPaths", () => {
     expect(blogPaths.archive).toBe("/blog/posts/index.html");
     expect(blogPaths.post("mixing-drums")).toBe("/blog/posts/mixing-drums.html");
     expect(blogPaths.tag("music")).toBe("/blog/tags/music.html");
-    expect(blogPaths.project("catmap")).toBe("/blog/projects/catmap.html");
+    expect(blogPaths.project("catmaps")).toBe("/blog/projects/catmaps.html");
     expect(blogPaths.tool("mynoise")).toBe("/blog/tools/mynoise.html");
     expect(blogPaths.cv).toBe("/blog/cv.html");
   });
@@ -56,9 +56,9 @@ describe("parseBlogPath", () => {
       slug: "mixing-drums",
     });
     expect(parseBlogPath("/blog/tags/music.html")).toEqual({ kind: "tag", tag: "music" });
-    expect(parseBlogPath("/blog/projects/catmap.html")).toEqual({
+    expect(parseBlogPath("/blog/projects/catmaps.html")).toEqual({
       kind: "project",
-      slug: "catmap",
+      slug: "catmaps",
     });
     expect(parseBlogPath("/blog/tools/mynoise.html")).toEqual({ kind: "tool", slug: "mynoise" });
     expect(parseBlogPath("/blog/desk/words-with-friends-txt")).toEqual({
@@ -92,7 +92,7 @@ describe("parseBlogPath", () => {
       { kind: "archive" },
       { kind: "post", slug: "mixing-drums" },
       { kind: "tag", tag: "music" },
-      { kind: "project", slug: "catmap" },
+      { kind: "project", slug: "catmaps" },
       { kind: "tool", slug: "mynoise" },
       { kind: "cv" },
       { kind: "desk", slug: "words-with-friends-txt" },
@@ -109,7 +109,7 @@ describe("isBrowserPath", () => {
     expect(isBrowserPath(blogPaths.home)).toBe(true);
     expect(isBrowserPath(blogPaths.archive)).toBe(true);
     expect(isBrowserPath(blogPaths.tag("music"))).toBe(true);
-    expect(isBrowserPath(blogPaths.project("catmap"))).toBe(true);
+    expect(isBrowserPath(blogPaths.project("catmaps"))).toBe(true);
     expect(isBrowserPath(blogPaths.cv)).toBe(true);
   });
 

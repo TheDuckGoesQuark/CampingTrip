@@ -25,7 +25,7 @@ describe("the CV", () => {
   });
 
   it("points the narrative's CatMaps mention at a project that still exists", () => {
-    expect(projects.some((project) => project.title === "CatMap")).toBe(true);
-    expect(resolveBlogPage({ kind: "project", slug: "catmap" })).not.toBeNull();
+    expect(projects.some((project) => project.title === "CatMaps")).toBe(true);
+    expect(resolveBlogPage({ kind: "project", slug: "catmaps" })).not.toBeNull();
   });
 });

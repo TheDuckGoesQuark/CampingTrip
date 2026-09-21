@@ -6,6 +6,151 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## CatMaps gets a page that says what it is, and one spelling
+
+**Date**: 2026-09-21
+
+**What was done**:
+
+The CatMaps project page carried a single sentence ("Identifying and helping
+track down missing pets."), so a visitor who opened it learned nothing the tile
+had not already told them. It now carries four paragraphs in the same shape the
+JordansCamp.Site and PhotoBroom entries use. The project was also renamed from
+`CatMap` to `CatMaps`, which the repo had been spelling both ways.
+
+**The product facts came from the CV; the reasons came from Jordan**: the
+`CvProject` entry in `cv.tsx` already held the product description, the Rust and
+React Native choice, the state-machine testability argument, the app-store
+status and the AI-assisted-workflow experiment, none of which the project page
+had ever used. What it could not supply was a personal origin, which is what the
+other two entries open on. A first pass invented a stand-in (a missing-cat
+poster on a lamppost) and said so; Jordan then supplied five real anecdotes and
+the piece was rewritten around them. The invented opening is gone.
+
+**The opening is the cats on the cycle to work**: knowing where each one sits
+and roughly when, noticing when one stops being there, and having nowhere to put
+the worry. The close returns to it in two lines. This is the same autobiographical
+shape as the winter tent (JordansCamp.Site) and the Google Photos annoyance
+(PhotoBroom), which the stand-in version could not manage.
+
+**The collarless cat is what makes the product sound hard**: an affectionate cat
+with no collar is usually not lost, so taking it to a vet to read its chip can
+be the act that removes it from its own territory. That paragraph is where the
+CV's "user safety is core to the product philosophy" bullet actually landed, as
+a story rather than a claim.
+
+**The product thinking leads and the tech follows, after a rejected draft**: an
+earlier version bridged straight from the collarless cat into the stack, and
+Jordan called the bridge weak, which it was, because it asserted a link between
+the safety problem and the tech rather than earning one. The middle of the page
+is now the design work: the scenarios that had to be walked (no demand for
+personal details, no publishing where a pet reliably is, no catalogue for
+anyone minded to steal one), and the incentive problem underneath them, which is
+that a map of sightings only exists if people contribute and people only
+contribute to something they already open. The answer he landed on is a QR code
+on the missing posters that already go up on lampposts: whoever prints one
+registers their pet in the act, and a stranger reading it can join the search.
+
+**The stack is third from last, and its reason changed**: the CV's
+framing was learning systems programming on a product with real stakes. Jordan's
+own reason is reliability and a duty of care, wanting something he is
+comfortable being relied on for the safety of animals and sometimes of people,
+and a codebase an AI-assisted workflow can be held to because there is a right
+answer to check against. The learning-systems-programming motive is off the
+page; it remains on the CV, where it is true.
+
+**The community loop answers the opening**: the app tells you when a cat you
+photographed got home, and tells you when an animal you have photographed before
+is reported missing, on the grounds that you are the person most likely to see
+it again. That second notification is the thing the first paragraph is aching
+for, so the page sets up a problem in its opening and answers it in its middle
+without pointing at the fact. It also completes the incentive argument the QR
+paragraph only half makes: posters explain how somebody arrives, notifications
+explain why they stay.
+
+**The shelter and policy ambition sits after the stack, not before it**: it had
+been a 28-word paragraph wedged between two heavy ones, and it was the weakest
+thing on the page despite carrying the largest claim. Moved below the stack it
+has a job, which is to come back to the animals after the technical detour and
+widen out a last time, so the closing line can snap back to a single cat on a
+single wall. It was rewritten for that position: the old "Further out" had no
+referent once the paragraph moved.
+
+**"CatMaps" everywhere, reversing an earlier call**: a previous entry recorded
+"CatMap keeps its title", but its stated reason was only that the rename had not
+been explicitly requested and that tests referenced the slug. Asked and
+requested this time. `cv.tsx`, the domain `catmaps.me` and the CV all said
+CatMaps already, so `projects.ts` was the outlier.
+
+**The slug changed with the title**, as it did for Camping Trip: slugs derive
+from titles by design, so `/blog/projects/catmap.html` now 404s and the page
+lives at `/blog/projects/catmaps.html`. Nothing in the repo links to the old
+path; an external link would need a redirect. The `CATMAPS_PROJECT_SLUG`
+constant in `cv.tsx` exists precisely so the CV's inline link cannot silently
+drift from the title, and it moved with it.
+
+**Design-system fixtures keep saying "CatMap"**: `Tile`, `Window` and
+`DesktopIcon` stories and tests use it as sample label text with no tie to the
+real project, and `docs/architecture.md` uses `catmap` for the AWS account
+neighbour's real resource tags. Neither was touched.
+
+**Three Strava share cards sit under the paragraph they are evidence for**: the
+page now carries the journey, which is that before any app existed he
+photographed every cat and every missing poster and tried to cross-reference
+them out of his own camera roll. Posting the runs to Strava got closer, because
+a run carries its route, so a sighting arrives already knowing where it
+happened. What defeated it was reach: the person who would recognise the cat is
+in a local Facebook group, not in a small Strava following. The cards are that
+manual version, so they read as a proof of concept rather than decoration. They
+are Strava's own export, so pace, time and distance are burnt into the image and
+nothing restates those figures in markup, where they would drift from the
+picture. Each card links to its activity.
+
+**The wider value is a thing other people told him**: the paragraph about a pile
+of sightings being worth more than one cat at a time now opens "When I told
+people I was doing this, I realised", which is the order it actually happened
+in. It follows the cards rather than preceding them, so the sequence is the
+manual attempt, the evidence, then what talking about it revealed. Its old
+closing sentence, that his own photos and Strava were "that same data from the
+other side, sitting where nobody can use it", was cut: the journey paragraph now
+says that at length, and keeping both said it twice.
+
+**No `Island` here, despite being asked for one**: an Island exists so a live
+component can replace a static fallback once JS runs, and its fallback is all a
+crawler gets. Linked images need no JS, so wrapping them would buy a lazy chunk
+and a hydration boundary in order to render the same markup twice. The Island
+machinery does reach project pages, which was the question behind the request:
+`ProjectPage` renders a non-string `description` as-is, and `prerender/entry.tsx`
+puts project pages in the `static` render target exactly as it does posts.
+
+**The links did not pair with the images in the order given**: three deeplinks
+were shared as being in order and only the middle one was. Resolving each
+`strava.app.link` (they redirect client-side, so the canonical URL comes out of
+the page body) and reading each activity's `og:title` gave Lunch, Evening,
+Morning against images labelled Morning, Evening, Lunch. Each run type appears
+once on each side, so the mapping is forced rather than guessed. They run oldest
+first on the page.
+
+**`projects.ts` became `projects.tsx`**: JSX cannot live in a `.ts` file, which
+is why `cv.tsx` has always been `.tsx`. Every import of it was extensionless, so
+the rename touched nothing else. `projects.test.ts` asserted every description
+was a `string`, stricter than the `string | ReactNode` the type has always
+allowed, and now asserts only that one is present.
+
+**The identifiable front doors are fine, asked and answered**: two of the cards
+show a specific doorway and a specific new-build frontage, which sits oddly
+beside the paragraph four above them about not publishing where a pet reliably
+is. Jordan's call, in his words: a front door is not really someone's address.
+The photographs were already public on Strava and stay as they are.
+
+**Deferred**:
+
+- **The "See this on my CV" link is now unblocked.** It was deferred pending a
+  name mapping between `projects.tsx` and the CV; CatMaps no longer needs one,
+  though JordansCamp.Site and "Jordan's Campsite" still would.
+
+---
+
 ## Credits a visitor can open, and prose that stops sounding machine-written
 
 **Date**: 2026-09-18

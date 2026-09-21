@@ -309,8 +309,8 @@ const commendations: Commendation[] = [
   },
 ];
 
-// "CatMap": the title in `projects.ts`, kept as the one spelling so a rename there does not silently 404 here.
-const CATMAPS_PROJECT_SLUG = slugify("CatMap");
+// "CatMaps": the title in `projects.ts`, kept as the one spelling so a rename there does not silently 404 here.
+const CATMAPS_PROJECT_SLUG = slugify("CatMaps");
 
 /* Read at build, not at the visit: a deploy is what moves the count on. */
 const YEARS_BUILDING = yearsSince("2014-09-01");

@@ -24,7 +24,7 @@ describe("resolveBlogPage", () => {
   });
 
   it("finds a project and a tool", () => {
-    expect(resolveBlogPage({ kind: "project", slug: "catmap" })?.kind).toBe("project");
+    expect(resolveBlogPage({ kind: "project", slug: "catmaps" })?.kind).toBe("project");
     expect(resolveBlogPage({ kind: "tool", slug: "mynoise" })?.kind).toBe("tool");
   });
 
