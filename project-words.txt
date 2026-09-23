@@ -1,8 +1,3 @@
-
-
-
-
-
 # 3D, audio and graphics
 # Brands, products and people
 # Deliberate coinages
@@ -43,6 +38,7 @@ crossfades
 cweof
 depcruise
 deped
+developerway
 dialogs
 DPIA
 drei
@@ -85,6 +81,7 @@ lerps
 Lightformer
 Lightformers
 Lindus
+linters
 LUFS
 maximisable
 metalness

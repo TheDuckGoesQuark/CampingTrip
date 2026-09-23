@@ -1,0 +1,323 @@
+/*
+ * The tree is drawn in CSS grid rather than with a diagramming library: every
+ * node stays a real anchor, so it works in the prerendered page with no JS.
+ */
+
+/* Bracketed top and bottom, because this block breaks the reading measure and
+   the return to narrow paragraphs otherwise reads as the layout going wrong. */
+.walk {
+  margin: var(--space-xl) 0;
+}
+
+/* The same 2px bar as the `.rule` under the post header, so the page keeps one
+   divider rather than borrowing the CV's ornament for this one block. */
+.walk::before,
+.walk::after {
+  content: "";
+  display: block;
+  height: 2px;
+  background: var(--brand-border-strong);
+}
+
+.walk::before {
+  margin-bottom: var(--space-xl);
+}
+
+.walk::after {
+  margin-top: var(--space-xl);
+}
+
+/* ── The tree ──────────────────────────────────────────────── */
+
+/* Stretch, not centre: the connectors are empty divs, and a centred one
+   collapses to no height and takes its line with it. */
+.tree {
+  /* How far a wire leaves its card before it is allowed to turn. */
+  --lead-out: 18px;
+  --wire: 3px;
+  --wire-colour: var(--brand-border-strong);
+
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: auto 30px auto 30px auto 46px auto 30px auto;
+  column-gap: var(--space-l);
+  align-items: stretch;
+}
+
+/* `.blog-prose a` would otherwise decide the colour of a diagram node. */
+.tree .treeNode {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: var(--space-xs) var(--space-s);
+  text-align: center;
+  font-family: var(--font-text);
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-lh);
+  font-weight: var(--weight-bold);
+  color: var(--brand-link);
+  text-decoration: none;
+  background: var(--brand-surface);
+  border: 2px solid var(--brand-border-strong);
+  box-shadow: var(--shadow-hard-1);
+}
+
+.tree .treeNode:hover {
+  background: var(--brand-subtle);
+  color: var(--brand-link-hover);
+}
+
+.treeNode:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
+.treeRaw {
+  grid-area: 1 / 1;
+}
+
+.treePrimitives {
+  grid-area: 1 / 2;
+}
+
+.treeSemantic {
+  grid-area: 3 / 1;
+}
+
+.treeVariants {
+  grid-area: 5 / 1;
+}
+
+.treeComponents {
+  grid-area: 7 / 1 / 8 / 3;
+  justify-self: center;
+  min-width: 60%;
+}
+
+.treeApplication {
+  grid-area: 9 / 1 / 10 / 3;
+  justify-self: center;
+  min-width: 60%;
+}
+
+/* ── Connectors ────────────────────────────────────────────── */
+
+.linkRawToSemantic,
+.linkSemanticToVariants,
+.linkPrimitivesDown,
+.linkToApplication {
+  position: relative;
+}
+
+.linkRawToSemantic {
+  grid-area: 2 / 1;
+}
+
+.linkSemanticToVariants {
+  grid-area: 4 / 1;
+}
+
+/* Past two cards in the other column, down to the junction. */
+.linkPrimitivesDown {
+  grid-area: 2 / 2 / 6 / 3;
+}
+
+.linkToApplication {
+  grid-area: 8 / 1 / 9 / 3;
+}
+
+.linkRawToSemantic::before,
+.linkSemanticToVariants::before,
+.linkPrimitivesDown::before,
+.linkToApplication::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: var(--wire);
+  transform: translateX(-50%);
+  background: var(--wire-colour);
+}
+
+/* No arrowhead on the long one: its arrow is the junction's, further down. */
+.linkRawToSemantic::after,
+.linkSemanticToVariants::after,
+.linkToApplication::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -1px;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 10px solid var(--wire-colour);
+}
+
+/* Three sides of a box, inset to the two column centres: both branches drop
+   clear of their card before turning, or the bar reads as part of the card's
+   own bottom edge. */
+.join {
+  grid-area: 6 / 1 / 7 / 3;
+  align-self: start;
+  height: var(--lead-out);
+  margin-inline: calc((100% - var(--space-l)) / 4 - var(--wire) / 2);
+  border-left: var(--wire) solid var(--wire-colour);
+  border-right: var(--wire) solid var(--wire-colour);
+  border-bottom: var(--wire) solid var(--wire-colour);
+}
+
+/* Its own grid area rather than an offset from the node below, which drifted
+   whenever a row changed height. */
+.joinArrow {
+  grid-area: 6 / 1 / 7 / 3;
+  position: relative;
+}
+
+.joinArrow::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: var(--lead-out);
+  bottom: 9px;
+  width: var(--wire);
+  transform: translateX(-50%);
+  background: var(--wire-colour);
+}
+
+.joinArrow::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -1px;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 10px solid var(--wire-colour);
+}
+
+/* ── The walk ──────────────────────────────────────────────── */
+
+.caption {
+  margin: var(--space-m) 0 0;
+  font-family: var(--font-text);
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-lh);
+  color: var(--brand-text-muted);
+}
+
+.rows {
+  margin-top: var(--space-xl);
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+}
+
+.row {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-s);
+  /* Arriving from a tree node, so the heading clears the window chrome. */
+  scroll-margin-top: var(--space-l);
+}
+
+.visual {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+}
+
+.explain {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+/* ── Swatches ──────────────────────────────────────────────── */
+
+.swatch {
+  display: inline-block;
+  width: 0.75em;
+  height: 0.75em;
+  margin-right: 0.4em;
+  vertical-align: baseline;
+  border: 1px solid var(--brand-border-strong);
+}
+
+/* Content, not theme: these are another codebase's token values, quoted. */
+.swWhite {
+  background: #ffffff;
+}
+.sw25 {
+  background: #fcfcfd;
+}
+.sw50 {
+  background: #f9fafb;
+}
+.sw100 {
+  background: #f2f4f7;
+}
+.sw200 {
+  background: #e4e7ec;
+}
+.sw300 {
+  background: #d0d5dd;
+}
+.sw400 {
+  background: #98a2b3;
+}
+.sw550 {
+  background: #667085;
+}
+.sw700 {
+  background: #344054;
+}
+.sw900 {
+  background: #101828;
+}
+.swIndigo {
+  background: #4f46e5;
+}
+.swIndigoDark {
+  background: #3730a3;
+}
+
+/* ── Two columns, once there is room ───────────────────────── */
+
+@container window-page (min-width: 700px) {
+  /* The code column is the wider one: prose reflows, code has a fixed width it
+     would rather not wrap at. */
+  .row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+    gap: var(--space-l);
+    align-items: start;
+  }
+}
+
+/* Break the reading measure so the longest token line stops scrolling. */
+@container window-page (min-width: 860px) {
+  .walk {
+    margin-inline: -80px;
+  }
+}
+
+/* The variants block is the widest thing here, and its class strings are the
+   whole point of it: clipped, it stops showing which tokens it reaches for. */
+@container window-page (min-width: 1040px) {
+  .walk {
+    margin-inline: -160px;
+  }
+
+  .row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.45fr);
+  }
+}

@@ -1,0 +1,43 @@
+/* Matches `.codeBlock` in the PhotoBroom overlay. A step below body-sm: at
+   body-sm the longest token line scrolls sideways, hiding the half of the line
+   that carries the point. */
+.code {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-label-size);
+  line-height: 1.6;
+  /* Wrap rather than scroll: a clipped class string stops showing which tokens
+     it reaches for, which is the only reason the block is here. */
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  background: var(--brand-surface-sunken);
+  border: 2px solid var(--brand-border-strong);
+  box-shadow: var(--shadow-hard-1);
+  padding: var(--space-s) var(--space-m);
+  color: var(--brand-text);
+}
+
+.comment {
+  color: var(--brand-text-muted);
+}
+
+.selector,
+.element {
+  color: var(--brand-solid);
+  font-weight: var(--weight-bold);
+}
+
+.prop,
+.attr {
+  color: var(--brand-link);
+}
+
+.value,
+.string {
+  color: var(--brand-accent);
+}
+
+.punct,
+.fn {
+  color: var(--brand-text-muted);
+}

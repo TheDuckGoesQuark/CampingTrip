@@ -6,6 +6,47 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## The design-system post, and the blocks it needed
+
+**Date**: 2026-09-23
+
+**What was done**:
+
+`ourDesignersWriteTheUi` went from a seeded outline to a finished post, and the
+blog grew the building blocks it needed on the way: a `LayerWalk` figure, a
+shared `Code` block, and prose styling for lists, tables and inline code.
+
+**`LayerWalk` is a dependency tree over a walk through its layers**: six layers
+from raw tokens up to the application, each a row of prose beside a code block.
+Above them sits a hand-drawn tree showing the real shape, which is not a chain:
+raw tokens feed semantic tokens, semantic tokens feed the Tailwind variants, and
+the variants and the Base UI primitives both feed components. Every node is an
+anchor that scrolls to the row explaining it.
+
+**It is drawn in CSS grid, not Mermaid**: Mermaid 12 unpacks to ~124MB and
+renders at runtime, which would have taken the diagram out of the prerendered
+HTML. The connectors are borders on grid-placed divs, the junction is three
+sides of one box inset to the two column centres, and the whole thing costs no
+dependency. An earlier version had a sticky scroll-spy rail; it was dropped in
+favour of the tree, which carries the same orientation with no JS at all.
+
+**No `Island` wrapper, deliberately**: the prose, code and diagram are real
+content, so they render server-side and reach a crawler. Only the earlier
+scroll-spy needed the client, and it is gone. A test asserts the component
+renders without a browser.
+
+**Three invalid-nesting bugs the dev server was hiding**: a `blockquote` inside
+a `p`, a `ul` inside a `p`, and a `table` between `li` elements. React builds
+the DOM directly, so all three looked fine in dev; the built site serialises to
+HTML and the browser's parser force-closes the `p`, stranding the following text
+outside any paragraph. Each is now a sibling, or lives inside the `li` it
+belongs to. Verified against `vite preview` of `dist`, not the dev server.
+
+**Deferred**: the `[DRAFT: …]` beats in the other three posts are untouched, and
+they stay `draft: true`.
+
+---
+
 ## CatMaps gets a page that says what it is, and one spelling
 
 **Date**: 2026-09-21

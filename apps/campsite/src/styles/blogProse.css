@@ -57,6 +57,72 @@
   color: var(--brand-link-hover);
 }
 
+/* Set smaller than the surrounding prose: a monospace face at the same nominal
+   size reads noticeably larger than the text either side of it. */
+.blog-prose code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  padding: 0.1em 0.35em;
+  background: var(--brand-surface-sunken);
+  border: 1px solid var(--brand-border);
+  border-radius: var(--radius-s);
+}
+
+/* The global reset zeroes padding on everything, and a marker positioned
+   `outside` with no padding to sit in hangs off the left of the text column. */
+.blog-prose ul,
+.blog-prose ol {
+  margin: 0 0 var(--space-m);
+  padding-inline-start: var(--space-l);
+  font-family: var(--font-text);
+  font-size: var(--text-body-lg-size);
+  line-height: var(--text-body-lg-lh);
+}
+
+.blog-prose li + li {
+  margin-top: var(--space-s);
+}
+
+/* `caption` rather than a `figure` wrapper: a table caption is associated with
+   its table by the browser, where a `figcaption` is announced by no screen
+   reader tested. */
+.blog-prose table {
+  width: 100%;
+  margin: var(--space-l) 0;
+  border-collapse: collapse;
+  font-family: var(--font-text);
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-lh);
+  background: var(--brand-surface);
+  border: 2px solid var(--brand-border-strong);
+  box-shadow: var(--shadow-hard-1);
+}
+
+.blog-prose caption {
+  caption-side: bottom;
+  margin-top: var(--space-s);
+  text-align: left;
+  color: var(--brand-text-muted);
+}
+
+.blog-prose th,
+.blog-prose td {
+  padding: var(--space-xs) var(--space-s);
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--brand-border);
+}
+
+.blog-prose th {
+  font-weight: var(--weight-bold);
+  background: var(--brand-subtle);
+  border-bottom: 2px solid var(--brand-border-strong);
+}
+
+.blog-prose tbody tr:last-child td {
+  border-bottom: 0;
+}
+
 .blog-prose .run-strip {
   margin: var(--space-l) 0;
 }

@@ -279,9 +279,13 @@ only hide it.
 
 ### Blog — content to write
 
-- Three posts are seeded with a real standfirst and opening paragraph and a
-  bracketed `[DRAFT — …]` beat to finish. They are placeholders for Jordan's
-  words, not content.
+- Every post in `data/posts` is seeded with a real standfirst and opening
+  paragraph and bracketed `[DRAFT: …]` beats to finish. They are placeholders
+  for Jordan's words, not content, and each stays `draft: true` until its beats
+  are filled.
+- `ourDesignersWriteTheUi` is written and its `draft` flag is off. It names the
+  employer and the domain deliberately, so the review from someone there is the
+  last gate before it is merged and deployed.
 - `Things I think are cool` on the homepage is fed from `bookmarks.ts`, which
   mixes two things: tools (myNoise) and things loved (Eyezmaze). The heading is
   wide enough to hold both, so the open question is whether they read better
