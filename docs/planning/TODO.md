@@ -406,12 +406,6 @@ track and thumb to match the deck. Until then the file carries a grandfathered
 `jsx-a11y/no-static-element-interactions` entry in `.oxlintrc.json` — delete it
 with the fix.
 
-### Blog — the music callout promises songs the tape deck hasn't got
-
-The `Callout` at the foot of `/blog/tags/music.html` reads "The tape deck back at camp
-has the actual songs on it", and its button opens a player whose song list is
-empty. Needs either Jordan's words or a recording in `songs.ts`.
-
 ### Repo — `PLAN.md` reads as a second architecture document
 
 It is the pre-build implementation plan, and it describes an `audioManager.ts`,

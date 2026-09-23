@@ -1,11 +1,12 @@
 import { Link } from "@jordanscamp/ds";
-import { Link as RouterLink } from "react-router-dom";
 
 import { yearsSince } from "../components/blog/formatDate";
 import { offsiteLinkProps } from "../components/blog/offsiteLink";
 import RoleAnchorLink from "../components/blog/RoleAnchorLink";
+import SiteLink from "../components/blog/SiteLink";
 import { blogPaths } from "../routing/blogPaths";
 import type { Commendation, Cv, CvProject, Role } from "../types/cv";
+import { ourDesignersWriteTheUi } from "./posts/ourDesignersWriteTheUi";
 import { slugify } from "./slug";
 
 const JOY_OF_REACT_URL = "https://www.joyofreact.com";
@@ -37,6 +38,7 @@ const roles: Role[] = [
         difficulty: "",
         approach:
           "Researched into front-end architecture patterns and led workshops to understand existing designer workflows to build something that is familiar to the user but far more powerful.",
+        postSlug: slugify(ourDesignersWriteTheUi.title),
       },
       {
         name: "The Fire Team",
@@ -365,10 +367,9 @@ export const cv: Cv = {
         <strong>I want to work on systems where correctness is the product:</strong> energy,
         climate, scientific tooling, and safety-critical software. To prepare me for this goal, I'm
         solving a real-world problem using tools and systems that make it easy to do things
-        correctly.{" "}
-        <Link render={<RouterLink to={blogPaths.project(CATMAPS_PROJECT_SLUG)} />}>CatMaps</Link>{" "}
-        aims to be a missing pet finder, with user safety and system reliability as core tenets
-        rather than afterthoughts.
+        correctly. <SiteLink to={blogPaths.project(CATMAPS_PROJECT_SLUG)}>CatMaps</SiteLink> aims to
+        be a missing pet finder, with user safety and system reliability as core tenets rather than
+        afterthoughts.
       </p>
     </>
   ),

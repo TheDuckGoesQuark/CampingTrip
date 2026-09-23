@@ -10,6 +10,7 @@ import {
 import { cv } from "./cv";
 import { posts } from "./posts";
 import { slugify } from "./slug";
+import { tags } from "./tags";
 
 describe("resolveBlogPage", () => {
   it("resolves the home and archive pages without a lookup", () => {
@@ -29,11 +30,12 @@ describe("resolveBlogPage", () => {
   });
 
   it("resolves a tag to every post carrying it", () => {
-    const page = resolveBlogPage({ kind: "tag", tag: "music" });
+    const busiest = tags[0].tag;
+    const page = resolveBlogPage({ kind: "tag", tag: busiest });
     expect(page?.kind).toBe("tag");
     if (page?.kind !== "tag") return;
     expect(page.posts.length).toBeGreaterThan(0);
-    expect(page.posts.every((post) => post.tags.includes("music"))).toBe(true);
+    expect(page.posts.every((post) => post.tags.includes(busiest))).toBe(true);
   });
 
   it("resolves the CV without a lookup", () => {

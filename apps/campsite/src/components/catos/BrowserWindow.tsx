@@ -7,10 +7,10 @@ import {
   iconOfBlogPage,
   isBrowserPage,
   resolveBlogPage,
-  SITE_ORIGIN,
   titleOfBlogPage,
   type BrowserPage,
 } from "../../data/blogPages";
+import { SITE_ORIGIN } from "../../data/site";
 import { blogPaths, parseBlogPath } from "../../routing/blogPaths";
 import { routes } from "../../routing/navigation";
 import { useSceneStore } from "../../store/sceneStore";

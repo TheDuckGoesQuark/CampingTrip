@@ -5,6 +5,8 @@ import type { ReactNode } from "react";
 import { MemoryRouter, useLocation } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { tags } from "../../data/tags";
+import { blogPaths } from "../../routing/blogPaths";
 import { applyOverlayState } from "../../routing/overlays";
 import { WINDOW_BROWSER, WINDOW_MAIL } from "../../routing/windows";
 import { useSceneStore } from "../../store/sceneStore";
@@ -14,7 +16,8 @@ import LaptopScreenOverlay from "./LaptopScreenOverlay";
 const HOME = "/blog/index.html";
 const CAMPING_TRIP = "/blog/projects/jordanscamp-site.html";
 const CATMAPS = "/blog/projects/catmaps.html";
-const MUSIC_TAG = "/blog/tags/music.html";
+const BUSIEST_TAG = tags[0].tag;
+const TAG_PAGE = blogPaths.tag(BUSIEST_TAG);
 
 /** A router seeded at `path`, so a test can tell "went to /" from "started there". */
 const wrapperAt =
@@ -307,9 +310,9 @@ describe("LaptopScreenOverlay (CatOS)", () => {
     });
 
     it("titles a tag tab by its tag", () => {
-      openTabs([MUSIC_TAG], MUSIC_TAG);
+      openTabs([TAG_PAGE], TAG_PAGE);
       renderOverlay();
-      expect(screen.getByRole("tab", { name: /Tag: music/ })).toBeInTheDocument();
+      expect(screen.getByRole("tab", { name: `Tag: ${BUSIEST_TAG}` })).toBeInTheDocument();
     });
 
     it("skips a path that names nothing that exists", () => {

@@ -28,10 +28,12 @@ describe("tags", () => {
 
 describe("postsTagged", () => {
   it("returns the posts carrying a tag, newest first", () => {
-    const tagged = postsTagged("music");
+    // Read off the data: a tag named here dies the day its last post does.
+    const busiest = tags[0].tag;
+    const tagged = postsTagged(busiest);
     expect(tagged.length).toBeGreaterThan(0);
-    expect(tagged.every((post) => post.tags.includes("music"))).toBe(true);
-    expect(tagged).toEqual(posts.filter((post) => post.tags.includes("music")));
+    expect(tagged.every((post) => post.tags.includes(busiest))).toBe(true);
+    expect(tagged).toEqual(posts.filter((post) => post.tags.includes(busiest)));
   });
 
   it("returns nothing for an unused tag", () => {

@@ -295,11 +295,12 @@
 
 @container window-page (min-width: 700px) {
   /* The code column is the wider one: prose reflows, code has a fixed width it
-     would rather not wrap at. */
+     would rather not wrap at, and its blocks run from two lines to a dozen,
+     which is why they centre against the prose rather than topping it. */
   .row {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
     gap: var(--space-l);
-    align-items: start;
+    align-items: center;
   }
 }
 

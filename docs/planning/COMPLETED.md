@@ -6,6 +6,64 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## Dropped the music post, and linked the CV to the post that replaced it
+
+**Date**: 2026-09-23
+
+**What was done**:
+
+`recordsForBuildingATentTo` is gone. It was a seeded draft with one written
+paragraph and a `[DRAFT: ...]` beat, and it carried the only `music` tag on the
+blog.
+
+**Three tests named `music` because that post existed**: `tags.test.ts` and
+`blogPages.test.ts` asserted against a tag with posts behind it, and
+`LaptopScreenOverlay.test.tsx` opened `/blog/tags/music.html` in a browser tab.
+All three now name `making`, which two posts carry. The `titleOfBlogPage` and
+`iconOfBlogPage` cases still say `music`: they build the page object themselves,
+so the string is a label rather than a lookup.
+
+**The CV's "Enabling AI-Native Workflows" achievement now links to its post.**
+`Achievement` gained an optional `postSlug`, rendered on the achievement's own
+name row, pushed right by `justify-content: space-between` so it reads as the
+achievement's rather than the last facet's. The slug is
+`slugify(ourDesignersWriteTheUi.title)`, not a literal, so retitling the post
+moves the link with it.
+
+**The printed CV linked to a preview server that no longer exists.** A
+root-relative `href` resolves against whatever served the page, and the PDF is
+printed by Playwright against `vite preview`, so the CV's narrative shipped a
+`http://localhost:4173/blog/projects/catmaps.html` to anyone who clicked
+CatMaps in the PDF. `SiteLink` now carries the origin in the `static` render
+target and routes in place in the `live` one, and both the narrative's CatMaps
+link and the new post link go through it.
+
+**A guard in `render-cv-pdf.mjs` rather than a note somewhere.** It reads the
+link annotations back out of the PDF it just printed and fails the build if any
+of them points at the preview origin. The check was confirmed to fire by
+pointing it at the live origin, where it named all three on-site links.
+
+**`SITE` and `SITE_ORIGIN` moved to `data/site.ts`.** They lived in
+`blogPages.ts`, which imports `cv.ts`, so a component importing the origin and
+being used from `cv.ts` closed a cycle: `cv` was `undefined` at module init and
+three test files failed to collect. The new module imports nothing.
+
+**The tape-deck callout went with it.** A tag with no posts resolves to `null`
+and never renders a feed, so the `tag === "music"` branch at the foot of
+`FeedPage` could not run. `Callout` had no other caller, so the component and
+its styles are gone too. The `cassette` icon stays in the design system, which
+does not need a caller to justify an icon.
+
+**The LayerWalk rows centre their two columns.** `align-items: center` in place
+of `start`: the code blocks run from two lines to a dozen, and a short one beside
+a long paragraph read as a layout fault.
+
+**The tests read their tag off the data now.** Swapping one literal for another
+would have failed the same way the next time a post moves, so `tags[0].tag` is
+the subject: the busiest tag, which exists as long as any post carries one.
+
+---
+
 ## The design-system post, and the blocks it needed
 
 **Date**: 2026-09-23

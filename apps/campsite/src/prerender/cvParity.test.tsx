@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import BlogPageView from "../components/blog/BlogPageView";
 import { isBrowserPage, resolveBlogPage } from "../data/blogPages";
+import { SITE_ORIGIN } from "../data/site";
 import { blogPaths, parseBlogPath } from "../routing/blogPaths";
 import { render } from "./entry";
 import { RenderTargetContext } from "./renderTarget";
@@ -44,10 +45,14 @@ function parse(html: string): HTMLElement {
 
 const textOf = (html: string) => (parse(html).textContent ?? "").replace(/\s+/g, " ").trim();
 
-/** An in-page anchor is the one difference meant to exist; `useDocumentId` owns it. */
+/** Two differences are meant to exist: `useDocumentId`'s anchors, and the origin
+ *  the static copy carries so the printed PDF can follow an on-site link. */
+const sitePath = (href: string | null) =>
+  href?.startsWith(`${SITE_ORIGIN}/`) ? href.slice(SITE_ORIGIN.length) : href;
+
 const offPageLinksOf = (html: string) =>
   [...parse(html).querySelectorAll("a")]
-    .map((a) => `${a.getAttribute("href")} :: ${a.textContent}`)
+    .map((a) => `${sitePath(a.getAttribute("href"))} :: ${a.textContent}`)
     .filter((link) => !link.startsWith("#"));
 
 describe("the scriptless CV against the app's own render", () => {

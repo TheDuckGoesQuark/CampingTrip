@@ -1,7 +1,7 @@
 import { Badge, Button, Text } from "@jordanscamp/ds";
 import { Link as RouterLink } from "react-router-dom";
 
-import { SITE_ORIGIN } from "../../data/blogPages";
+import { SITE_ORIGIN } from "../../data/site";
 import { slugify } from "../../data/slug";
 import { routes } from "../../routing/navigation";
 

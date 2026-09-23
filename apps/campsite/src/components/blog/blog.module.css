@@ -494,10 +494,6 @@
   gap: var(--space-s);
 }
 
-.feedFooter {
-  margin-top: 20px;
-}
-
 /* ── Post page ─────────────────────────────────────────────── */
 
 /* A measure, not a container width: this is the one screen someone reads. */
@@ -550,23 +546,6 @@
   margin-top: var(--space-m);
   display: flex;
   justify-content: center;
-}
-
-/* ── Callout ───────────────────────────────────────────────── */
-
-.callout {
-  display: flex;
-  align-items: center;
-  gap: var(--space-m);
-}
-
-.calloutBody {
-  flex: 1;
-  min-width: 0;
-}
-
-.calloutAction {
-  flex-shrink: 0;
 }
 
 /* ── Logo equation ─────────────────────────────────────────── */
@@ -748,6 +727,16 @@
   flex-direction: column;
   gap: var(--space-xxs);
   margin-top: var(--space-s);
+}
+
+/* The link rides the name's line, so it reads as the achievement's rather than
+   the last facet's. */
+.cvAchievementHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-xxs) var(--space-m);
 }
 
 .cvFacets {
