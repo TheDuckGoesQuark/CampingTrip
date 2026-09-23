@@ -22,7 +22,7 @@
 }
 
 .selector,
-.tag {
+.element {
   color: var(--brand-solid);
   font-weight: var(--weight-bold);
 }

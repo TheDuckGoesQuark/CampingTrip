@@ -21,7 +21,7 @@ export default function Code({ code }: { code: string }) {
         : match[3]
           ? styles.prop
           : match[4]
-            ? styles.tag
+            ? styles.element
             : styles.attr;
     parts.push(
       <span key={match.index} className={kind}>
