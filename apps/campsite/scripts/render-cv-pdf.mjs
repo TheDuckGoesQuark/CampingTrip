@@ -17,9 +17,11 @@ async function readPdf(pdf) {
   const document = await getDocument({ data: new Uint8Array(pdf) }).promise;
   const pages = Array.from({ length: document.numPages }, (_, i) => document.getPage(i + 1));
   const contents = await Promise.all(pages.map((page) => page.then((p) => p.getTextContent())));
+  const annotations = await Promise.all(pages.map((page) => page.then((p) => p.getAnnotations())));
   return {
     pages: document.numPages,
     text: collapse(contents.flatMap((content) => content.items.map((item) => item.str)).join(" ")),
+    links: annotations.flat().flatMap((a) => (a.url ? [a.url] : [])),
   };
 }
 
@@ -56,7 +58,7 @@ async function checkReaderScrolls(page, path) {
 }
 
 /** A print stylesheet change can hide the reader; fail here, not on someone's desk. */
-function check(target, { pages, text }) {
+function check(target, { pages, text, links }, origin) {
   const [first] = cv.experience;
   for (const expected of [cv.name, cv.headline, first.org, first.title]) {
     if (!text.includes(collapse(expected))) {
@@ -67,6 +69,14 @@ function check(target, { pages, text }) {
   // is a wasted inch of an A4 someone is holding.
   if (text.includes(CONTACT_HEADING)) {
     throw new Error(`${target.pdf} prints the contact footer twice over`);
+  }
+  // A root-relative href resolves against the server that printed the page, not the site.
+  const local = links.filter((url) => url.startsWith(origin));
+  if (local.length > 0) {
+    throw new Error(
+      `${target.pdf} links to ${local.join(", ")}, which is this build's preview server. ` +
+        "Route an on-site link through `SiteLink`, which carries the origin in the printed copy.",
+    );
   }
   // A third page and it has stopped being the thing it is for; nothing else notices.
   if (target.maxPages !== undefined && pages > target.maxPages) {
@@ -104,7 +114,7 @@ try {
     // Written before it is judged, so a failure leaves the document to look at.
     writeFileSync(join(DIST, target.pdf), pdf);
     console.log(`rendered ${target.pdf} (${read.pages} pages, ${pdf.byteLength} bytes)`);
-    check(target, read);
+    check(target, read, origin);
   }
 } finally {
   await browser.close();

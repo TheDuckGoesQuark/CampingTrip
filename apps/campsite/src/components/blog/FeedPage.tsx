@@ -1,10 +1,7 @@
-import { Button, Text } from "@jordanscamp/ds";
-import { Link as RouterLink } from "react-router-dom";
+import { Text } from "@jordanscamp/ds";
 
 import { posts as allPosts } from "../../data/posts";
-import { routes } from "../../routing/navigation";
 import type { Post } from "../../types/post";
-import Callout from "./Callout";
 import { PostSummaryCard } from "./PostSummary";
 import TagRail from "./TagRail";
 
@@ -45,21 +42,6 @@ export default function FeedPage({ posts, tag }: FeedPageProps) {
           <PostSummaryCard key={post.title} post={post} />
         ))}
       </ul>
-
-      {tag === "music" && (
-        <div className={styles.feedFooter}>
-          <Callout
-            icon="cassette"
-            title="Rather just listen?"
-            body="The tape deck back at camp has the actual songs on it."
-            action={
-              <Button size="sm" render={<RouterLink to={routes.music} />}>
-                Open the tape deck →
-              </Button>
-            }
-          />
-        </div>
-      )}
     </>
   );
 }

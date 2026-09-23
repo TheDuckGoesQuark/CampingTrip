@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { contactLabel, contactMailto } from "../../data/contactEmail";
 import { cv } from "../../data/cv";
 import { mailPreset } from "../../data/mailPresets";
+import { SITE_ORIGIN } from "../../data/site";
 import { RenderTargetContext, type RenderTarget } from "../../prerender/renderTarget";
 import { blogPaths } from "../../routing/blogPaths";
 import { WINDOW_MAIL } from "../../routing/windows";
@@ -146,7 +147,7 @@ describe("CvPage", () => {
     const lindus = cv.experience.find((role) => role.org === "Lindus Health")!;
     const course = lindus.achievements!.find((a) => a.name === "Spreading the Joy (of React)")!;
     const heading = screen.getByRole("heading", { name: course.name, level: 4 });
-    const facets = heading.parentElement!.querySelector("dl")!;
+    const facets = heading.parentElement!.nextElementSibling!;
     const labels = [...facets.querySelectorAll("dt")].map((dt) => dt.textContent);
 
     // Taking a course has no feature and no difficulty, so those pairs are absent rather than empty.
@@ -203,6 +204,26 @@ describe("CvPage", () => {
       if (url === undefined) expect(link).toBeNull();
       else expect(link).toHaveAttribute("href", url);
     }
+  });
+
+  it("sends an achievement naming a post to that post, and leaves the rest unlinked", () => {
+    renderCv();
+    const links = screen.getAllByRole("link", { name: "read the blog post" });
+    expect(links).toHaveLength(
+      cv.experience.flatMap((r) => r.achievements ?? []).filter((a) => a.postSlug).length,
+    );
+    expect(links[0]).toHaveAttribute(
+      "href",
+      "/blog/posts/how-i-got-our-designers-writing-production-code.html",
+    );
+  });
+
+  it("carries the origin on that link in the copy the PDF is printed from", () => {
+    renderCvAt("static");
+    expect(screen.getAllByRole("link", { name: "read the blog post" })[0]).toHaveAttribute(
+      "href",
+      `${SITE_ORIGIN}/blog/posts/how-i-got-our-designers-writing-production-code.html`,
+    );
   });
 
   it("carries a link named inside an achievement facet offsite", () => {

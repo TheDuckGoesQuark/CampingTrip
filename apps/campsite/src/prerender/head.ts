@@ -1,4 +1,5 @@
-import { type PageMeta, SITE, SITE_ORIGIN } from "../data/blogPages";
+import type { PageMeta } from "../data/blogPages";
+import { SITE, SITE_ORIGIN } from "../data/site";
 
 export const ORIGIN = SITE_ORIGIN;
 export const FEED_PATH = "/feed.xml";

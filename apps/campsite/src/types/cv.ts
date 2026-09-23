@@ -10,6 +10,8 @@ export interface Achievement {
   difficulty?: string;
   /** Markup, not plain text: a course or paper named here carries its own link. */
   approach?: ReactNode;
+  /** A post telling this story at length. The slug, so the CV holds no URL. */
+  postSlug?: string;
 }
 
 /** One job. `highlights` are plain strings so the PDF and the JSON-LD can carry them. */

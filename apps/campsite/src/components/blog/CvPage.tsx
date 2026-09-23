@@ -2,6 +2,7 @@ import { Link, Text } from "@jordanscamp/ds";
 import { Fragment, type ReactNode } from "react";
 
 import { useDocumentId } from "../../prerender/renderTarget";
+import { blogPaths } from "../../routing/blogPaths";
 import type {
   Achievement,
   Commendation,
@@ -18,6 +19,7 @@ import { projectAnchorId, roleAnchorId } from "../../utils/cvAnchors";
 import CvHeader from "./CvHeader";
 import { monthYear } from "./formatDate";
 import { offsiteLinkProps } from "./offsiteLink";
+import SiteLink from "./SiteLink";
 
 import styles from "./blog.module.css";
 
@@ -261,9 +263,16 @@ const FACETS = [
 function AchievementEntry({ achievement }: { achievement: Achievement }) {
   return (
     <div className={styles.cvAchievement}>
-      <Text variant="title-4" as="h4">
-        {achievement.name}
-      </Text>
+      <div className={styles.cvAchievementHead}>
+        <Text variant="title-4" as="h4">
+          {achievement.name}
+        </Text>
+        {achievement.postSlug && (
+          <Text variant="body-sm" as="span">
+            <SiteLink to={blogPaths.post(achievement.postSlug)}>read the blog post</SiteLink>
+          </Text>
+        )}
+      </div>
       <dl className={styles.cvFacets}>
         {FACETS.map(([label, read]) => {
           const value = read(achievement);

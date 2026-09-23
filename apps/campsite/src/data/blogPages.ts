@@ -11,6 +11,7 @@ import { cv } from "./cv";
 import { findDesktopItem } from "./desktopItems";
 import { posts } from "./posts";
 import { projects } from "./projects";
+import { SITE } from "./site";
 import { slugify } from "./slug";
 import { postsTagged } from "./tags";
 
@@ -187,13 +188,6 @@ export type PageMeta = {
   | { kind: "profile"; person: PersonMeta }
 );
 
-export const SITE = "Jordan's Camp";
-
-/**
- * Where the site is served from. Not `location.origin`: a `localhost:5173` in
- * CatNav's address bar would break the illusion.
- */
-export const SITE_ORIGIN = "https://jordanscamp.site";
 const MAX_DESCRIPTION = 160;
 
 function summarise(text: string): string {
