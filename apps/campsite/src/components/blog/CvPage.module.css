@@ -118,7 +118,7 @@
 .cvQuote {
   margin: 0;
   padding-left: var(--space-m);
-  border-left: 2px solid var(--brand-border-strong);
+  border-left: var(--border-frame);
 }
 
 .cvAttribution {

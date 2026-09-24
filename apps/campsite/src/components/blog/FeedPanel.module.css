@@ -1,7 +1,7 @@
 .panelHeader {
   padding: var(--space-s) var(--space-s);
   background: var(--brand-subtle);
-  border-bottom: 2px solid var(--brand-border-strong);
+  border-bottom: var(--border-frame);
   box-shadow: var(--shadow-bevel-out);
 }
 
@@ -27,6 +27,6 @@
 
 .panelFooter {
   padding: var(--space-s);
-  border-top: 2px solid var(--brand-border-strong);
+  border-top: var(--border-frame);
   background: var(--brand-subtle);
 }

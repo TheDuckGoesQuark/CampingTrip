@@ -16,7 +16,7 @@
   width: 100%;
   max-width: 26rem;
   background: var(--brand-surface-raised);
-  border: 2px solid var(--brand-border-strong);
+  border: var(--border-frame);
   box-shadow: var(--shadow-hard-3);
 
   /* Scoped here rather than inherited from `Window`, so the dialog is hard-edged
@@ -35,7 +35,7 @@
 .title {
   padding: var(--space-xs) var(--space-s);
   background: var(--brand-subtle);
-  border-bottom: 2px solid var(--brand-border-strong);
+  border-bottom: var(--border-frame);
   box-shadow: var(--shadow-bevel-out);
 }
 

@@ -189,7 +189,7 @@
 
 /* The bordered "print" the inset well holds. */
 .photo {
-  border: 2px solid var(--brand-border-strong);
+  border: var(--border-frame);
   box-shadow: var(--shadow-hard-2);
   line-height: 0;
   max-width: 100%;
@@ -215,7 +215,7 @@
 /* Matches the image viewer's bordered print, so the two windows read as one OS. */
 .videoFrame {
   width: 100%;
-  border: 2px solid var(--brand-border-strong);
+  border: var(--border-frame);
   box-shadow: var(--shadow-hard-2);
   background: #000;
   aspect-ratio: 16 / 9;

@@ -22,7 +22,7 @@
   overflow: hidden;
   background: var(--brand-surface-raised);
   color: var(--brand-text);
-  border: 2px solid var(--brand-border-strong);
+  border: var(--border-frame);
   border-radius: var(--radius-none);
   box-shadow: var(--shadow-hard-3);
   animation: windowIn 0.12s steps(3, end);
@@ -131,7 +131,7 @@
   padding: 0 var(--space-s);
   flex-shrink: 0;
   background: var(--brand-subtle);
-  border-bottom: 2px solid var(--brand-border-strong);
+  border-bottom: var(--border-frame);
   box-shadow: var(--shadow-bevel-out);
 }
 
@@ -209,7 +209,7 @@ button.light:active {
   flex-shrink: 0;
   overflow-x: auto;
   background: var(--brand-surface-sunken);
-  border-bottom: 2px solid var(--brand-border-strong);
+  border-bottom: var(--border-frame);
 }
 
 .tab {
@@ -345,7 +345,7 @@ button.light:active {
   padding: 0 var(--space-s);
   flex-shrink: 0;
   background: var(--brand-subtle);
-  border-bottom: 2px solid var(--brand-border-strong);
+  border-bottom: var(--border-frame);
 }
 
 .navGroup {
@@ -396,7 +396,7 @@ button.light:active {
   padding: 0 var(--space-s);
   flex-shrink: 0;
   background: var(--brand-subtle);
-  border-bottom: 2px solid var(--brand-border-strong);
+  border-bottom: var(--border-frame);
   font-size: var(--text-body-sm-size);
 }
 
@@ -417,7 +417,7 @@ button.light:active {
   padding: 0 var(--space-s);
   flex-shrink: 0;
   background: var(--brand-subtle);
-  border-top: 2px solid var(--brand-border-strong);
+  border-top: var(--border-frame);
   font-family: var(--font-mono);
   font-size: var(--text-label-size);
   color: var(--brand-text-muted);

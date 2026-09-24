@@ -33,7 +33,7 @@
   gap: var(--space-s);
   padding: var(--space-m) var(--space-l);
   background: var(--brand-subtle);
-  border-bottom: 2px solid var(--brand-border-strong);
+  border-bottom: var(--border-frame);
 }
 
 .templates {
@@ -43,7 +43,7 @@
   gap: var(--space-s);
   padding: var(--space-s) var(--space-l);
   background: var(--brand-surface-sunken);
-  border-bottom: 2px solid var(--brand-border-strong);
+  border-bottom: var(--border-frame);
 }
 
 .templateRow {

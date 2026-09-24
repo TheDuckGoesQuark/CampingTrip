@@ -39,7 +39,7 @@
 .blog-prose blockquote {
   margin: var(--space-l) 0;
   padding: var(--space-m) var(--space-l);
-  border: 2px solid var(--brand-border-strong);
+  border: var(--border-frame);
   background: var(--brand-surface-sunken);
   box-shadow: var(--shadow-hard-1);
 }
@@ -94,7 +94,7 @@
   font-size: var(--text-body-sm-size);
   line-height: var(--text-body-sm-lh);
   background: var(--brand-surface);
-  border: 2px solid var(--brand-border-strong);
+  border: var(--border-frame);
   box-shadow: var(--shadow-hard-1);
 }
 
@@ -116,7 +116,7 @@
 .blog-prose th {
   font-weight: var(--weight-bold);
   background: var(--brand-subtle);
-  border-bottom: 2px solid var(--brand-border-strong);
+  border-bottom: var(--border-frame);
 }
 
 .blog-prose tbody tr:last-child td {
@@ -142,7 +142,7 @@
   display: block;
   width: 100%;
   height: auto;
-  border: 2px solid var(--brand-border-strong);
+  border: var(--border-frame);
   box-shadow: var(--shadow-hard-1);
 }
 

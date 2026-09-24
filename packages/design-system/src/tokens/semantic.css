@@ -29,6 +29,19 @@
   --brand-border-strong: var(--neutral-3);
   --brand-border-subtle: var(--neutral-1);
 
+  /* The edge that says a surface is a framed object: a window, a dialog, a
+     panel, a figure standing off the page. One definition, so the weight and the
+     colour of every fixed frame move together rather than in thirty places.
+
+     `Card` does not take it, and should not: its border weight is a variant axis
+     (`flat` is a hairline), so it sets style, colour and width separately and
+     `floating` happens to land on the same two pixels.
+
+     No copy is needed in the dark block below. A custom property substitutes
+     where it is used, not where it is written, so `--brand-border-strong`
+     resolves against whichever theme the element is in. */
+  --border-frame: 2px solid var(--brand-border-strong);
+
   /* Brand (primary — sea-green) */
   --brand-solid: var(--sage-6);
   --brand-solid-hover: var(--sage-7);

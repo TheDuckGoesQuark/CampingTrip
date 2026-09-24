@@ -28,7 +28,7 @@
 }
 
 .postFooter {
-  border-top: 2px solid var(--brand-border-strong);
+  border-top: var(--border-frame);
   margin-top: var(--space-xl);
   padding-top: 20px;
 }
