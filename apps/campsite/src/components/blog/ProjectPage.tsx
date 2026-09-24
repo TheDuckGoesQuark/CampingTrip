@@ -9,7 +9,8 @@ import "../../styles/blogProse.css";
 import type { Project } from "../../types/project";
 import PhotoBroomPage from "../overlays/PhotoBroomPage";
 
-import styles from "./blog.module.css";
+import shared from "./blog.module.css";
+import styles from "./ProjectPage.module.css";
 
 export interface ProjectPageProps {
   project: Project;
@@ -44,7 +45,7 @@ export default function ProjectPage({ project }: ProjectPageProps) {
           {project.year}
         </Text>
         {project.tags && project.tags.length > 0 && (
-          <ul className={styles.tagList}>
+          <ul className={shared.tagList}>
             {project.tags.map((tag) => (
               <li key={tag}>
                 <Badge>{tag}</Badge>

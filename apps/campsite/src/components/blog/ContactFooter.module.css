@@ -1,0 +1,126 @@
+/* The negative margins cancel the inset the page is given — `Window.Body` and
+   the static reader both publish `--window-page-inset-*` — so the banner
+   reaches the frame's edges whatever measure the page above it reads at. No one
+   measure would do: the homepage's column is whatever the feed leaves it, and
+   the CV's is centred. */
+.contact {
+  margin-top: var(--space-xl);
+  margin-inline: calc(-1 * var(--window-page-inset-inline, 0px));
+  margin-bottom: calc(-1 * var(--window-page-inset-block, 0px));
+  padding: var(--space-l) var(--window-page-inset-inline, var(--space-l));
+  border-top: 2px solid var(--brand-border-strong);
+  background: var(--brand-surface-sunken);
+  box-shadow: var(--shadow-bevel-out);
+  position: relative;
+  /* Three fixed tracks rather than wrapping flex items. Flex decides a wrap on
+     each item's `flex-basis`, never on what the item could live with, so the
+     point where the footer reshapes is a sum over child widths that the queries
+     below would then have to restate as a literal and keep equal by hand. Here
+     the queries move the children between these tracks and none of them has to
+     know how wide a child is. */
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--space-l);
+  /* It reshapes on this footer's width, not the viewport's: the same footer
+     renders on the open page and inside a resizable CatOS window, and neither
+     says anything about the other. Declared here rather than leaning on the
+     window's container, which the open page does not have. */
+  container-type: inline-size;
+  container-name: contact-footer;
+}
+
+/* An element of its own rather than more pseudo-elements on the banner: a CSS
+   animation starts over only when its element does, and remounting is the handle
+   React has on that. `ContactFooter` mounts one per arrival. */
+.contactShimmer {
+  composes: palette sheen sparks play from "./shimmer.module.css";
+
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* Sized by the `img`'s own attributes, so the number lives once in the
+   component and the border sits outside it rather than eating into it. */
+.contactPortrait {
+  box-sizing: content-box;
+  border: 2px solid var(--brand-border-strong);
+  box-shadow: var(--shadow-hard-2);
+  object-fit: cover;
+}
+
+.contactRow {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+}
+
+/* A column at the footer's right edge, not a row across it: the reasons read as
+   a menu standing beside the page rather than as a strip laid over it. */
+.contactRail {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: var(--space-s);
+  align-content: start;
+}
+
+/* The cell stretches its one child, which is how the control gets a width: the
+   design system component takes no `className` to be given one directly. So the
+   column is as wide as its longest reason, and every reason is that wide. */
+.contactRail > li {
+  display: grid;
+}
+
+/* Below this the text column would be no wider than the rail standing beside
+   it, which reads as two menus rather than a heading with a menu. The rail
+   takes a row of its own instead. */
+@container contact-footer (width < 38rem) {
+  .contactRail {
+    grid-column: 1 / -1;
+  }
+
+  /* At this width the reasons are aimed at with a thumb as often as a pointer.
+     The floor sits on the cell, since the control stretches to fill it. */
+  .contactRail > li {
+    min-height: 44px;
+  }
+}
+
+/* No room for the portrait beside the text either, so everything stacks. The
+   portrait centres over the column rather than hanging off one edge. */
+@container contact-footer (width < 27rem) {
+  .contactPortrait {
+    grid-column: 1 / -1;
+    justify-self: center;
+  }
+
+  .contactRow {
+    grid-column: 1 / -1;
+  }
+}
+
+.contactLinks {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.contactLinks li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+/* Ways to reach him, and paper takes no input. */
+@media print {
+  .contact {
+    display: none;
+  }
+}

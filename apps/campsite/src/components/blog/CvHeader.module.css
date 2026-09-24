@@ -1,0 +1,55 @@
+.cvHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+  margin-bottom: var(--space-l);
+}
+
+.cvLinks {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-m);
+}
+
+.cvLinks li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  color: var(--brand-text-muted);
+}
+
+.cvIdentity {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-s) var(--space-m);
+}
+
+.cvActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-m);
+  flex-wrap: wrap;
+}
+
+.cvActions > :last-child {
+  margin-left: auto;
+}
+
+/* The download offers the reader the page they are holding. */
+@media print {
+  .cvActions {
+    display: none;
+  }
+
+  /* The only `nav` on the name's line is the switch between the two CVs, and
+     paper is one of them already. */
+  .cvIdentity nav {
+    display: none;
+  }
+}

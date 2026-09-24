@@ -1,0 +1,58 @@
+.rule {
+  height: 2px;
+  border: 0;
+  background: var(--brand-border-strong);
+  margin: var(--space-l) 0 20px;
+}
+
+/* A measure, not a container width: this is the one screen someone reads. */
+.post {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.postMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-s);
+  margin-bottom: var(--space-s);
+  flex-wrap: wrap;
+}
+
+.postStandfirst {
+  margin: var(--space-s) 0 20px;
+}
+
+.postBody {
+  margin-top: var(--space-l);
+}
+
+.postFooter {
+  border-top: 2px solid var(--brand-border-strong);
+  margin-top: var(--space-xl);
+  padding-top: 20px;
+}
+
+.neighbours {
+  display: flex;
+  gap: var(--space-s);
+}
+
+.neighbour {
+  flex: 1;
+}
+
+.neighbourNewer {
+  flex: 1;
+  text-align: right;
+}
+
+.neighbourTitle {
+  margin-top: var(--space-xs);
+}
+
+.allPosts {
+  margin-top: var(--space-m);
+  display: flex;
+  justify-content: center;
+}

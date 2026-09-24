@@ -1,0 +1,38 @@
+.panel {
+  border: 2px solid var(--brand-border-strong);
+  background: var(--brand-surface-sunken);
+  box-shadow: var(--shadow-hard-2);
+}
+
+.panelHeader {
+  padding: var(--space-s) var(--space-s);
+  background: var(--brand-subtle);
+  border-bottom: 2px solid var(--brand-border-strong);
+  box-shadow: var(--shadow-bevel-out);
+}
+
+.panelRail {
+  padding: var(--space-s);
+  border-bottom: 1px solid var(--brand-border);
+}
+
+.panelList {
+  margin: 0;
+  padding: var(--space-s);
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Separators between entries, not after the last one. */
+.panelList > * + * {
+  padding-top: 14px;
+  border-top: 1px solid var(--brand-border);
+}
+
+.panelFooter {
+  padding: var(--space-s);
+  border-top: 2px solid var(--brand-border-strong);
+  background: var(--brand-subtle);
+}

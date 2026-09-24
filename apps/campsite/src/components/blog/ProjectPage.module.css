@@ -1,0 +1,13 @@
+.projectHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+  margin-bottom: var(--space-m);
+}
+
+.projectActions {
+  display: flex;
+  gap: var(--space-s);
+  margin-top: var(--space-l);
+  flex-wrap: wrap;
+}

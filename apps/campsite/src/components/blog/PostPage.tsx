@@ -9,7 +9,8 @@ import "../../styles/blogProse.css";
 import type { Post } from "../../types/post";
 import { formatDate } from "./formatDate";
 
-import styles from "./blog.module.css";
+import shared from "./blog.module.css";
+import styles from "./PostPage.module.css";
 
 export interface PostPageProps {
   post: Post;
@@ -31,7 +32,7 @@ export default function PostPage({ post }: PostPageProps) {
           <Text variant="label" tone="muted" as="span">
             <time dateTime={post.date}>{formatDate(post.date)}</time>
           </Text>
-          <ul className={styles.tagList}>
+          <ul className={shared.tagList}>
             {post.tags.map((tag) => (
               <li key={tag}>
                 <Tag render={<RouterLink to={blogPaths.tag(tag)} />}>{tag}</Tag>

@@ -5,7 +5,7 @@ import type { Post } from "../../types/post";
 import { PostSummaryCard } from "./PostSummary";
 import TagRail from "./TagRail";
 
-import styles from "./blog.module.css";
+import styles from "./FeedPage.module.css";
 
 export interface FeedPageProps {
   posts: Post[];

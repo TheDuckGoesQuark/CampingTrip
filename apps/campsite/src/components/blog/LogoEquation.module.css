@@ -1,0 +1,21 @@
+/* Margin on the figure itself, not on whatever heading or paragraph happens to
+   sit next to it: the same self-contained spacing `.run-strip` uses in
+   blogProse.css, so this reads correctly wherever a post embeds it. */
+.logoEquationFigure {
+  margin: var(--space-l) 0;
+}
+
+.logoEquation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-m);
+}
+
+.logoEquationOperator {
+  color: var(--brand-text-muted);
+}
+
+.logoEquationCaption {
+  margin-top: var(--space-s);
+}

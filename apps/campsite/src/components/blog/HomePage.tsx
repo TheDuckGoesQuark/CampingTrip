@@ -12,7 +12,8 @@ import { asset } from "../../utils/assetPath";
 import { CONTACT_ID } from "./ContactFooter";
 import FeedPanel from "./FeedPanel";
 
-import styles from "./blog.module.css";
+import shared from "./blog.module.css";
+import styles from "./HomePage.module.css";
 
 const CAT_SOURCE = "https://giphy.com/gifs/jinkx-gato-jinx-YfIqRqgD6HxsPTIwfg";
 
@@ -231,7 +232,7 @@ function WorkRow({ item }: { item: WorkItem }) {
               {item.title}
             </Text>
             {item.tags.length > 0 && (
-              <ul className={`${styles.tagList} ${styles.rowTags}`}>
+              <ul className={shared.rowTags}>
                 {item.tags.map((tag) => (
                   <li key={tag}>
                     <Tag>{tag}</Tag>

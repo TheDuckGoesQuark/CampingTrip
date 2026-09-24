@@ -21,7 +21,8 @@ import { monthYear } from "./formatDate";
 import { offsiteLinkProps } from "./offsiteLink";
 import SiteLink from "./SiteLink";
 
-import styles from "./blog.module.css";
+import shared from "./blog.module.css";
+import styles from "./CvPage.module.css";
 
 export interface CvPageProps {
   cv: Cv;
@@ -137,7 +138,7 @@ function RoleEntry({ role }: { role: Role }) {
   const anchor = useDocumentId(roleAnchorId(role.org));
   return (
     <div className={styles.cvRole} id={anchor}>
-      <div className={styles.cvRoleHead}>
+      <div className={shared.cvRoleHead}>
         <Text variant="title-4" as="h3">
           {role.title}
         </Text>
@@ -159,7 +160,7 @@ function ProjectEntry({ project }: { project: CvProject }) {
   const anchor = useDocumentId(projectAnchorId(project.name));
   return (
     <div className={styles.cvRole} id={anchor}>
-      <div className={styles.cvRoleHead}>
+      <div className={shared.cvRoleHead}>
         <Text variant="title-4" as="h3">
           {project.name}
         </Text>
@@ -183,7 +184,7 @@ function ProjectEntry({ project }: { project: CvProject }) {
 function EducationEntry({ entry }: { entry: Education }) {
   return (
     <div className={styles.cvEducation}>
-      <div className={styles.cvRoleHead}>
+      <div className={shared.cvRoleHead}>
         <Text variant="title-4" as="h3">
           {entry.qualification}
         </Text>
