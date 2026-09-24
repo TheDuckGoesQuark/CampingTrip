@@ -41,10 +41,13 @@ animation the phase already waits on. The reach itself runs 1.4s on a near-linea
 curve, because a rise worth watching should not spend most of its travel in the
 first fifth. Both shorten with the mood.
 
-The box drops on `cubic-bezier(0.55, 0.06, 0.68, 0.53)` and rebounds off its own
-corner before settling. The curve it replaced was still at 40% of its travel at
-90% of its duration, so it had to cover the rest in the last tenth: that jump was
-the jank, and no amount of changing the duration would have removed it.
+The box's drop has to finish inside the phase that owns it. `retreating` ends
+when the paw's withdraw animation does, at `--reach-ms * 0.62`, and the drop was
+starting at exactly that moment: the phase changed, the rule stopped applying and
+the box snapped flat, so the drop never played at all. That snap was what read as
+the box jumping down. It now starts as the paw lets go and lands with 200ms to
+spare, measured rather than reasoned about: a script drives a real browser through
+a full cycle and prints the box's angle every 50ms.
 
 **The phase machine is React's, the clock is the stylesheet's.** `Phase` runs
 `idle → lit → reaching → retreating → idle`, and every phase but `idle` ends when
@@ -66,15 +69,24 @@ being scaled, so it cannot squash. `z-index` steps up early: in the dark under
 the box to begin with, where fur on void is all but invisible, over the box once
 it is in the light.
 
-**A look is a small lift.** The face sits flush with the box's bottom edge and
-behind it, so a flat box hides it completely; peeking shoves the box up and
-rotates it, and the gap that opens is the only reason anything is visible. It
-stays in until the visitor has seen a full cycle, because a face before that
-gives the joke away before anyone has pressed anything. The shove is not
-decoration: rotation alone cannot promise a gap, because the gap at any point is
-the distance from the pivot times the sine of the angle, and in a narrow column
-that distance is small enough to leave nothing to look through. A fixed
-`translateY` puts a floor under it at every width.
+**A look is a small lift, and the lift is a hinge.** The face sits flush with the
+box's bottom edge and behind it, so a flat box hides it completely; peeking
+rotates the box and the gap that opens is the only reason anything is visible.
+Rotation only, about the bottom-left corner: a `translateY` was tried to
+guarantee a gap in narrow columns and had to go, because it lifts the very corner
+the box is supposed to be turning about and the hinge stops reading as a hinge.
+The face moved next to the lifted end instead, where the gap is deepest. It stays
+in until the visitor has seen a full cycle, because a face before that gives the
+joke away before anyone has pressed anything.
+
+**The dark is the wedge the lift opens, not a rectangle behind the box.** Its
+height comes from `padding-bottom`, which resolves against the containing block's
+_width_, so a percentage there is the box's width times the tangent of the lift
+angle: the triangle tracks the box's width for free. A `clip-path` runs its top
+edge from the pivot up to the lifted corner. It is sized for a little more angle
+than the mood asks for, because dark that reaches above the box's own edge is
+hidden behind it, while dark that falls short shows the page. As a rectangle it
+read as a surface standing behind the box rather than as a shadow under it.
 
 **The face is CatMap's cat, in CatMap's colours**, sampled from
 `frontend/apps/mobile/assets/icon.png` in that repo rather than matched by eye:
@@ -82,13 +94,8 @@ a `#333c44` head, a `#fdf8ee` blaze and muzzle, a `#343c47` nose, a `#2a343b`
 chin and `#eda031` eyes over `#1f2a32` pupils. It is one background image,
 because a face this size is paths rather than boxes and inline SVG belongs to the
 design system, with the eyes kept as real elements on top since they are the only
-parts that move.
-
-**Everything under the box is dark, and the dark is the whole box.** Not a strip:
-a strip has a height, and any lift deeper than that height shows the page behind
-it. Covering the box's full footprint means a deeper lift can only ever reveal
-more dark. The paw is hidden outside the reach for the same reason the dark
-exists, which is that a cat having a look is not reaching for anything.
+parts that move. The ears sit above the head rather than behind it: drawn under
+the head shape they showed four pixels of tip and read as a flat cut.
 
 **Mood is derived, not stored.** `presses` is the state; `moodFor` reads
 `calm / annoyed / feral` off it at 3 and 5. The moods shorten the durations,
@@ -129,8 +136,10 @@ machine that latches on its first press and never comes back.
 
 - The post's closing `[DRAFT: …]` beat is still Jordan's to write, and the post
   stays `draft: true` until it is.
-- Under 520px the panel takes the box on its own and the paw reaches a switch
-  that is simply higher up. Checked by rule, not by eye.
+- Under 520px the panel takes the box on its own. Checked by rule, not by eye.
+- The paw's pad waits in the dark at the start of a reach, and its beans are
+  bright enough to read against the void. It scans as the cat being in there, so
+  it stays, but it is a one-line change if it ever looks like a giveaway.
 - Under `prefers-reduced-motion` the held beat is kept at 400ms rather than
   removed, on the grounds that a pause is not motion. A full second before an
   instant jump read as a hang, so it is shortened rather than preserved.

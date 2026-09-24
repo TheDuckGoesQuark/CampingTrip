@@ -27,23 +27,31 @@
      and not on `.box`, which is the paw's sibling and so hands it nothing. */
   --panel-right: 38px;
   --plunger-w: 124px;
-  --arm-w: 34px;
-  --leg-rest: 16px;
-  --leg-out: 108px;
-  --lift-deg: -5deg;
+  --arm-w: 40px;
+  --leg-rest: 34px;
+  --leg-out: 74px;
+  --lift-deg: -3.5deg;
+  --dark-tan: 0.085;
   --settle-ms: 1800ms;
   --lift-ms: 320ms;
+  --drop-ms: 520ms;
   --reach-ms: 1400ms;
-  --pupil-travel: 3px;
+  --pupil-travel: 2px;
   --squint: 0%;
 }
 
 .underneath {
   position: absolute;
-  inset: 0;
+  left: 0;
+  right: 5px;
+  bottom: 0;
+  top: auto;
+  height: 0;
+  padding-bottom: calc(var(--dark-tan) * 100%);
   z-index: 1;
-  border-radius: 4px;
+  border-radius: 0 0 4px 4px;
   background: var(--board-void);
+  clip-path: polygon(0 100%, 100% 0, 100% 100%);
 }
 
 .machine::after {
@@ -58,7 +66,7 @@
 .box {
   position: relative;
   z-index: 3;
-  min-height: 176px;
+  min-height: 150px;
   padding: var(--space-l);
   border: 1px solid var(--board-edge);
   border-radius: 4px;
@@ -85,24 +93,28 @@
 }
 
 .machine[data-mood="annoyed"] {
-  --lift-deg: -7deg;
+  --lift-deg: -5deg;
+  --dark-tan: 0.115;
   --settle-ms: 1000ms;
   --lift-ms: 220ms;
+  --drop-ms: 380ms;
   --reach-ms: 1000ms;
   --squint: 30%;
 }
 
 .machine[data-mood="feral"] {
-  --lift-deg: -10deg;
+  --lift-deg: -7deg;
+  --dark-tan: 0.155;
   --settle-ms: 400ms;
   --lift-ms: 130ms;
+  --drop-ms: 240ms;
   --reach-ms: 620ms;
   --squint: 48%;
   --pupil-travel: 4px;
 }
 
 .machine[data-phase="lit"] .box {
-  animation: cardLift var(--lift-ms) cubic-bezier(0.3, 1.3, 0.6, 1) forwards;
+  animation: cardLift var(--lift-ms) cubic-bezier(0.3, 1.3, 0.6, 1) var(--settle-ms) forwards;
 }
 
 .machine[data-phase="reaching"] .box {
@@ -110,8 +122,8 @@
 }
 
 .machine[data-phase="retreating"] .box {
-  animation: cardDrop var(--lift-ms) cubic-bezier(0.55, 0.06, 0.68, 0.53) backwards;
-  animation-delay: calc(var(--reach-ms) * 0.62);
+  animation: cardDrop var(--drop-ms) cubic-bezier(0.45, 0.02, 0.35, 1) backwards;
+  animation-delay: calc(var(--reach-ms) * 0.12);
 }
 
 @keyframes cardLift {
@@ -127,12 +139,12 @@
 
   /* Lands, rebounds off its own corner, settles. A box this size dropping a few
      degrees does not stop dead. */
-  78% {
+  74% {
     transform: rotate(0deg);
   }
 
-  88% {
-    transform: rotate(calc(var(--lift-deg) * 0.16));
+  86% {
+    transform: rotate(calc(var(--lift-deg) * 0.1));
   }
 
   to {
@@ -165,18 +177,17 @@
 .panel {
   position: absolute;
   right: var(--panel-right);
-  top: 50%;
+  bottom: 30px;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: 26px;
-  transform: translateY(-50%);
 }
 
 .lamp {
   display: flex;
   flex-direction: column-reverse;
   align-items: center;
-  gap: var(--space-xs);
+  gap: 9px;
 }
 
 /* A hole torn in the board with the lamp pushed through it, rather than a dot
@@ -247,7 +258,7 @@
   display: flex;
   flex-direction: column-reverse;
   align-items: center;
-  gap: var(--space-xs);
+  gap: 11px;
   padding: 0;
   border: 0;
   background: none;
@@ -313,7 +324,11 @@
    opens is the only reason the eyes are visible at all. Held here rather than
    in the phase animations, which override it while the machine is working. */
 .machine[data-peeking="true"] .box {
-  transform: translateY(-10px) rotate(-4.6deg);
+  transform: rotate(-6deg);
+}
+
+.machine[data-peeking="true"] {
+  --dark-tan: 0.135;
 }
 
 /* The cat's face is the CatMap icon's, in its own colours: a charcoal head with
@@ -323,12 +338,12 @@
    it, because they are the only parts that move. */
 .lookout {
   position: absolute;
-  right: 150px;
+  right: 24px;
   bottom: 2px;
   z-index: 2;
-  width: 50px;
-  height: 36px;
-  background: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 50 36'><path d='M3 10 L2 -8 L18 2 Z' fill='%23333c44'/><path d='M47 10 L48 -8 L32 2 Z' fill='%23333c44'/><path d='M6 8 L5.5 -3 L14 2.5 Z' fill='%238e7069'/><path d='M44 8 L44.5 -3 L36 2.5 Z' fill='%238e7069'/><rect x='0' y='-6' width='50' height='42' rx='19' fill='%23333c44'/><path d='M25 -4 L29.5 12 Q35.5 15.5 35.5 22.5 Q35.5 31 25 31 Q14.5 31 14.5 22.5 Q14.5 15.5 20.5 12 Z' fill='%23fdf8ee'/><path d='M20.6 17.6 Q25 16.3 29.4 17.6 Q28.9 22.4 25 25 Q21.1 22.4 20.6 17.6 Z' fill='%23343c47'/><ellipse cx='25' cy='30.5' rx='6.2' ry='4.6' fill='%232a343b'/></svg>")
+  width: 44px;
+  height: 40px;
+  background: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 40'><path d='M2.5 21 L7 1.5 L20.5 14 Z' fill='%23333c44'/><path d='M41.5 21 L37 1.5 L23.5 14 Z' fill='%23333c44'/><path d='M7.2 17.5 L9.6 6.4 L16.8 13 Z' fill='%238e7069'/><path d='M36.8 17.5 L34.4 6.4 L27.2 13 Z' fill='%238e7069'/><rect x='1' y='12' width='42' height='31' rx='15' fill='%23333c44'/><path d='M22 13 L25.5 23.5 Q30.5 26.5 30.5 31.5 Q30.5 38.6 22 38.6 Q13.5 38.6 13.5 31.5 Q13.5 26.5 18.5 23.5 Z' fill='%23fdf8ee'/><path d='M18.4 27 Q22 25.9 25.6 27 Q25.2 30.7 22 32.9 Q18.8 30.7 18.4 27 Z' fill='%23343c47'/><ellipse cx='22' cy='36.4' rx='5.2' ry='3.8' fill='%232a343b'/></svg>")
     center / contain no-repeat;
   opacity: 0;
   transition: opacity 180ms ease;
@@ -340,20 +355,20 @@
 
 .eye {
   position: absolute;
-  top: 6px;
-  width: 14px;
-  height: 14px;
+  top: 17px;
+  width: 12px;
+  height: 12px;
   border-radius: var(--radius-full);
   background: #eda031;
   overflow: hidden;
 }
 
 .eye:nth-child(1) {
-  left: 6px;
+  left: 4.5px;
 }
 
 .eye:nth-child(2) {
-  left: 30px;
+  left: 27.5px;
 }
 
 /* Narrowing eyes, not a blink: the lid comes down as the mood does. */
@@ -370,9 +385,9 @@
 .pupil {
   position: absolute;
   inset: 50% auto auto 50%;
-  width: 7px;
-  height: 9px;
-  margin: -4.5px 0 0 -3.5px;
+  width: 6px;
+  height: 8px;
+  margin: -4px 0 0 -3px;
   border-radius: 50%;
   background: #1f2a32;
   transform: translate(
@@ -388,8 +403,8 @@
   position: absolute;
   top: 1px;
   right: 0;
-  width: 3px;
-  height: 3px;
+  width: 2.5px;
+  height: 2.5px;
   border-radius: var(--radius-full);
   background: #fdf8ee;
 }
@@ -402,7 +417,7 @@
 .arm {
   position: absolute;
   right: calc(var(--panel-right) + (var(--plunger-w) - var(--arm-w)) / 2);
-  bottom: 10px;
+  bottom: 2px;
   width: var(--arm-w);
   height: var(--leg-rest);
   z-index: 1;
@@ -460,15 +475,16 @@
   }
 }
 
-/* The leg tapers into the paw and the paw keeps its own size at the top, so a
-   longer reach never stretches the foot. */
+/* The leg tapers into the paw, and the paw keeps its own size at the top so a
+   longer reach never stretches the foot. Drawn as one image for the same reason
+   the face is: four toes, four beans and a main pad are paths, not boxes. */
 .foreleg {
   position: absolute;
   left: 50%;
-  top: 18px;
+  top: 20px;
   bottom: 0;
-  width: 17px;
-  margin-left: -8.5px;
+  width: 19px;
+  margin-left: -9.5px;
   border-radius: 9px 9px 7px 7px;
   background: currentcolor;
 }
@@ -478,64 +494,16 @@
   left: 0;
   top: 0;
   width: var(--arm-w);
-  height: 26px;
-  border-radius: 50% 50% 44% 44% / 62% 62% 38% 38%;
-  background: currentcolor;
+  height: 34px;
+  background: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 34'><path d='M4 17 Q4 32.5 20 32.5 Q36 32.5 36 17 Q36 10.5 30 11.6 Q20 8.4 10 11.6 Q4 10.5 4 17 Z' fill='%23333c44'/><ellipse cx='6.6' cy='13.6' rx='5.2' ry='6.4' fill='%23333c44'/><ellipse cx='15.4' cy='8.4' rx='5.4' ry='6.9' fill='%23333c44'/><ellipse cx='24.6' cy='8.4' rx='5.4' ry='6.9' fill='%23333c44'/><ellipse cx='33.4' cy='13.6' rx='5.2' ry='6.4' fill='%23333c44'/><ellipse cx='6.6' cy='14.6' rx='2.9' ry='3.7' fill='%23d98f95'/><ellipse cx='15.4' cy='9.4' rx='3.1' ry='4' fill='%23d98f95'/><ellipse cx='24.6' cy='9.4' rx='3.1' ry='4' fill='%23d98f95'/><ellipse cx='33.4' cy='14.6' rx='2.9' ry='3.7' fill='%23d98f95'/><path d='M20 16.6 Q28.2 17.2 29.6 23.4 Q30.6 29.8 20 29.8 Q9.4 29.8 10.4 23.4 Q11.8 17.2 20 16.6 Z' fill='%23d98f95'/></svg>")
+    center / contain no-repeat;
 }
 
-/* The big bean, which is what tells a paw from a mitten. */
-.pad::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  bottom: 4px;
-  width: 15px;
-  height: 11px;
-  margin-left: -7.5px;
-  border-radius: 50% 50% 46% 46% / 58% 58% 42% 42%;
-  background: var(--cat-bean);
-}
-
+/* Claws, out only when the cat has stopped being polite. */
 .toe {
   position: absolute;
-  top: -5px;
-  width: 10px;
-  height: 11px;
-  border-radius: var(--radius-full);
-  background: currentcolor;
-}
-
-.toe:nth-child(1) {
-  left: 0;
-  top: -2px;
-}
-
-.toe:nth-child(2) {
-  left: 8px;
-}
-
-.toe:nth-child(3) {
-  left: 16px;
-}
-
-.toe:nth-child(4) {
-  left: 24px;
-  top: -2px;
-}
-
-/* Beans, and the claws that come out of them when the cat stops being polite. */
-.toe::before {
-  content: "";
-  position: absolute;
-  inset: 2px 2px 3px;
-  border-radius: var(--radius-full);
-  background: var(--cat-bean);
-}
-
-.toe::after {
-  content: "";
-  position: absolute;
-  inset: -8px 3px auto 3px;
+  top: -6px;
+  width: 7px;
   height: 8px;
   background: var(--neutral-1);
   clip-path: polygon(50% 0, 100% 100%, 0 100%);
@@ -543,8 +511,26 @@
   transition: opacity 120ms ease;
 }
 
-.machine[data-mood="feral"] .toe::after {
+.machine[data-mood="feral"] .toe {
   opacity: 1;
+}
+
+.toe:nth-child(1) {
+  left: 3px;
+}
+
+.toe:nth-child(2) {
+  left: 12px;
+  top: -9px;
+}
+
+.toe:nth-child(3) {
+  left: 21px;
+  top: -9px;
+}
+
+.toe:nth-child(4) {
+  left: 30px;
 }
 
 .announcement {
@@ -561,12 +547,6 @@
 /* The panel cannot sit beside the stencil at this width, so it takes the box on
    its own and the paw reaches a switch that is simply higher up. */
 @media (max-width: 520px) {
-  .machine {
-    --leg-out: 118px;
-    --turn-out: -70deg;
-    --shoulder-in: 124px;
-  }
-
   .box {
     min-height: 0;
   }
@@ -605,11 +585,8 @@
        a full second of nothing before an instant jump reads as a hang. */
     --settle-ms: 400ms;
     --lift-ms: 1ms;
+    --drop-ms: 1ms;
     --reach-ms: 1ms;
-  }
-
-  .machine {
-    --settle-ms: 1ms;
   }
 
   .machine[data-phase="retreating"] .box {
@@ -619,7 +596,7 @@
   .eye,
   .eye::after,
   .pupil,
-  .toe::after,
+  .toe,
   .led {
     transition-duration: 1ms;
   }
