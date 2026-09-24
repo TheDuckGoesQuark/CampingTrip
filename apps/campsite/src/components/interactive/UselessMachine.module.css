@@ -30,8 +30,8 @@
   --plunger-w: 124px;
   --cap-size: 58px;
   --arm-w: 40px;
-  --arm-bottom: 2px;
   --leg-rest: 34px;
+  --arm-bottom: calc(2px - var(--leg-rest));
 
   /* The reach is the cap's centre above the box's bottom edge, less where the
      paw's own base sits: a relationship, so moving the panel moves the target. */
@@ -437,6 +437,20 @@
 .machine[data-phase="retreating"] .armRig {
   z-index: 5;
   transform: rotate(var(--lift-deg));
+}
+
+.machine[data-phase="retreating"] .armRig {
+  animation: rigSink var(--withdraw-ms) step-end forwards;
+}
+
+@keyframes rigSink {
+  from {
+    z-index: 5;
+  }
+
+  to {
+    z-index: 1;
+  }
 }
 
 /* Centred under the plunger by construction, so the paw and the thing it is

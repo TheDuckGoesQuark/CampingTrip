@@ -74,6 +74,15 @@ paw's base sits, so moving the panel moves the target. The paw is centred under
 the plunger by construction. A measured `--aim-left: 6px` lived for one commit
 and was exactly the kind of fudge this replaces: right at one width and one mood.
 
+The paw rests below the box's edge by its own height, so a reach begins in the
+dark and comes up out of it, and the frame it works in drops back under the box
+on the withdraw's last frame, before the box comes down. Both were wrong for one
+commit: rest sat two pixels above the edge, which is on the cardboard, so the paw
+appeared there rather than from anywhere, and the frame stayed on top through
+the drop, so the paw was drawn over the box as the box landed. A single contact
+frame does not show either; a frame-by-frame of the live cycle showed both at
+once, and is now how the cycle is checked.
+
 The paw stands on the floor and emerges from the box's lifted edge, and the
 markup says so. Its frame takes the box's angle, because where it comes out is
 the edge and the edge rides up with the lift, by the same amount the switch on
