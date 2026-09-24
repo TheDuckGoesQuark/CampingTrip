@@ -20,6 +20,11 @@ describe("Code", () => {
     expect(lines).toEqual(SNIPPET.split("\n"));
   });
 
+  it("puts no line number in the text, so a selection copies the code alone", () => {
+    const { container } = render(<Code code={SNIPPET} />);
+    expect(container.textContent).not.toMatch(/\d/);
+  });
+
   it("tokenises tsx into the types the stylesheet paints", () => {
     const { container } = render(<Code code={SNIPPET} />);
     expect(classesOf(container, "// a note")).toContain("comment");

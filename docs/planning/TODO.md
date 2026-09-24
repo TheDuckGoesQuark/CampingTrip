@@ -124,6 +124,32 @@ the YouTube iframe API (`postMessage` `setVolume`, which also needs the player
 to be ready before the first call) and put it on the same level as everything
 else, or stop the status line claiming a number it does not set.
 
+### Repo: drop PhotoBroom
+
+Dead code we no longer want here. `apps/photobroom` (2.0M) and
+`extensions/photobroom` (332K) are 26 tracked files between them, plus three
+root scripts (`dev:photobroom`, `build:photobroom`, `test:photobroom`).
+
+**The decision to make first**: the campsite has a project page _about_
+PhotoBroom, `components/overlays/PhotoBroomPage.tsx`, reached from
+`data/projects.tsx` and asserted by `blogPages.test.ts`,
+`OverlayRoutes.test.tsx` and `blogPaths.test.ts`, with screenshots under
+`public/images/screenshots`. That is portfolio content, not app source: retiring
+the extension does not oblige the site to stop saying it was built. Whether the
+page stays is a separate call from whether the code does.
+
+Named in config besides: `.oxlintrc.json`, `.oxfmtrc.json`, `cspell.json`,
+`project-words.txt`, `scripts/ds-guard/config.json` and its `baseline.json`.
+Named in prose: `README.md`, `CLAUDE.md`, `docs/architecture.md` and the
+`run-locally` skill, which devotes its opening paragraph to why PhotoBroom has
+no dev server. The CI workflows say nothing about it: they run `pnpm -r`, so
+they need no edit.
+
+**The knock-on worth expecting**: ds-guard reports design-system reach as a
+ratio over consumer files. Removing an app that never used the design system
+moves that ratio, so the baseline wants regenerating in the same change and the
+new number is not a regression.
+
 ### Blog: the highlighter loads on the landing page
 
 Nothing splits the blog out of the entry chunk: only `TentScene` has its own
