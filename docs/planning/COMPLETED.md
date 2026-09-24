@@ -41,6 +41,11 @@ animation the phase already waits on. The reach itself runs 1.4s on a near-linea
 curve, because a rise worth watching should not spend most of its travel in the
 first fifth. Both shorten with the mood.
 
+The box drops on `cubic-bezier(0.55, 0.06, 0.68, 0.53)` and rebounds off its own
+corner before settling. The curve it replaced was still at 40% of its travel at
+90% of its duration, so it had to cover the rest in the last tenth: that jump was
+the jank, and no amount of changing the duration would have removed it.
+
 **The phase machine is React's, the clock is the stylesheet's.** `Phase` runs
 `idle → lit → reaching → retreating → idle`, and every phase but `idle` ends when
 a CSS animation reaches its last frame and fires `onAnimationEnd`. No
@@ -61,11 +66,29 @@ being scaled, so it cannot squash. `z-index` steps up early: in the dark under
 the box to begin with, where fur on void is all but invisible, over the box once
 it is in the light.
 
-**A look is a small lift.** The eyes sit flush with the box's bottom edge and
-behind it, so a flat box hides them completely; peeking rotates the box a couple
-of degrees and the gap that opens is the only reason they are visible. They stay
-in until the visitor has seen a full cycle, because eyes before that give the
-joke away before anyone has pressed anything.
+**A look is a small lift.** The face sits flush with the box's bottom edge and
+behind it, so a flat box hides it completely; peeking shoves the box up and
+rotates it, and the gap that opens is the only reason anything is visible. It
+stays in until the visitor has seen a full cycle, because a face before that
+gives the joke away before anyone has pressed anything. The shove is not
+decoration: rotation alone cannot promise a gap, because the gap at any point is
+the distance from the pivot times the sine of the angle, and in a narrow column
+that distance is small enough to leave nothing to look through. A fixed
+`translateY` puts a floor under it at every width.
+
+**The face is CatMap's cat, in CatMap's colours**, sampled from
+`frontend/apps/mobile/assets/icon.png` in that repo rather than matched by eye:
+a `#333c44` head, a `#fdf8ee` blaze and muzzle, a `#343c47` nose, a `#2a343b`
+chin and `#eda031` eyes over `#1f2a32` pupils. It is one background image,
+because a face this size is paths rather than boxes and inline SVG belongs to the
+design system, with the eyes kept as real elements on top since they are the only
+parts that move.
+
+**Everything under the box is dark, and the dark is the whole box.** Not a strip:
+a strip has a height, and any lift deeper than that height shows the page behind
+it. Covering the box's full footprint means a deeper lift can only ever reveal
+more dark. The paw is hidden outside the reach for the same reason the dark
+exists, which is that a cat having a look is not reaching for anything.
 
 **Mood is derived, not stored.** `presses` is the state; `moodFor` reads
 `calm / annoyed / feral` off it at 3 and 5. The moods shorten the durations,
