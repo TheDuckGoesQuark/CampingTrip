@@ -343,6 +343,35 @@ only hide it.
   wide enough to hold both, so the open question is whether they read better
   split across two homepage sections.
 
+### Blog: the useless machine has no repeat visual check
+
+The paw's arc was tuned against a contact sheet: a throwaway Playwright script
+that inlines the component's real stylesheet, renders the markup nine times, and
+seeks each copy to a different point with `animation-play-state: paused` plus a
+negative `animation-delay`. It found two things no test could: the custom
+properties were scoped to a sibling of the paw so it never moved at all, and the
+first arc translated the whole limb so it detached from the box halfway out.
+
+That script lives in a scratch directory and is gone with the session. Nothing in
+the repo can see an animation, and `packages/design-system` cannot either, since
+Vitest runs with CSS disabled. Worth deciding whether a frame-sheet script earns
+a place in `scripts/`, or whether animation stays a thing only a human checks.
+
+### Repo: `ds/no-inline-icon` cannot tell an icon from an illustration
+
+The rule reports every `<svg>` in app code, but its message argues about icons:
+DS sizing, colour tokens, the `aria-hidden` default. Those are reasons an icon
+belongs in the design system, and they say nothing about a one-off illustration
+whose parts animate independently. The useless machine's paw took the long way
+round it (rounded boxes and a `clip-path`), and `shimmer.module.css` takes the
+other one (SVG as a `data:` URI in CSS), so the rule is currently routed around
+twice rather than obeyed.
+
+Two consumers is not yet a pattern, so this is worth watching rather than
+fixing. If a third arrives, the question is whether the rule should exempt an
+`<svg>` that carries no `role="img"` and no title, or whether the DS should
+export an `Illustration` escape hatch that owns them.
+
 ### Design system — boxy pass on in-window content
 
 - Give `Button` a bevelled face for in-window use. The window frame squares its

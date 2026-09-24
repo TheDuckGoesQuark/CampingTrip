@@ -6,6 +6,178 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## The blog's island is a useless machine
+
+**Date**: 2026-09-24
+
+**What was done**:
+
+`Counter` is gone. The island in "What vibe coding actually changed" is now
+`UselessMachine`: the card is a cardboard box, and a cat under it lifts the box
+and swats the switch back off. The post argued that a cheap idea is worth trying,
+and a button that counted was not making that argument.
+
+**The card is the box.** It is not a card containing a drawing of a box: the
+island itself is kraft board with a tape seam and a `THIS WAY UP` stencil it
+keeps disproving. It pivots on its bottom-left corner, so what lifts is the thing
+the visitor is reading, and what the lift opens is solid black: the only thing
+ever visible in the gap is a pair of eyes, which is also why none of the
+mechanism underneath has to bear looking at.
+
+**The controls are physical.** A green lamp pushed through a hole torn in the
+board, and a big red plunger beside it with its own cap, skirt and travel. The
+plunger is a real `<button>`, so keyboard behaviour and ARIA state belong to the
+element, but it is not the DS `Button`: there is exactly one of these and the
+design system should not grow a red variant to serve a joke. The cost is real
+and is paid in the stylesheet, which now owns this control's hover, active and
+focus indicator. Measured rather than eyeballed: white on the cap is 6.4:1, and
+the board ink had to flip with the theme, because the dark ink that reads 5.8:1
+on light kraft only manages 2.7:1 on the dark board.
+
+**Pressing it buys a pause, not a reaction.** The lift carries an
+`animation-delay` of 1.8s, so the lamp goes green and then nothing happens at all
+before the box stirs. It costs no timer and no phase: the delay is part of the
+animation the phase already waits on. The reach itself runs 1.4s on a near-linear
+curve, because a rise worth watching should not spend most of its travel in the
+first fifth. Both shorten with the mood.
+
+The box's drop has to finish inside the phase that owns it. `retreating` ends
+when the paw's withdraw animation does, at `--reach-ms * 0.62`, and the drop was
+starting at exactly that moment: the phase changed, the rule stopped applying and
+the box snapped flat, so the drop never played at all. That snap was what read as
+the box jumping down. It now waits out the whole withdraw and then lands, measured rather than
+reasoned about: a script drives a real browser through a full cycle and prints
+the box's angle and the leg's height every 50ms, which is how the ordering was
+confirmed rather than assumed.
+
+**The phase machine is React's, the clock is the stylesheet's.** `Phase` runs
+`idle → lit → reaching → retreating → idle`, and every phase but `idle` ends when
+a CSS animation reaches its last frame and fires `onAnimationEnd`. No
+`setTimeout` anywhere, so a duration retuned in the stylesheet needs no matching
+edit in the component. The moment of contact is the end of the reach rather than
+a point inside it, which is what lets the lamp go out exactly when the paw lands.
+
+Which element ends which phase is load-bearing rather than incidental. The box
+ends both `lit` and `retreating`; the paw ends only `reaching`. The paw has to be
+back under the box before the box comes down on it, so the drop is last, and a
+phase that ended on the paw's own withdraw could never have waited for it. Each
+handler guards on the phase it expects, which is what makes it safe to hang two
+of them on two elements: the paw's withdraw ending mid-`retreating` is simply
+ignored.
+
+**The layout is a set of named physical relationships, not measured offsets.**
+One angle, `--lift-deg`, is the lift; the wedge of dark under the box is
+`tan()` of it, the paw's frame turns by it, and a mood that lifts more never has
+to be told to darken more. The reach is `panel-bottom + cap/2 - arm-bottom`,
+which is where the cap's centre sits above the box's bottom edge less where the
+paw's base sits, so moving the panel moves the target. The paw is centred under
+the plunger by construction. A measured `--aim-left: 6px` lived for one commit
+and was exactly the kind of fudge this replaces: right at one width and one mood.
+
+The paw rests below the box's edge by its own height, so a reach begins in the
+dark and comes up out of it, and the frame it works in drops back under the box
+on the withdraw's last frame, before the box comes down. Both were wrong for one
+commit: rest sat two pixels above the edge, which is on the cardboard, so the paw
+appeared there rather than from anywhere, and the frame stayed on top through
+the drop, so the paw was drawn over the box as the box landed. A single contact
+frame does not show either; a frame-by-frame of the live cycle showed both at
+once, and is now how the cycle is checked.
+
+The paw stands on the floor and emerges from the box's lifted edge, and the
+markup says so. Its frame takes the box's angle, because where it comes out is
+the edge and the edge rides up with the lift, by the same amount the switch on
+the box does. The paw itself is counter-rotated inside that frame, because the
+cat is standing on the floor and a leg is vertical. Measured: box at -3.5°, frame
+at -3.5°, leg at +3.5° within it, leg at 0° on the page, toes within a pixel of
+the cap's centre. A rotating limb was what read as
+clunky, and going vertical also means the reach depends only on the box's fixed
+height rather than on its fluid width, which is why the landing point no longer
+needs tuning per breakpoint. The pad keeps its own size at the top rather than
+being scaled, so it cannot squash. `z-index` steps up early: in the dark under
+the box to begin with, where fur on void is all but invisible, over the box once
+it is in the light.
+
+**A look is a small lift, and the lift is a hinge.** The face sits flush with the
+box's bottom edge and behind it, so a flat box hides it completely; peeking
+rotates the box and the gap that opens is the only reason anything is visible.
+Rotation only, about the bottom-left corner: a `translateY` was tried to
+guarantee a gap in narrow columns and had to go, because it lifts the very corner
+the box is supposed to be turning about and the hinge stops reading as a hinge.
+The face moved next to the lifted end instead, where the gap is deepest. It stays
+in until the visitor has seen a full cycle, because a face before that gives the
+joke away before anyone has pressed anything.
+
+**The dark is the wedge the lift opens, not a rectangle behind the box.** Its
+height comes from `padding-bottom`, which resolves against the containing block's
+_width_, so a percentage there is the box's width times the tangent of the lift
+angle: the triangle tracks the box's width for free. A `clip-path` runs its top
+edge from the pivot up to the lifted corner. It is sized for a little more angle
+than the mood asks for, because dark that reaches above the box's own edge is
+hidden behind it, while dark that falls short shows the page. As a rectangle it
+read as a surface standing behind the box rather than as a shadow under it.
+
+**The face is CatMap's cat, in CatMap's colours**, sampled from
+`frontend/apps/mobile/assets/icon.png` in that repo rather than matched by eye:
+a `#333c44` head, a `#fdf8ee` blaze and muzzle, a `#343c47` nose, a `#2a343b`
+chin and `#eda031` eyes over `#1f2a32` pupils. It is one background image,
+because a face this size is paths rather than boxes and inline SVG belongs to the
+design system, with the eyes kept as real elements on top since they are the only
+parts that move. The ears sit above the head rather than behind it: drawn under
+the head shape they showed four pixels of tip and read as a flat cut.
+
+**Mood is derived, not stored.** `presses` is the state; `moodFor` reads
+`calm / annoyed / feral` off it at 3 and 5. The moods shorten the durations,
+raise the lift, narrow the eyes and put the claws out.
+
+**Reduced motion shortens, it does not remove.** The motion is the content here,
+so stripping it would leave a button that does nothing. `prefers-reduced-motion`
+sets the durations to `1ms`. Not `none`, and not `0s` on an `animation`: the
+phases advance on `animationend`, so an animation removed under that query is a
+machine that latches on its first press and never comes back.
+
+**Three things the work turned up:**
+
+- **jsdom has `TransitionEvent` but not `AnimationEvent`.** React reads
+  `'AnimationEvent' in window` once at import to choose between `animationend`
+  and `webkitAnimationEnd`, so without the constructor every `onAnimationEnd` in
+  the app is wired to an event nothing dispatches, and a test that fires one
+  passes vacuously against a handler that never ran. `src/test/setup.ts` now
+  defines it, beside the `matchMedia` and `ResizeObserver` shims. Nothing else
+  in the workspace used animation events, so this fixed a latent gap rather than
+  unmasking a live bug.
+- **`ds/no-inline-icon` bans every `<svg>` in app code,** though its message is
+  about icons: sizing, colour tokens, `aria-hidden`. The paw is an illustration
+  whose claws animate separately from its toes, and `ICON_NAMES` is the wrong
+  home for that. Rather than take an exemption, the paw is rounded boxes and a
+  `clip-path` triangle, which keeps every visual in the stylesheet.
+- **`ds-guard` caught the box being called a card.** A local `.card` class reads
+  as a local retelling of the DS `Card`, which this is not, so the class is
+  `.box`. The guard was right for a reason its message does not give: the name
+  was also just wrong.
+- **`ds/no-bespoke-control` only fires on a DOM element carrying a control
+  `role`,** not on a native `<button>`, which is the right line: the rule exists
+  because a `role` is a promise about keyboard behaviour and focus that the
+  element does not keep, and a real button keeps it. That is what makes the
+  plunger legitimate rather than a dodge.
+
+**Deferred**:
+
+- The post's closing `[DRAFT: …]` beat is still Jordan's to write, and the post
+  stays `draft: true` until it is.
+- Under 520px the panel takes the box on its own. Checked by rule, not by eye.
+- The contact sheet's markup was hand-written beside the component's rather than
+  derived from it, and drifted: it grew a fourth toe the component never had, so
+  a claw that was missing in the app was present in every frame I checked. The
+  measurement scripts drive the real page and do not have this failure mode.
+- The paw's pad waits in the dark at the start of a reach, and its beans are
+  bright enough to read against the void. It scans as the cat being in there, so
+  it stays, but it is a one-line change if it ever looks like a giveaway.
+- Under `prefers-reduced-motion` the held beat is kept at 400ms rather than
+  removed, on the grounds that a pause is not motion. A full second before an
+  instant jump read as a hang, so it is shortened rather than preserved.
+
+---
+
 ## The design system catches up with the app
 
 **Date**: 2026-09-24

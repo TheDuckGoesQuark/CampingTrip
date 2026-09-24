@@ -1,0 +1,637 @@
+/* The island card is itself the box. It pivots on its bottom-left corner, so
+   the cat under it is lifting the very thing the visitor is reading. Named `box`
+   rather than `card` because it is not the design system's `Card` and should not
+   read as a local retelling of one. */
+.machine {
+  position: relative;
+  margin: var(--space-l) 0;
+
+  /* Kraft board and cat. Not brand tokens: nothing in the palette is cardboard,
+     and a box tinted sage would read as a prop rather than as a box. */
+  --board-face: #c68f55;
+  --board-lit: #ddb47c;
+  --board-edge: #96683a;
+  --board-ink: #2e1d0c;
+  --board-ink-soft: rgb(46 29 12 / 52%);
+  --board-void: #2a1d12;
+  --board-tape: rgb(242 234 216 / 42%);
+  --plunger-cap: #b32c23;
+  --plunger-rim: #7d1a14;
+  --plunger-skirt: #d8d2c4;
+  --cat-fur: #3d3a38;
+  --cat-bean: #d98f95;
+
+  /* The paw rises straight up out of the dark and nothing rotates: a turning
+     limb was what read as clunky, and a vertical one also makes the reach depend
+     only on the box's fixed height rather than on its fluid width. Defined here
+     and not on `.box`, which is the paw's sibling and so hands it nothing. */
+  --panel-right: 38px;
+  --panel-bottom: 30px;
+  --plunger-w: 124px;
+  --cap-size: 58px;
+  --arm-w: 40px;
+  --leg-rest: 34px;
+  --arm-bottom: calc(2px - var(--leg-rest));
+
+  /* The reach is the cap's centre above the box's bottom edge, less where the
+     paw's own base sits: a relationship, so moving the panel moves the target. */
+  --leg-out: calc(var(--panel-bottom) + var(--cap-size) / 2 - var(--arm-bottom));
+
+  /* The lift is the one angle; the wedge of dark and the paw's frame both follow
+     it, so a mood that lifts more never has to be told to darken more. */
+  --lift-deg: -3.5deg;
+  --settle-ms: 1800ms;
+  --lift-ms: 320ms;
+  --drop-ms: 520ms;
+  --withdraw-ms: 620ms;
+  --reach-ms: 1400ms;
+  --pupil-travel: 2px;
+  --squint: 0%;
+}
+
+.underneath {
+  position: absolute;
+  left: 0;
+  right: 5px;
+  bottom: 0;
+  top: auto;
+  height: 0;
+  padding-bottom: calc(-1.15 * tan(var(--lift-deg)) * 100%);
+  z-index: 1;
+  border-radius: 0 0 4px 4px;
+  background: var(--board-void);
+  clip-path: polygon(0 100%, 100% 0, 100% 100%);
+}
+
+.machine::after {
+  content: "";
+  position: absolute;
+  inset: auto 10px -5px 10px;
+  height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgb(44 30 16 / 30%), transparent 72%);
+}
+
+.box {
+  position: relative;
+  z-index: 3;
+  min-height: 150px;
+  padding: var(--space-l);
+  border: 1px solid var(--board-edge);
+  border-radius: 4px;
+  background:
+    repeating-linear-gradient(91deg, rgb(154 111 63 / 7%) 0 1px, transparent 1px 6px),
+    linear-gradient(176deg, var(--board-lit), var(--board-face) 42%, var(--board-edge));
+  box-shadow: var(--shadow-hard-1);
+  transform-origin: left bottom;
+  transition: transform 420ms cubic-bezier(0.32, 1.1, 0.5, 1);
+}
+
+:global([data-theme="dark"]) .machine {
+  --board-face: #8a6238;
+  --board-lit: #a3784c;
+  --board-edge: #684728;
+  --board-ink: #f6efe2;
+  --board-ink-soft: rgb(246 239 226 / 46%);
+  --board-void: #150f09;
+  --board-tape: rgb(206 196 176 / 26%);
+  --plunger-cap: #b32c23;
+  --plunger-rim: #6d1510;
+  --plunger-skirt: #9c968a;
+  --cat-fur: #2b2928;
+}
+
+.machine[data-mood="annoyed"] {
+  --lift-deg: -5deg;
+  --settle-ms: 1000ms;
+  --lift-ms: 220ms;
+  --drop-ms: 380ms;
+  --withdraw-ms: 440ms;
+  --reach-ms: 1000ms;
+  --squint: 30%;
+}
+
+.machine[data-mood="feral"] {
+  --lift-deg: -7deg;
+  --settle-ms: 400ms;
+  --lift-ms: 130ms;
+  --drop-ms: 240ms;
+  --withdraw-ms: 280ms;
+  --reach-ms: 620ms;
+  --squint: 48%;
+  --pupil-travel: 4px;
+}
+
+.machine[data-phase="lit"] .box {
+  animation: cardLift var(--lift-ms) cubic-bezier(0.3, 1.3, 0.6, 1) var(--settle-ms) forwards;
+}
+
+.machine[data-phase="reaching"] .box {
+  transform: rotate(var(--lift-deg));
+}
+
+.machine[data-phase="retreating"] .box {
+  animation: cardDrop var(--drop-ms) cubic-bezier(0.45, 0.02, 0.35, 1) backwards;
+  animation-delay: var(--withdraw-ms);
+}
+
+@keyframes cardLift {
+  to {
+    transform: rotate(var(--lift-deg));
+  }
+}
+
+@keyframes cardDrop {
+  from {
+    transform: rotate(var(--lift-deg));
+  }
+
+  /* Lands, rebounds off its own corner, settles. A box this size dropping a few
+     degrees does not stop dead. */
+  74% {
+    transform: rotate(0deg);
+  }
+
+  86% {
+    transform: rotate(calc(var(--lift-deg) * 0.1));
+  }
+
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+/* Packing tape down the seam, and the stencil the cat keeps disproving. */
+.tape {
+  position: absolute;
+  inset: 0 auto 0 22%;
+  width: 34px;
+  background: var(--board-tape);
+  border-left: 1px solid rgb(255 255 255 / 18%);
+  border-right: 1px solid rgb(255 255 255 / 18%);
+}
+
+.stencil {
+  position: absolute;
+  left: var(--space-l);
+  bottom: var(--space-l);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--board-ink);
+}
+
+.panel {
+  position: absolute;
+  right: var(--panel-right);
+  bottom: var(--panel-bottom);
+  display: flex;
+  align-items: flex-end;
+  gap: 26px;
+}
+
+.lamp {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 9px;
+}
+
+/* A hole torn in the board with the lamp pushed through it, rather than a dot
+   drawn on the surface. The ragged edge is the tell that it was made from the
+   inside. */
+.port {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  background: var(--board-void);
+  clip-path: polygon(
+    95% 50%,
+    91% 65%,
+    86% 81%,
+    72% 88%,
+    58% 96%,
+    42% 95%,
+    28% 88%,
+    14% 80%,
+    9% 65%,
+    4% 50%,
+    9% 35%,
+    17% 22%,
+    27% 10%,
+    42% 2%,
+    58% 7%,
+    72% 11%,
+    86% 20%,
+    97% 33%
+  );
+}
+
+.led {
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-full);
+  border: 1px solid rgb(10 8 4 / 55%);
+  background: radial-gradient(circle at 36% 32%, #6f6a5e, #3c3830 70%);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 55%);
+  transition:
+    background 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.machine[data-phase="lit"] .led,
+.machine[data-phase="reaching"] .led {
+  background: radial-gradient(circle at 36% 32%, #b6e59a, var(--sage-5) 68%);
+  box-shadow:
+    0 0 0 4px rgb(122 171 104 / 34%),
+    0 0 14px 3px rgb(122 171 104 / 55%);
+}
+
+.state {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--board-ink);
+}
+
+/* A real <button>, so keyboard behaviour and ARIA state are the element's own.
+   Its look is a physical cap rather than the DS control, because there is one of
+   these and the design system should not grow a variant for a joke. */
+.plunger {
+  width: var(--plunger-w);
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 11px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--board-ink);
+}
+
+.cap {
+  width: var(--cap-size);
+  height: var(--cap-size);
+  border-radius: var(--radius-full);
+  background:
+    radial-gradient(circle at 38% 30%, rgb(255 255 255 / 45%), transparent 46%),
+    radial-gradient(circle at 50% 46%, var(--plunger-cap), var(--plunger-rim) 78%);
+  box-shadow:
+    0 0 0 5px var(--plunger-skirt),
+    0 0 0 6px rgb(20 12 6 / 45%),
+    0 5px 0 0 var(--plunger-rim),
+    0 7px 8px rgb(20 12 6 / 45%);
+  transition:
+    transform 90ms ease,
+    box-shadow 90ms ease;
+}
+
+.plunger:hover .cap {
+  transform: translateY(1px);
+}
+
+/* The travel is the whole point of a plunger: it has to go down when hit, by a
+   finger or by a paw. */
+.plunger:active .cap,
+.machine[data-phase="retreating"] .cap {
+  transform: translateY(4px);
+  box-shadow:
+    0 0 0 5px var(--plunger-skirt),
+    0 0 0 6px rgb(20 12 6 / 45%),
+    0 1px 0 0 var(--plunger-rim),
+    0 2px 4px rgb(20 12 6 / 45%);
+}
+
+/* Leaving the DS control means owning its focus indicator too. */
+.plunger:focus-visible {
+  outline: none;
+}
+
+.plunger:focus-visible .cap {
+  box-shadow:
+    0 0 0 5px var(--plunger-skirt),
+    0 0 0 6px rgb(20 12 6 / 45%),
+    0 5px 0 0 var(--plunger-rim),
+    var(--shadow-focus);
+}
+
+/* ── The cat ───────────────────────────────────────────────────── */
+
+/* A look is a small lift: the cat nudges the box up an inch and the gap that
+   opens is the only reason the eyes are visible at all. Held here rather than
+   in the phase animations, which override it while the machine is working. */
+.machine[data-peeking="true"] {
+  --lift-deg: -6deg;
+}
+
+.machine[data-peeking="true"] .box {
+  transform: rotate(var(--lift-deg));
+}
+
+/* The cat's face is the CatMap icon's, in its own colours: a charcoal head with
+   a white blaze and muzzle, a dark nose and chin, and amber eyes. Drawn as one
+   background image because a face this small is paths, not boxes, and the repo
+   keeps inline SVG in the design system. The eyes stay real elements on top of
+   it, because they are the only parts that move. */
+.lookout {
+  position: absolute;
+  right: 25%;
+  bottom: 2px;
+  z-index: 2;
+  width: 56px;
+  height: 51px;
+  background: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 40'><path d='M2.5 21 L7 1.5 L20.5 14 Z' fill='%23333c44'/><path d='M41.5 21 L37 1.5 L23.5 14 Z' fill='%23333c44'/><path d='M7.2 17.5 L9.6 6.4 L16.8 13 Z' fill='%238e7069'/><path d='M36.8 17.5 L34.4 6.4 L27.2 13 Z' fill='%238e7069'/><rect x='1' y='12' width='42' height='31' rx='15' fill='%23333c44'/><path d='M22 13 L25.5 23.5 Q30.5 26.5 30.5 31.5 Q30.5 38.6 22 38.6 Q13.5 38.6 13.5 31.5 Q13.5 26.5 18.5 23.5 Z' fill='%23fdf8ee'/><path d='M18.4 27 Q22 25.9 25.6 27 Q25.2 30.7 22 32.9 Q18.8 30.7 18.4 27 Z' fill='%23343c47'/><ellipse cx='22' cy='36.4' rx='5.2' ry='3.8' fill='%232a343b'/></svg>")
+    center / contain no-repeat;
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+.machine[data-peeking="true"] .lookout {
+  opacity: 1;
+}
+
+.eye {
+  position: absolute;
+  top: 42.5%;
+  width: 27.3%;
+  height: 30%;
+  border-radius: var(--radius-full);
+  background: #eda031;
+  overflow: hidden;
+}
+
+.eye:nth-child(1) {
+  left: 10.2%;
+}
+
+.eye:nth-child(2) {
+  left: 62.5%;
+}
+
+/* Narrowing eyes, not a blink: the lid comes down as the mood does. */
+.eye::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 100%;
+  background: #333c44;
+  transform: translateY(calc(var(--squint) - 100%));
+  transition: transform 260ms ease;
+}
+
+.pupil {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: 46%;
+  height: 62%;
+  margin: -31% 0 0 -23%;
+  border-radius: 50%;
+  background: #1f2a32;
+  transform: translate(
+    calc(var(--gaze-x, 0) * var(--pupil-travel)),
+    calc(var(--gaze-y, 0) * var(--pupil-travel))
+  );
+  transition: transform 90ms ease-out;
+}
+
+/* The catchlight the icon has, which is most of what makes an eye look wet. */
+.pupil::after {
+  content: "";
+  position: absolute;
+  top: 1px;
+  right: 0;
+  width: 2.5px;
+  height: 2.5px;
+  border-radius: var(--radius-full);
+  background: #fdf8ee;
+}
+
+/* Where the paw emerges is the box's lifted edge, so its frame takes the box's
+   angle: the base of the visible leg rides up with the edge it comes out from,
+   and the switch, which is on the box, rides up by the same amount. The paw
+   itself is counter-rotated inside, because the cat is standing on the floor and
+   a leg is vertical. The frame carries the stacking too, under the box at rest
+   and over it while reaching, which is invisible at the changeover because that
+   moment is fur against void. */
+.armRig {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  transform-origin: left bottom;
+}
+
+.machine[data-phase="reaching"] .armRig,
+.machine[data-phase="retreating"] .armRig {
+  z-index: 5;
+  transform: rotate(var(--lift-deg));
+}
+
+.machine[data-phase="retreating"] .armRig {
+  animation: rigSink var(--withdraw-ms) step-end forwards;
+}
+
+@keyframes rigSink {
+  from {
+    z-index: 5;
+  }
+
+  to {
+    z-index: 1;
+  }
+}
+
+/* Centred under the plunger by construction, so the paw and the thing it is
+   aiming at cannot drift apart. At rest it is short enough to sit in the dark
+   the lift opens, where fur on void is all but invisible, and the `z-index` step
+   is the moment it rises past the box's edge into the light. Never a click
+   target, because it comes to rest on the button it has just hit. */
+.arm {
+  position: absolute;
+  right: calc(var(--panel-right) + (var(--plunger-w) - var(--arm-w)) / 2);
+  bottom: var(--arm-bottom);
+  width: var(--arm-w);
+  height: var(--leg-rest);
+  transform-origin: 50% 100%;
+  transform: rotate(calc(-1 * var(--lift-deg)));
+  color: var(--cat-fur);
+
+  /* Out only while it is reaching. A shove big enough to look through is also
+     big enough to show a paw resting in the gap, and a cat having a look is not
+     reaching for anything. */
+  visibility: hidden;
+}
+
+.machine[data-phase="reaching"] .arm,
+.machine[data-phase="retreating"] .arm {
+  visibility: visible;
+}
+
+.machine[data-phase="reaching"] .arm {
+  animation: pawReach var(--reach-ms) cubic-bezier(0.42, 0.08, 0.45, 0.96) forwards;
+}
+
+.machine[data-phase="retreating"] .arm {
+  animation: pawWithdraw var(--withdraw-ms) cubic-bezier(0.5, 0, 0.78, 0.4) forwards;
+}
+
+@keyframes pawReach {
+  to {
+    height: var(--leg-out);
+  }
+}
+
+@keyframes pawWithdraw {
+  from {
+    height: var(--leg-out);
+  }
+}
+
+/* The leg tapers into the paw, and the paw keeps its own size at the top so a
+   longer reach never stretches the foot. Drawn as one image for the same reason
+   the face is: four toes, four beans and a main pad are paths, not boxes. */
+.foreleg {
+  position: absolute;
+  left: 50%;
+  top: 20px;
+  bottom: 0;
+  width: 19px;
+  margin-left: -9.5px;
+  border-radius: 9px 9px 7px 7px;
+  background-color: currentcolor;
+
+  /* The base passes into the shadow under the box rather than meeting it as a
+     seam: cool fur against warm void draws a hard line otherwise. Fixed height,
+     not a percentage, so the fade sits at the edge whatever the reach. */
+  background-image: linear-gradient(to top, var(--board-void), transparent 44px);
+}
+
+.pad {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--arm-w);
+  height: 34px;
+  background: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 34'><path d='M4 17 Q4 32.5 20 32.5 Q36 32.5 36 17 Q36 10.5 30 11.6 Q20 8.4 10 11.6 Q4 10.5 4 17 Z' fill='%23333c44'/><ellipse cx='6.6' cy='13.6' rx='5.2' ry='6.4' fill='%23333c44'/><ellipse cx='15.4' cy='8.4' rx='5.4' ry='6.9' fill='%23333c44'/><ellipse cx='24.6' cy='8.4' rx='5.4' ry='6.9' fill='%23333c44'/><ellipse cx='33.4' cy='13.6' rx='5.2' ry='6.4' fill='%23333c44'/><ellipse cx='6.6' cy='14.6' rx='2.9' ry='3.7' fill='%23d98f95'/><ellipse cx='15.4' cy='9.4' rx='3.1' ry='4' fill='%23d98f95'/><ellipse cx='24.6' cy='9.4' rx='3.1' ry='4' fill='%23d98f95'/><ellipse cx='33.4' cy='14.6' rx='2.9' ry='3.7' fill='%23d98f95'/><path d='M20 16.6 Q28.2 17.2 29.6 23.4 Q30.6 29.8 20 29.8 Q9.4 29.8 10.4 23.4 Q11.8 17.2 20 16.6 Z' fill='%23d98f95'/></svg>")
+    center / contain no-repeat;
+}
+
+/* Claws, out only when the cat has stopped being polite. Their bases sit on the
+   beans rather than on the toes' fur: in the dark under the box that fur is all
+   but the same colour as the void, so a claw resting on it reads as floating. */
+.toe {
+  position: absolute;
+  top: -6px;
+  width: 7px;
+  height: 8px;
+  background: var(--neutral-1);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.machine[data-mood="feral"] .toe {
+  opacity: 1;
+}
+
+.toe:nth-child(1) {
+  left: 3px;
+  top: 5px;
+}
+
+.toe:nth-child(2) {
+  left: 12px;
+  top: 0;
+}
+
+.toe:nth-child(3) {
+  left: 21px;
+  top: 0;
+}
+
+.toe:nth-child(4) {
+  left: 30px;
+  top: 5px;
+}
+
+.announcement {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* The panel cannot sit beside the stencil at this width, so it takes the box on
+   its own and the paw reaches a switch that is simply higher up. */
+@media (max-width: 520px) {
+  .box {
+    min-height: 0;
+  }
+
+  .panel {
+    position: static;
+    justify-content: space-between;
+    transform: none;
+  }
+
+  .stencil {
+    position: static;
+    display: block;
+    margin-bottom: var(--space-m);
+  }
+
+  .tape {
+    display: none;
+  }
+}
+
+/* Forced colours drops the background that carries lit-vs-dark, so the lamp
+   states have to differ by something that survives: a ring, not a fill. */
+@media (forced-colors: active) {
+  .machine[data-phase="lit"] .led,
+  .machine[data-phase="reaching"] .led {
+    border-width: 5px;
+  }
+}
+
+/* Duration, never `none`. The phases advance on `animationend`, so an animation
+   removed here is a machine that latches on its first press and never returns. */
+@media (prefers-reduced-motion: reduce) {
+  .machine {
+    /* The held beat is a pause, not motion, so it stays. Shortened only because
+       a full second of nothing before an instant jump reads as a hang. */
+    --settle-ms: 400ms;
+    --lift-ms: 1ms;
+    --drop-ms: 1ms;
+    --withdraw-ms: 1ms;
+    --reach-ms: 1ms;
+  }
+
+  .machine[data-phase="retreating"] .box {
+    animation-delay: 0s;
+  }
+
+  .eye,
+  .eye::after,
+  .pupil,
+  .toe,
+  .led {
+    transition-duration: 1ms;
+  }
+}
