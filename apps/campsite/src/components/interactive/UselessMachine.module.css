@@ -1,0 +1,338 @@
+.machine {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-l);
+  margin: var(--space-l) 0;
+  padding: var(--space-l);
+  border: var(--border-frame);
+  background: var(--brand-surface-sunken);
+  box-shadow: var(--shadow-hard-1);
+
+  /* The single knob for how far the paw travels before it hits the switch.
+     Everything else in the arc is a fraction of the arm's own size, so this is
+     the only value that cares what the panel beside it is doing. */
+  --reach-x: 104px;
+  --lid-ms: 260ms;
+  --reach-ms: 620ms;
+  --pupil-travel: 3px;
+  --brow: 0%;
+}
+
+.machine[data-mood="annoyed"] {
+  --lid-ms: 180ms;
+  --reach-ms: 460ms;
+  --brow: 34%;
+}
+
+.machine[data-mood="feral"] {
+  --lid-ms: 110ms;
+  --reach-ms: 320ms;
+  --brow: 52%;
+  --pupil-travel: 4px;
+}
+
+/* Perspective is what turns the lid's rotateX into a flap falling forward
+   rather than a bar squashing flat. */
+.box {
+  position: relative;
+  flex: 0 0 132px;
+  height: 104px;
+  perspective: 420px;
+  border: var(--border-frame);
+  border-radius: var(--radius-s);
+  background: var(--brand-surface-raised);
+}
+
+.interior {
+  position: absolute;
+  inset: var(--space-s);
+  border-radius: var(--radius-s);
+  background: var(--neutral-9);
+  overflow: hidden;
+}
+
+.eyes {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-s);
+  padding-top: var(--space-s);
+}
+
+.eye {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-full);
+  background: var(--amber-1);
+  overflow: hidden;
+}
+
+/* The brow, not a blink: it rests above the eye and comes down as the mood does. */
+.eye::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 100%;
+  background: var(--neutral-9);
+  transform: translateY(calc(var(--brow) - 100%));
+  transition: transform 260ms ease;
+}
+
+.pupil {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: 9px;
+  height: 9px;
+  margin: -4.5px 0 0 -4.5px;
+  border-radius: var(--radius-full);
+  background: var(--neutral-9);
+  transform: translate(
+    calc(var(--gaze-x, 0) * var(--pupil-travel)),
+    calc(var(--gaze-y, 0) * var(--pupil-travel))
+  );
+  transition: transform 90ms ease-out;
+}
+
+.lid {
+  position: absolute;
+  inset: auto var(--space-xs) 6px var(--space-xs);
+  height: 62px;
+  transform-origin: bottom center;
+  border: var(--border-frame);
+  border-radius: 0 0 var(--radius-s) var(--radius-s);
+  background: var(--brand-surface-raised);
+  box-shadow: var(--shadow-hard-1);
+}
+
+.machine[data-phase="lit"] .lid {
+  animation: lidOpen var(--lid-ms) ease-in forwards;
+}
+
+.machine[data-phase="reaching"] .lid {
+  transform: rotateX(82deg);
+}
+
+.machine[data-phase="retreating"] .lid {
+  animation: lidShut var(--lid-ms) ease-out backwards;
+  animation-delay: calc(var(--reach-ms) * 0.55);
+}
+
+@keyframes lidOpen {
+  to {
+    transform: rotateX(82deg);
+  }
+}
+
+@keyframes lidShut {
+  from {
+    transform: rotateX(82deg);
+  }
+}
+
+.arm {
+  position: absolute;
+  left: 46%;
+  bottom: 14%;
+  width: 78px;
+  height: 44px;
+  transform-origin: 6% 60%;
+  transform: translate(-40%, 120%) rotate(-40deg);
+  opacity: 0;
+  color: var(--neutral-8);
+}
+
+/* `forwards` is load-bearing: the reach has to hold the paw on the switch until
+   the withdraw takes over, or it snaps home a frame before the lamp goes out. */
+.machine[data-phase="reaching"] .arm {
+  animation: pawReach var(--reach-ms) cubic-bezier(0.34, 1.2, 0.5, 1) forwards;
+}
+
+.machine[data-phase="retreating"] .arm {
+  animation: pawWithdraw calc(var(--reach-ms) * 0.8) ease-in forwards;
+}
+
+@keyframes pawReach {
+  0% {
+    transform: translate(-40%, 120%) rotate(-40deg);
+    opacity: 0;
+  }
+
+  18% {
+    opacity: 1;
+  }
+
+  45% {
+    transform: translate(calc(var(--reach-x) * 0.36), -58%) rotate(-6deg);
+    opacity: 1;
+  }
+
+  78% {
+    transform: translate(calc(var(--reach-x) * 0.88), -20%) rotate(20deg);
+  }
+
+  100% {
+    transform: translate(var(--reach-x), 4%) rotate(28deg);
+    opacity: 1;
+  }
+}
+
+@keyframes pawWithdraw {
+  0% {
+    transform: translate(var(--reach-x), 4%) rotate(28deg);
+    opacity: 1;
+  }
+
+  32% {
+    transform: translate(calc(var(--reach-x) * 0.82), -26%) rotate(16deg);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate(-40%, 120%) rotate(-40deg);
+    opacity: 0;
+  }
+}
+
+/* A paw out of five rounded boxes, because the repo keeps inline SVG in the
+   design system and an icon is the wrong home for a one-off that animates in
+   parts. `currentcolor` on `.arm` is what makes it one creature. */
+.limb {
+  position: absolute;
+  left: 0;
+  top: 32%;
+  width: 56%;
+  height: 40%;
+  border-radius: var(--radius-full);
+  background: currentcolor;
+}
+
+.pad {
+  position: absolute;
+  right: 0;
+  top: 22%;
+  width: 46%;
+  height: 62%;
+  border-radius: 48% 52% 46% 54%;
+  background: currentcolor;
+}
+
+.toe {
+  position: absolute;
+  width: 34%;
+  height: 46%;
+  border-radius: var(--radius-full);
+  background: currentcolor;
+}
+
+.toe:nth-child(1) {
+  top: -26%;
+  left: -6%;
+  transform: rotate(-26deg);
+}
+
+.toe:nth-child(2) {
+  top: -40%;
+  left: 24%;
+  transform: rotate(-8deg);
+}
+
+.toe:nth-child(3) {
+  top: -30%;
+  left: 54%;
+  transform: rotate(12deg);
+}
+
+.toe:nth-child(4) {
+  top: 4%;
+  left: 74%;
+  transform: rotate(32deg);
+}
+
+/* Out only when the cat has stopped being polite. */
+.toe::after {
+  content: "";
+  position: absolute;
+  inset: -52% 28% auto 28%;
+  height: 52%;
+  background: var(--neutral-2);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.machine[data-mood="feral"] .toe::after {
+  opacity: 1;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: var(--space-m);
+}
+
+.lamp {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-s);
+}
+
+.led {
+  width: 14px;
+  height: 14px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--neutral-4);
+  background: var(--neutral-3);
+  box-shadow: none;
+  transition:
+    background 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.machine[data-phase="lit"] .led,
+.machine[data-phase="reaching"] .led {
+  background: var(--sage-6);
+  box-shadow: var(--brand-glow);
+}
+
+.announcement {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Forced colours drops the background that carries lit-vs-dark, so the lamp
+   states have to differ by something that survives: a ring, not a fill. */
+@media (forced-colors: active) {
+  .machine[data-phase="lit"] .led,
+  .machine[data-phase="reaching"] .led {
+    border-width: 5px;
+  }
+}
+
+/* Duration, never `none`. The phases advance on `animationend`, so an animation
+   removed here is a machine that latches on its first press and never returns. */
+@media (prefers-reduced-motion: reduce) {
+  .machine {
+    --lid-ms: 1ms;
+    --reach-ms: 1ms;
+  }
+
+  .machine[data-phase="retreating"] .lid {
+    animation-delay: 0s;
+  }
+
+  .eye::after,
+  .pupil,
+  .toe::after,
+  .led {
+    transition-duration: 1ms;
+  }
+}

@@ -6,6 +6,72 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## The blog's island is a useless machine
+
+**Date**: 2026-09-24
+
+**What was done**:
+
+`Counter` is gone. The island in "What vibe coding actually changed" is now
+`UselessMachine`: a switch, a box, and a cat who reaches out and switches it
+back off. The post argued that a cheap idea is worth trying, and a button that
+counted was not making that argument.
+
+**The phase machine is React's, the clock is the stylesheet's.** `Phase` runs
+`idle → lit → reaching → retreating → idle`, and every phase but `idle` ends
+when a CSS animation reaches its last frame and fires `onAnimationEnd`. No
+`setTimeout` anywhere, so a duration retuned in the stylesheet needs no matching
+edit in the component, and there is no second copy of the timing to drift. The
+moment of contact is the end of the reach animation rather than a point inside
+it, which is what lets the lamp go out exactly when the paw lands.
+
+Each handler guards on the phase it expects. That is what makes it safe to hang
+two of them on two elements: the lid's closing animation during `retreating`
+fires `lidSettled`, which does nothing because the phase has moved on.
+
+**Mood is derived, not stored.** `presses` is the state; `moodFor` reads
+`calm / annoyed / feral` off it at 3 and 5. The moods reach CSS as `data-mood`
+and shorten the durations, lower the brows and put the claws out. A press while
+the paw is already out feeds the mood without restarting the arc, so mashing
+makes the cat angrier rather than teleporting it.
+
+**The eyes track the pointer while idle,** through `--gaze-x` / `--gaze-y`
+written straight onto the element rather than through state: a render per
+pointermove is a render per pixel, and nothing in the tree depends on the
+pointer except two pupils.
+
+**Reduced motion shortens, it does not remove.** The motion is the content here,
+so stripping it would leave a button that does nothing. `prefers-reduced-motion`
+sets the durations to `1ms`. Not `none`, and not `0s` on an `animation`: the
+phases advance on `animationend`, so an animation removed under that query is a
+machine that latches on its first press and never comes back.
+
+**Two things the work turned up:**
+
+- **jsdom has `TransitionEvent` but not `AnimationEvent`.** React reads
+  `'AnimationEvent' in window` once at import to choose between `animationend`
+  and `webkitAnimationEnd`, so without the constructor every `onAnimationEnd` in
+  the app is wired to an event nothing dispatches, and a test that fires one
+  passes vacuously against a handler that never ran. `src/test/setup.ts` now
+  defines it, beside the `matchMedia` and `ResizeObserver` shims. Nothing else
+  in the workspace used animation events, so this fixed a latent gap rather than
+  unmasking a live bug.
+- **`ds/no-inline-icon` bans every `<svg>` in app code,** though its message is
+  about icons: sizing, colour tokens, `aria-hidden`. The paw is an illustration
+  whose claws animate separately from its toes, and `ICON_NAMES` is the wrong
+  home for that. Rather than take an exemption, the paw is six rounded boxes and
+  a `clip-path` triangle, which keeps every visual in the stylesheet.
+
+**Deferred**:
+
+- `--reach-x` places the paw over the switch and was set by eye, not measured.
+  It is one number at the top of the stylesheet, deliberately, but it wants
+  checking at a few widths.
+- The post's closing `[DRAFT: …]` beat is still Jordan's to write, and the post
+  stays `draft: true` until it is.
+
+---
+
 ## The design system catches up with the app
 
 **Date**: 2026-09-24

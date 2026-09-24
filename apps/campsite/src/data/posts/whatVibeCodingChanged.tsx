@@ -28,12 +28,17 @@ export const whatVibeCodingChanged: Post = {
         bin with incriminating things in it. None of these are good ideas by any measure I'd defend
         in a design review. All of them are the reason anyone stays longer than nine seconds.
       </p>
-      <p>Here is one that took about four minutes. It counts.</p>
+      <p>
+        Here is one of them. There is a switch, and a box, and a cat in the box who disagrees with
+        you about the switch. It is worth pressing more than once.
+      </p>
       <Island
-        load={() => import("../../components/interactive/Counter")}
+        load={() => import("../../components/interactive/UselessMachine")}
         fallback={
           <p>
-            <em>There's a button here that counts your clicks. It only works in the tent.</em>
+            <em>
+              There's a switch here, and a cat who turns it back off. It only works in the tent.
+            </em>
           </p>
         }
       />

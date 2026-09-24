@@ -207,6 +207,26 @@ Object.defineProperty(window, "matchMedia", {
   })),
 });
 
+// ─── Mock AnimationEvent ─────────────────────────────────────────
+// jsdom has TransitionEvent but not AnimationEvent, and React reads `'AnimationEvent'
+// in window` once at import to decide between `animationend` and `webkitAnimationEnd`.
+// Absent, every `onAnimationEnd` in the app is wired to an event nothing dispatches.
+// Defined here so it exists before a test file imports React.
+class MockAnimationEvent extends Event {
+  readonly animationName: string;
+  readonly elapsedTime: number;
+  readonly pseudoElement: string;
+
+  constructor(type: string, init: AnimationEventInit = {}) {
+    super(type, init);
+    this.animationName = init.animationName ?? "";
+    this.elapsedTime = init.elapsedTime ?? 0;
+    this.pseudoElement = init.pseudoElement ?? "";
+  }
+}
+
+globalThis.AnimationEvent = MockAnimationEvent as unknown as typeof AnimationEvent;
+
 // ─── Mock ResizeObserver ─────────────────────────────────────────
 // A class, not a mock returning an object: callers use `new ResizeObserver(…)`,
 // and vi.fn() with an arrow implementation is not constructible.

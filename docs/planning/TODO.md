@@ -343,6 +343,31 @@ only hide it.
   wide enough to hold both, so the open question is whether they read better
   split across two homepage sections.
 
+### Blog: the useless machine's reach is set by eye
+
+`--reach-x` in `UselessMachine.module.css` is how far the paw travels before it
+is over the switch, and it was picked by eye rather than measured. The box is a
+fixed `132px` and the panel beside it is a column, so the geometry is stable,
+but the landing point has not been checked at narrow widths or with a longer
+button label. It is one number at the top of the stylesheet by design: if it
+needs to stop being one number, the arc should anchor to the button's own box
+instead.
+
+### Repo: `ds/no-inline-icon` cannot tell an icon from an illustration
+
+The rule reports every `<svg>` in app code, but its message argues about icons:
+DS sizing, colour tokens, the `aria-hidden` default. Those are reasons an icon
+belongs in the design system, and they say nothing about a one-off illustration
+whose parts animate independently. The useless machine's paw took the long way
+round it (rounded boxes and a `clip-path`), and `shimmer.module.css` takes the
+other one (SVG as a `data:` URI in CSS), so the rule is currently routed around
+twice rather than obeyed.
+
+Two consumers is not yet a pattern, so this is worth watching rather than
+fixing. If a third arrives, the question is whether the rule should exempt an
+`<svg>` that carries no `role="img"` and no title, or whether the DS should
+export an `Illustration` escape hatch that owns them.
+
 ### Design system — boxy pass on in-window content
 
 - Give `Button` a bevelled face for in-window use. The window frame squares its

@@ -65,8 +65,8 @@ describe("prerender entry", () => {
 
   it("renders an island's fallback rather than its component", () => {
     const page = render("/blog/posts/what-vibe-coding-actually-changed.html")!;
-    expect(page.html).toContain("counts your clicks");
-    expect(page.html).not.toContain("Click me");
+    expect(page.html).toContain("a cat who turns it back off");
+    expect(page.html).not.toContain("Do not press");
   });
 
   it("returns null for a path that names no page", () => {
