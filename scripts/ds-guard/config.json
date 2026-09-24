@@ -3,6 +3,11 @@
     "package": "@jordanscamp/ds",
     "barrels": ["packages/design-system/src/index.ts"]
   },
+  "stylesheets": {
+    "roots": ["apps/campsite/src", "apps/photobroom/src", "packages/design-system/src"],
+    "tokenSources": ["packages/design-system/src/tokens"],
+    "tokensOnly": ["packages/design-system/src/components", "packages/design-system/src/styles"]
+  },
   "consumers": ["apps/campsite/src", "apps/photobroom/src"],
   "styleSources": "cssModules",
   "extensions": [".ts", ".tsx"],

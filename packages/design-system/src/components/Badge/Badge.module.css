@@ -44,5 +44,5 @@
 }
 .solidDanger {
   background: var(--brand-danger);
-  color: #fff;
+  color: var(--brand-text-on-brand);
 }
