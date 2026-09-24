@@ -24,29 +24,24 @@
   color: var(--brand-text-muted);
 }
 
-.segment:is(a, button) {
+a.segment {
   cursor: pointer;
 }
 
-.segment:is(a, button):hover {
+a.segment:hover {
   background: var(--brand-subtle-hover);
   color: var(--brand-text);
 }
 
-.segment:is(a, button):focus-visible {
+a.segment:focus-visible {
   outline: none;
   box-shadow: var(--shadow-focus);
 }
 
-/* `aria-current` is the navigable flavour's selected state, `data-pressed` the
-   toggle group's. One rule: which one is on the element is the only difference. */
-.segment[aria-current],
-.segment[data-pressed] {
+/* The segment standing for the page in view. `aria-current` carries the state to
+   a reader who cannot see the fill, so the fill keys off it rather than a class:
+   the two can never disagree. */
+.segment[aria-current] {
   background: var(--brand-solid);
   color: var(--brand-text-on-brand);
-}
-
-.segment[data-disabled] {
-  color: var(--brand-text-disabled);
-  cursor: not-allowed;
 }

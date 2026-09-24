@@ -2,7 +2,7 @@ import type { ComponentPropsWithoutRef, ReactNode } from "react";
 
 import { useRender, type UseRenderRenderProp } from "../../primitives/useRender";
 
-import styles from "./SegmentedControl.module.css";
+import styles from "./SegmentedNav.module.css";
 
 /** Two `nav`s on a page are told apart by name alone, so there is no unnamed one. */
 type Named = { "aria-label": string } | { "aria-labelledby": string };
@@ -48,8 +48,8 @@ function Item({ current, render, children, ...props }: SegmentedNavItemProps) {
 }
 
 /**
- * SegmentedNav — `SegmentedControl`'s look over a set of addresses rather than a
- * set of states. A `nav` of plain links, so it needs no scripts to work and a
- * shared link opens the segment it names.
+ * SegmentedNav — a small set of addresses drawn as one control, with the segment
+ * for the page in view filled in. A `nav` of plain links, so it needs no scripts
+ * to work and a shared link opens the segment it names.
  */
 export const SegmentedNav = Object.assign(Root, { Item });

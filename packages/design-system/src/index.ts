@@ -19,13 +19,10 @@ export { Card, type CardProps } from "./components/Card";
 export { CopyButton, COPIED_MS, type CopyButtonProps } from "./components/CopyButton";
 export { Tag, type TagProps } from "./components/Tag";
 export {
-  SegmentedControl,
-  type SegmentedControlItemProps,
-  type SegmentedControlProps,
   SegmentedNav,
   type SegmentedNavItemProps,
   type SegmentedNavProps,
-} from "./components/SegmentedControl";
+} from "./components/SegmentedNav";
 export { Tile, type TileProps } from "./components/Tile";
 
 // Faux-desktop chrome
