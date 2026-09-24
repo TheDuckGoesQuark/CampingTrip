@@ -1,11 +1,9 @@
-import { Text, Window } from "@jordanscamp/ds";
+import { Text, TextSurface, Window } from "@jordanscamp/ds";
 
 import { desktopItemSlug } from "../../data/desktopItems";
 import { useSessionStore } from "../../store/sessionStore";
 import type { DesktopItem } from "../../types/desktop";
 import type { WindowFrameProps } from "./windowFrame";
-
-import styles from "./catos.module.css";
 
 export interface TextWindowProps extends WindowFrameProps {
   item: Extract<DesktopItem, { kind: "text" }>;
@@ -43,8 +41,12 @@ export default function TextWindow({ item, onClose, ...frame }: TextWindowProps)
         />
       </Window.Toolbar>
       <Window.Body>
-        <textarea
-          className={styles.textBody}
+        {/* A typewriter face, because the campsite's own body font is one and a
+            text file is the one place that reads as deliberate rather than
+            unstyled. */}
+        <TextSurface
+          face="mono"
+          fill="content"
           aria-label={item.label}
           spellCheck={false}
           value={edited ?? item.body}

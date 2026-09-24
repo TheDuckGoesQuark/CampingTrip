@@ -1,4 +1,4 @@
-import { Button, Tag, Text, TextField } from "@jordanscamp/ds";
+import { Button, Tag, Text, TextField, TextSurface } from "@jordanscamp/ds";
 import { type Icon, PaperPlaneRight } from "@jordanscamp/ds/icons";
 import { useId } from "react";
 
@@ -85,13 +85,9 @@ export default function MouseMailForm({ compose, emailLabel, onClose }: MouseMai
         </div>
 
         <div className={styles.surface}>
-          {/*
-          Not a DS field: a compose body shows no label, draws no border of its
-          own and states no height — the window supplies all three. The cost is
-          that the label and error wiring are ours to do by hand.
-        */}
-          <textarea
-            className={styles.message}
+          <TextSurface
+            face="text"
+            fill="frame"
             aria-label="Message"
             placeholder="Anything at all."
             value={compose.message}
