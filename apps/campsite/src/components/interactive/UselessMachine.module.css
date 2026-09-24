@@ -510,7 +510,12 @@
   width: 19px;
   margin-left: -9.5px;
   border-radius: 9px 9px 7px 7px;
-  background: currentcolor;
+  background-color: currentcolor;
+
+  /* The base passes into the shadow under the box rather than meeting it as a
+     seam: cool fur against warm void draws a hard line otherwise. Fixed height,
+     not a percentage, so the fade sits at the edge whatever the reach. */
+  background-image: linear-gradient(to top, var(--board-void), transparent 44px);
 }
 
 .pad {
