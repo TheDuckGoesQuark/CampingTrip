@@ -65,15 +65,22 @@ handler guards on the phase it expects, which is what makes it safe to hang two
 of them on two elements: the paw's withdraw ending mid-`retreating` is simply
 ignored.
 
-**The paw rises straight up out of a frame that shares the box's angle.** It is
-centred under the plunger by construction, `calc(panel-right + (plunger-width -
-arm-width) / 2)`, and reaching is the leg's `height` growing from a bottom
-anchor. The frame matters: the switch rides on the box, so the lift carries it up
-and to the left, and a paw anchored to the page does not follow. Aiming at it
-then needs a reach that grows with both the box's width and the mood's angle,
-which no constant can be. A wrapper taking `rotate(var(--lift-deg))` while the
-paw is out puts them in the same coordinates, and the reach becomes one number
-measured in the box's own frame. A rotating limb was what read as
+**The layout is a set of named physical relationships, not measured offsets.**
+One angle, `--lift-deg`, is the lift; the wedge of dark under the box is
+`tan()` of it, the paw's frame turns by it, and a mood that lifts more never has
+to be told to darken more. The reach is `panel-bottom + cap/2 - arm-bottom`,
+which is where the cap's centre sits above the box's bottom edge less where the
+paw's base sits, so moving the panel moves the target. The paw is centred under
+the plunger by construction. A measured `--aim-left: 6px` lived for one commit
+and was exactly the kind of fudge this replaces: right at one width and one mood.
+
+The paw stands on the floor and emerges from the box's lifted edge, and the
+markup says so. Its frame takes the box's angle, because where it comes out is
+the edge and the edge rides up with the lift, by the same amount the switch on
+the box does. The paw itself is counter-rotated inside that frame, because the
+cat is standing on the floor and a leg is vertical. Measured: box at -3.5°, frame
+at -3.5°, leg at +3.5° within it, leg at 0° on the page, toes within a pixel of
+the cap's centre. A rotating limb was what read as
 clunky, and going vertical also means the reach depends only on the box's fixed
 height rather than on its fluid width, which is why the landing point no longer
 needs tuning per breakpoint. The pad keeps its own size at the top rather than

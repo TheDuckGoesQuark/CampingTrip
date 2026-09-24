@@ -26,12 +26,20 @@
      only on the box's fixed height rather than on its fluid width. Defined here
      and not on `.box`, which is the paw's sibling and so hands it nothing. */
   --panel-right: 38px;
+  --panel-bottom: 30px;
   --plunger-w: 124px;
+  --cap-size: 58px;
   --arm-w: 40px;
+  --arm-bottom: 2px;
   --leg-rest: 34px;
-  --leg-out: 57px;
+
+  /* The reach is the cap's centre above the box's bottom edge, less where the
+     paw's own base sits: a relationship, so moving the panel moves the target. */
+  --leg-out: calc(var(--panel-bottom) + var(--cap-size) / 2 - var(--arm-bottom));
+
+  /* The lift is the one angle; the wedge of dark and the paw's frame both follow
+     it, so a mood that lifts more never has to be told to darken more. */
   --lift-deg: -3.5deg;
-  --dark-tan: 0.085;
   --settle-ms: 1800ms;
   --lift-ms: 320ms;
   --drop-ms: 520ms;
@@ -48,7 +56,7 @@
   bottom: 0;
   top: auto;
   height: 0;
-  padding-bottom: calc(var(--dark-tan) * 100%);
+  padding-bottom: calc(-1.15 * tan(var(--lift-deg)) * 100%);
   z-index: 1;
   border-radius: 0 0 4px 4px;
   background: var(--board-void);
@@ -95,7 +103,6 @@
 
 .machine[data-mood="annoyed"] {
   --lift-deg: -5deg;
-  --dark-tan: 0.115;
   --settle-ms: 1000ms;
   --lift-ms: 220ms;
   --drop-ms: 380ms;
@@ -106,7 +113,6 @@
 
 .machine[data-mood="feral"] {
   --lift-deg: -7deg;
-  --dark-tan: 0.155;
   --settle-ms: 400ms;
   --lift-ms: 130ms;
   --drop-ms: 240ms;
@@ -180,7 +186,7 @@
 .panel {
   position: absolute;
   right: var(--panel-right);
-  bottom: 30px;
+  bottom: var(--panel-bottom);
   display: flex;
   align-items: flex-end;
   gap: 26px;
@@ -276,8 +282,8 @@
 }
 
 .cap {
-  width: 58px;
-  height: 58px;
+  width: var(--cap-size);
+  height: var(--cap-size);
   border-radius: var(--radius-full);
   background:
     radial-gradient(circle at 38% 30%, rgb(255 255 255 / 45%), transparent 46%),
@@ -326,12 +332,12 @@
 /* A look is a small lift: the cat nudges the box up an inch and the gap that
    opens is the only reason the eyes are visible at all. Held here rather than
    in the phase animations, which override it while the machine is working. */
-.machine[data-peeking="true"] .box {
-  transform: rotate(-6deg);
+.machine[data-peeking="true"] {
+  --lift-deg: -6deg;
 }
 
-.machine[data-peeking="true"] {
-  --dark-tan: 0.135;
+.machine[data-peeking="true"] .box {
+  transform: rotate(var(--lift-deg));
 }
 
 /* The cat's face is the CatMap icon's, in its own colours: a charcoal head with
@@ -412,12 +418,13 @@
   background: #fdf8ee;
 }
 
-/* The frame the paw works in. It takes the box's angle while the paw is out, so
-   the switch and the paw rise together: aiming at a switch that rides a rotating
-   box otherwise needs a reach that grows with both the box's width and the
-   mood's angle, which no constant can be. It carries the stacking too, under the
-   box at rest and over it while reaching, which is invisible at the changeover
-   because that moment is fur against void. */
+/* Where the paw emerges is the box's lifted edge, so its frame takes the box's
+   angle: the base of the visible leg rides up with the edge it comes out from,
+   and the switch, which is on the box, rides up by the same amount. The paw
+   itself is counter-rotated inside, because the cat is standing on the floor and
+   a leg is vertical. The frame carries the stacking too, under the box at rest
+   and over it while reaching, which is invisible at the changeover because that
+   moment is fur against void. */
 .armRig {
   position: absolute;
   inset: 0;
@@ -440,9 +447,11 @@
 .arm {
   position: absolute;
   right: calc(var(--panel-right) + (var(--plunger-w) - var(--arm-w)) / 2);
-  bottom: 2px;
+  bottom: var(--arm-bottom);
   width: var(--arm-w);
   height: var(--leg-rest);
+  transform-origin: 50% 100%;
+  transform: rotate(calc(-1 * var(--lift-deg)));
   color: var(--cat-fur);
 
   /* Out only while it is reaching. A shove big enough to look through is also
