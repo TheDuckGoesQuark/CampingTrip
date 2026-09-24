@@ -1,37 +1,22 @@
-import type { ReactNode } from "react";
+import type { PrismTheme } from "prism-react-renderer";
+import { CodeBlock } from "react-code-block";
 
 import styles from "./Code.module.css";
 
-/** Thirty lines of code did not justify a syntax-highlighting dependency. */
-const TOKEN =
-  /(\/\*[\s\S]*?\*\/|\/\/[^\n]*)|("[^"]*")|(--[\w-]+)|(<\/?[A-Za-z][\w.]*|\/>)|([A-Za-z][\w-]*(?=\s*[=:]))/g;
+/* A prism-react-renderer theme is applied as inline styles, which beat the brand
+   classes in Code.module.css. An empty one leaves the token class names as the
+   only styling. */
+const UNSTYLED: PrismTheme = { plain: {}, styles: [] };
 
-export default function Code({ code }: { code: string }) {
-  const parts: ReactNode[] = [];
-  const scanner = new RegExp(TOKEN.source, "g");
-  let cursor = 0;
-  let match = scanner.exec(code);
-
-  while (match) {
-    if (match.index > cursor) parts.push(code.slice(cursor, match.index));
-    const kind = match[1]
-      ? styles.comment
-      : match[2]
-        ? styles.string
-        : match[3]
-          ? styles.prop
-          : match[4]
-            ? styles.element
-            : styles.attr;
-    parts.push(
-      <span key={match.index} className={kind}>
-        {match[0]}
-      </span>,
-    );
-    cursor = match.index + match[0].length;
-    match = scanner.exec(code);
-  }
-  parts.push(code.slice(cursor));
-
-  return <pre className={styles.code}>{parts}</pre>;
+export default function Code({ code, language = "tsx" }: { code: string; language?: string }) {
+  return (
+    <CodeBlock code={code} language={language} theme={UNSTYLED}>
+      <CodeBlock.Code as="pre" className={styles.code}>
+        <CodeBlock.LineContent as="span" className={styles.line}>
+          {/* The default renders a second span inside every token. */}
+          <CodeBlock.Token>{({ children }) => children}</CodeBlock.Token>
+        </CodeBlock.LineContent>
+      </CodeBlock.Code>
+    </CodeBlock>
+  );
 }

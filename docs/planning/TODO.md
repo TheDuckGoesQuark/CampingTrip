@@ -124,6 +124,32 @@ the YouTube iframe API (`postMessage` `setVolume`, which also needs the player
 to be ready before the first call) and put it on the same level as everything
 else, or stop the status line claiming a number it does not set.
 
+### Blog: the highlighter loads on the landing page
+
+Nothing splits the blog out of the entry chunk: only `TentScene` has its own
+bundle, so `prism-react-renderer` and its grammars sit in the chunk the 3D
+landing page loads. It is the single largest thing on the blog side of that
+chunk, and the landing page never renders a line of code. The entry chunk went
+from 226.5 kB to 255.6 kB gzipped when it landed, which is the budget to win
+back.
+
+Lazy at the `Code` component rather than at the route: code blocks are rare and
+sit well down a post, so the chunk can arrive after the page does, and a post
+with no code never fetches it at all. The plain `<pre>` makes a correct
+`Suspense` fallback, since the text without its colours is the same text.
+
+**The bit to check before writing it**: the prerender calls
+`renderToStaticMarkup`, which cannot wait for a lazy chunk, so the static HTML
+will carry the fallback. That is harmless here, because `main.tsx` mounts with
+`createRoot` rather than `hydrateRoot` and the client re-renders from scratch
+anyway, but it does mean the prerendered copy loses its colours. Confirm that is
+acceptable for the no-JS and crawler view before committing to the approach.
+
+`manualChunks` is the wrong tool: the comment in `vite.config.ts` records that
+naming vendor chunks made Rollup hoist them into the entry's static imports, off
+the back of the entry↔scene cycle the shared stores create. The built chunk list
+is the only proof either way.
+
 ### Blog — the prerendered reader has no way up
 
 A prerendered page is the head template plus `<main id="reader">` and nothing
