@@ -31,7 +31,7 @@
   width: 72px;
   height: 72px;
   border-radius: var(--radius-none);
-  border: 2px solid var(--brand-border-strong);
+  border: var(--border-frame);
   object-fit: cover;
   box-shadow: var(--shadow-hard-1);
 }
@@ -44,7 +44,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid var(--brand-border-strong);
+  border: var(--border-frame);
   border-radius: var(--radius-none);
   box-shadow: var(--shadow-hard-1);
   background: var(--brand-surface-raised);

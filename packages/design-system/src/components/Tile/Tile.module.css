@@ -3,7 +3,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid var(--brand-border-strong);
+  border: var(--border-frame);
   border-radius: var(--radius-none);
   box-shadow: var(--shadow-hard-1);
   color: var(--brand-text-on-brand);

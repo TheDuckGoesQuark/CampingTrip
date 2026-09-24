@@ -12,7 +12,7 @@
   font-size: var(--text-body-sm-size);
   color: var(--brand-text);
   background: var(--brand-subtle);
-  border-bottom: 2px solid var(--brand-border-strong);
+  border-bottom: var(--border-frame);
   box-shadow: var(--shadow-bevel-out);
 }
 
@@ -66,7 +66,7 @@
   min-width: 200px;
   background: var(--brand-surface-raised);
   color: var(--brand-text);
-  border: 2px solid var(--brand-border-strong);
+  border: var(--border-frame);
   border-radius: var(--radius-none);
   box-shadow: var(--shadow-hard-2);
   font-size: var(--text-body-sm-size);

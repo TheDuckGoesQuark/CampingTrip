@@ -8,7 +8,7 @@
   margin-inline: calc(-1 * var(--window-page-inset-inline, 0px));
   margin-bottom: calc(-1 * var(--window-page-inset-block, 0px));
   padding: var(--space-l) var(--window-page-inset-inline, var(--space-l));
-  border-top: 2px solid var(--brand-border-strong);
+  border-top: var(--border-frame);
   background: var(--brand-surface-sunken);
   box-shadow: var(--shadow-bevel-out);
   position: relative;
@@ -45,7 +45,7 @@
    component and the border sits outside it rather than eating into it. */
 .contactPortrait {
   box-sizing: content-box;
-  border: 2px solid var(--brand-border-strong);
+  border: var(--border-frame);
   box-shadow: var(--shadow-hard-2);
   object-fit: cover;
 }

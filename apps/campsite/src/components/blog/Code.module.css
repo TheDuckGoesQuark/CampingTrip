@@ -10,7 +10,7 @@
   white-space: pre-wrap;
   overflow-wrap: anywhere;
   background: var(--brand-surface-sunken);
-  border: 2px solid var(--brand-border-strong);
+  border: var(--border-frame);
   box-shadow: var(--shadow-hard-1);
   padding: var(--space-s) var(--space-m);
   color: var(--brand-text);

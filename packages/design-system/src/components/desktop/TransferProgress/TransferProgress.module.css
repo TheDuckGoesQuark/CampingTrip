@@ -48,7 +48,7 @@
   position: relative;
   height: 16px;
   background: var(--brand-surface-sunken);
-  border: 2px solid var(--brand-border-strong);
+  border: var(--border-frame);
 }
 
 /* Full width always, revealed by clipping rather than grown by width: the

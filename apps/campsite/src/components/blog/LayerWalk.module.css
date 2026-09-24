@@ -59,7 +59,7 @@
   color: var(--brand-link);
   text-decoration: none;
   background: var(--brand-surface);
-  border: 2px solid var(--brand-border-strong);
+  border: var(--border-frame);
   box-shadow: var(--shadow-hard-1);
 }
 
