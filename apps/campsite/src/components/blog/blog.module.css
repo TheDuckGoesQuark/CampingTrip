@@ -231,7 +231,7 @@
 .key {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-xxs);
+  gap: var(--space-xs);
   font-family: var(--font-mono);
   font-size: var(--text-label-size);
   line-height: 1;
@@ -368,7 +368,7 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--space-xxs);
+  gap: var(--space-xs);
 }
 
 .titleLine {
@@ -539,7 +539,7 @@
 }
 
 .neighbourTitle {
-  margin-top: var(--space-xxs);
+  margin-top: var(--space-xs);
 }
 
 .allPosts {
@@ -634,7 +634,7 @@
 .cvLinks li {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-xxs);
+  gap: var(--space-xs);
   color: var(--brand-text-muted);
 }
 
@@ -719,13 +719,13 @@
   padding-left: var(--space-l);
   display: flex;
   flex-direction: column;
-  gap: var(--space-xxs);
+  gap: var(--space-xs);
 }
 
 .cvAchievement {
   display: flex;
   flex-direction: column;
-  gap: var(--space-xxs);
+  gap: var(--space-xs);
   margin-top: var(--space-s);
 }
 
@@ -736,14 +736,14 @@
   flex-wrap: wrap;
   align-items: baseline;
   justify-content: space-between;
-  gap: var(--space-xxs) var(--space-m);
+  gap: var(--space-xs) var(--space-m);
 }
 
 .cvFacets {
   margin: 0;
   display: grid;
   grid-template-columns: max-content 1fr;
-  gap: var(--space-xxs) var(--space-m);
+  gap: var(--space-xs) var(--space-m);
   align-items: baseline;
 }
 
@@ -817,7 +817,7 @@
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: var(--space-xxs);
+  gap: var(--space-xs);
 }
 
 /* The shaft is inset by exactly the width of one arrowhead at each end. */
@@ -855,7 +855,7 @@
   flex-direction: row;
   flex-wrap: wrap;
   justify-content: center;
-  gap: var(--space-xxs) var(--space-xs);
+  gap: var(--space-xs) var(--space-xs);
 }
 
 .cvSkillGroupFull .cvSkillItems li:not(:last-child)::after {
@@ -879,7 +879,7 @@
     position: relative;
     display: grid;
     grid-template-columns: 20px 1fr;
-    gap: var(--space-xxs) var(--space-s);
+    gap: var(--space-xs) var(--space-s);
     align-items: start;
     border-top: none;
     padding-top: 0;
@@ -931,7 +931,7 @@
   .cvSkillItems {
     flex-direction: row;
     flex-wrap: wrap;
-    gap: var(--space-xxs) var(--space-xs);
+    gap: var(--space-xs) var(--space-xs);
   }
 
   .cvSkillItems li:not(:last-child)::after {
@@ -1099,7 +1099,7 @@
 .cvShortRole {
   display: flex;
   flex-direction: column;
-  gap: var(--space-xxs);
+  gap: var(--space-xs);
   overflow-wrap: break-word;
 }
 
@@ -1108,7 +1108,7 @@
   padding-left: var(--space-l);
   display: flex;
   flex-direction: column;
-  gap: var(--space-xxs);
+  gap: var(--space-xs);
 }
 
 .cvShortSection > .cvShortList {
@@ -1126,7 +1126,7 @@
   margin: 0;
   display: grid;
   grid-template-columns: max-content 1fr;
-  gap: var(--space-xxs) var(--space-m);
+  gap: var(--space-xs) var(--space-m);
   align-items: baseline;
 }
 
@@ -1221,7 +1221,7 @@
   }
 
   .cvCondensed .cvShortSection > .cvShortList {
-    gap: var(--space-xxs);
+    gap: var(--space-xs);
   }
 
   /* A parser reads a grid left to right and interleaves the groups. */

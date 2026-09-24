@@ -10,8 +10,8 @@
 
 .pill {
   display: flex;
-  gap: var(--space-xxs);
-  padding: var(--space-xxs);
+  gap: var(--space-xs);
+  padding: var(--space-xs);
   border-radius: var(--radius-full);
   background: color-mix(in oklab, var(--brand-surface), transparent 12%);
   border: 1px solid var(--brand-border-subtle);

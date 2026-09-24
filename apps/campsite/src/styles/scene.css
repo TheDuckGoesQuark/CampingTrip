@@ -1,0 +1,23 @@
+/*
+ * The campfire scene's own palette and type: a monospace terminal in the dark,
+ * which is not the brand the design system carries. The WelcomeScreen is set in
+ * it, and the document's defaults follow it so the scene has no seam.
+ *
+ * Every name is `--scene-*` so none can shadow a `@jordanscamp/ds` token. The
+ * design system owns the whole of `--space-*`, `--brand-*`, `--text-*` and its
+ * siblings; a `:root` here redefining one would silently win over it, since both
+ * land on the same selector and this file is loaded second.
+ */
+:root {
+  --scene-bg: #0a0612;
+  --scene-text: #e8d5b0;
+  --scene-text-dim: #9e8a6a;
+  --scene-lantern: #ffb347;
+
+  --scene-font: "Courier New", Courier, monospace;
+  --scene-font-size-md: 0.9rem;
+  --scene-font-size-lg: 1.1rem;
+
+  --scene-transition-fast: 150ms ease;
+  --scene-transition-slow: 700ms ease;
+}

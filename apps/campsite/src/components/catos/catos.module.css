@@ -148,7 +148,7 @@
   grid-auto-flow: column;
   grid-template-rows: repeat(auto-fill, var(--desktop-icon-cell-height));
   grid-auto-columns: var(--desktop-icon-width);
-  gap: var(--space-xxs);
+  gap: var(--space-xs);
 }
 
 /* ── Plain-text window ─────────────────────────────────────── */
@@ -289,7 +289,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-xxs);
+  gap: var(--space-xs);
   /* The memory line outruns the frame, and a centred orphan reads as a fault. */
   text-wrap: balance;
 }

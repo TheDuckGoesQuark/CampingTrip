@@ -139,7 +139,7 @@
   background: var(--brand-surface-sunken);
   border: 1px solid var(--brand-border-subtle);
   border-radius: var(--radius-s);
-  padding: 0 var(--space-xxs);
+  padding: 0 var(--space-xs);
 }
 .codeBlock {
   font-family: var(--font-mono);

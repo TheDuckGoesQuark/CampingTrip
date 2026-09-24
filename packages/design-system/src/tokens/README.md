@@ -94,7 +94,7 @@ const button = cva(styles.base, {
 
 ### Dimensions
 
-Spacing (T-shirt scale): `--space-{xxxs,xxs,xs,s,m,l,xl,xxl}` = 2/4/6/8/16/24/32/48px.
+Spacing (T-shirt scale): `--space-{xxs,xs,s,m,l,xl,xxl}` = 2/4/8/16/24/32/48px.
 Radius: `--radius-{none,s,m,l,xl,full}` = 0/7/10/16/24/9999px.
 
 ### Typography
