@@ -101,19 +101,20 @@ export default function UselessMachine() {
     setPhase((current) => (current === "reaching" || current === "lit" ? current : "lit"));
   }, []);
 
-  // The phase guards let these hang off two elements: an animation from a phase
-  // already left behind cannot drag the machine backwards.
+  // The box ends two phases and the paw one, because the drop has to come after
+  // the withdraw: a phase that ended on the paw could never wait for the box.
+  // The guards are what let both hang off their own element safely.
   const boxSettled = useCallback(() => {
-    setPhase((current) => (current === "lit" ? "reaching" : current));
-  }, []);
-
-  const pawSettled = useCallback(() => {
     setPhase((current) => {
-      if (current === "reaching") return "retreating";
+      if (current === "lit") return "reaching";
       if (current !== "retreating") return current;
       setSeenOnce(true);
       return "idle";
     });
+  }, []);
+
+  const pawSettled = useCallback(() => {
+    setPhase((current) => (current === "reaching" ? "retreating" : current));
   }, []);
 
   return (

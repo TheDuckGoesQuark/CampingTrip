@@ -20,10 +20,11 @@ function switchOn() {
   fireEvent.click(screen.getByRole("button", { name: "Do not press" }));
 }
 
+/** The box ends the lift and the drop; the paw ends only the reach. */
 function runTheCycle() {
   fireEvent.animationEnd(box());
   fireEvent.animationEnd(paw());
-  fireEvent.animationEnd(paw());
+  fireEvent.animationEnd(box());
 }
 
 /** The quiet between looks is random, so a test that waits a fixed time has to
@@ -114,6 +115,21 @@ describe("UselessMachine", () => {
   it("ignores an animation that ends after its phase has moved on", () => {
     render(<UselessMachine />);
     fireEvent.animationEnd(paw());
+    fireEvent.animationEnd(box());
+    expect(machine()).toHaveAttribute("data-phase", "idle");
+  });
+
+  it("keeps the box up until the paw is back under it", () => {
+    render(<UselessMachine />);
+    switchOn();
+    fireEvent.animationEnd(box());
+    fireEvent.animationEnd(paw());
+    expect(machine()).toHaveAttribute("data-phase", "retreating");
+
+    // The paw's own withdraw ending must not end the phase: the drop follows it.
+    fireEvent.animationEnd(paw());
+    expect(machine()).toHaveAttribute("data-phase", "retreating");
+
     fireEvent.animationEnd(box());
     expect(machine()).toHaveAttribute("data-phase", "idle");
   });

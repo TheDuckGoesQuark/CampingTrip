@@ -45,9 +45,10 @@ The box's drop has to finish inside the phase that owns it. `retreating` ends
 when the paw's withdraw animation does, at `--reach-ms * 0.62`, and the drop was
 starting at exactly that moment: the phase changed, the rule stopped applying and
 the box snapped flat, so the drop never played at all. That snap was what read as
-the box jumping down. It now starts as the paw lets go and lands with 200ms to
-spare, measured rather than reasoned about: a script drives a real browser through
-a full cycle and prints the box's angle every 50ms.
+the box jumping down. It now waits out the whole withdraw and then lands, measured rather than
+reasoned about: a script drives a real browser through a full cycle and prints
+the box's angle and the leg's height every 50ms, which is how the ordering was
+confirmed rather than assumed.
 
 **The phase machine is React's, the clock is the stylesheet's.** `Phase` runs
 `idle → lit → reaching → retreating → idle`, and every phase but `idle` ends when
@@ -55,8 +56,14 @@ a CSS animation reaches its last frame and fires `onAnimationEnd`. No
 `setTimeout` anywhere, so a duration retuned in the stylesheet needs no matching
 edit in the component. The moment of contact is the end of the reach rather than
 a point inside it, which is what lets the lamp go out exactly when the paw lands.
-Each handler guards on the phase it expects, which is what makes it safe to hang
-two of them on two elements.
+
+Which element ends which phase is load-bearing rather than incidental. The box
+ends both `lit` and `retreating`; the paw ends only `reaching`. The paw has to be
+back under the box before the box comes down on it, so the drop is last, and a
+phase that ended on the paw's own withdraw could never have waited for it. Each
+handler guards on the phase it expects, which is what makes it safe to hang two
+of them on two elements: the paw's withdraw ending mid-`retreating` is simply
+ignored.
 
 **The paw rises straight up and nothing rotates.** It is centred under the
 plunger by construction, `calc(panel-right + (plunger-width - arm-width) / 2)`,

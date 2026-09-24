@@ -35,6 +35,7 @@
   --settle-ms: 1800ms;
   --lift-ms: 320ms;
   --drop-ms: 520ms;
+  --withdraw-ms: 620ms;
   --reach-ms: 1400ms;
   --pupil-travel: 2px;
   --squint: 0%;
@@ -98,6 +99,7 @@
   --settle-ms: 1000ms;
   --lift-ms: 220ms;
   --drop-ms: 380ms;
+  --withdraw-ms: 440ms;
   --reach-ms: 1000ms;
   --squint: 30%;
 }
@@ -108,6 +110,7 @@
   --settle-ms: 400ms;
   --lift-ms: 130ms;
   --drop-ms: 240ms;
+  --withdraw-ms: 280ms;
   --reach-ms: 620ms;
   --squint: 48%;
   --pupil-travel: 4px;
@@ -123,7 +126,7 @@
 
 .machine[data-phase="retreating"] .box {
   animation: cardDrop var(--drop-ms) cubic-bezier(0.45, 0.02, 0.35, 1) backwards;
-  animation-delay: calc(var(--reach-ms) * 0.12);
+  animation-delay: var(--withdraw-ms);
 }
 
 @keyframes cardLift {
@@ -338,11 +341,11 @@
    it, because they are the only parts that move. */
 .lookout {
   position: absolute;
-  right: 24px;
+  right: 25%;
   bottom: 2px;
   z-index: 2;
-  width: 44px;
-  height: 40px;
+  width: 56px;
+  height: 51px;
   background: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 40'><path d='M2.5 21 L7 1.5 L20.5 14 Z' fill='%23333c44'/><path d='M41.5 21 L37 1.5 L23.5 14 Z' fill='%23333c44'/><path d='M7.2 17.5 L9.6 6.4 L16.8 13 Z' fill='%238e7069'/><path d='M36.8 17.5 L34.4 6.4 L27.2 13 Z' fill='%238e7069'/><rect x='1' y='12' width='42' height='31' rx='15' fill='%23333c44'/><path d='M22 13 L25.5 23.5 Q30.5 26.5 30.5 31.5 Q30.5 38.6 22 38.6 Q13.5 38.6 13.5 31.5 Q13.5 26.5 18.5 23.5 Z' fill='%23fdf8ee'/><path d='M18.4 27 Q22 25.9 25.6 27 Q25.2 30.7 22 32.9 Q18.8 30.7 18.4 27 Z' fill='%23343c47'/><ellipse cx='22' cy='36.4' rx='5.2' ry='3.8' fill='%232a343b'/></svg>")
     center / contain no-repeat;
   opacity: 0;
@@ -355,20 +358,20 @@
 
 .eye {
   position: absolute;
-  top: 17px;
-  width: 12px;
-  height: 12px;
+  top: 42.5%;
+  width: 27.3%;
+  height: 30%;
   border-radius: var(--radius-full);
   background: #eda031;
   overflow: hidden;
 }
 
 .eye:nth-child(1) {
-  left: 4.5px;
+  left: 10.2%;
 }
 
 .eye:nth-child(2) {
-  left: 27.5px;
+  left: 62.5%;
 }
 
 /* Narrowing eyes, not a blink: the lid comes down as the mood does. */
@@ -385,9 +388,9 @@
 .pupil {
   position: absolute;
   inset: 50% auto auto 50%;
-  width: 6px;
-  height: 8px;
-  margin: -4px 0 0 -3px;
+  width: 46%;
+  height: 62%;
+  margin: -31% 0 0 -23%;
   border-radius: 50%;
   background: #1f2a32;
   transform: translate(
@@ -440,7 +443,7 @@
 }
 
 .machine[data-phase="retreating"] .arm {
-  animation: pawWithdraw calc(var(--reach-ms) * 0.62) cubic-bezier(0.5, 0, 0.78, 0.4) forwards;
+  animation: pawWithdraw var(--withdraw-ms) cubic-bezier(0.5, 0, 0.78, 0.4) forwards;
 }
 
 @keyframes pawReach {
@@ -499,7 +502,9 @@
     center / contain no-repeat;
 }
 
-/* Claws, out only when the cat has stopped being polite. */
+/* Claws, out only when the cat has stopped being polite. Their bases sit on the
+   beans rather than on the toes' fur: in the dark under the box that fur is all
+   but the same colour as the void, so a claw resting on it reads as floating. */
 .toe {
   position: absolute;
   top: -6px;
@@ -517,20 +522,22 @@
 
 .toe:nth-child(1) {
   left: 3px;
+  top: 5px;
 }
 
 .toe:nth-child(2) {
   left: 12px;
-  top: -9px;
+  top: 0;
 }
 
 .toe:nth-child(3) {
   left: 21px;
-  top: -9px;
+  top: 0;
 }
 
 .toe:nth-child(4) {
   left: 30px;
+  top: 5px;
 }
 
 .announcement {
@@ -586,6 +593,7 @@
     --settle-ms: 400ms;
     --lift-ms: 1ms;
     --drop-ms: 1ms;
+    --withdraw-ms: 1ms;
     --reach-ms: 1ms;
   }
 
