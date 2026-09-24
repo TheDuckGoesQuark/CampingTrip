@@ -30,6 +30,11 @@
   box-shadow: var(--shadow-hard-2);
 }
 
+/* Stated, not inherited from a reset: a card that reaches its own border is a
+   variant of this component, not a consequence of the page it lands on. */
+.padNone {
+  padding: 0;
+}
 .padSm {
   padding: var(--space-s);
 }
