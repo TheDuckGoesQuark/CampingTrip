@@ -5,9 +5,8 @@
 
 :root {
   /* Spacing */
-  --space-xxxs: 2px;
-  --space-xxs: 4px;
-  --space-xs: 6px;
+  --space-xxs: 2px;
+  --space-xs: 4px;
   --space-s: 8px;
   --space-m: 16px;
   --space-l: 24px;

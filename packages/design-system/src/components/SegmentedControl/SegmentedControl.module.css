@@ -1,6 +1,6 @@
 .track {
   margin: 0;
-  padding: var(--space-xxxs);
+  padding: var(--space-xxs);
   list-style: none;
   display: inline-flex;
   border: 1px solid var(--brand-border-strong);
@@ -11,8 +11,8 @@
 .segment {
   display: block;
   /* Concentric with the track: its radius, less the inset a segment sits in. */
-  border-radius: calc(var(--radius-m) - var(--space-xxxs));
-  padding: var(--space-xxs) var(--space-s);
+  border-radius: calc(var(--radius-m) - var(--space-xxs));
+  padding: var(--space-xs) var(--space-s);
   border: none;
   background: transparent;
   font-family: var(--font-sans);

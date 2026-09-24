@@ -53,12 +53,12 @@
 
 .badge {
   position: absolute;
-  top: var(--space-xxs);
+  top: var(--space-xs);
   right: var(--space-s);
 }
 
 .label {
-  padding: 0 var(--space-xxs);
+  padding: 0 var(--space-xs);
   font-size: var(--text-body-sm-size);
   color: var(--brand-text);
   text-align: center;

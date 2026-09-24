@@ -1,13 +1,13 @@
 .screen {
   position: fixed;
   inset: 0;
-  background: var(--color-bg);
+  background: var(--scene-bg);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   z-index: 100;
-  padding: var(--space-lg);
+  padding: var(--space-xl);
   opacity: 1;
   transition: opacity 1.2s ease-out;
 }
@@ -22,13 +22,13 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: var(--space-lg);
+  gap: var(--space-xl);
 }
 
 .message {
-  font-family: var(--font-body);
-  font-size: var(--font-size-lg);
-  color: var(--color-text);
+  font-family: var(--scene-font);
+  font-size: var(--scene-font-size-lg);
+  color: var(--scene-text);
   line-height: 1.8;
   min-height: 5em;
 }
@@ -37,7 +37,7 @@
   display: inline-block;
   width: 0.55em;
   height: 1em;
-  background: var(--color-lantern);
+  background: var(--scene-lantern);
   vertical-align: text-bottom;
   animation: blink 1s step-end infinite;
   margin-left: 2px;
@@ -56,10 +56,10 @@
 .buttons {
   display: flex;
   flex-direction: column;
-  gap: var(--space-sm);
+  gap: var(--space-s);
   opacity: 0;
   pointer-events: none;
-  transition: opacity var(--transition-slow);
+  transition: opacity var(--scene-transition-slow);
 }
 
 .buttons.visible {
@@ -69,24 +69,24 @@
 
 .btn {
   background: transparent;
-  border: 1px solid var(--color-text-dim);
-  color: var(--color-text);
-  font-family: var(--font-body);
-  font-size: var(--font-size-md);
-  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--scene-text-dim);
+  color: var(--scene-text);
+  font-family: var(--scene-font);
+  font-size: var(--scene-font-size-md);
+  padding: var(--space-s) var(--space-m);
   cursor: pointer;
   text-align: left;
   transition:
-    border-color var(--transition-fast),
-    color var(--transition-fast);
+    border-color var(--scene-transition-fast),
+    color var(--scene-transition-fast);
 }
 
 .btn:hover {
-  border-color: var(--color-lantern);
-  color: var(--color-lantern);
+  border-color: var(--scene-lantern);
+  color: var(--scene-lantern);
 }
 
 .prefix {
-  color: var(--color-text-dim);
+  color: var(--scene-text-dim);
   margin-right: var(--space-xs);
 }

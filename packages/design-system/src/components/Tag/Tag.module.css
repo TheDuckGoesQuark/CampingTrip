@@ -1,12 +1,12 @@
 .base {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-xxs);
+  gap: var(--space-xs);
   font-family: var(--font-sans);
   font-weight: var(--weight-bold);
   font-size: var(--text-label-size);
   line-height: 1.4;
-  padding: var(--space-xxs) var(--space-xs);
+  padding: var(--space-xs) var(--space-xs);
   border: 1px solid var(--brand-border-strong);
   /* Squares off on its own inside the desktop chrome, which scopes the radius
      tokens — see Window.module.css. */

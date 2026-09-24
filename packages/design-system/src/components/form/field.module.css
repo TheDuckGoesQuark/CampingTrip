@@ -1,7 +1,7 @@
 .root {
   display: flex;
   flex-direction: column;
-  gap: var(--space-xxs);
+  gap: var(--space-xs);
   /* A field in a flex or grid parent would otherwise be sized by its widest
      descendant's intrinsic width, which for an input is its `size` attribute. */
   min-width: 0;
@@ -101,7 +101,7 @@
 
 /* Sizes */
 .sm {
-  padding: var(--space-xxs) var(--space-xs);
+  padding: var(--space-xs) var(--space-xs);
   font-size: var(--text-body-sm-size);
   line-height: var(--text-body-sm-lh);
 }
