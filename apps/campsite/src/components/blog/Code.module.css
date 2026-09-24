@@ -1,6 +1,5 @@
-/* Matches `.codeBlock` in the PhotoBroom overlay. A step below body-sm: at
-   body-sm the longest token line scrolls sideways, hiding the half of the line
-   that carries the point. */
+/* A step below body-sm: at body-sm the longest token line scrolls sideways,
+   hiding the half of the line that carries the point. */
 .code {
   margin: 0;
   font-family: var(--font-mono);
@@ -17,27 +16,63 @@
   color: var(--brand-text);
 }
 
-.comment {
+.line {
+  display: block;
+}
+
+/* A Prism token carries several types at once, and every rule below is a single
+   class, so the last matching rule wins. Order is the priority here, not
+   specificity: reordering these repaints the block. */
+.code :global(.token.punctuation),
+.code :global(.token.operator),
+.comment,
+.code :global(.token.comment) {
+  color: var(--brand-text-muted);
+}
+
+.prop,
+.attr,
+.code :global(.token.property-access),
+.code :global(.token.attr-name),
+.code :global(.token.property) {
+  color: var(--brand-link);
+}
+
+.fn,
+.punct,
+.code :global(.token.function),
+.code :global(.token.method) {
   color: var(--brand-text-muted);
 }
 
 .selector,
-.element {
+.element,
+.code :global(.token.keyword),
+.code :global(.token.imports),
+.code :global(.token.class-name),
+.code :global(.token.maybe-class-name),
+.code :global(.token.selector) {
   color: var(--brand-solid);
+}
+
+/* Bold marks the language's own structure, not its names: a TSX block holds far
+   more types and components than keywords, and bolding those reads as heavy. */
+.selector,
+.element,
+.code :global(.token.keyword),
+.code :global(.token.imports) {
   font-weight: var(--weight-bold);
 }
 
-.prop,
-.attr {
-  color: var(--brand-link);
-}
-
 .value,
-.string {
+.string,
+.code :global(.token.string),
+.code :global(.token.template-string),
+.code :global(.token.attr-value) {
   color: var(--brand-accent);
 }
 
-.punct,
-.fn {
+/* Prism types the `=` in `foo="bar"` as part of the value. It reads as punctuation. */
+.code :global(.token.attr-equals) {
   color: var(--brand-text-muted);
 }
