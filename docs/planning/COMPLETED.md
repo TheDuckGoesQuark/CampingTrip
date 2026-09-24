@@ -35,9 +35,11 @@ the board ink had to flip with the theme, because the dark ink that reads 5.8:1
 on light kraft only manages 2.7:1 on the dark board.
 
 **Pressing it buys a pause, not a reaction.** The lift carries an
-`animation-delay` of about a second, so the lamp goes green and then nothing
-happens for a beat before the box stirs. It costs no timer and no phase: the
-delay is part of the animation the phase already waits on.
+`animation-delay` of 1.8s, so the lamp goes green and then nothing happens at all
+before the box stirs. It costs no timer and no phase: the delay is part of the
+animation the phase already waits on. The reach itself runs 1.4s on a near-linear
+curve, because a rise worth watching should not spend most of its travel in the
+first fifth. Both shorten with the mood.
 
 **The phase machine is React's, the clock is the stylesheet's.** `Phase` runs
 `idle → lit → reaching → retreating → idle`, and every phase but `idle` ends when
@@ -48,12 +50,16 @@ a point inside it, which is what lets the lamp go out exactly when the paw lands
 Each handler guards on the phase it expects, which is what makes it safe to hang
 two of them on two elements.
 
-**The paw pivots and extends; it never translates.** The shoulder is a fixed
-point under the box's lifted corner, and reaching is the leg growing longer
-(`width`) and turning further up (`rotate`) from it. The pad keeps its own size
-at the far end rather than being scaled, and the foreleg overlaps it, so no gap
-can open while the wrapper turns. `z-index` steps up once the paw is clear of the
-edge: under the box to begin with, over it to reach the switch.
+**The paw rises straight up and nothing rotates.** It is centred under the
+plunger by construction, `calc(panel-right + (plunger-width - arm-width) / 2)`,
+so the paw and the thing it is aiming at cannot drift apart, and reaching is the
+leg's `height` growing from a bottom anchor. A rotating limb was what read as
+clunky, and going vertical also means the reach depends only on the box's fixed
+height rather than on its fluid width, which is why the landing point no longer
+needs tuning per breakpoint. The pad keeps its own size at the top rather than
+being scaled, so it cannot squash. `z-index` steps up early: in the dark under
+the box to begin with, where fur on void is all but invisible, over the box once
+it is in the light.
 
 **A look is a small lift.** The eyes sit flush with the box's bottom edge and
 behind it, so a flat box hides them completely; peeking rotates the box a couple

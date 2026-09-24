@@ -21,17 +21,19 @@
   --cat-fur: #3d3a38;
   --cat-bean: #d98f95;
 
-  /* The paw's shoulder never moves, so reaching is a longer leg turned further
-     up from it. Defined here and not on `.box`, which is the paw's sibling and
-     so hands it nothing. */
-  --shoulder-in: 150px;
-  --leg-rest: 44px;
-  --leg-out: 124px;
-  --turn-out: -66deg;
+  /* The paw rises straight up out of the dark and nothing rotates: a turning
+     limb was what read as clunky, and a vertical one also makes the reach depend
+     only on the box's fixed height rather than on its fluid width. Defined here
+     and not on `.box`, which is the paw's sibling and so hands it nothing. */
+  --panel-right: 38px;
+  --plunger-w: 124px;
+  --arm-w: 34px;
+  --leg-rest: 16px;
+  --leg-out: 108px;
   --lift-deg: -5deg;
-  --settle-ms: 1100ms;
+  --settle-ms: 1800ms;
   --lift-ms: 320ms;
-  --reach-ms: 700ms;
+  --reach-ms: 1400ms;
   --pupil-travel: 3px;
   --squint: 0%;
 }
@@ -85,17 +87,17 @@
 
 .machine[data-mood="annoyed"] {
   --lift-deg: -7deg;
-  --settle-ms: 620ms;
+  --settle-ms: 1000ms;
   --lift-ms: 220ms;
-  --reach-ms: 500ms;
+  --reach-ms: 1000ms;
   --squint: 30%;
 }
 
 .machine[data-mood="feral"] {
   --lift-deg: -10deg;
-  --settle-ms: 220ms;
+  --settle-ms: 400ms;
   --lift-ms: 130ms;
-  --reach-ms: 340ms;
+  --reach-ms: 620ms;
   --squint: 48%;
   --pupil-travel: 4px;
 }
@@ -149,7 +151,7 @@
 
 .panel {
   position: absolute;
-  right: 38px;
+  right: var(--panel-right);
   top: 50%;
   display: flex;
   align-items: center;
@@ -228,6 +230,7 @@
    Its look is a physical cap rather than the DS control, because there is one of
    these and the design system should not grow a variant for a joke. */
 .plunger {
+  width: var(--plunger-w);
   display: flex;
   flex-direction: column-reverse;
   align-items: center;
@@ -241,6 +244,7 @@
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
+  white-space: nowrap;
   color: var(--board-ink);
 }
 
@@ -360,96 +364,81 @@
   transition: transform 90ms ease-out;
 }
 
-/* The shoulder is a fixed point under the card's lifted corner, and reaching is
-   the leg getting longer and turning up from it. Nothing translates, so the paw
-   cannot drift off the creature it belongs to, and at rest the leg is short
-   enough to sit entirely under the card. The z-index steps up once the paw is
-   clear of the edge: under the card to begin with, over it to reach the button.
-   Never a click target, because it comes to rest on the button it just hit. */
+/* Centred under the plunger by construction, so the paw and the thing it is
+   aiming at cannot drift apart. At rest it is short enough to sit in the dark
+   the lift opens, where fur on void is all but invisible, and the `z-index` step
+   is the moment it rises past the box's edge into the light. Never a click
+   target, because it comes to rest on the button it has just hit. */
 .arm {
   position: absolute;
-  left: calc(100% - var(--shoulder-in));
-  bottom: 26px;
-  width: var(--leg-rest);
-  height: 30px;
+  right: calc(var(--panel-right) + (var(--plunger-w) - var(--arm-w)) / 2);
+  bottom: 10px;
+  width: var(--arm-w);
+  height: var(--leg-rest);
   z-index: 1;
   pointer-events: none;
-  transform-origin: left center;
   color: var(--cat-fur);
 }
 
 .machine[data-phase="reaching"] .arm {
-  animation: pawReach var(--reach-ms) cubic-bezier(0.32, 0.72, 0.28, 1) forwards;
+  animation: pawReach var(--reach-ms) cubic-bezier(0.42, 0.08, 0.45, 0.96) forwards;
 }
 
 .machine[data-phase="retreating"] .arm {
-  animation: pawWithdraw calc(var(--reach-ms) * 0.7) cubic-bezier(0.55, 0, 0.82, 0.42) forwards;
+  animation: pawWithdraw calc(var(--reach-ms) * 0.62) cubic-bezier(0.5, 0, 0.78, 0.4) forwards;
 }
 
 @keyframes pawReach {
   0% {
-    width: var(--leg-rest);
-    transform: rotate(0deg);
+    height: var(--leg-rest);
     z-index: 1;
   }
 
-  30% {
-    width: calc(var(--leg-rest) + (var(--leg-out) - var(--leg-rest)) * 0.52);
-    transform: rotate(calc(var(--turn-out) * 0.12));
+  20% {
     z-index: 5;
   }
 
-  62% {
-    width: calc(var(--leg-rest) + (var(--leg-out) - var(--leg-rest)) * 0.84);
-    transform: rotate(calc(var(--turn-out) * 0.55));
-  }
-
   100% {
-    width: var(--leg-out);
-    transform: rotate(var(--turn-out));
+    height: var(--leg-out);
     z-index: 5;
   }
 }
 
 @keyframes pawWithdraw {
   0% {
-    width: var(--leg-out);
-    transform: rotate(var(--turn-out));
+    height: var(--leg-out);
     z-index: 5;
   }
 
-  55% {
-    width: calc(var(--leg-rest) + (var(--leg-out) - var(--leg-rest)) * 0.5);
-    transform: rotate(calc(var(--turn-out) * 0.14));
+  80% {
     z-index: 5;
   }
 
   100% {
-    width: var(--leg-rest);
-    transform: rotate(0deg);
+    height: var(--leg-rest);
     z-index: 1;
   }
 }
 
-/* The leg fills whatever width the arm has and stops short of the pad, which
-   keeps its own size at the far end: a scaled paw would squash. */
+/* The leg fills whatever height the arm has and stops short of the pad, which
+   keeps its own size at the top: a scaled paw would squash. */
 .foreleg {
   position: absolute;
-  left: 0;
-  right: 24px;
-  top: 20%;
-  height: 62%;
+  left: 22%;
+  right: 22%;
+  top: 22px;
+  bottom: 0;
   border-radius: var(--radius-full);
   background: currentcolor;
 }
 
 .pad {
   position: absolute;
-  right: 0;
+  left: 0;
   top: 0;
-  width: 36px;
+  width: var(--arm-w);
   height: 30px;
-  border-radius: 52% 48% 54% 46%;
+  border-radius: 48% 52% 42% 58% / 56% 56% 44% 44%;
   background: currentcolor;
 }
 
@@ -462,18 +451,18 @@
 }
 
 .toe:nth-child(1) {
-  top: -5px;
-  right: 18px;
+  top: -4px;
+  left: -2px;
 }
 
 .toe:nth-child(2) {
-  top: -8px;
-  right: 6px;
+  top: -7px;
+  left: 11px;
 }
 
 .toe:nth-child(3) {
-  top: 4px;
-  right: -4px;
+  top: -4px;
+  left: 24px;
 }
 
 /* Beans, and the claws that come out of them when the cat stops being polite. */
