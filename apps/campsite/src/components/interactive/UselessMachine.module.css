@@ -11,10 +11,13 @@
   --board-face: #c68f55;
   --board-lit: #ddb47c;
   --board-edge: #96683a;
-  --board-ink: rgb(66 42 20 / 58%);
+  --board-ink: #2e1d0c;
+  --board-ink-soft: rgb(46 29 12 / 52%);
   --board-void: #2a1d12;
   --board-tape: rgb(242 234 216 / 42%);
-  --label-paper: #f4f1e6;
+  --plunger-cap: #b32c23;
+  --plunger-rim: #7d1a14;
+  --plunger-skirt: #d8d2c4;
   --cat-fur: #3d3a38;
   --cat-bean: #d98f95;
 
@@ -26,10 +29,20 @@
   --leg-out: 124px;
   --turn-out: -66deg;
   --lift-deg: -5deg;
+  --settle-ms: 1100ms;
   --lift-ms: 320ms;
   --reach-ms: 700ms;
   --pupil-travel: 3px;
   --squint: 0%;
+}
+
+.underneath {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 54px;
+  z-index: 1;
+  border-radius: 0 0 4px 4px;
+  background: var(--board-void);
 }
 
 .machine::after {
@@ -60,15 +73,19 @@
   --board-face: #8a6238;
   --board-lit: #a3784c;
   --board-edge: #684728;
-  --board-ink: rgb(238 224 204 / 34%);
+  --board-ink: #f6efe2;
+  --board-ink-soft: rgb(246 239 226 / 46%);
   --board-void: #150f09;
   --board-tape: rgb(206 196 176 / 26%);
-  --label-paper: #e2ddcd;
+  --plunger-cap: #b32c23;
+  --plunger-rim: #6d1510;
+  --plunger-skirt: #9c968a;
   --cat-fur: #2b2928;
 }
 
 .machine[data-mood="annoyed"] {
   --lift-deg: -7deg;
+  --settle-ms: 620ms;
   --lift-ms: 220ms;
   --reach-ms: 500ms;
   --squint: 30%;
@@ -76,6 +93,7 @@
 
 .machine[data-mood="feral"] {
   --lift-deg: -10deg;
+  --settle-ms: 220ms;
   --lift-ms: 130ms;
   --reach-ms: 340ms;
   --squint: 48%;
@@ -129,58 +147,62 @@
   color: var(--board-ink);
 }
 
-.console {
+.panel {
   position: absolute;
-  right: 34px;
-  top: 30px;
+  right: 38px;
+  top: 50%;
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--space-s);
-  padding: var(--space-m) var(--space-m) var(--space-m);
-  border-radius: 2px;
-  background: var(--label-paper);
-  box-shadow:
-    0 1px 0 rgb(255 255 255 / 40%) inset,
-    0 2px 4px rgb(48 32 16 / 28%);
-  transform: rotate(-1.1deg);
-}
-
-/* Two strips of the same tape holding the label on. */
-.console::before,
-.console::after {
-  content: "";
-  position: absolute;
-  width: 34px;
-  height: 14px;
-  background: var(--board-tape);
-  border: 1px solid rgb(255 255 255 / 22%);
-}
-
-.console::before {
-  top: -7px;
-  left: -10px;
-  transform: rotate(-24deg);
-}
-
-.console::after {
-  bottom: -7px;
-  right: -10px;
-  transform: rotate(-24deg);
+  align-items: center;
+  gap: 26px;
+  transform: translateY(-50%);
 }
 
 .lamp {
-  display: inline-flex;
+  display: flex;
+  flex-direction: column-reverse;
   align-items: center;
-  gap: var(--space-s);
+  gap: var(--space-xs);
+}
+
+/* A hole torn in the board with the lamp pushed through it, rather than a dot
+   drawn on the surface. The ragged edge is the tell that it was made from the
+   inside. */
+.port {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  background: var(--board-void);
+  clip-path: polygon(
+    95% 50%,
+    91% 65%,
+    86% 81%,
+    72% 88%,
+    58% 96%,
+    42% 95%,
+    28% 88%,
+    14% 80%,
+    9% 65%,
+    4% 50%,
+    9% 35%,
+    17% 22%,
+    27% 10%,
+    42% 2%,
+    58% 7%,
+    72% 11%,
+    86% 20%,
+    97% 33%
+  );
 }
 
 .led {
-  width: 14px;
-  height: 14px;
+  width: 20px;
+  height: 20px;
   border-radius: var(--radius-full);
-  border: 1px solid rgb(40 26 12 / 40%);
-  background: rgb(80 68 50 / 28%);
+  border: 1px solid rgb(10 8 4 / 55%);
+  background: radial-gradient(circle at 36% 32%, #6f6a5e, #3c3830 70%);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 55%);
   transition:
     background 140ms ease,
     box-shadow 140ms ease;
@@ -188,8 +210,84 @@
 
 .machine[data-phase="lit"] .led,
 .machine[data-phase="reaching"] .led {
-  background: var(--sage-4);
-  box-shadow: 0 0 0 3px rgb(122 171 104 / 45%);
+  background: radial-gradient(circle at 36% 32%, #b6e59a, var(--sage-5) 68%);
+  box-shadow:
+    0 0 0 4px rgb(122 171 104 / 34%),
+    0 0 14px 3px rgb(122 171 104 / 55%);
+}
+
+.state {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--board-ink);
+}
+
+/* A real <button>, so keyboard behaviour and ARIA state are the element's own.
+   Its look is a physical cap rather than the DS control, because there is one of
+   these and the design system should not grow a variant for a joke. */
+.plunger {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--board-ink);
+}
+
+.cap {
+  width: 58px;
+  height: 58px;
+  border-radius: var(--radius-full);
+  background:
+    radial-gradient(circle at 38% 30%, rgb(255 255 255 / 45%), transparent 46%),
+    radial-gradient(circle at 50% 46%, var(--plunger-cap), var(--plunger-rim) 78%);
+  box-shadow:
+    0 0 0 5px var(--plunger-skirt),
+    0 0 0 6px rgb(20 12 6 / 45%),
+    0 5px 0 0 var(--plunger-rim),
+    0 7px 8px rgb(20 12 6 / 45%);
+  transition:
+    transform 90ms ease,
+    box-shadow 90ms ease;
+}
+
+.plunger:hover .cap {
+  transform: translateY(1px);
+}
+
+/* The travel is the whole point of a plunger: it has to go down when hit, by a
+   finger or by a paw. */
+.plunger:active .cap,
+.machine[data-phase="retreating"] .cap {
+  transform: translateY(4px);
+  box-shadow:
+    0 0 0 5px var(--plunger-skirt),
+    0 0 0 6px rgb(20 12 6 / 45%),
+    0 1px 0 0 var(--plunger-rim),
+    0 2px 4px rgb(20 12 6 / 45%);
+}
+
+/* Leaving the DS control means owning its focus indicator too. */
+.plunger:focus-visible {
+  outline: none;
+}
+
+.plunger:focus-visible .cap {
+  box-shadow:
+    0 0 0 5px var(--plunger-skirt),
+    0 0 0 6px rgb(20 12 6 / 45%),
+    0 5px 0 0 var(--plunger-rim),
+    var(--shadow-focus);
 }
 
 /* ── The cat ───────────────────────────────────────────────────── */
@@ -198,7 +296,7 @@
    opens is the only reason the eyes are visible at all. Held here rather than
    in the phase animations, which override it while the machine is working. */
 .machine[data-peeking="true"] .box {
-  transform: rotate(-2.8deg);
+  transform: rotate(-3.8deg);
 }
 
 /* Flush with the card's bottom edge and behind it, so a flat card hides these
@@ -206,16 +304,12 @@
    eyes in a gap, never two circles floating on the page. */
 .lookout {
   position: absolute;
-  right: 150px;
+  right: 116px;
   bottom: 1px;
   z-index: 2;
   display: flex;
   align-items: flex-end;
-  gap: 10px;
-  padding: 0 11px 4px;
-  border-radius: 3px 3px 11px 11px;
-  background: var(--board-void);
-  box-shadow: 0 3px 5px rgb(30 20 10 / 32%);
+  gap: 11px;
   opacity: 0;
   transition: opacity 180ms ease;
 }
@@ -226,8 +320,8 @@
 
 .eye {
   position: relative;
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   border-radius: var(--radius-full);
   background: var(--amber-3);
   overflow: hidden;
@@ -254,9 +348,9 @@
 .pupil {
   position: absolute;
   inset: 50% auto auto 50%;
-  width: 6px;
-  height: 15px;
-  margin: -7.5px 0 0 -3px;
+  width: 5px;
+  height: 11px;
+  margin: -5.5px 0 0 -2.5px;
   border-radius: 50%;
   background: var(--board-void);
   transform: translate(
@@ -417,8 +511,8 @@
   white-space: nowrap;
 }
 
-/* The console cannot sit beside the stencil at this width, so it takes the card
-   on its own and the paw reaches a button that is simply higher up. */
+/* The panel cannot sit beside the stencil at this width, so it takes the box on
+   its own and the paw reaches a switch that is simply higher up. */
 @media (max-width: 520px) {
   .machine {
     --leg-out: 118px;
@@ -430,9 +524,10 @@
     min-height: 0;
   }
 
-  .console {
+  .panel {
     position: static;
-    align-items: flex-start;
+    justify-content: space-between;
+    transform: none;
   }
 
   .stencil {
@@ -459,8 +554,15 @@
    removed here is a machine that latches on its first press and never returns. */
 @media (prefers-reduced-motion: reduce) {
   .machine {
+    /* The held beat is a pause, not motion, so it stays. Shortened only because
+       a full second of nothing before an instant jump reads as a hang. */
+    --settle-ms: 400ms;
     --lift-ms: 1ms;
     --reach-ms: 1ms;
+  }
+
+  .machine {
+    --settle-ms: 1ms;
   }
 
   .machine[data-phase="retreating"] .box {

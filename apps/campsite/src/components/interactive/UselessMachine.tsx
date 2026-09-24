@@ -1,4 +1,3 @@
-import { Button, Text } from "@jordanscamp/ds";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import styles from "./UselessMachine.module.css";
@@ -125,6 +124,8 @@ export default function UselessMachine() {
       data-peeking={peeking}
       ref={root}
     >
+      <span className={styles.underneath} aria-hidden="true" />
+
       <span className={styles.lookout} aria-hidden="true">
         <span className={styles.eye}>
           <span className={styles.pupil} />
@@ -153,16 +154,17 @@ export default function UselessMachine() {
         <span className={styles.stencil} aria-hidden="true">
           This way up
         </span>
-        <div className={styles.console}>
+        <div className={styles.panel}>
           <span className={styles.lamp}>
-            <span className={styles.led} aria-hidden="true" />
-            <Text variant="label" as="span">
-              {lit ? "ON" : "OFF"}
-            </Text>
+            <span className={styles.port} aria-hidden="true">
+              <span className={styles.led} />
+            </span>
+            <span className={styles.state}>{lit ? "ON" : "OFF"}</span>
           </span>
-          <Button size="sm" aria-pressed={lit} onClick={press}>
+          <button type="button" className={styles.plunger} aria-pressed={lit} onClick={press}>
+            <span className={styles.cap} aria-hidden="true" />
             Do not press
-          </Button>
+          </button>
         </div>
       </div>
 

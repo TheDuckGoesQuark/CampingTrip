@@ -18,12 +18,26 @@ and swats the switch back off. The post argued that a cheap idea is worth trying
 and a button that counted was not making that argument.
 
 **The card is the box.** It is not a card containing a drawing of a box: the
-island itself is kraft board with a tape seam, a `THIS WAY UP` stencil it keeps
-disproving, and a shipping label taped on that carries the lamp and the switch.
-The whole thing pivots on its bottom-left corner, so what lifts is the thing the
-visitor is reading. The label exists for contrast as much as for the joke: the
-DS text tones are built for the site's surfaces and only reach about 4.2:1 on
-kraft, while on label paper they clear comfortably.
+island itself is kraft board with a tape seam and a `THIS WAY UP` stencil it
+keeps disproving. It pivots on its bottom-left corner, so what lifts is the thing
+the visitor is reading, and what the lift opens is solid black: the only thing
+ever visible in the gap is a pair of eyes, which is also why none of the
+mechanism underneath has to bear looking at.
+
+**The controls are physical.** A green lamp pushed through a hole torn in the
+board, and a big red plunger beside it with its own cap, skirt and travel. The
+plunger is a real `<button>`, so keyboard behaviour and ARIA state belong to the
+element, but it is not the DS `Button`: there is exactly one of these and the
+design system should not grow a red variant to serve a joke. The cost is real
+and is paid in the stylesheet, which now owns this control's hover, active and
+focus indicator. Measured rather than eyeballed: white on the cap is 6.4:1, and
+the board ink had to flip with the theme, because the dark ink that reads 5.8:1
+on light kraft only manages 2.7:1 on the dark board.
+
+**Pressing it buys a pause, not a reaction.** The lift carries an
+`animation-delay` of about a second, so the lamp goes green and then nothing
+happens for a beat before the box stirs. It costs no timer and no phase: the
+delay is part of the animation the phase already waits on.
 
 **The phase machine is React's, the clock is the stylesheet's.** `Phase` runs
 `idle → lit → reaching → retreating → idle`, and every phase but `idle` ends when
@@ -76,13 +90,21 @@ machine that latches on its first press and never comes back.
   as a local retelling of the DS `Card`, which this is not, so the class is
   `.box`. The guard was right for a reason its message does not give: the name
   was also just wrong.
+- **`ds/no-bespoke-control` only fires on a DOM element carrying a control
+  `role`,** not on a native `<button>`, which is the right line: the rule exists
+  because a `role` is a promise about keyboard behaviour and focus that the
+  element does not keep, and a real button keeps it. That is what makes the
+  plunger legitimate rather than a dodge.
 
 **Deferred**:
 
 - The post's closing `[DRAFT: …]` beat is still Jordan's to write, and the post
   stays `draft: true` until it is.
-- Under 520px the shipping label takes the box on its own and the paw reaches a
-  switch that is simply higher up. Checked by rule, not by eye.
+- Under 520px the panel takes the box on its own and the paw reaches a switch
+  that is simply higher up. Checked by rule, not by eye.
+- Under `prefers-reduced-motion` the held beat is kept at 400ms rather than
+  removed, on the grounds that a pause is not motion. A full second before an
+  instant jump read as a hang, so it is shortened rather than preserved.
 
 ---
 
