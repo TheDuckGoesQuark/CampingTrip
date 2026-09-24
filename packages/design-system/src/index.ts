@@ -14,6 +14,7 @@ export { Modal, type ModalProps, type ModalVariant, type ModalSize } from "./com
 export { Icon, ICON_NAMES, type IconProps, type IconName } from "./components/Icon";
 export { TextField, type TextFieldProps } from "./components/form/TextField";
 export { TextArea, type TextAreaProps } from "./components/form/TextArea";
+export { TextSurface, type TextSurfaceProps } from "./components/TextSurface";
 export { Card, type CardProps } from "./components/Card";
 export { CopyButton, COPIED_MS, type CopyButtonProps } from "./components/CopyButton";
 export { Tag, type TagProps } from "./components/Tag";

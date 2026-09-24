@@ -1,0 +1,74 @@
+/* The window is this control's frame, so the control draws no border of its own
+   and never states a height. What `fill` decides is the relationship to that
+   frame, and padding, background and the focus ring all follow from it: a
+   surface that *is* the window's content is padded by the window and edged by
+   the window's border, while one sharing the window with other chrome has to
+   draw its own pane and its own focus. */
+.base {
+  composes: classic from "../../styles/scrollbars.module.css";
+
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  border: 0;
+  color: var(--brand-text);
+  caret-color: var(--brand-text);
+  white-space: pre-wrap;
+  /* The frame's own grow box is what resizes this; a second handle in the
+     bottom corner would be arguing with it. */
+  resize: none;
+}
+
+.base::placeholder {
+  color: var(--brand-text-muted);
+}
+
+/* A monospace face at the same nominal size reads larger and tighter than a
+   proportional one, so it is set a step down and opened up. */
+.faceMono {
+  font-family: var(--font-mono);
+  font-size: var(--text-body-sm-size);
+  line-height: 1.7;
+}
+
+.faceText {
+  font-family: var(--font-text);
+  font-size: var(--text-body-md-size);
+  line-height: var(--text-body-md-lh);
+}
+
+/* The whole of the window's body. Sized by its content, so the bar that appears
+   as the text grows is the window's own: a document in a frame is one document,
+   not a pane inside a pane. `min-height` keeps a short one filling the window it
+   opened at. Where the browser cannot size a control by its content it falls
+   back to filling and scrolling, which is what `overflow-y` is still for. */
+.fillContent {
+  field-sizing: content;
+  min-height: 100%;
+  padding: 0;
+  background: none;
+  overflow-y: auto;
+}
+
+/* A ring around the whole body would read as a selected object rather than as a
+   document; the caret is the focus indicator a text field is expected to have. */
+.fillContent:focus-visible {
+  outline: none;
+}
+
+/* A pane sharing the window with other chrome, taking the room that chrome
+   leaves. It draws its own surface, so it owes its own focus indicator. */
+.fillFrame {
+  flex: 1;
+  min-height: 0;
+  padding: var(--space-m) var(--space-l);
+  background: var(--brand-surface-raised);
+}
+
+/* A ring inside the pane rather than around it: the control reaches the frame's
+   edges, so a ring outside would trace the window instead of the control. */
+.fillFrame:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--brand-focus);
+}

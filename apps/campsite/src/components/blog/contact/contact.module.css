@@ -68,35 +68,6 @@
   flex-direction: column;
 }
 
-.message {
-  composes: classic from "@jordanscamp/ds/scrollbars.module.css";
-  flex: 1;
-  min-height: 0;
-  width: 100%;
-  box-sizing: border-box;
-  padding: var(--space-m) var(--space-l);
-  border: none;
-  background: var(--brand-surface-raised);
-  color: var(--brand-text);
-  font-family: var(--font-text);
-  font-size: var(--text-body-md-size);
-  line-height: var(--text-body-md-lh);
-  /* The frame's own grow box is what resizes this; a second handle in the
-     bottom corner would be arguing with it. */
-  resize: none;
-}
-
-.message::placeholder {
-  color: var(--brand-text-muted);
-}
-
-/* A ring inside the page rather than around it: the control reaches the frame's
-   edges, so a ring outside would trace the window instead of the control. */
-.message:focus-visible {
-  outline: none;
-  box-shadow: inset 0 0 0 2px var(--brand-focus);
-}
-
 .messageError {
   margin: 0;
   padding: var(--space-xs) var(--space-l) var(--space-m);
