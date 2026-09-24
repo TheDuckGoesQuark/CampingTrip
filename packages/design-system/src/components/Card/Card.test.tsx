@@ -35,6 +35,18 @@ describe("Card", () => {
     expect(surface).not.toEqual(floating);
   });
 
+  it("resolves a different class per padding step, including none", () => {
+    render(
+      <>
+        <Card padding="none">a</Card>
+        <Card padding="sm">b</Card>
+        <Card padding="md">c</Card>
+      </>,
+    );
+    const classes = ["a", "b", "c"].map((text) => screen.getByText(text).className);
+    expect(new Set(classes).size).toBe(3);
+  });
+
   it("forwards unrelated props through to the element", () => {
     render(<Card aria-label="Project">x</Card>);
     expect(screen.getByLabelText("Project")).toBeInTheDocument();

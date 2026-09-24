@@ -9,7 +9,7 @@ const card = cva(styles.base, {
   variants: {
     tone: { surface: styles.surface, sunken: styles.sunken, subtle: styles.subtle },
     elevation: { flat: styles.flat, raised: styles.raised, floating: styles.floating },
-    padding: { sm: styles.padSm, md: styles.padMd },
+    padding: { none: styles.padNone, sm: styles.padSm, md: styles.padMd },
   },
   defaultVariants: { tone: "surface", elevation: "flat", padding: "md" },
 });
@@ -27,7 +27,9 @@ export interface CardProps
 /**
  * Card — a boxy bordered surface. `elevation` moves border weight and hard
  * shadow together, because a 1px border with a 4px drop shadow never reads as
- * one object; `tone` picks the fill.
+ * one object; `tone` picks the fill. `padding="none"` is for a card whose
+ * children own their own insets, such as one divided into bands that each have
+ * to reach the border.
  */
 export function Card({ tone, elevation, padding, render, ...props }: CardProps) {
   return useRender({

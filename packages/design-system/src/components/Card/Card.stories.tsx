@@ -34,6 +34,9 @@ export const AllVariants: Story = {
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         <code>padding</code>
         <div style={{ display: "flex", gap: 16 }}>
+          <Card padding="none">
+            <Text variant="body-sm">none</Text>
+          </Card>
           <Card padding="sm">
             <Text variant="body-sm">sm</Text>
           </Card>

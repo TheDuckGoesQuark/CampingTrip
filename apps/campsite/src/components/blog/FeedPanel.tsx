@@ -1,4 +1,4 @@
-import { Link, Text } from "@jordanscamp/ds";
+import { Card, Link, Text } from "@jordanscamp/ds";
 import { useId } from "react";
 import { Link as RouterLink } from "react-router-dom";
 
@@ -13,8 +13,9 @@ import styles from "./FeedPanel.module.css";
 const VISIBLE = 5;
 
 /**
- * The blog feed as it appears beside the homepage: a sunken panel with a
- * bevelled header, the tag rail, and the newest posts. Local to the blog — the
+ * The blog feed as it appears beside the homepage: a design-system `Card` for
+ * the box, divided into a bevelled header, the tag rail, the newest posts and a
+ * footer. The bands are local, because each reaches the card's border and the
  * design system has no business knowing what a post is.
  */
 export default function FeedPanel() {
@@ -23,7 +24,12 @@ export default function FeedPanel() {
   const headingId = useId();
 
   return (
-    <section className={styles.panel} aria-labelledby={headingId}>
+    <Card
+      tone="sunken"
+      elevation="floating"
+      padding="none"
+      render={<section aria-labelledby={headingId} />}
+    >
       <div className={styles.panelHeader}>
         <Text variant="label" as="h2" id={headingId}>
           From the blog
@@ -47,6 +53,6 @@ export default function FeedPanel() {
           </Text>
         </Link>
       </footer>
-    </section>
+    </Card>
   );
 }
