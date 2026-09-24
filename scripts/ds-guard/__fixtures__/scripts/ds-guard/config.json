@@ -3,6 +3,11 @@
     "package": "@demo/ds",
     "barrels": ["packages/design-system/src/index.ts"]
   },
+  "stylesheets": {
+    "roots": ["apps/demo/src", "packages/design-system/src"],
+    "tokenSources": ["packages/design-system/src/tokens"],
+    "tokensOnly": ["packages/design-system/src/components"]
+  },
   "consumers": ["apps/demo/src"],
   "styleSources": "cssModules",
   "baseline": "baseline.json"

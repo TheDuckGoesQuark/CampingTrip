@@ -34,7 +34,9 @@ flowchart TD
     C -->|yes| L2[dependency-cruiser<br/>fails on the graph]
     C -->|no| D{"declares a component or style<br/>named after a DS export,<br/>without importing it?"}
     D -->|yes| L3[ds-guard<br/>fails on the inventory]
-    D -->|no| E[lands]
+    D -->|no| F{"redeclares a token<br/>the design system owns?"}
+    F -->|yes| L3
+    F -->|no| E[lands]
 ```
 
 Layers 1 and 2 are per-file and per-edge, so they are fast and exact, and they
@@ -82,6 +84,8 @@ every class in `blog.module.css`.
 | `reinvented-component` | error    | A local name matches a DS export the file does not import. Use it, or extend it.                                                                     |
 | `missing-primitive`    | warn     | A local name builds a control (`switch`, `slider`, `pill`…) the DS exports nothing for. Either a gap worth filling, or a one-off that should say so. |
 | `unused-export`        | info     | The DS exports it and no consumer imports it — the inverse smell.                                                                                    |
+| `token-shadowed`       | error    | A stylesheet outside the token sheets redeclares an owned token on the document, so its value silently replaces the design system's.                 |
+| `raw-colour`           | error    | A colour written out inside the design system's own components, where it cannot follow the colour scheme.                                            |
 
 `missing-primitive` is the one that answers "am I confident the app uses what it
 should?", because it turns a vague worry into a list of controls the design
@@ -90,6 +94,30 @@ system never grew.
 The run closes with two coverage numbers — consumer files importing the DS at
 all, and DS exports with at least one consumer. Neither fails the build. They
 are there so the trend is visible in CI logs without anyone maintaining a metric.
+
+## The stylesheet pass
+
+The rules above read TypeScript. Two more read CSS, and they are here for the
+same reason the others are: neither can be decided from the file it flags.
+
+`--space-xs: 4px` is correct in the sheet that owns the spacing scale and a
+silent override in any other. Nothing about the declaration says which it is.
+The question is whether some other file already claims that name on the same
+selector, and a per-file rule has no way to ask it. When two `:root` blocks
+declare a name, the one whose stylesheet loads second wins with no warning from
+anywhere, so a shadowed token is invisible in the app, invisible in review, and
+visible only as a component that renders one size in Storybook and another in
+the product.
+
+So the inventory comes from the token sheets, the way the export list comes from
+the barrel, and every other stylesheet is judged against it. A declaration
+scoped to a class is left alone: theming a subtree by redeclaring a token on it
+is a technique the design system uses itself.
+
+`raw-colour` is the narrower of the two, and applies only inside `tokensOnly`,
+which here is the design system's own components. Application code keeps its own
+judgement, because an app may legitimately hold a palette the brand does not, so
+long as it does not name it after one the brand owns.
 
 ## The baseline, and why a rough heuristic is still worth shipping
 
@@ -141,6 +169,7 @@ copies drifting apart is the problem this tool exists to catch.
 | `styleSources`         | `cssModules` or `reactNativeStyleSheet`.                                                                                                                                                       |
 | `extensions`           | File extensions to scan. Defaults to `.ts`/`.tsx`.                                                                                                                                             |
 | `exclude`              | Regexes tested against repo-relative paths. Defaults exclude tests, stories and `dist`.                                                                                                        |
+| `stylesheets`          | Optional. `roots` to scan for `.css`, `tokenSources` (the sheets that own token names), `tokensOnly` (directories where every colour owes a token). Omit it and the CSS rules do not run.      |
 | `baseline`             | Baseline filename, relative to this config.                                                                                                                                                    |
 
 Adding a styling mechanism means adding one function to `STYLE_EXTRACTORS`: it

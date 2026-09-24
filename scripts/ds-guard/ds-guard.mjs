@@ -401,6 +401,139 @@ function analyse(config) {
   };
 }
 
+/* ── Stylesheets ─────────────────────────────────────────────────────────────
+ *
+ * The rules above read TypeScript. These two read CSS, and answer the question a
+ * per-file linter cannot: is this declaration allowed to exist *here*. Neither
+ * asks anything about the declaration alone. `--space-xs: 4px` is correct in the
+ * sheet that owns the scale and a silent override anywhere else, and which sheet
+ * owns it is not knowable from the file under the rule.
+ */
+
+/**
+ * The token names the design system owns, read from its own token sheets for the
+ * same reason the export list is read from the barrel: a prefix list in config
+ * stops covering the day someone adds a family, and does so silently.
+ */
+function readDesignSystemTokens(dirs) {
+  const owner = new Map();
+  for (const file of collectFiles(dirs, { extensions: [".css"], exclude: ["node_modules"] })) {
+    for (const { property } of declarations(readFileSync(join(ROOT, file), "utf8"))) {
+      if (property.startsWith("--") && !owner.has(property)) owner.set(property, file);
+    }
+  }
+  if (owner.size === 0) fail("Parsed zero tokens from the design-system token sheet(s).");
+  return owner;
+}
+
+/**
+ * Every declaration in a stylesheet, with the selector it sits under and whether
+ * that selector is the document itself.
+ *
+ * Hand-rolled rather than a CSS parser dependency: the questions here are which
+ * selector a declaration sits under and what its value reads, and a stack of
+ * brace depths answers both. At-rule blocks (`@media`, `@container`) nest without
+ * introducing a selector, so the search walks past them to the style rule that
+ * actually decides where a declaration lands.
+ */
+function* declarations(css) {
+  const source = css.replaceAll(/\/\*[\s\S]*?\*\//gu, (match) => match.replaceAll(/[^\n]/gu, " "));
+  const stack = [];
+  let buffer = "";
+  let line = 1;
+
+  for (const char of source) {
+    if (char === "\n") line += 1;
+    if (char === "{") {
+      stack.push(buffer.trim());
+      buffer = "";
+    } else if (char === "}") {
+      stack.pop();
+      buffer = "";
+    } else if (char === ";") {
+      const colon = buffer.indexOf(":");
+      if (colon !== -1) {
+        const selector = stack.findLast((entry) => !entry.startsWith("@")) ?? "";
+        yield {
+          property: buffer.slice(0, colon).trim(),
+          value: buffer.slice(colon + 1).trim(),
+          line,
+          // The two selectors that reach the whole document, and so the only two
+          // that can shadow a `:root` token rather than scope a local override.
+          global: /(^|,)\s*(:root|html)\b/u.test(selector),
+        };
+      }
+      buffer = "";
+    } else {
+      buffer += char;
+    }
+  }
+}
+
+/** A colour written out rather than referenced. `url(#gradient)` is a fragment
+ *  reference, not a hex triplet, so it is cut before the match runs. */
+function literalColour(value) {
+  const withoutRefs = value.replaceAll(/url\([^)]*\)/gu, "");
+  return withoutRefs.match(/#[0-9a-fA-F]{3,8}\b|\b(?:rgba?|hsla?)\(/u)?.[0];
+}
+
+/**
+ * `token-shadowed` and `raw-colour`. Skipped entirely when a config declares no
+ * `stylesheets`, so a copy of this script in a repo that styles some other way
+ * keeps working.
+ */
+function checkStylesheets(config) {
+  const sheets = config.stylesheets;
+  if (sheets === undefined) return [];
+
+  const owner = readDesignSystemTokens(sheets.tokenSources);
+  const isTokenSource = (file) => sheets.tokenSources.some((dir) => file.startsWith(`${dir}/`));
+  const mustUseTokens = (file) =>
+    (sheets.tokensOnly ?? []).some((dir) => file.startsWith(`${dir}/`));
+
+  const findings = [];
+  const files = collectFiles(sheets.roots, {
+    extensions: [".css"],
+    exclude: config.exclude ?? ["node_modules"],
+  });
+
+  for (const file of files) {
+    if (isTokenSource(file)) continue;
+    for (const { property, value, line, global } of declarations(
+      readFileSync(join(ROOT, file), "utf8"),
+    )) {
+      if (global && owner.has(property)) {
+        findings.push({
+          rule: "token-shadowed",
+          severity: "error",
+          file,
+          subject: `token:${property}`,
+          message:
+            `\`${property}\` is owned by ${owner.get(property)}, and this redeclares it on the ` +
+            `document (line ${line}). Both land on the same selector, so whichever stylesheet ` +
+            `loads second wins and the design system's value is silently discarded. Scope the ` +
+            `override to a class if it is meant to be local, or give the value its own name.`,
+        });
+      }
+
+      const colour = mustUseTokens(file) ? literalColour(value) : undefined;
+      if (colour !== undefined) {
+        findings.push({
+          rule: "raw-colour",
+          severity: "error",
+          file,
+          subject: `colour:${property}`,
+          message:
+            `\`${property}\` is set to the literal colour \`${colour}\` (line ${line}). A literal ` +
+            `cannot follow the colour scheme, so it is whatever it was written as in both. Take ` +
+            `a \`--brand-*\` token, or add one if none of them says this.`,
+        });
+      }
+    }
+  }
+  return findings;
+}
+
 const keyOf = (finding) => `${finding.rule}|${finding.file}|${finding.subject}`;
 
 function loadBaseline(config) {
@@ -462,7 +595,13 @@ function report(findings, stats, { baseline }) {
 }
 
 const config = loadConfig();
-const { findings, stats } = analyse(config);
+const { findings: nameFindings, stats } = analyse(config);
+const findings = [...nameFindings, ...checkStylesheets(config)].toSorted(
+  (a, b) =>
+    SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity] ||
+    a.file.localeCompare(b.file) ||
+    a.subject.localeCompare(b.subject),
+);
 const baseline = loadBaseline(config);
 
 if (process.argv.includes("--update-baseline")) {

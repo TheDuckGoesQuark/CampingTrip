@@ -1,0 +1,7 @@
+/* The fixture design system's owned names. The guard reads its inventory from
+   here, so these are the names nothing else may declare on the document. */
+:root {
+  --space-s: 8px;
+  --radius-s: 7px;
+  --brand-text: #223322;
+}

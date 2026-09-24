@@ -1,0 +1,10 @@
+/* Inside the design system's own components, where every colour owes a token. */
+.warning {
+  color: #b00;
+  background: var(--brand-text);
+}
+
+/* A fragment reference is not a colour. */
+.masked {
+  fill: url(#stripes);
+}

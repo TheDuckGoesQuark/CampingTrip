@@ -1,0 +1,17 @@
+/* A second document-level declaration of a design-system name: the shape that
+   silently wins over the token sheet. */
+:root {
+  --space-s: 4px;
+}
+
+/* Scoped to a class, so it themes this subtree and shadows nothing. */
+.compact {
+  --radius-s: 0;
+}
+
+/* Under an at-rule, still document-level. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --brand-text: #eef;
+  }
+}

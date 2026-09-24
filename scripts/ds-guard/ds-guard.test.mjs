@@ -65,6 +65,35 @@ describe("gaps", () => {
   });
 });
 
+describe("token ownership", () => {
+  test("flags a document-level redeclaration of a token the design system owns", () => {
+    assert.match(run().out, /`--space-s` is owned by [^\n]*tokens\.css/u);
+  });
+
+  test("flags one under an at-rule, which still lands on the document", () => {
+    assert.match(run().out, /`--brand-text` is owned by/u);
+  });
+
+  test("leaves a scoped override alone, since it themes a subtree rather than the document", () => {
+    assert.doesNotMatch(run().out, /`--radius-s` is owned by/u);
+  });
+});
+
+describe("literal colours", () => {
+  test("flags one inside the design system's own components", () => {
+    assert.match(run().out, /`color` is set to the literal colour `#b00`/u);
+  });
+
+  test("does not read a fragment reference as a colour", () => {
+    assert.doesNotMatch(run().out, /`fill` is set to the literal colour/u);
+  });
+
+  test("leaves application stylesheets to their own judgement", () => {
+    // shared.module.css sits outside `tokensOnly`, so its values are its business.
+    assert.doesNotMatch(run().out, /shared\.module\.css[\s\S]{0,200}?literal colour/u);
+  });
+});
+
 const PLUGIN = join(HERE, "../oxlint/ds-plugin.mjs");
 
 describe("the oxlint plugin", () => {
@@ -102,10 +131,16 @@ describe("the oxlint plugin", () => {
 });
 
 describe("baseline", () => {
+  // Every blocking finding the fixture produces. The first test asserts the run
+  // goes green once they are all accepted, so a new rule that forgets its entry
+  // here shows up as a failure rather than as a silently weaker assertion.
   const knownKeys = [
     "reinvented-component|apps/demo/src/Rolled.tsx|component:Button",
     "reinvented-component|apps/demo/src/Rolled.tsx|style:card",
     "missing-primitive|apps/demo/src/Rolled.tsx|component:ToggleSwitch",
+    "token-shadowed|apps/demo/src/shadow.css|token:--space-s",
+    "token-shadowed|apps/demo/src/shadow.css|token:--brand-text",
+    "raw-colour|packages/design-system/src/components/raw.module.css|colour:color",
   ];
 
   test("an accepted violation stops failing the build", () => {
