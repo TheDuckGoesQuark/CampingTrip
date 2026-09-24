@@ -17,9 +17,17 @@
   gap: var(--space-xs);
 }
 
-/* The bar is hidden because a persistent one (Windows, Linux — macOS overlays)
+/* A `.tagList` that scrolls sideways instead of wrapping, so a row of tags costs
+   a card one line whatever it holds. `composes` rather than two class names on
+   the element: both rules live in this file, so the later one wins `flex-wrap`
+   by source order, which is the ordinary CSS contract and not something the
+   bundler decides.
+
+   The bar is hidden because a persistent one (Windows, Linux — macOS overlays)
    would add back the card height this scrolling exists to save. */
 .rowTags {
+  composes: tagList;
+
   flex-wrap: nowrap;
   overflow-x: auto;
   scrollbar-width: none;
