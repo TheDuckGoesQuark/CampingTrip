@@ -6,6 +6,90 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## One owner per token, and one stylesheet per component
+
+**Date**: 2026-09-24
+
+**What was done**:
+
+Four stacked PRs (#165, #166, #167, #168), from a question about whether the
+blog had drifted off the design system.
+
+**The premise was half wrong.** `blog.module.css` was not bypassing the design
+system for typography: three `font-size` declarations in 1266 lines, against 72
+`display` and 63 `gap`, and the blog components call `<Text>` 78 times. It was a
+layout sheet, and it said so in its header.
+
+**The real bypass was a token collision, and it was live.** The campsite carried
+a second `:root` token layer loaded after the design system's, and one name
+overlapped: `--space-xs` resolved to the app's 4px in the product and the design
+system's 6px in Storybook. Every component whose padding uses it, `Button`,
+`Tag`, `Badge`, the `Window` tab strip and the form fields, rendered one size in
+each. Nothing could have caught it, because oxlint and dependency-cruiser do not
+read CSS.
+
+**The design system adopted the app's value rather than the other way round**,
+since 4px is what the site was designed against. That left `--space-xxs` and
+`--space-xs` both at 4px, so the two collapsed into one rung and `--space-xxxs`
+took the freed name: the scale is 2/4/8/16/24/32/48. What remained of the app
+layer is the campfire scene's palette and monospace type, which is deliberately
+not the brand, so it keeps its values under `--scene-*` where nothing it
+declares can shadow a design-system name.
+
+**`ds-guard` learned to read CSS.** `token-shadowed` takes its inventory from
+the token sheets, the way the export list already comes from the barrel, and
+fails on any other stylesheet redeclaring an owned name on the document. A
+declaration scoped to a class stays legal, because that is how `Window` and
+`DialogFrame` drop their radius. `raw-colour` enforces, inside the package's own
+components, the rule its `CLAUDE.md` had only stated in prose.
+
+**Its first catch was a real defect.** The danger `Badge` set white text with a
+hex instead of the token its two siblings take, so in dark mode it sat at 2.66:1
+on `#e8836b` where WCAG AA wants 4.5. The token gives 6.95:1 there and is
+identical in light.
+
+**No rule for raw px on spacing properties**, though one was proposed. At the
+scope the package's rule is written for it has a single candidate, the active
+window tab's `padding-bottom: 2px`, which cancels the 2px border of the strip
+below it. That is geometry that happens to equal a spacing step, and tying it to
+the scale would break the tab the day the scale moved.
+
+**`blog.module.css` became one sheet per component.** Ninety-one of its 95
+classes had exactly one consumer, so the file was thirteen private stylesheets
+sharing a name. What stayed behind is what more than one page uses.
+
+**Two elements were relying on emission order, and one was already wrong.** A
+CSS-module class is hashed per file, so a rule can only select classes its own
+file declares, and two equal-specificity rules on one element are settled by
+whichever sheet the bundler emitted second. `composes` does not fix this: with
+`.cvCondensed` composing `.cv`, the built stylesheet put `.cv` second and its
+640px was beating the condensed CV's 720px. The condensed CV now states its own
+declarations and takes no base class, and the homepage's scrolling tag row moved
+next to the `.tagList` it overrides, where source order is the ordinary CSS
+contract.
+
+**`Card` gained `padding="none"`,** which is what `FeedPanel` needed in order to
+stop hand-drawing the design system's own chrome: its bands each reach the
+border, and the padding axis offered only `sm` and `md`. The panel's element
+resolves to the declarations it had before.
+
+**Verification was by comparison, not by eye.** For the token work, every
+changed stylesheet was compared before and after with token names substituted
+for their values: the only difference in the tree is an `@import` filename. For
+the split, the built stylesheet was compared with the module hashes stripped, at
+the level of at-rule context, selector and declaration: nothing lost, nothing
+reselected. What is added is the condensed CV's two now-explicit declarations
+and one duplicate copy of `shimmer.module.css`'s `.palette`, because two sheets
+compose from it instead of one.
+
+**Deferred**: no `Card.Header` or `Card.Footer`, because two consumers is not
+three and the second candidate turned out not to be one. The framed-box chrome
+is still restated inside `Tile`, `Window`, `DialogFrame` and `TransferProgress`,
+which is now in TODO.md. The Storybook deploy's failure on `main` predates all
+of this and is also in TODO.md.
+
+---
+
 ## Dropped the music post, and linked the CV to the post that replaced it
 
 **Date**: 2026-09-23

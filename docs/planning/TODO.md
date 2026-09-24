@@ -250,7 +250,7 @@ height and the print heading sizes rather than anything structural. Worth a
 print-density pass on its own, measured with `pdfinfo` and
 `pdftotext | wc -w` rather than by eye.
 
-The condensed CV's `@media print` block in `blog.module.css` is a worked example
+The condensed CV's `@media print` block in `CvCondensedPage.module.css` is a worked example
 of the same levers — collapsed gaps, a smaller section margin, no separator —
 scoped to `.cvCondensed` so it says nothing about the full page yet.
 
@@ -300,6 +300,34 @@ only hide it.
 - `Button` logs a Base UI `nativeButton` console error when given
   `render={<a href=… />}`. Reproduce on `/blog/photobroom`. Fix belongs in
   `src/primitives/Button` (components may not import Base UI directly).
+
+### Repo — the Storybook deploy has never worked on `main`
+
+`storybook.yml`'s `build` job passes everywhere; its `deploy` job runs only on
+`main` and has failed every time since 2026-09-17, so `main` carries a red
+Storybook run that no PR can reveal. `actions/deploy-pages@v4` returns 404 and
+`gh api repos/TheDuckGoesQuark/CampingTrip/pages` returns 404 with it: Pages is
+not enabled on the repository. The workflow already names the prerequisite at
+the `deploy` job's comment. The repository is public now, which is the part that
+needed a person; enabling Settings → Pages → Source = "GitHub Actions" is what
+is left. If a hosted Storybook is not wanted, deleting the job is the other
+answer, and the honest one.
+
+### Design system — the framed box is drawn four times inside the design system
+
+`Card` expresses the hard-edged surface as `tone` × `elevation`, and `Tile`,
+`Window`, `DialogFrame` and `TransferProgress` each restate some of the same
+2px `--brand-border-strong` and `--shadow-hard-*` in their own module. The
+chrome appears in about a dozen stylesheets across the workspace, and these four
+are the ones inside the package that owns it. `FeedPanel` stopped hand-drawing
+it by composing `Card`, which is the worked example; doing the same inside the
+design system is a bigger call, because each of the four also carries geometry
+`Card` has no opinion about.
+
+Not every restatement is one of these. `PhotoBroomPage`'s `.shot`, `.card` and
+`.coffeeCard` are rounded and lightly bordered, a second visual language that
+`Card` cannot express and should not learn to. Whether the app should have two
+languages at all is the question underneath, and it is a design one.
 
 ### Design system — more than one window on screen
 
