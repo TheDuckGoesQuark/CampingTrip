@@ -65,10 +65,15 @@ handler guards on the phase it expects, which is what makes it safe to hang two
 of them on two elements: the paw's withdraw ending mid-`retreating` is simply
 ignored.
 
-**The paw rises straight up and nothing rotates.** It is centred under the
-plunger by construction, `calc(panel-right + (plunger-width - arm-width) / 2)`,
-so the paw and the thing it is aiming at cannot drift apart, and reaching is the
-leg's `height` growing from a bottom anchor. A rotating limb was what read as
+**The paw rises straight up out of a frame that shares the box's angle.** It is
+centred under the plunger by construction, `calc(panel-right + (plunger-width -
+arm-width) / 2)`, and reaching is the leg's `height` growing from a bottom
+anchor. The frame matters: the switch rides on the box, so the lift carries it up
+and to the left, and a paw anchored to the page does not follow. Aiming at it
+then needs a reach that grows with both the box's width and the mood's angle,
+which no constant can be. A wrapper taking `rotate(var(--lift-deg))` while the
+paw is out puts them in the same coordinates, and the reach becomes one number
+measured in the box's own frame. A rotating limb was what read as
 clunky, and going vertical also means the reach depends only on the box's fixed
 height rather than on its fluid width, which is why the landing point no longer
 needs tuning per breakpoint. The pad keeps its own size at the top rather than
@@ -144,6 +149,10 @@ machine that latches on its first press and never comes back.
 - The post's closing `[DRAFT: …]` beat is still Jordan's to write, and the post
   stays `draft: true` until it is.
 - Under 520px the panel takes the box on its own. Checked by rule, not by eye.
+- The contact sheet's markup was hand-written beside the component's rather than
+  derived from it, and drifted: it grew a fourth toe the component never had, so
+  a claw that was missing in the app was present in every frame I checked. The
+  measurement scripts drive the real page and do not have this failure mode.
 - The paw's pad waits in the dark at the start of a reach, and its beans are
   bright enough to read against the void. It scans as the cat being in there, so
   it stays, but it is a one-line change if it ever looks like a giveaway.

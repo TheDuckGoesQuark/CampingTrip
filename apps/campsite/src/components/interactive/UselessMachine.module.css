@@ -29,7 +29,7 @@
   --plunger-w: 124px;
   --arm-w: 40px;
   --leg-rest: 34px;
-  --leg-out: 74px;
+  --leg-out: 57px;
   --lift-deg: -3.5deg;
   --dark-tan: 0.085;
   --settle-ms: 1800ms;
@@ -412,6 +412,26 @@
   background: #fdf8ee;
 }
 
+/* The frame the paw works in. It takes the box's angle while the paw is out, so
+   the switch and the paw rise together: aiming at a switch that rides a rotating
+   box otherwise needs a reach that grows with both the box's width and the
+   mood's angle, which no constant can be. It carries the stacking too, under the
+   box at rest and over it while reaching, which is invisible at the changeover
+   because that moment is fur against void. */
+.armRig {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  transform-origin: left bottom;
+}
+
+.machine[data-phase="reaching"] .armRig,
+.machine[data-phase="retreating"] .armRig {
+  z-index: 5;
+  transform: rotate(var(--lift-deg));
+}
+
 /* Centred under the plunger by construction, so the paw and the thing it is
    aiming at cannot drift apart. At rest it is short enough to sit in the dark
    the lift opens, where fur on void is all but invisible, and the `z-index` step
@@ -423,8 +443,6 @@
   bottom: 2px;
   width: var(--arm-w);
   height: var(--leg-rest);
-  z-index: 1;
-  pointer-events: none;
   color: var(--cat-fur);
 
   /* Out only while it is reaching. A shove big enough to look through is also
@@ -447,34 +465,14 @@
 }
 
 @keyframes pawReach {
-  0% {
-    height: var(--leg-rest);
-    z-index: 1;
-  }
-
-  20% {
-    z-index: 5;
-  }
-
-  100% {
+  to {
     height: var(--leg-out);
-    z-index: 5;
   }
 }
 
 @keyframes pawWithdraw {
-  0% {
+  from {
     height: var(--leg-out);
-    z-index: 5;
-  }
-
-  80% {
-    z-index: 5;
-  }
-
-  100% {
-    height: var(--leg-rest);
-    z-index: 1;
   }
 }
 

@@ -136,17 +136,15 @@ export default function UselessMachine() {
         </span>
       </span>
 
-      <span
-        className={styles.arm}
-        data-testid="machine-paw"
-        onAnimationEnd={pawSettled}
-        aria-hidden="true"
-      >
-        <span className={styles.foreleg} />
-        <span className={styles.pad}>
-          <span className={styles.toe} />
-          <span className={styles.toe} />
-          <span className={styles.toe} />
+      <span className={styles.armRig} aria-hidden="true">
+        <span className={styles.arm} data-testid="machine-paw" onAnimationEnd={pawSettled}>
+          <span className={styles.foreleg} />
+          <span className={styles.pad}>
+            <span className={styles.toe} />
+            <span className={styles.toe} />
+            <span className={styles.toe} />
+            <span className={styles.toe} />
+          </span>
         </span>
       </span>
 
