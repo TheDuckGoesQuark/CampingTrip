@@ -22,13 +22,20 @@ function isLit(phase: Phase): boolean {
 /** How far from the box a pointer still moves the eyes, in px. */
 const GAZE_RANGE = 420;
 
+/** How long one look lasts, and the range of quiet between two of them. */
+const PEEK_HOLD_MS = 2600;
+const PEEK_GAP_MS = [4000, 11_000];
+
+function prefersReducedMotion(): boolean {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
 /** Point the pupils at the pointer. Direction goes onto the element as custom
  *  properties, not through state: a render per pointermove is a render per pixel. */
 function useGaze(target: React.RefObject<HTMLDivElement | null>, watching: boolean): void {
   useEffect(() => {
     const element = target.current;
-    if (!element || !watching) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!element || !watching || prefersReducedMotion()) return;
 
     function follow(event: PointerEvent) {
       if (!element) return;
@@ -46,16 +53,48 @@ function useGaze(target: React.RefObject<HTMLDivElement | null>, watching: boole
   }, [target, watching]);
 }
 
-/** Switch it on, and a cat reaches out of the box to switch it back off. It
- *  watches the pointer between goes, and takes repeat pressing personally. */
+/**
+ * Look out of the box now and then, but only once the visitor has seen what
+ * lives in it: eyes before that give the joke away before anyone has pressed
+ * anything.
+ */
+function useOccasionalPeek(active: boolean): boolean {
+  const [peeking, setPeeking] = useState(false);
+
+  useEffect(() => {
+    if (!active) {
+      setPeeking(false);
+      return;
+    }
+    const [min, max] = PEEK_GAP_MS;
+    const quiet = () => min + Math.random() * (max - min);
+    let timer = 0;
+    const hide = () => {
+      setPeeking(false);
+      timer = window.setTimeout(show, quiet());
+    };
+    const show = () => {
+      setPeeking(true);
+      timer = window.setTimeout(hide, PEEK_HOLD_MS);
+    };
+    timer = window.setTimeout(show, quiet());
+    return () => window.clearTimeout(timer);
+  }, [active]);
+
+  return peeking;
+}
+
+/** Switch it on, and a cat lifts the box it lives under to swat the switch back
+ *  off. It takes repeat pressing personally. */
 export default function UselessMachine() {
   const [phase, setPhase] = useState<Phase>("idle");
   const [presses, setPresses] = useState(0);
+  const [seenOnce, setSeenOnce] = useState(false);
   const root = useRef<HTMLDivElement>(null);
 
-  const mood = moodFor(presses);
   const lit = isLit(phase);
-  useGaze(root, phase === "idle");
+  const peeking = useOccasionalPeek(seenOnce && phase === "idle");
+  useGaze(root, peeking);
 
   const press = useCallback(() => {
     setPresses((n) => n + 1);
@@ -65,53 +104,66 @@ export default function UselessMachine() {
 
   // The phase guards let these hang off two elements: an animation from a phase
   // already left behind cannot drag the machine backwards.
-  const lidSettled = useCallback(() => {
+  const boxSettled = useCallback(() => {
     setPhase((current) => (current === "lit" ? "reaching" : current));
   }, []);
 
   const pawSettled = useCallback(() => {
     setPhase((current) => {
       if (current === "reaching") return "retreating";
-      if (current === "retreating") return "idle";
-      return current;
+      if (current !== "retreating") return current;
+      setSeenOnce(true);
+      return "idle";
     });
   }, []);
 
   return (
-    <div className={styles.machine} data-phase={phase} data-mood={mood} ref={root}>
-      <div className={styles.box} aria-hidden="true">
-        <div className={styles.interior}>
-          <div className={styles.eyes}>
-            <span className={styles.eye}>
-              <span className={styles.pupil} />
-            </span>
-            <span className={styles.eye}>
-              <span className={styles.pupil} />
-            </span>
-          </div>
-        </div>
-        <div className={styles.arm} data-testid="machine-paw" onAnimationEnd={pawSettled}>
-          <span className={styles.limb} />
-          <span className={styles.pad}>
-            <span className={styles.toe} />
-            <span className={styles.toe} />
-            <span className={styles.toe} />
-            <span className={styles.toe} />
-          </span>
-        </div>
-        <div className={styles.lid} data-testid="machine-lid" onAnimationEnd={lidSettled} />
-      </div>
-
-      <div className={styles.panel}>
-        <span className={styles.lamp}>
-          <span className={styles.led} />
-          <Text variant="label" tone="muted" as="span">
-            {lit ? "ON" : "OFF"}
-          </Text>
+    <div
+      className={styles.machine}
+      data-phase={phase}
+      data-mood={moodFor(presses)}
+      data-peeking={peeking}
+      ref={root}
+    >
+      <span className={styles.lookout} aria-hidden="true">
+        <span className={styles.eye}>
+          <span className={styles.pupil} />
         </span>
-        <Button size="sm" aria-pressed={lit} onClick={press}>
-          Do not press
-        </Button>
+        <span className={styles.eye}>
+          <span className={styles.pupil} />
+        </span>
+      </span>
+
+      <span
+        className={styles.arm}
+        data-testid="machine-paw"
+        onAnimationEnd={pawSettled}
+        aria-hidden="true"
+      >
+        <span className={styles.foreleg} />
+        <span className={styles.pad}>
+          <span className={styles.toe} />
+          <span className={styles.toe} />
+          <span className={styles.toe} />
+        </span>
+      </span>
+
+      <div className={styles.box} data-testid="machine-box" onAnimationEnd={boxSettled}>
+        <span className={styles.tape} aria-hidden="true" />
+        <span className={styles.stencil} aria-hidden="true">
+          This way up
+        </span>
+        <div className={styles.console}>
+          <span className={styles.lamp}>
+            <span className={styles.led} aria-hidden="true" />
+            <Text variant="label" as="span">
+              {lit ? "ON" : "OFF"}
+            </Text>
+          </span>
+          <Button size="sm" aria-pressed={lit} onClick={press}>
+            Do not press
+          </Button>
+        </div>
       </div>
 
       {/* Without this, only sighted visitors learn the machine answered back. */}

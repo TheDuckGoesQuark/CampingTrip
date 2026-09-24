@@ -13,32 +13,43 @@ History of what's been built, key decisions made, and what was deferred along th
 **What was done**:
 
 `Counter` is gone. The island in "What vibe coding actually changed" is now
-`UselessMachine`: a switch, a box, and a cat who reaches out and switches it
-back off. The post argued that a cheap idea is worth trying, and a button that
-counted was not making that argument.
+`UselessMachine`: the card is a cardboard box, and a cat under it lifts the box
+and swats the switch back off. The post argued that a cheap idea is worth trying,
+and a button that counted was not making that argument.
+
+**The card is the box.** It is not a card containing a drawing of a box: the
+island itself is kraft board with a tape seam, a `THIS WAY UP` stencil it keeps
+disproving, and a shipping label taped on that carries the lamp and the switch.
+The whole thing pivots on its bottom-left corner, so what lifts is the thing the
+visitor is reading. The label exists for contrast as much as for the joke: the
+DS text tones are built for the site's surfaces and only reach about 4.2:1 on
+kraft, while on label paper they clear comfortably.
 
 **The phase machine is React's, the clock is the stylesheet's.** `Phase` runs
-`idle → lit → reaching → retreating → idle`, and every phase but `idle` ends
-when a CSS animation reaches its last frame and fires `onAnimationEnd`. No
+`idle → lit → reaching → retreating → idle`, and every phase but `idle` ends when
+a CSS animation reaches its last frame and fires `onAnimationEnd`. No
 `setTimeout` anywhere, so a duration retuned in the stylesheet needs no matching
-edit in the component, and there is no second copy of the timing to drift. The
-moment of contact is the end of the reach animation rather than a point inside
-it, which is what lets the lamp go out exactly when the paw lands.
+edit in the component. The moment of contact is the end of the reach rather than
+a point inside it, which is what lets the lamp go out exactly when the paw lands.
+Each handler guards on the phase it expects, which is what makes it safe to hang
+two of them on two elements.
 
-Each handler guards on the phase it expects. That is what makes it safe to hang
-two of them on two elements: the lid's closing animation during `retreating`
-fires `lidSettled`, which does nothing because the phase has moved on.
+**The paw pivots and extends; it never translates.** The shoulder is a fixed
+point under the box's lifted corner, and reaching is the leg growing longer
+(`width`) and turning further up (`rotate`) from it. The pad keeps its own size
+at the far end rather than being scaled, and the foreleg overlaps it, so no gap
+can open while the wrapper turns. `z-index` steps up once the paw is clear of the
+edge: under the box to begin with, over it to reach the switch.
+
+**A look is a small lift.** The eyes sit flush with the box's bottom edge and
+behind it, so a flat box hides them completely; peeking rotates the box a couple
+of degrees and the gap that opens is the only reason they are visible. They stay
+in until the visitor has seen a full cycle, because eyes before that give the
+joke away before anyone has pressed anything.
 
 **Mood is derived, not stored.** `presses` is the state; `moodFor` reads
-`calm / annoyed / feral` off it at 3 and 5. The moods reach CSS as `data-mood`
-and shorten the durations, lower the brows and put the claws out. A press while
-the paw is already out feeds the mood without restarting the arc, so mashing
-makes the cat angrier rather than teleporting it.
-
-**The eyes track the pointer while idle,** through `--gaze-x` / `--gaze-y`
-written straight onto the element rather than through state: a render per
-pointermove is a render per pixel, and nothing in the tree depends on the
-pointer except two pupils.
+`calm / annoyed / feral` off it at 3 and 5. The moods shorten the durations,
+raise the lift, narrow the eyes and put the claws out.
 
 **Reduced motion shortens, it does not remove.** The motion is the content here,
 so stripping it would leave a button that does nothing. `prefers-reduced-motion`
@@ -46,7 +57,7 @@ sets the durations to `1ms`. Not `none`, and not `0s` on an `animation`: the
 phases advance on `animationend`, so an animation removed under that query is a
 machine that latches on its first press and never comes back.
 
-**Two things the work turned up:**
+**Three things the work turned up:**
 
 - **jsdom has `TransitionEvent` but not `AnimationEvent`.** React reads
   `'AnimationEvent' in window` once at import to choose between `animationend`
@@ -59,16 +70,19 @@ machine that latches on its first press and never comes back.
 - **`ds/no-inline-icon` bans every `<svg>` in app code,** though its message is
   about icons: sizing, colour tokens, `aria-hidden`. The paw is an illustration
   whose claws animate separately from its toes, and `ICON_NAMES` is the wrong
-  home for that. Rather than take an exemption, the paw is six rounded boxes and
-  a `clip-path` triangle, which keeps every visual in the stylesheet.
+  home for that. Rather than take an exemption, the paw is rounded boxes and a
+  `clip-path` triangle, which keeps every visual in the stylesheet.
+- **`ds-guard` caught the box being called a card.** A local `.card` class reads
+  as a local retelling of the DS `Card`, which this is not, so the class is
+  `.box`. The guard was right for a reason its message does not give: the name
+  was also just wrong.
 
 **Deferred**:
 
-- `--reach-x` places the paw over the switch and was set by eye, not measured.
-  It is one number at the top of the stylesheet, deliberately, but it wants
-  checking at a few widths.
 - The post's closing `[DRAFT: …]` beat is still Jordan's to write, and the post
   stays `draft: true` until it is.
+- Under 520px the shipping label takes the box on its own and the paw reaches a
+  switch that is simply higher up. Checked by rule, not by eye.
 
 ---
 

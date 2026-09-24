@@ -343,15 +343,19 @@ only hide it.
   wide enough to hold both, so the open question is whether they read better
   split across two homepage sections.
 
-### Blog: the useless machine's reach is set by eye
+### Blog: the useless machine has no repeat visual check
 
-`--reach-x` in `UselessMachine.module.css` is how far the paw travels before it
-is over the switch, and it was picked by eye rather than measured. The box is a
-fixed `132px` and the panel beside it is a column, so the geometry is stable,
-but the landing point has not been checked at narrow widths or with a longer
-button label. It is one number at the top of the stylesheet by design: if it
-needs to stop being one number, the arc should anchor to the button's own box
-instead.
+The paw's arc was tuned against a contact sheet: a throwaway Playwright script
+that inlines the component's real stylesheet, renders the markup nine times, and
+seeks each copy to a different point with `animation-play-state: paused` plus a
+negative `animation-delay`. It found two things no test could: the custom
+properties were scoped to a sibling of the paw so it never moved at all, and the
+first arc translated the whole limb so it detached from the box halfway out.
+
+That script lives in a scratch directory and is gone with the session. Nothing in
+the repo can see an animation, and `packages/design-system` cannot either, since
+Vitest runs with CSS disabled. Worth deciding whether a frame-sheet script earns
+a place in `scripts/`, or whether animation stays a thing only a human checks.
 
 ### Repo: `ds/no-inline-icon` cannot tell an icon from an illustration
 

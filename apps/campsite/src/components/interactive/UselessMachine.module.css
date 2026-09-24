@@ -1,276 +1,172 @@
+/* The island card is itself the box. It pivots on its bottom-left corner, so
+   the cat under it is lifting the very thing the visitor is reading. Named `box`
+   rather than `card` because it is not the design system's `Card` and should not
+   read as a local retelling of one. */
 .machine {
   position: relative;
-  display: flex;
-  align-items: stretch;
-  gap: var(--space-l);
   margin: var(--space-l) 0;
-  padding: var(--space-l);
-  border: var(--border-frame);
-  background: var(--brand-surface-sunken);
-  box-shadow: var(--shadow-hard-1);
 
-  /* The single knob for how far the paw travels before it hits the switch.
-     Everything else in the arc is a fraction of the arm's own size, so this is
-     the only value that cares what the panel beside it is doing. */
-  --reach-x: 104px;
-  --lid-ms: 260ms;
-  --reach-ms: 620ms;
+  /* Kraft board and cat. Not brand tokens: nothing in the palette is cardboard,
+     and a box tinted sage would read as a prop rather than as a box. */
+  --board-face: #c68f55;
+  --board-lit: #ddb47c;
+  --board-edge: #96683a;
+  --board-ink: rgb(66 42 20 / 58%);
+  --board-void: #2a1d12;
+  --board-tape: rgb(242 234 216 / 42%);
+  --label-paper: #f4f1e6;
+  --cat-fur: #3d3a38;
+  --cat-bean: #d98f95;
+
+  /* The paw's shoulder never moves, so reaching is a longer leg turned further
+     up from it. Defined here and not on `.box`, which is the paw's sibling and
+     so hands it nothing. */
+  --shoulder-in: 150px;
+  --leg-rest: 44px;
+  --leg-out: 124px;
+  --turn-out: -66deg;
+  --lift-deg: -5deg;
+  --lift-ms: 320ms;
+  --reach-ms: 700ms;
   --pupil-travel: 3px;
-  --brow: 0%;
+  --squint: 0%;
+}
+
+.machine::after {
+  content: "";
+  position: absolute;
+  inset: auto 10px -5px 10px;
+  height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgb(44 30 16 / 30%), transparent 72%);
+}
+
+.box {
+  position: relative;
+  z-index: 3;
+  min-height: 176px;
+  padding: var(--space-l);
+  border: 1px solid var(--board-edge);
+  border-radius: 4px;
+  background:
+    repeating-linear-gradient(91deg, rgb(154 111 63 / 7%) 0 1px, transparent 1px 6px),
+    linear-gradient(176deg, var(--board-lit), var(--board-face) 42%, var(--board-edge));
+  box-shadow: var(--shadow-hard-1);
+  transform-origin: left bottom;
+  transition: transform 420ms cubic-bezier(0.32, 1.1, 0.5, 1);
+}
+
+:global([data-theme="dark"]) .machine {
+  --board-face: #8a6238;
+  --board-lit: #a3784c;
+  --board-edge: #684728;
+  --board-ink: rgb(238 224 204 / 34%);
+  --board-void: #150f09;
+  --board-tape: rgb(206 196 176 / 26%);
+  --label-paper: #e2ddcd;
+  --cat-fur: #2b2928;
 }
 
 .machine[data-mood="annoyed"] {
-  --lid-ms: 180ms;
-  --reach-ms: 460ms;
-  --brow: 34%;
+  --lift-deg: -7deg;
+  --lift-ms: 220ms;
+  --reach-ms: 500ms;
+  --squint: 30%;
 }
 
 .machine[data-mood="feral"] {
-  --lid-ms: 110ms;
-  --reach-ms: 320ms;
-  --brow: 52%;
+  --lift-deg: -10deg;
+  --lift-ms: 130ms;
+  --reach-ms: 340ms;
+  --squint: 48%;
   --pupil-travel: 4px;
 }
 
-/* Perspective is what turns the lid's rotateX into a flap falling forward
-   rather than a bar squashing flat. */
-.box {
-  position: relative;
-  flex: 0 0 132px;
-  height: 104px;
-  perspective: 420px;
-  border: var(--border-frame);
-  border-radius: var(--radius-s);
-  background: var(--brand-surface-raised);
+.machine[data-phase="lit"] .box {
+  animation: cardLift var(--lift-ms) cubic-bezier(0.3, 1.3, 0.6, 1) forwards;
 }
 
-.interior {
-  position: absolute;
-  inset: var(--space-s);
-  border-radius: var(--radius-s);
-  background: var(--neutral-9);
-  overflow: hidden;
+.machine[data-phase="reaching"] .box {
+  transform: rotate(var(--lift-deg));
 }
 
-.eyes {
-  display: flex;
-  justify-content: center;
-  gap: var(--space-s);
-  padding-top: var(--space-s);
+.machine[data-phase="retreating"] .box {
+  animation: cardDrop var(--lift-ms) cubic-bezier(0.6, 0, 0.9, 0.4) backwards;
+  animation-delay: calc(var(--reach-ms) * 0.62);
 }
 
-.eye {
-  position: relative;
-  width: 22px;
-  height: 22px;
-  border-radius: var(--radius-full);
-  background: var(--amber-1);
-  overflow: hidden;
-}
-
-/* The brow, not a blink: it rests above the eye and comes down as the mood does. */
-.eye::after {
-  content: "";
-  position: absolute;
-  inset: 0 0 auto 0;
-  height: 100%;
-  background: var(--neutral-9);
-  transform: translateY(calc(var(--brow) - 100%));
-  transition: transform 260ms ease;
-}
-
-.pupil {
-  position: absolute;
-  inset: 50% auto auto 50%;
-  width: 9px;
-  height: 9px;
-  margin: -4.5px 0 0 -4.5px;
-  border-radius: var(--radius-full);
-  background: var(--neutral-9);
-  transform: translate(
-    calc(var(--gaze-x, 0) * var(--pupil-travel)),
-    calc(var(--gaze-y, 0) * var(--pupil-travel))
-  );
-  transition: transform 90ms ease-out;
-}
-
-.lid {
-  position: absolute;
-  inset: auto var(--space-xs) 6px var(--space-xs);
-  height: 62px;
-  transform-origin: bottom center;
-  border: var(--border-frame);
-  border-radius: 0 0 var(--radius-s) var(--radius-s);
-  background: var(--brand-surface-raised);
-  box-shadow: var(--shadow-hard-1);
-}
-
-.machine[data-phase="lit"] .lid {
-  animation: lidOpen var(--lid-ms) ease-in forwards;
-}
-
-.machine[data-phase="reaching"] .lid {
-  transform: rotateX(82deg);
-}
-
-.machine[data-phase="retreating"] .lid {
-  animation: lidShut var(--lid-ms) ease-out backwards;
-  animation-delay: calc(var(--reach-ms) * 0.55);
-}
-
-@keyframes lidOpen {
+@keyframes cardLift {
   to {
-    transform: rotateX(82deg);
+    transform: rotate(var(--lift-deg));
   }
 }
 
-@keyframes lidShut {
+@keyframes cardDrop {
   from {
-    transform: rotateX(82deg);
+    transform: rotate(var(--lift-deg));
   }
 }
 
-.arm {
+/* Packing tape down the seam, and the stencil the cat keeps disproving. */
+.tape {
   position: absolute;
-  left: 46%;
-  bottom: 14%;
-  width: 78px;
-  height: 44px;
-  transform-origin: 6% 60%;
-  transform: translate(-40%, 120%) rotate(-40deg);
-  opacity: 0;
-  color: var(--neutral-8);
+  inset: 0 auto 0 22%;
+  width: 34px;
+  background: var(--board-tape);
+  border-left: 1px solid rgb(255 255 255 / 18%);
+  border-right: 1px solid rgb(255 255 255 / 18%);
 }
 
-/* `forwards` is load-bearing: the reach has to hold the paw on the switch until
-   the withdraw takes over, or it snaps home a frame before the lamp goes out. */
-.machine[data-phase="reaching"] .arm {
-  animation: pawReach var(--reach-ms) cubic-bezier(0.34, 1.2, 0.5, 1) forwards;
-}
-
-.machine[data-phase="retreating"] .arm {
-  animation: pawWithdraw calc(var(--reach-ms) * 0.8) ease-in forwards;
-}
-
-@keyframes pawReach {
-  0% {
-    transform: translate(-40%, 120%) rotate(-40deg);
-    opacity: 0;
-  }
-
-  18% {
-    opacity: 1;
-  }
-
-  45% {
-    transform: translate(calc(var(--reach-x) * 0.36), -58%) rotate(-6deg);
-    opacity: 1;
-  }
-
-  78% {
-    transform: translate(calc(var(--reach-x) * 0.88), -20%) rotate(20deg);
-  }
-
-  100% {
-    transform: translate(var(--reach-x), 4%) rotate(28deg);
-    opacity: 1;
-  }
-}
-
-@keyframes pawWithdraw {
-  0% {
-    transform: translate(var(--reach-x), 4%) rotate(28deg);
-    opacity: 1;
-  }
-
-  32% {
-    transform: translate(calc(var(--reach-x) * 0.82), -26%) rotate(16deg);
-    opacity: 1;
-  }
-
-  100% {
-    transform: translate(-40%, 120%) rotate(-40deg);
-    opacity: 0;
-  }
-}
-
-/* A paw out of five rounded boxes, because the repo keeps inline SVG in the
-   design system and an icon is the wrong home for a one-off that animates in
-   parts. `currentcolor` on `.arm` is what makes it one creature. */
-.limb {
+.stencil {
   position: absolute;
-  left: 0;
-  top: 32%;
-  width: 56%;
-  height: 40%;
-  border-radius: var(--radius-full);
-  background: currentcolor;
+  left: var(--space-l);
+  bottom: var(--space-l);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--board-ink);
 }
 
-.pad {
+.console {
   position: absolute;
-  right: 0;
-  top: 22%;
-  width: 46%;
-  height: 62%;
-  border-radius: 48% 52% 46% 54%;
-  background: currentcolor;
-}
-
-.toe {
-  position: absolute;
-  width: 34%;
-  height: 46%;
-  border-radius: var(--radius-full);
-  background: currentcolor;
-}
-
-.toe:nth-child(1) {
-  top: -26%;
-  left: -6%;
-  transform: rotate(-26deg);
-}
-
-.toe:nth-child(2) {
-  top: -40%;
-  left: 24%;
-  transform: rotate(-8deg);
-}
-
-.toe:nth-child(3) {
-  top: -30%;
-  left: 54%;
-  transform: rotate(12deg);
-}
-
-.toe:nth-child(4) {
-  top: 4%;
-  left: 74%;
-  transform: rotate(32deg);
-}
-
-/* Out only when the cat has stopped being polite. */
-.toe::after {
-  content: "";
-  position: absolute;
-  inset: -52% 28% auto 28%;
-  height: 52%;
-  background: var(--neutral-2);
-  clip-path: polygon(50% 0, 100% 100%, 0 100%);
-  opacity: 0;
-  transition: opacity 120ms ease;
-}
-
-.machine[data-mood="feral"] .toe::after {
-  opacity: 1;
-}
-
-.panel {
+  right: 34px;
+  top: 30px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  justify-content: center;
-  gap: var(--space-m);
+  gap: var(--space-s);
+  padding: var(--space-m) var(--space-m) var(--space-m);
+  border-radius: 2px;
+  background: var(--label-paper);
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 40%) inset,
+    0 2px 4px rgb(48 32 16 / 28%);
+  transform: rotate(-1.1deg);
+}
+
+/* Two strips of the same tape holding the label on. */
+.console::before,
+.console::after {
+  content: "";
+  position: absolute;
+  width: 34px;
+  height: 14px;
+  background: var(--board-tape);
+  border: 1px solid rgb(255 255 255 / 22%);
+}
+
+.console::before {
+  top: -7px;
+  left: -10px;
+  transform: rotate(-24deg);
+}
+
+.console::after {
+  bottom: -7px;
+  right: -10px;
+  transform: rotate(-24deg);
 }
 
 .lamp {
@@ -283,9 +179,8 @@
   width: 14px;
   height: 14px;
   border-radius: var(--radius-full);
-  border: 1px solid var(--neutral-4);
-  background: var(--neutral-3);
-  box-shadow: none;
+  border: 1px solid rgb(40 26 12 / 40%);
+  background: rgb(80 68 50 / 28%);
   transition:
     background 140ms ease,
     box-shadow 140ms ease;
@@ -293,8 +188,222 @@
 
 .machine[data-phase="lit"] .led,
 .machine[data-phase="reaching"] .led {
-  background: var(--sage-6);
-  box-shadow: var(--brand-glow);
+  background: var(--sage-4);
+  box-shadow: 0 0 0 3px rgb(122 171 104 / 45%);
+}
+
+/* ── The cat ───────────────────────────────────────────────────── */
+
+/* A look is a small lift: the cat nudges the box up an inch and the gap that
+   opens is the only reason the eyes are visible at all. Held here rather than
+   in the phase animations, which override it while the machine is working. */
+.machine[data-peeking="true"] .box {
+  transform: rotate(-2.8deg);
+}
+
+/* Flush with the card's bottom edge and behind it, so a flat card hides these
+   completely and only the lift reveals them. A cat under a box is a pair of
+   eyes in a gap, never two circles floating on the page. */
+.lookout {
+  position: absolute;
+  right: 150px;
+  bottom: 1px;
+  z-index: 2;
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  padding: 0 11px 4px;
+  border-radius: 3px 3px 11px 11px;
+  background: var(--board-void);
+  box-shadow: 0 3px 5px rgb(30 20 10 / 32%);
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+.machine[data-peeking="true"] .lookout {
+  opacity: 1;
+}
+
+.eye {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-full);
+  background: var(--amber-3);
+  overflow: hidden;
+  transform: scale(0);
+  transform-origin: center bottom;
+  transition: transform 220ms cubic-bezier(0.34, 1.4, 0.6, 1);
+}
+
+.machine[data-peeking="true"] .eye {
+  transform: scale(1);
+}
+
+.eye::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 100%;
+  background: var(--board-void);
+  transform: translateY(calc(var(--squint) - 100%));
+  transition: transform 260ms ease;
+}
+
+/* A slit, not a dot: the pupil is what makes it a cat rather than a doll. */
+.pupil {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: 6px;
+  height: 15px;
+  margin: -7.5px 0 0 -3px;
+  border-radius: 50%;
+  background: var(--board-void);
+  transform: translate(
+    calc(var(--gaze-x, 0) * var(--pupil-travel)),
+    calc(var(--gaze-y, 0) * var(--pupil-travel))
+  );
+  transition: transform 90ms ease-out;
+}
+
+/* The shoulder is a fixed point under the card's lifted corner, and reaching is
+   the leg getting longer and turning up from it. Nothing translates, so the paw
+   cannot drift off the creature it belongs to, and at rest the leg is short
+   enough to sit entirely under the card. The z-index steps up once the paw is
+   clear of the edge: under the card to begin with, over it to reach the button.
+   Never a click target, because it comes to rest on the button it just hit. */
+.arm {
+  position: absolute;
+  left: calc(100% - var(--shoulder-in));
+  bottom: 26px;
+  width: var(--leg-rest);
+  height: 30px;
+  z-index: 1;
+  pointer-events: none;
+  transform-origin: left center;
+  color: var(--cat-fur);
+}
+
+.machine[data-phase="reaching"] .arm {
+  animation: pawReach var(--reach-ms) cubic-bezier(0.32, 0.72, 0.28, 1) forwards;
+}
+
+.machine[data-phase="retreating"] .arm {
+  animation: pawWithdraw calc(var(--reach-ms) * 0.7) cubic-bezier(0.55, 0, 0.82, 0.42) forwards;
+}
+
+@keyframes pawReach {
+  0% {
+    width: var(--leg-rest);
+    transform: rotate(0deg);
+    z-index: 1;
+  }
+
+  30% {
+    width: calc(var(--leg-rest) + (var(--leg-out) - var(--leg-rest)) * 0.52);
+    transform: rotate(calc(var(--turn-out) * 0.12));
+    z-index: 5;
+  }
+
+  62% {
+    width: calc(var(--leg-rest) + (var(--leg-out) - var(--leg-rest)) * 0.84);
+    transform: rotate(calc(var(--turn-out) * 0.55));
+  }
+
+  100% {
+    width: var(--leg-out);
+    transform: rotate(var(--turn-out));
+    z-index: 5;
+  }
+}
+
+@keyframes pawWithdraw {
+  0% {
+    width: var(--leg-out);
+    transform: rotate(var(--turn-out));
+    z-index: 5;
+  }
+
+  55% {
+    width: calc(var(--leg-rest) + (var(--leg-out) - var(--leg-rest)) * 0.5);
+    transform: rotate(calc(var(--turn-out) * 0.14));
+    z-index: 5;
+  }
+
+  100% {
+    width: var(--leg-rest);
+    transform: rotate(0deg);
+    z-index: 1;
+  }
+}
+
+/* The leg fills whatever width the arm has and stops short of the pad, which
+   keeps its own size at the far end: a scaled paw would squash. */
+.foreleg {
+  position: absolute;
+  left: 0;
+  right: 24px;
+  top: 20%;
+  height: 62%;
+  border-radius: var(--radius-full);
+  background: currentcolor;
+}
+
+.pad {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 36px;
+  height: 30px;
+  border-radius: 52% 48% 54% 46%;
+  background: currentcolor;
+}
+
+.toe {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-full);
+  background: currentcolor;
+}
+
+.toe:nth-child(1) {
+  top: -5px;
+  right: 18px;
+}
+
+.toe:nth-child(2) {
+  top: -8px;
+  right: 6px;
+}
+
+.toe:nth-child(3) {
+  top: 4px;
+  right: -4px;
+}
+
+/* Beans, and the claws that come out of them when the cat stops being polite. */
+.toe::before {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border-radius: var(--radius-full);
+  background: var(--cat-bean);
+}
+
+.toe::after {
+  content: "";
+  position: absolute;
+  inset: -8px 3px auto 3px;
+  height: 8px;
+  background: var(--neutral-1);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.machine[data-mood="feral"] .toe::after {
+  opacity: 1;
 }
 
 .announcement {
@@ -306,6 +415,35 @@
   overflow: hidden;
   clip-path: inset(50%);
   white-space: nowrap;
+}
+
+/* The console cannot sit beside the stencil at this width, so it takes the card
+   on its own and the paw reaches a button that is simply higher up. */
+@media (max-width: 520px) {
+  .machine {
+    --leg-out: 118px;
+    --turn-out: -70deg;
+    --shoulder-in: 124px;
+  }
+
+  .box {
+    min-height: 0;
+  }
+
+  .console {
+    position: static;
+    align-items: flex-start;
+  }
+
+  .stencil {
+    position: static;
+    display: block;
+    margin-bottom: var(--space-m);
+  }
+
+  .tape {
+    display: none;
+  }
 }
 
 /* Forced colours drops the background that carries lit-vs-dark, so the lamp
@@ -321,14 +459,15 @@
    removed here is a machine that latches on its first press and never returns. */
 @media (prefers-reduced-motion: reduce) {
   .machine {
-    --lid-ms: 1ms;
+    --lift-ms: 1ms;
     --reach-ms: 1ms;
   }
 
-  .machine[data-phase="retreating"] .lid {
+  .machine[data-phase="retreating"] .box {
     animation-delay: 0s;
   }
 
+  .eye,
   .eye::after,
   .pupil,
   .toe::after,
