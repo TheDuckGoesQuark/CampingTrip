@@ -6,6 +6,84 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## The design system catches up with the app
+
+**Date**: 2026-09-24
+
+**What was done**:
+
+Three stacked PRs (#171, #172, #173) and a fix (#178), from Jordan's rule for
+the session: the app is what is correct, and the design system is what is out of
+date and has to become the source of truth.
+
+**`TextSurface`, for the text a window frames rather than a form labels.** The
+desktop's plain-text windows and MouseMail's compose body were the same control
+written twice, and `MouseMailForm` carried a comment saying why neither could use
+`TextArea`: a compose body shows no label, draws no border and states no height,
+because the window supplies all three. `TextArea` is a form field wrapped in a
+`FieldShell`, and that shell is most of what it is, so switching it off would
+have left `label` and `error` typed but meaningless. `TextSurface` is the
+parallel component. `face` picks the type; `fill` says how the control stands to
+its window, and padding, background and the focus indicator follow from it. A
+label is required in one of the two ARIA spellings, which both call sites were
+already doing by hand.
+
+**The monospace line height stayed at 1.7**, the value the notes were set at,
+rather than the `body-sm` token's 1.55. That is the rule in miniature: the app
+was not bent towards the token.
+
+**`SegmentedControl` deleted.** Nothing used it. The CV's length switch is
+`SegmentedNav`, the appearance menu is a `MenuBar.RadioGroup`, and the overlay
+tab bar is navigation drawn as a floating pill, so there was no consumer to find
+and none worth inventing. The folder and stylesheet took `SegmentedNav`'s name,
+two toggle-only selectors went, and `primitives/ToggleGroup.ts` went with its one
+consumer.
+
+**`--border-frame`.** `2px solid var(--brand-border-strong)` was written out 33
+times, six in `Window` alone. One definition now, and the only literal left in
+the source is that definition. `Card` deliberately does not take it: its border
+weight is a variant axis, so it sets style, colour and width separately and
+`floating` happens to land on the same two pixels. The dark theme needs no copy,
+because a custom property substitutes where it is used rather than where it is
+written.
+
+**A regression, and what it taught.** The homepage's tag rows stacked one per
+line instead of scrolling sideways, from the stylesheet split earlier the same
+day. `.rowTags` is a variant that sets `flex-wrap: nowrap` and `overflow-x: auto`
+and nothing else; when it and its base ended up in one sheet, the `composes`
+pointing at the old file was dropped and the element switched to the variant
+alone, so both halves of the pair went at once and there was no `display: flex`
+for either property to act on.
+
+**The check in front of it could not have caught it.** It compared declarations
+present in the built stylesheet, and every declaration was still there; what
+changed was which classes reached the element. Re-run as an element-by-element
+computed-style diff between the pre-split commit and the fix, six blog pages and
+about 1900 elements came back identical, which also confirmed nothing else in
+the split had moved.
+
+**#178's guard reads the stylesheet as text**, because a render cannot show it:
+Vitest resolves a CSS-module class name but not `composes`, so `styles.rowTags`
+is one class in a test and two in a browser, and a variant that had lost its base
+would still satisfy `toHaveClass`. Confirmed to fail with the `composes` line
+removed.
+
+**Storybook is hosted again.** Its deploy job had failed on every merge to main
+since 2026-09-17 because GitHub Pages was not enabled on the repository, which no
+PR could reveal since the job is gated to `main`. Jordan enabled it, and the
+first green run published to https://theduckgoesquark.github.io/CampingTrip/.
+That is also where the one deliberate visual change of the day shows: design
+system components render 2px tighter than they did, because the package adopted
+the app's `--space-xs`.
+
+**Deferred**: no `Card.Header`/`Card.Footer`, because two consumers is not three
+and the second candidate turned out to be a different visual language. `TextArea`
+is now the only unused export, and whether the apps grow a consumer or the
+package drops it is in TODO.md, along with the missing rendered-CSS check that
+would have caught the tag row.
+
+---
+
 ## Syntax highlighting comes from Prism, and code blocks have a gutter
 
 **Date**: 2026-09-24

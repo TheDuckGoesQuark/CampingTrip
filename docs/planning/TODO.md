@@ -353,34 +353,6 @@ only hide it.
   `render={<a href=… />}`. Reproduce on `/blog/photobroom`. Fix belongs in
   `src/primitives/Button` (components may not import Base UI directly).
 
-### Repo — the Storybook deploy has never worked on `main`
-
-`storybook.yml`'s `build` job passes everywhere; its `deploy` job runs only on
-`main` and has failed every time since 2026-09-17, so `main` carries a red
-Storybook run that no PR can reveal. `actions/deploy-pages@v4` returns 404 and
-`gh api repos/TheDuckGoesQuark/CampingTrip/pages` returns 404 with it: Pages is
-not enabled on the repository. The workflow already names the prerequisite at
-the `deploy` job's comment. The repository is public now, which is the part that
-needed a person; enabling Settings → Pages → Source = "GitHub Actions" is what
-is left. If a hosted Storybook is not wanted, deleting the job is the other
-answer, and the honest one.
-
-### Design system — the framed box is drawn four times inside the design system
-
-`Card` expresses the hard-edged surface as `tone` × `elevation`, and `Tile`,
-`Window`, `DialogFrame` and `TransferProgress` each restate some of the same
-2px `--brand-border-strong` and `--shadow-hard-*` in their own module. The
-chrome appears in about a dozen stylesheets across the workspace, and these four
-are the ones inside the package that owns it. `FeedPanel` stopped hand-drawing
-it by composing `Card`, which is the worked example; doing the same inside the
-design system is a bigger call, because each of the four also carries geometry
-`Card` has no opinion about.
-
-Not every restatement is one of these. `PhotoBroomPage`'s `.shot`, `.card` and
-`.coffeeCard` are rounded and lightly bordered, a second visual language that
-`Card` cannot express and should not learn to. Whether the app should have two
-languages at all is the question underneath, and it is a design one.
-
 ### Design system — more than one window on screen
 
 `Window` centres itself in a full-bleed layer, so two rendered together stack
@@ -436,6 +408,38 @@ a `.button` class, with `Button` and `Icon` sitting in `@jordanscamp/ds`.
 
 Worth doing in DS-first order: land `Switch` and `Slider`, then migrate
 `SceneControls`, which clears most of the baseline in one change.
+
+### Design system — `TextArea` is the only export nobody imports
+
+`pnpm ds-guard` reports it as `info`, so it never fails a build. Unlike
+`SegmentedControl`, which was deleted because `SegmentedNav` already covered the
+ground, this reads as a gap rather than dead surface: its sibling `TextField` is
+used, `TextSurface` now covers the window-framed case, and a labelled multi-line
+field simply has nowhere in the apps yet. The decision is whether the apps grow
+one or the design system drops it, and neither is urgent.
+
+### Repo — nothing would catch a class that stops reaching an element
+
+The tag row on the homepage lost its base class in #167 and stacked instead of
+scrolling for as long as that sat on main. Every declaration was still in the
+built stylesheet; what changed was which classes reached the element, and the
+check in front of it compared declarations. `pnpm -r test` could not see it
+either: Vitest resolves a CSS-module class name but not `composes`, so
+`styles.rowTags` is one class in a test and two in a browser, and #178's guard
+has to read the stylesheet as text to say anything at all.
+
+What did catch it, after the fact, was an element-by-element computed-style diff
+between two commits, driven through Playwright against two dev servers: six blog
+pages, about 1900 elements, every property that a lost class would change. It
+found the one regression and confirmed nothing else in the split had moved. That
+script was written for the occasion and then deleted, because there is nowhere in
+the repo for it to live.
+
+This is the same missing layer the `--desktop-icon-cell-height` item below wants,
+and the two should be solved together: both need a real browser, a rendered page
+and a computed value. Playwright is already a dependency, used by
+`render-cv-pdf.mjs`, so what is missing is a place to put a suite and a decision
+about what it guards.
 
 ### Design system — nothing catches a drifted `--desktop-icon-cell-height`
 
