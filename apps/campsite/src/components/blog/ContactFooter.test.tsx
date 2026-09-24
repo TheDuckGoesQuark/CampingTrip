@@ -20,7 +20,7 @@ import ContactFooter, {
   RAIL_LABEL,
 } from "./ContactFooter";
 
-import styles from "./blog.module.css";
+import styles from "./ContactFooter.module.css";
 
 vi.mock("../../audio/soundEffects", () => ({ playWindowOpen: vi.fn() }));
 

@@ -4,7 +4,7 @@ import { useId } from "react";
 
 import { asset } from "../../utils/assetPath";
 
-import styles from "./blog.module.css";
+import styles from "./LogoEquation.module.css";
 
 const LOGO_HEIGHT = 48;
 const OPERATOR_SIZE = 32;

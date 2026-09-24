@@ -1,0 +1,20 @@
+.feedHeading {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-s);
+  margin: var(--space-s) 0 var(--space-m);
+}
+
+.feedRail {
+  padding-bottom: var(--space-m);
+}
+
+.feedList {
+  margin: 0;
+  padding: var(--space-l) 0 0;
+  list-style: none;
+  border-top: 2px solid var(--brand-border-strong);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+}

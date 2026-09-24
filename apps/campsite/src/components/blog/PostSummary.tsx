@@ -8,7 +8,8 @@ import type { Post } from "../../types/post";
 import { dayOfMonth, formatDate, monthAndYear } from "./formatDate";
 import { isNewSince } from "./isNewSince";
 
-import styles from "./blog.module.css";
+import shared from "./blog.module.css";
+import styles from "./PostSummary.module.css";
 
 export interface PostSummaryProps {
   post: Post;
@@ -41,7 +42,7 @@ export function CompactPostSummary({ post }: PostSummaryProps) {
         <Text variant="body-sm" tone="muted">
           {post.standfirst}
         </Text>
-        <ul className={styles.tagList}>
+        <ul className={shared.tagList}>
           {post.tags.map((tag) => (
             <li key={tag}>
               <Tag>{tag}</Tag>
@@ -77,7 +78,7 @@ export function PostSummaryCard({ post }: PostSummaryProps) {
               {post.title}
             </Text>
             <Text tone="muted">{post.standfirst}</Text>
-            <ul className={styles.tagList}>
+            <ul className={shared.tagList}>
               {post.tags.map((tag) => (
                 <li key={tag}>
                   <Tag>{tag}</Tag>

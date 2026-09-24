@@ -7,7 +7,7 @@ import { blogPaths } from "../../routing/blogPaths";
 import { CompactPostSummary } from "./PostSummary";
 import TagRail from "./TagRail";
 
-import styles from "./blog.module.css";
+import styles from "./FeedPanel.module.css";
 
 /** How many posts the homepage sidebar shows before deferring to the archive. */
 const VISIBLE = 5;

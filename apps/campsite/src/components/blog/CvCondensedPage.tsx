@@ -6,7 +6,8 @@ import CvHeader from "./CvHeader";
 import { monthYear } from "./formatDate";
 import { offsiteLinkProps } from "./offsiteLink";
 
-import styles from "./blog.module.css";
+import shared from "./blog.module.css";
+import styles from "./CvCondensedPage.module.css";
 
 export interface CvCondensedPageProps {
   cv: Cv;
@@ -32,7 +33,7 @@ export function condensedBullets(role: Role): string[] {
 
 export default function CvCondensedPage({ cv }: CvCondensedPageProps) {
   return (
-    <article className={`${styles.cv} ${styles.cvCondensed}`}>
+    <article className={styles.cvCondensed}>
       <CvHeader cv={cv} variant="condensed" />
 
       <Section name="Summary">
@@ -106,7 +107,7 @@ function RoleEntry({ role }: { role: Role }) {
   const bullets = condensedBullets(role);
   return (
     <div className={styles.cvShortRole}>
-      <div className={styles.cvRoleHead}>
+      <div className={shared.cvRoleHead}>
         <Text variant="title-4" as="h3">
           {role.title}
           {", "}

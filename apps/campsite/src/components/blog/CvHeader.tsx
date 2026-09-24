@@ -9,7 +9,7 @@ import type { Cv } from "../../types/cv";
 import { formatDate } from "./formatDate";
 import { offsiteLinkProps } from "./offsiteLink";
 
-import styles from "./blog.module.css";
+import styles from "./CvHeader.module.css";
 
 export type CvVariant = "full" | "condensed";
 

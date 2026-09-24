@@ -4,7 +4,7 @@ import { useState } from "react";
 import type { Bookmark } from "../../types/project";
 import { asset } from "../../utils/assetPath";
 
-import styles from "./blog.module.css";
+import styles from "./ToolPage.module.css";
 
 export interface ToolPageProps {
   bookmark: Bookmark;

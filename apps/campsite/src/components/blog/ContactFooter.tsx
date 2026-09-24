@@ -22,7 +22,7 @@ import { blogPaths } from "../../routing/blogPaths";
 import { asset } from "../../utils/assetPath";
 import { offsiteLinkProps } from "./offsiteLink";
 
-import styles from "./blog.module.css";
+import styles from "./ContactFooter.module.css";
 
 export const CONTACT_ID = "contact";
 

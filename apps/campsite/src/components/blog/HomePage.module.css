@@ -1,0 +1,347 @@
+/* A reading column with the feed beside it. The window is resizable, so the
+   reading column takes whatever is left rather than the pair sitting in a fixed
+   block with dead space beside it. */
+.home {
+  display: flex;
+  gap: var(--space-xl);
+  align-items: flex-start;
+}
+
+.homeMain {
+  /* Past roughly 75 characters a line is hard to track back from. The masthead
+     answers to the same measure as the prose under it, or on a wide window the
+     cat strands itself far to the right of where the paragraph stops. */
+  --measure: 68ch;
+
+  flex: 1;
+  min-width: 0;
+}
+
+/* The feed keeps its width at every window size: it is an index, and a wider one
+   would only stretch the same short lines. */
+.homeFeed {
+  width: 280px;
+  flex-shrink: 0;
+}
+
+/* Wrapping rather than a container query: the room here is whatever the feed
+   beside it leaves, not the width of the window, so the page can be wide while
+   this column is not. */
+/* One width for the masthead and the prose under it, set once here. Both fill
+   it, so the cat's right edge and the paragraph's are the same edge. Centred so
+   the column sits in the middle of whatever room `.homeMain` has beside the
+   feed, rather than jammed against its left edge. */
+.homeHeader {
+  max-width: var(--measure);
+  margin-inline: auto;
+}
+
+.masthead {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-l);
+  align-items: flex-start;
+  /* Reaches only the line the cat wraps onto alone: while the cat shares a line
+     with the title, the title's `flex-grow` has taken the free space already. */
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+/* Grows, which pushes the cat to the row's right edge — the same edge the
+   paragraph below ends on. The basis decides when the cat wraps underneath.
+
+   The greeting is the first thing anyone reads, so it arrives rather than
+   appears: it rises into place, and a band of brand colour glides across it
+   once, leaving "brighter." coloured behind it. The heading this holds is the
+   finished state and never animates — ink, with that last word already
+   coloured. What animates is `.sweep`, a second copy laid exactly over it.
+
+   `play` from the outset: this one shimmers because the page opened. */
+.mastheadTitle {
+  composes: palette sparks play from "./shimmer.module.css";
+
+  flex: 1 1 220px;
+  min-width: 0;
+
+  /* Reaching past the glyphs, so a speck can sit just off a letter rather than
+     only ever on one. */
+  --shimmer-sparks-inset: -0.45em -0.6em;
+  /* Long enough for the greeting to have finished rising before the bar starts
+     across it. */
+  --shimmer-delay: 0.3s;
+
+  position: relative;
+  animation: mastheadRise 0.45s ease-out both;
+}
+
+/* The copy that does the moving: the same words, same type, stacked on the real
+   heading and hidden from everything but the eye.
+
+   Its gradient runs transparent → band → ink, and travels. Ahead of the bar it
+   is opaque ink and the heading beneath is simply not seen; behind the bar it
+   is transparent and the heading shows through, coloured word and all. So the
+   boundary that uncovers "brighter." *is* the bar, at every window width —
+   there is no second animation to keep in step with the first, and nothing to
+   retime when the greeting rewraps.
+
+   The gradient is painted here and clipped to the glyphs inside, which makes
+   the painting area the whole block: one slanted bar across however many lines
+   the greeting wraps onto, rather than a fresh one per line. */
+.sweep {
+  composes: travel play from "./shimmer.module.css";
+
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  user-select: none;
+  background-image: linear-gradient(
+    var(--shimmer-angle),
+    var(--shimmer-band),
+    var(--brand-text) 61% 100%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+}
+
+/* Safari has historically only honoured `background-clip: text` against
+   `-webkit-text-fill-color`, and a copy that paints its own ink is just a
+   second heading sitting on the first. */
+.sweep > * {
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+/* The word the sweep uncovers, in the band's own colour. Plain `color` rather
+   than a fill clipped to a background, so forced colours substitutes a system
+   colour here as it does for any other text. It is coloured from the first
+   frame — the copy above is what hides it until the bar has been past. */
+.brighter {
+  color: var(--shimmer-colour);
+}
+
+@keyframes mastheadRise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Only what this block owns; the shared shimmer drops the bar and the specks. */
+@media (prefers-reduced-motion: reduce), (forced-colors: active) {
+  .mastheadTitle {
+    animation: none;
+  }
+
+  .sweep {
+    display: none;
+  }
+}
+
+/* Held to the frame's width, or the credit sets the figure wider than the thing
+   it captions and pushes the prose out of the row. */
+.mascot {
+  --cat-frame: 128px;
+  --cat-frame-border: 2px;
+
+  margin: 0;
+  flex-shrink: 0;
+  align-self: center;
+  width: calc(var(--cat-frame) + 2 * var(--cat-frame-border));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+  text-align: center;
+}
+
+/* The GIF's own background is opaque cream, so it is framed as a picture rather
+   than floated — unframed it reads as a pale block on the dark theme. 128px is
+   4x its real 32x32, so a source pixel lands on exactly 4 device pixels. */
+.mascotFrame {
+  display: block;
+  /* Under the global border-box the frame eats into the 128 and leaves 124px —
+     no longer a multiple of 32, so the sprite scales unevenly. */
+  box-sizing: content-box;
+  width: var(--cat-frame);
+  height: var(--cat-frame);
+  image-rendering: pixelated;
+  border: var(--cat-frame-border) solid var(--brand-border-strong);
+  box-shadow: var(--shadow-hard-2);
+}
+
+/* Below this the two columns cannot both hold their content: the feed's 280px
+   leaves the reading column less than one heading's worth of room, and text will
+   not shrink past its longest word. Stack instead, with the feed underneath.
+
+   A container query, not a media query — a window can be dragged narrow on a
+   wide screen, and it is the window the content has to fit. */
+@container window-page (max-width: 620px) {
+  .home {
+    flex-direction: column;
+    gap: var(--space-l);
+  }
+
+  .homeFeed {
+    width: 100%;
+  }
+}
+
+/* Gap above a paragraph that follows another. */
+.paragraphGap {
+  margin-top: var(--space-m);
+}
+
+/* A footnote and its marker. The `sup` is repositioned by hand rather than left
+   on `vertical-align: super`, which grows the line box it sits in and would
+   loosen one line of the paragraph against the rest. */
+.footnoteRef {
+  font-size: 75%;
+  line-height: 0;
+  position: relative;
+  top: -0.4em;
+  vertical-align: baseline;
+}
+
+.footnote {
+  margin-top: var(--space-l);
+}
+
+/* A keycap drawn inline in prose. `line-height: 1` and the vertical padding keep
+   it from stretching the line it sits on. */
+.key {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-family: var(--font-mono);
+  font-size: var(--text-label-size);
+  line-height: 1;
+  padding: 4px 6px;
+  border: 1px solid var(--brand-border-strong);
+  border-bottom-width: 2px;
+  border-radius: var(--radius-s);
+  background: var(--brand-surface-sunken);
+}
+
+/* The cap carries the whole affordance, so the anchor around it draws nothing of
+   its own — but it is focusable, so it still owes a focus ring. */
+.keyLink {
+  color: inherit;
+  text-decoration: none;
+  border-radius: var(--radius-s);
+}
+
+.keyLink:hover .key {
+  background: var(--brand-surface);
+  border-color: var(--brand-text-muted);
+}
+
+.keyLink:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
+/* Which way out is offered depends on the control the visitor has, so it turns
+   on `pointer` rather than a width: a narrow window still has a keyboard. */
+.ifTouch {
+  display: none;
+}
+
+@media (pointer: coarse) {
+  .ifKeyboard {
+    display: none;
+  }
+
+  .ifTouch {
+    display: inline;
+  }
+}
+
+/* A `<hr>` here would announce a second time the break `<section>` already is. */
+/* Same width and centring as `.homeHeader`, so its divider lines up under the
+   header's own edges rather than spanning the wider `.homeMain`. */
+.homeSection {
+  max-width: var(--measure);
+  margin-inline: auto;
+  border-top: 2px solid var(--brand-border-strong);
+  margin-top: var(--space-l);
+  padding-top: 20px;
+
+  /* `window-page` reads 780px where this reads 470, so the columns break on the
+     section. Named, so an unnamed query cannot land on it by accident. */
+  container-type: inline-size;
+  container-name: home-section;
+}
+
+.sectionBody {
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.workGrid {
+  display: grid;
+  gap: var(--space-l);
+  margin-top: 14px;
+}
+
+.workColumn {
+  min-width: 0;
+}
+
+/* Side by side this would be a line between nothing, so the two-column state
+   drops it. */
+.workColumn + .workColumn {
+  border-top: 1px solid var(--brand-border);
+  padding-top: var(--space-l);
+}
+
+/* Below this a row's title wraps against its tile. */
+@container home-section (min-width: 30rem) {
+  .workGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .workColumn + .workColumn {
+    border-top: 0;
+    padding-top: 0;
+  }
+}
+
+.workMore {
+  margin-top: var(--space-l);
+}
+
+.toolGrid {
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-s);
+}
+
+.toolCard {
+  display: flex;
+  gap: var(--space-s);
+  align-items: center;
+}
+
+.row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-s);
+}
+
+.rowBody {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}

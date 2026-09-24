@@ -1,0 +1,15 @@
+.toolHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-m);
+  margin-bottom: var(--space-m);
+}
+
+.toolIcon {
+  flex-shrink: 0;
+  object-fit: cover;
+}
+
+.toolLink {
+  margin-top: var(--space-l);
+}
