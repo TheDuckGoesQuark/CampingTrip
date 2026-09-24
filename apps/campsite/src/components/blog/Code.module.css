@@ -14,10 +14,28 @@
   box-shadow: var(--shadow-hard-1);
   padding: var(--space-s) var(--space-m);
   color: var(--brand-text);
+  counter-reset: line;
 }
 
+/* A counter rather than an element, so selecting the block copies the code
+   without the gutter. The hanging indent is what earns the numbers: a wrapped
+   line continues under the code, with no number beside it. */
 .line {
   display: block;
+  counter-increment: line;
+  padding-left: 3.5ch;
+  text-indent: -3.5ch;
+}
+
+.line::before {
+  content: counter(line);
+  display: inline-block;
+  width: 2ch;
+  margin-right: 1.5ch;
+  text-align: right;
+  text-indent: 0;
+  color: var(--brand-text-muted);
+  user-select: none;
 }
 
 /* A Prism token carries several types at once, and every rule below is a single

@@ -36,23 +36,26 @@ const SEMANTIC_TOKENS = [
 function RawTokenBlock() {
   return (
     <pre className={codeStyles.code}>
-      <span className={codeStyles.comment}>{"/* Gray */"}</span>
-      {"\n"}
-      <span className={codeStyles.selector}>:root</span>{" "}
-      <span className={codeStyles.punct}>{"{"}</span>
-      {"\n"}
+      <span className={codeStyles.line}>
+        <span className={codeStyles.comment}>{"/* Gray */"}</span>
+      </span>
+      <span className={codeStyles.line}>
+        <span className={codeStyles.selector}>:root</span>{" "}
+        <span className={codeStyles.punct}>{"{"}</span>
+      </span>
       {RAW_TOKENS.map((token) => (
-        <span key={token.name}>
+        <span className={codeStyles.line} key={token.name}>
           {"  "}
           <span className={codeStyles.prop}>{token.name}</span>
           <span className={codeStyles.punct}>:</span>{" "}
           <span className={`${styles.swatch} ${token.swatch}`} aria-hidden="true" />
           <span className={codeStyles.value}>{token.hex}</span>
           <span className={codeStyles.punct}>;</span>
-          {"\n"}
         </span>
       ))}
-      <span className={codeStyles.punct}>{"}"}</span>
+      <span className={codeStyles.line}>
+        <span className={codeStyles.punct}>{"}"}</span>
+      </span>
     </pre>
   );
 }
@@ -60,13 +63,15 @@ function RawTokenBlock() {
 function SemanticTokenBlock() {
   return (
     <pre className={codeStyles.code}>
-      <span className={codeStyles.comment}>{"/* Light mode (default) */"}</span>
-      {"\n"}
-      <span className={codeStyles.selector}>:root</span>{" "}
-      <span className={codeStyles.punct}>{"{"}</span>
-      {"\n"}
+      <span className={codeStyles.line}>
+        <span className={codeStyles.comment}>{"/* Light mode (default) */"}</span>
+      </span>
+      <span className={codeStyles.line}>
+        <span className={codeStyles.selector}>:root</span>{" "}
+        <span className={codeStyles.punct}>{"{"}</span>
+      </span>
       {SEMANTIC_TOKENS.map((token) => (
-        <span key={token.name}>
+        <span className={codeStyles.line} key={token.name}>
           {"  "}
           <span className={codeStyles.prop}>{token.name}</span>
           <span className={codeStyles.punct}>:</span> <span className={codeStyles.fn}>var(</span>
@@ -74,10 +79,11 @@ function SemanticTokenBlock() {
           <span className={codeStyles.prop}>{token.ref}</span>
           <span className={codeStyles.fn}>)</span>
           <span className={codeStyles.punct}>;</span>
-          {"\n"}
         </span>
       ))}
-      <span className={codeStyles.punct}>{"}"}</span>
+      <span className={codeStyles.line}>
+        <span className={codeStyles.punct}>{"}"}</span>
+      </span>
     </pre>
   );
 }

@@ -6,6 +6,64 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## Syntax highlighting comes from Prism, and code blocks have a gutter
+
+**Date**: 2026-09-24
+
+**What was done**:
+
+Two stacked PRs (#175, #176), from a question about whether thirty lines of
+regex still justified not taking a dependency.
+
+`Code.tsx` tokenised with a single regular expression that reached for comments,
+strings, custom properties, JSX tags and `name=`/`name:` pairs. Keywords were
+invisible to it, and `Code.module.css` already defined `.selector`, `.value`,
+`.punct` and `.fn` that the regex could never emit: only LayerWalk's two
+hand-built blocks used them. The stylesheet had outgrown the scanner.
+
+It now renders `react-code-block` over `prism-react-renderer`, and both blocks in
+LayerWalk gained the same line elements so the four walk panels and the two
+hand-built ones match.
+
+**Key decisions**:
+
+- **The theme is empty on purpose.** `prism-react-renderer` applies a theme as
+  inline styles, and `<Highlight>` falls back to `vsDark` when none is passed, so
+  the default would have painted over every brand colour. `theme={{ plain: {},
+styles: [] }}` leaves the token class names as the only styling, which is what
+  `Code.module.css` needs. A test asserts no token carries a `style` attribute,
+  because the failure mode is silent: the block would simply render in someone
+  else's palette.
+- **The token rules are ordered, not specific.** A Prism token carries several
+  types at once (the `"` in `label="ok"` is `tag attr-value punctuation`), so
+  every rule is a single class and the last matching one wins. The types the
+  rules name were read off Prism's own output for the posts' snippets rather
+  than guessed.
+- **Bold is for keywords, not for names.** Mapping `class-name` and
+  `maybe-class-name` onto `.element` wholesale made a TSX block mostly bold,
+  since it names far more types and components than it has keywords. They keep
+  the colour and lose the weight.
+- **The gutter is a CSS counter, not an element.** Selecting a block therefore
+  copies the code without the numbers, and a blank line still gets one.
+- **The hanging indent is the point, not the numbers.** `.line` carries
+  `padding-left` with a matching negative `text-indent`, so a wrapped line
+  continues under the code rather than under a number it does not have. The
+  block still wraps rather than scrolls, for the reason the stylesheet already
+  gave.
+- **`react-code-block` over its peer alone.** It is a thin wrapper: its own
+  additions are line numbers and line/word highlighting. The numbers are not
+  worth it on their own, but line highlighting is wanted for future posts, and
+  the wrapper costs about 1.5 kB over the peer it requires anyway.
+
+**Cost, measured**: the campsite's main chunk went from 226.5 kB to 255.6 kB
+gzipped. Prism ships as one file with its grammars, and there is no lazy
+language loading.
+
+**Deferred**: the blog route is not code-split, so the landing page pays for the
+highlighter too. Raised in TODO.
+
+---
+
 ## One owner per token, and one stylesheet per component
 
 **Date**: 2026-09-24
