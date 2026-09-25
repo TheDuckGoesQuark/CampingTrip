@@ -1,6 +1,7 @@
 import { Text } from "@jordanscamp/ds";
 
 import { posts as allPosts } from "../../data/posts";
+import { tags } from "../../data/tags";
 import type { Post } from "../../types/post";
 import { PostSummaryCard } from "./PostSummary";
 import TagRail from "./TagRail";
@@ -33,7 +34,7 @@ export default function FeedPage({ posts, tag }: FeedPageProps) {
         </div>
 
         <nav className={styles.feedRail} aria-label="Browse posts by topic">
-          <TagRail current={tag} total={allPosts.length} />
+          <TagRail tags={tags} current={tag} total={allPosts.length} />
         </nav>
       </header>
 

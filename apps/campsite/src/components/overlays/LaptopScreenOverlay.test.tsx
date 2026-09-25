@@ -16,8 +16,8 @@ import LaptopScreenOverlay from "./LaptopScreenOverlay";
 const HOME = "/blog/index.html";
 const CAMPING_TRIP = "/blog/projects/jordanscamp-site.html";
 const CATMAPS = "/blog/projects/catmaps.html";
-const BUSIEST_TAG = tags[0].tag;
-const TAG_PAGE = blogPaths.tag(BUSIEST_TAG);
+const FIRST_TAG = tags[0].tag;
+const TAG_PAGE = blogPaths.tag(FIRST_TAG);
 
 /** A router seeded at `path`, so a test can tell "went to /" from "started there". */
 const wrapperAt =
@@ -312,7 +312,7 @@ describe("LaptopScreenOverlay (CatOS)", () => {
     it("titles a tag tab by its tag", () => {
       openTabs([TAG_PAGE], TAG_PAGE);
       renderOverlay();
-      expect(screen.getByRole("tab", { name: `Tag: ${BUSIEST_TAG}` })).toBeInTheDocument();
+      expect(screen.getByRole("tab", { name: `Tag: ${FIRST_TAG}` })).toBeInTheDocument();
     });
 
     it("skips a path that names nothing that exists", () => {

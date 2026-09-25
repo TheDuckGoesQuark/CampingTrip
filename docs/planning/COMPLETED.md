@@ -6,6 +6,38 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## Blog tags come in two tiers
+
+**Date**: 2026-09-25
+
+**What was done**:
+
+The tag vocabulary is now a tree in `src/types/tags.ts`: three top tags (`ai`,
+`code`, `creative`) with the narrower tags filed under `code` and `creative`.
+`Post.tags` is typed against it, so an unlisted tag fails `tsc` rather than
+quietly minting a page. The homepage rail offers the top tier only; the archive
+and every tag page offer every tag in use, top tier first and alphabetical
+within each tier. A post's own tags are held alphabetically by `posts`, so no
+card sorts.
+
+Every tag not in the new vocabulary (`games`, `making`) came off the posts, and
+Jordan chose each post's tags: GROW is `creative, art, fun`; the vibe coding
+post is `ai, code, creative`; the designers post is `ai, code, design-systems,
+react`.
+
+**Decisions**: a post carries a sub-tag's parent explicitly rather than having
+it derived, so a tag page and its count read straight off the data and a test
+holds the invariant. The rail keeps one list ordered tier-then-alphabetical
+rather than two lists, since the archive has few enough tags for one row to
+read. Project and CV tags are a separate vocabulary and were left alone.
+
+**Deferred**: the archive rail inside CatOS lists tags only a draft carries
+(`art`, `fun` today), whose static pages do not exist until the draft
+publishes. That follows the existing rule that CatOS shows drafts; a rail built
+from `published` would fix it at the cost of previewing a draft's tags.
+
+---
+
 ## "What vibe coding actually changed" is published
 
 **Date**: 2026-09-25

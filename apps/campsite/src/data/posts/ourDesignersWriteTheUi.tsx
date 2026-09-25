@@ -31,7 +31,7 @@ export const ourDesignersWriteTheUi: Post = {
   title: "How I got our designers writing production code",
   date: "2026-09-21",
   standfirst: "Creativity loves constraints, and it turns out so does Claude.",
-  tags: ["react", "ai", "design-systems"],
+  tags: ["ai", "code", "react", "design-systems"],
   body: (
     <>
       <p>

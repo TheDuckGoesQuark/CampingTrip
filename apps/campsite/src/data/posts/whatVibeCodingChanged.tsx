@@ -5,7 +5,7 @@ export const whatVibeCodingChanged: Post = {
   title: "What vibe coding actually changed",
   date: "2026-09-25",
   standfirst: "I expected to miss trawling the docs. Reader, I do not.",
-  tags: ["code", "making"],
+  tags: ["code", "creative", "ai"],
   body: (
     <>
       <p>
