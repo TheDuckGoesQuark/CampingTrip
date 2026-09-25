@@ -30,12 +30,12 @@ describe("resolveBlogPage", () => {
   });
 
   it("resolves a tag to every post carrying it", () => {
-    const busiest = tags[0].tag;
-    const page = resolveBlogPage({ kind: "tag", tag: busiest });
+    const first = tags[0].tag;
+    const page = resolveBlogPage({ kind: "tag", tag: first });
     expect(page?.kind).toBe("tag");
     if (page?.kind !== "tag") return;
     expect(page.posts.length).toBeGreaterThan(0);
-    expect(page.posts.every((post) => post.tags.includes(busiest))).toBe(true);
+    expect(page.posts.every((post) => post.tags.includes(first))).toBe(true);
   });
 
   it("resolves the CV without a lookup", () => {

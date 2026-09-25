@@ -109,6 +109,10 @@ Rules this puts on anything rendered inside the blog window:
   which catches a page that exists but cannot be prerendered.
 - A post with `draft: true` is shown in CatOS but left out of `blogUrls()` and
   the feed, so nothing outside the tent indexes it.
+- Tags come from `TAG_TREE` in `src/types/tags.ts`, in two tiers. The homepage
+  rail offers only the top tier; the archive and tag pages offer every tag in
+  use. A post carrying a sub-tag carries its parent too, so the parent's page
+  holds it, and a test holds that line.
 - The app's global stylesheet may not assume the scene. `src/styles/global.css`
   takes the viewport — `height: 100%`, `overflow: hidden`, no pull-to-refresh —
   only under `html.js`, the class the shell's inline script sets, so a page that

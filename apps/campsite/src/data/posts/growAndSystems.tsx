@@ -4,7 +4,7 @@ export const growAndSystems: Post = {
   title: "GROW, and the games that taught me systems",
   date: "2026-07-28",
   standfirst: "A windmill does nothing until you add a river three clicks later.",
-  tags: ["games", "making"],
+  tags: ["creative", "art", "fun"],
   draft: true,
   body: (
     <>

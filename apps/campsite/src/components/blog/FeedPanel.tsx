@@ -3,6 +3,7 @@ import { useId } from "react";
 import { Link as RouterLink } from "react-router-dom";
 
 import { posts } from "../../data/posts";
+import { topTags } from "../../data/tags";
 import { blogPaths } from "../../routing/blogPaths";
 import { CompactPostSummary } from "./PostSummary";
 import TagRail from "./TagRail";
@@ -37,7 +38,7 @@ export default function FeedPanel() {
       </div>
 
       <nav className={styles.panelRail} aria-label="Browse posts by topic">
-        <TagRail total={posts.length} withCounts={false} />
+        <TagRail tags={topTags} total={posts.length} withCounts={false} />
       </nav>
 
       <ul className={styles.panelList}>

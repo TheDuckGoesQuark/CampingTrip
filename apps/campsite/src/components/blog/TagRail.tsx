@@ -1,12 +1,14 @@
 import { Tag } from "@jordanscamp/ds";
 import { Link } from "react-router-dom";
 
-import { tags } from "../../data/tags";
+import type { TagSummary } from "../../data/tags";
 import { blogPaths } from "../../routing/blogPaths";
 
 import styles from "./blog.module.css";
 
 export interface TagRailProps {
+  /** The tags to offer: `topTags` where the rail indexes, `tags` where it filters. */
+  tags: TagSummary[];
   /** The tag whose page we are on, or `undefined` on a page showing everything. */
   current?: string;
   /** Total post count, shown on the "All" tag. */
@@ -21,7 +23,7 @@ export interface TagRailProps {
  * page renders as a `span` with `aria-current`, not a link back to where you
  * already are.
  */
-export default function TagRail({ current, total, withCounts = true }: TagRailProps) {
+export default function TagRail({ tags, current, total, withCounts = true }: TagRailProps) {
   const count = (n: number) => (withCounts ? n : undefined);
 
   return (
