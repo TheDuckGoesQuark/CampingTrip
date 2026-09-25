@@ -124,20 +124,21 @@ export const ourDesignersWriteTheUi: Post = {
       <h2>Did it work?</h2>
       <p>Boy did it.</p>
       <p>
-        Velocity and quality grew in tandem - an insane feat. Within weeks our designers owned the
-        design system. They build, polish, and maintain components, and every change lands the same
-        way as any other: an engineer reviews it and owns what merges. The automated review skills
-        catch the mechanical stuff first, so that review is spent on the design rather than the
-        lint.
+        Velocity and quality grew in tandem - unheard of. Within weeks our designers owned the
+        design system. They build, polish, and maintain components. An engineer still reviews and
+        owns what merges, but a set of constantly improving automated review skills catch the
+        tedious stuff, so that review is spent on the edge case intricacies rather than pointing out
+        linting issues.
       </p>
       <p>
         Engineers could focus on modelling the data and the API, and stop worrying about which
         tailwind class they're meant to be using for a primary button on a table.
       </p>
-      <ul>
-        <li>Our users love the unified, consistent UI.</li>
-        <li>Our designers feel able to have the impact they want.</li>
-      </ul>
+      <p>
+        Most importantly users' trust in the product was restored. They could predict what each
+        piece of UI would do, without second-guessing themselves because a button was sometimes a
+        hyperlink that would lose all their progress.
+      </p>
       <p>
         We stopped having to worry about the tools, and put all our time and energy into the problem
         to solve. And isn't that what it's all about?

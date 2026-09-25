@@ -9,11 +9,14 @@ import {
 } from "../../data/layerSamples";
 import { useDocumentId } from "../../prerender/renderTarget";
 import Code from "./Code";
+import { offsiteLinkProps } from "./offsiteLink";
 
 import codeStyles from "./Code.module.css";
 import styles from "./LayerWalk.module.css";
 
 /** Hexes are content here, not theme: they depict another codebase's token file. */
+const BASE_UI_URL = "https://base-ui.com/";
+
 const RAW_TOKENS = [
   { name: "--gray-white", hex: "#ffffff", swatch: styles.swWhite },
   { name: "--gray-25", hex: "#fcfcfd", swatch: styles.sw25 },
@@ -108,9 +111,8 @@ const LAYERS: Layer[] = [
     visual: <SemanticTokenBlock />,
     prose: (
       <>
-        The same values, renamed into the language we actually speak: primary, secondary, surface,
-        border. Switching between light and dark mode means using the same semantic names pointed at
-        different values.
+        The same values in our native tongue: primary, secondary, surface, border. Switching between
+        light and dark mode is as simple as defining new values for the same variable.
       </>
     ),
   },
@@ -120,8 +122,8 @@ const LAYERS: Layer[] = [
     visual: <Code code={VARIANTS_CODE} />,
     prose: (
       <>
-        Every variant a component is allowed to have. Ask a multi-part component for{" "}
-        <code>small</code>, and <code>tv</code> works out what small means for each of its parts.
+        Ask a multi-part component for its <code>small</code> variant, and <code>tv</code> works out
+        what small means for each of its parts.
       </>
     ),
   },
@@ -131,9 +133,13 @@ const LAYERS: Layer[] = [
     visual: <Code code={PRIMITIVES_CODE} />,
     prose: (
       <>
-        A pass-through over Base UI, or our own carefully constructed headless components. This
-        layer strictly provides structure, web semantics, and accessibility. Focus traps, keyboard
-        behaviour, ARIA wiring, the parts that are genuinely hard and already solved.
+        Mostly threading though{" "}
+        <a href={BASE_UI_URL} {...offsiteLinkProps(BASE_UI_URL)}>
+          Base UI
+        </a>{" "}
+        components, or our own carefully constructed headless components. This layer strictly
+        provides structure, web semantics, and accessibility. Focus traps, keyboard behaviour, ARIA
+        wiring; the parts that are really hard to get right, already solved.
       </>
     ),
   },
@@ -155,8 +161,9 @@ const LAYERS: Layer[] = [
     visual: <Code code={APPLICATION_CODE} />,
     prose: (
       <>
-        Imports from the components layer passes the server state to be rendered. It may reach for
-        flex and grid to put things next to each other, but doesn't concern itself with branding.
+        Imports from the components layer passes the server state to be rendered. It can reach for
+        flex and grid to put things next to each other, but it's not allowed to interfere with
+        branding.
       </>
     ),
   },
