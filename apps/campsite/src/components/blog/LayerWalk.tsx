@@ -1,5 +1,5 @@
 import { Text } from "@jordanscamp/ds";
-import type { ReactNode } from "react";
+import { type MouseEvent, type ReactNode, useCallback, useState } from "react";
 
 import {
   APPLICATION_CODE,
@@ -8,6 +8,7 @@ import {
   VARIANTS_CODE,
 } from "../../data/layerSamples";
 import { useDocumentId } from "../../prerender/renderTarget";
+import { easeScrollTo } from "../../utils/easeScrollTo";
 import Code from "./Code";
 import { offsiteLinkProps } from "./offsiteLink";
 
@@ -169,48 +170,121 @@ const LAYERS: Layer[] = [
   },
 ];
 
-function TreeNode({ id, name, place }: { id: string; name: string; place: string }) {
+/** A tree node's link is followed by hand, as `LayerWalk` explains; a modified click keeps the browser's own. */
+function TreeNode({
+  id,
+  name,
+  place,
+  onFollow,
+}: {
+  id: string;
+  name: string;
+  place: string;
+  onFollow: (id: string, target: HTMLElement) => void;
+}) {
   const anchor = useDocumentId(`layer-${id}`);
+  const follow = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
+      return;
+    const target = document.getElementById(anchor);
+    if (!target) return;
+    event.preventDefault();
+    onFollow(id, target);
+  };
   return (
-    <a className={`${styles.treeNode} ${place}`} href={`#${anchor}`}>
+    <a className={`${styles.treeNode} ${place}`} href={`#${anchor}`} onClick={follow}>
       {name}
     </a>
   );
 }
 
-function LayerSection({ layer }: { layer: Layer }) {
-  const anchor = useDocumentId(`layer-${layer.id}`);
+/**
+ * The words of a layer, or the sweep's copy of them: the same text in the same
+ * type, so the two lay out identically, with the copy's elements plain spans so
+ * the page keeps one heading and one paragraph per layer.
+ */
+function Explain({ layer, copy = false }: { layer: Layer; copy?: boolean }) {
   return (
-    <div className={styles.row} id={anchor}>
-      <div className={styles.explain}>
-        <Text variant="title-4" as="h3">
+    <>
+      <div className={styles.title}>
+        <Text variant="title-4" as={copy ? "span" : "h3"}>
           {layer.name}
         </Text>
-        <Text variant="body-sm" as="p">
+      </div>
+      <div className={styles.prose}>
+        <Text variant="body-lg" as={copy ? "span" : "p"}>
           {layer.prose}
         </Text>
       </div>
-      <div className={styles.visual}>{layer.visual}</div>
+    </>
+  );
+}
+
+/**
+ * `arrival` counts landings here from the tree; each mounts a fresh sweep over
+ * the words, as the homepage greeting has, and a fresh shimmer over the code,
+ * as the contact footer has. `inert` as well as hidden: the copy repeats the
+ * prose's links, and a hidden link can still be tabbed to.
+ */
+function LayerSection({ layer, arrival }: { layer: Layer; arrival?: number }) {
+  const anchor = useDocumentId(`layer-${layer.id}`);
+  return (
+    <div className={styles.row} id={anchor} tabIndex={-1}>
+      <div className={styles.explain}>
+        <Explain layer={layer} />
+        {arrival !== undefined && (
+          <div key={arrival} className={styles.sweep} aria-hidden="true" inert>
+            <Explain layer={layer} copy />
+          </div>
+        )}
+      </div>
+      <div className={styles.visual}>
+        {arrival !== undefined && (
+          <span key={arrival} className={styles.codeShimmer} aria-hidden="true" />
+        )}
+        {layer.visual}
+      </div>
     </div>
   );
 }
 
+/**
+ * The tree's links scroll by hand rather than as fragment navigations: the CatOS
+ * window answers a hash change by placing the fragment instantly, which is right
+ * for a page arriving and wrong for a move within one. Kept out of the address,
+ * that code never runs, and the eased scroll and the landing shimmer are the
+ * page's own. The prerendered copy has no JS, and there the anchors are anchors.
+ */
 export default function LayerWalk() {
+  const [landed, setLanded] = useState<{ id: string; count: number }>();
+  const follow = useCallback((id: string, target: HTMLElement) => {
+    const instant = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const land = async () => {
+      if (!(await easeScrollTo(target, { instant }))) return;
+      target.focus({ preventScroll: true });
+      setLanded((last) => ({ id, count: (last?.count ?? 0) + 1 }));
+    };
+    void land();
+  }, []);
+  const node = (id: string, name: string, place: string) => (
+    <TreeNode id={id} name={name} place={place} onFollow={follow} />
+  );
+
   return (
     <figure className={styles.walk}>
       <nav className={styles.tree} aria-label="Design system layers">
-        <TreeNode id="raw-tokens" name="Raw tokens" place={styles.treeRaw} />
-        <TreeNode id="primitives" name="Primitive components" place={styles.treePrimitives} />
+        {node("raw-tokens", "Raw tokens", styles.treeRaw)}
+        {node("primitives", "Primitive components", styles.treePrimitives)}
         <div className={styles.linkRawToSemantic} aria-hidden="true" />
-        <TreeNode id="semantic-tokens" name="Semantic tokens" place={styles.treeSemantic} />
+        {node("semantic-tokens", "Semantic tokens", styles.treeSemantic)}
         <div className={styles.linkSemanticToVariants} aria-hidden="true" />
-        <TreeNode id="variants" name="Tailwind variants" place={styles.treeVariants} />
+        {node("variants", "Tailwind variants", styles.treeVariants)}
         <div className={styles.linkPrimitivesDown} aria-hidden="true" />
         <div className={styles.join} aria-hidden="true" />
         <div className={styles.joinArrow} aria-hidden="true" />
-        <TreeNode id="components" name="Components" place={styles.treeComponents} />
+        {node("components", "Components", styles.treeComponents)}
         <div className={styles.linkToApplication} aria-hidden="true" />
-        <TreeNode id="application" name="Application" place={styles.treeApplication} />
+        {node("application", "Application", styles.treeApplication)}
       </nav>
 
       <figcaption className={styles.caption}>
@@ -220,7 +294,11 @@ export default function LayerWalk() {
 
       <div className={styles.rows}>
         {LAYERS.map((layer) => (
-          <LayerSection key={layer.id} layer={layer} />
+          <LayerSection
+            key={layer.id}
+            layer={layer}
+            arrival={landed?.id === layer.id ? landed.count : undefined}
+          />
         ))}
       </div>
     </figure>

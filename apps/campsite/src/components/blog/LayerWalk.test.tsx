@@ -1,9 +1,31 @@
-import { render, screen, within } from "@testing-library/react";
+import { act, render, screen, within } from "@testing-library/react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { RenderTargetContext, type RenderTarget } from "../../prerender/renderTarget";
+import { easeScrollTo } from "../../utils/easeScrollTo";
 import LayerWalk from "./LayerWalk";
+
+import styles from "./LayerWalk.module.css";
+
+vi.mock("../../utils/easeScrollTo", () => ({ easeScrollTo: vi.fn() }));
+
+const scroll = vi.mocked(easeScrollTo);
+
+function treeNode(name: string) {
+  const tree = screen.getByRole("navigation", { name: "Design system layers" });
+  return within(tree).getByRole("link", { name });
+}
+
+function section(name: string) {
+  return screen.getByRole("heading", { level: 3, name }).closest(`.${styles.row}`)!;
+}
+
+// `composes` makes the export a list of class names, not one.
+const SHIMMER = `.${styles.sweep.trim().split(/\s+/).join(".")}`;
+const CODE_SHIMMER = `.${styles.codeShimmer.trim().split(/\s+/).join(".")}`;
+
+const follow = (name: string) => act(async () => treeNode(name).click());
 
 function renderAs(target: RenderTarget) {
   return render(
@@ -56,6 +78,91 @@ describe("LayerWalk", () => {
   it("carries no screenshots, only code", () => {
     render(<LayerWalk />);
     expect(screen.queryAllByRole("img")).toHaveLength(0);
+  });
+
+  describe("following a tree node", () => {
+    beforeEach(() => {
+      scroll.mockReset().mockResolvedValue(true);
+    });
+
+    it("eases to the section by hand, rather than as a fragment navigation", async () => {
+      render(<LayerWalk />);
+      // On the document, which hears the click after React's root has handled it.
+      let prevented = false;
+      const witness = (event: Event) => {
+        prevented = event.defaultPrevented;
+      };
+      document.addEventListener("click", witness);
+
+      await follow("Components");
+      document.removeEventListener("click", witness);
+
+      expect(scroll).toHaveBeenCalledWith(section("Components"), { instant: false });
+      expect(prevented).toBe(true);
+    });
+
+    it("leaves a modified click to the browser", () => {
+      render(<LayerWalk />);
+      act(() => {
+        treeNode("Components").dispatchEvent(
+          new MouseEvent("click", { bubbles: true, cancelable: true, metaKey: true }),
+        );
+      });
+      expect(scroll).not.toHaveBeenCalled();
+    });
+
+    it("jumps rather than eases for a visitor who asked for less motion", async () => {
+      vi.mocked(window.matchMedia).mockImplementation(
+        (query) => ({ matches: query.includes("reduce") }) as MediaQueryList,
+      );
+      render(<LayerWalk />);
+      await follow("Components");
+      expect(scroll).toHaveBeenCalledWith(section("Components"), { instant: true });
+    });
+
+    it("sweeps the words and shimmers the code of the row it lands on, and moves focus there", async () => {
+      render(<LayerWalk />);
+      expect(document.querySelector(SHIMMER)).toBeNull();
+
+      await follow("Components");
+
+      const row = section("Components");
+      expect(row.querySelector(SHIMMER)).not.toBeNull();
+      expect(document.querySelectorAll(SHIMMER)).toHaveLength(1);
+      expect(row.querySelector(CODE_SHIMMER)).not.toBeNull();
+      expect(document.querySelectorAll(CODE_SHIMMER)).toHaveLength(1);
+      expect(document.activeElement).toBe(row);
+    });
+
+    it("keeps the sweep's copy of the words out of reach", async () => {
+      render(<LayerWalk />);
+      await follow("Primitive components");
+
+      const copy = section("Primitive components").querySelector(SHIMMER)!;
+      expect(copy).toHaveAttribute("aria-hidden", "true");
+      expect(copy).toHaveAttribute("inert");
+      expect(copy.querySelector("a")).not.toBeNull();
+      expect(screen.getAllByRole("heading", { level: 3 })).toHaveLength(6);
+    });
+
+    it("shimmers afresh on a second landing", async () => {
+      render(<LayerWalk />);
+      await follow("Components");
+      const first = section("Components").querySelector(SHIMMER);
+
+      await follow("Components");
+      const second = section("Components").querySelector(SHIMMER);
+
+      expect(second).not.toBeNull();
+      expect(second).not.toBe(first);
+    });
+
+    it("does not shimmer a row the visitor scrolled away from before arriving", async () => {
+      scroll.mockResolvedValue(false);
+      render(<LayerWalk />);
+      await follow("Components");
+      expect(document.querySelector(SHIMMER)).toBeNull();
+    });
   });
 
   /* Deliberately not wrapped in an Island: this content has to reach a crawler. */
