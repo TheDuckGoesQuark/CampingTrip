@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -131,6 +131,47 @@ describe("Window", () => {
     expect(screen.getByRole("button", { name: "Back" })).toBeEnabled();
     expect(screen.getByRole("button", { name: "Forward" })).toBeDisabled();
   });
+  it("renders a bookmark as a link to its place, under a landmark of its own", () => {
+    render(
+      <Window>
+        <Window.Bookmarks>
+          <Window.Bookmark label="Home Page" href="/blog/index.html" />
+        </Window.Bookmarks>
+      </Window>,
+    );
+    const link = within(screen.getByRole("navigation", { name: "Bookmarks" })).getByRole("link", {
+      name: "Home Page",
+    });
+    expect(link).toHaveAttribute("href", "/blog/index.html");
+    expect(link).not.toHaveAttribute("aria-current");
+  });
+
+  it("marks the bookmark for the page on screen as current", () => {
+    render(
+      <Window>
+        <Window.Bookmarks>
+          <Window.Bookmark label="Home Page" href="/blog/index.html" current />
+          <Window.Bookmark label="Posts" href="/blog/posts/index.html" />
+        </Window.Bookmarks>
+      </Window>,
+    );
+    expect(screen.getByRole("link", { name: "Home Page" })).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("link", { name: "Posts" })).not.toHaveAttribute("aria-current");
+  });
+
+  it("keeps a bookmark's name when the anchor is swapped for a router's", () => {
+    render(
+      <Window>
+        <Window.Bookmarks>
+          <Window.Bookmark label="Home Page" render={<a href="/routed" data-routed />} />
+        </Window.Bookmarks>
+      </Window>,
+    );
+    const link = screen.getByRole("link", { name: "Home Page" });
+    expect(link).toHaveAttribute("href", "/routed");
+    expect(link).toHaveAttribute("data-routed");
+  });
+
   it("fires a toolbar button and disables one with no handler", async () => {
     const onZoomIn = vi.fn();
     render(

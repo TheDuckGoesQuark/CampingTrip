@@ -373,6 +373,25 @@ describe("LaptopScreenOverlay (CatOS)", () => {
       fireEvent.click(screen.getByRole("tab", { name: /JordansCamp\.Site/ }));
       expect(currentPath()).toBe(CAMPING_TRIP);
     });
+
+    it("the Home Page bookmark leads home from a page with no way back of its own", () => {
+      openTabs([CATMAPS], CATMAPS);
+      renderWithPath(CATMAPS);
+      const bookmark = screen.getByRole("link", { name: "Home Page" });
+      expect(bookmark).toHaveAttribute("href", HOME);
+      expect(bookmark).not.toHaveAttribute("aria-current");
+      fireEvent.click(bookmark);
+      expect(currentPath()).toBe(HOME);
+    });
+
+    it("the Home Page bookmark says so while the homepage is on screen", () => {
+      openTabs([HOME], HOME);
+      renderOverlay();
+      expect(screen.getByRole("link", { name: "Home Page" })).toHaveAttribute(
+        "aria-current",
+        "page",
+      );
+    });
   });
   describe("several windows at once", () => {
     const WORDS = "/blog/desk/words-with-friends-txt";

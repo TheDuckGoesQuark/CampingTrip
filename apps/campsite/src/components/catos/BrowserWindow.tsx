@@ -1,6 +1,6 @@
 import { Icon, Window } from "@jordanscamp/ds";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link as RouterLink, useLocation, useNavigate } from "react-router-dom";
 
 import { playSoftClick } from "../../audio/soundEffects";
 import {
@@ -33,8 +33,9 @@ export interface BrowserWindowProps extends WindowFrameProps {
 }
 
 /**
- * CatNav — the mock browser. Owns the tab strip and the address bar, which is
- * what distinguishes it from the desktop's other windows.
+ * CatNav: the mock browser. Owns the tab strip, the address bar and the
+ * bookmarks under it, which is what distinguishes it from the desktop's other
+ * windows.
  */
 export default function BrowserWindow({ page, onClose, ...frame }: BrowserWindowProps) {
   const navigate = useNavigate();
@@ -123,6 +124,16 @@ export default function BrowserWindow({ page, onClose, ...frame }: BrowserWindow
         onBack={canGoBack ? () => navigate(-1) : undefined}
         onReload={() => setReloadCount((n) => n + 1)}
       />
+      {/* The way back to the homepage from a page that offers none of its own. */}
+      <Window.Bookmarks>
+        <Window.Bookmark
+          label="Home Page"
+          icon={<Icon name="house" size="sm" />}
+          current={browserPath === blogPaths.home}
+          render={<RouterLink to={blogPaths.home} />}
+          onClick={playSoftClick}
+        />
+      </Window.Bookmarks>
       <Window.Body flush>
         {/* Re-keyed so the reload control actually remounts the page. */}
         <div ref={pageBody} key={`${browserPath}:${reloadCount}`} className={styles.pageBody}>
