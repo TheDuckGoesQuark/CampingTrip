@@ -6,6 +6,37 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## "What vibe coding actually changed" is published
+
+**Date**: 2026-09-25
+
+**What was done**:
+
+The post is out of draft, dated the day it went live. Its thesis is care rather
+than quality: the quality argument belongs to the designers post, so this one
+argues that freed hours are what pay for the humane parts of software, and that
+the choice of what to spend them on is the reader's.
+
+**The close is earned before it arrives.** Each paragraph now sets up the last
+line: the opening frames friction as time taken from the person, the machine is
+"built for the person reading it rather than the machine serving it", and a new
+section, "Where the hours went", says when the humanity left (when the scarce
+thing stopped being bytes and became afternoons) so that "back" has a referent.
+The two earlier endings ("isn't your day a little brighter?", "worth
+prioritising") were cut so the piece closes once.
+
+**Decisions**: the standfirst stays on the docs line, because a slightly
+controversial opener pulls in a reader who is not yet thinking creatively. The
+closing sentence keeps "that way" after the bold, which pins the humanity to how
+the hours are spent rather than to the model. The hurricane-shelter and
+Michelangelo detour went; the patient-monitoring line carries that job. The
+Christmas-tree anecdote no longer casts the PM as the person it was snuck past.
+
+**Deferred**: the real italic for post prose (TODO, "Blog: a real italic") is
+still the fallback text's one `<em>`.
+
+---
+
 ## The blog's island is a useless machine
 
 **Date**: 2026-09-24
