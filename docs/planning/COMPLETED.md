@@ -21,12 +21,14 @@ nearest scroll parent (the window's frame, or the document on the open page)
 with a quadratic ease-in-out over 300 to 800ms scaled by distance, honouring the
 frame's `scroll-padding-top` and the row's `scroll-margin-top`, and gives the
 scroll back to a wheel or touch mid-journey. On landing, focus moves to the row
-and the homepage greeting's sweep plays on the layer's name: a copy of the
-heading laid exactly over it with the band clipped to its glyphs, specks riding
-it, remounted per landing. The heading's prose margin moves onto the wrapper the
-two share, or the copy sits a margin above the words. Reduced motion jumps
-straight there and hides the sweep. The prerendered copy has no JS and keeps
-plain anchors.
+and the homepage greeting's sweep plays on the layer's words: a copy of the
+heading and prose laid exactly over them with the band clipped to their glyphs,
+specks riding it, while the contact footer's glint crosses the code block. Both
+remount per landing. The copy's elements are spans, `inert` as well as hidden
+since the prose carries links, and the type and margins the prose sheet sets by
+tag are pinned on wrappers the words and the copy share, so the two lay out the
+same box. Reduced motion jumps straight there and hides the sweep. The
+prerendered copy has no JS and keeps plain anchors.
 
 **Decisions**: the address does not change on a tree click, so the router's
 instant placement never runs. Each frame scrolls with `scrollTo({ behavior:

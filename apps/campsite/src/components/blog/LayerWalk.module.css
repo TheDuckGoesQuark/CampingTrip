@@ -234,22 +234,10 @@
   box-shadow: var(--shadow-focus);
 }
 
-/* The sweep paints into this box, so the box has to be the heading's: the
-   prose margin moves from the `h3` onto the wrapper, or the copy sits a margin
-   above the words it is meant to cover. */
-.heading {
-  position: relative;
-  margin: var(--space-l) 0 var(--space-s);
-}
-
-.explain .heading > h3 {
-  margin: 0;
-}
-
-/* The homepage greeting's sweep, on the layer's name: a copy of the heading
-   with the band clipped to its glyphs, so the light crosses the letters and
-   nothing else, with the specks riding it. Remounted per landing, since an
-   animation starts over only when its element does. */
+/* The homepage greeting's sweep, on the layer's words: a copy of the heading
+   and prose with the band clipped to their glyphs, so the light crosses the
+   letters and nothing else, with the specks riding it. Remounted per landing,
+   since an animation starts over only when its element does. */
 .sweep {
   composes: palette travel sparks play from "./shimmer.module.css";
 
@@ -268,10 +256,24 @@
   -webkit-background-clip: text;
 }
 
-/* Safari honours `background-clip: text` only against a transparent fill. */
-.sweep > * {
+/* Safari honours `background-clip: text` only against a transparent fill. The
+   copy's `code` chips keep their padding, so the words stay in step, and lose
+   their box, which would otherwise paint over the real one. Two classes deep,
+   to outrank the prose sheet's tag rules for `code` and `a`. */
+.explain .sweep * {
   color: transparent;
   -webkit-text-fill-color: transparent;
+  background: none;
+  border-color: transparent;
+}
+
+/* The contact footer's glint, over the code. */
+.codeShimmer {
+  composes: palette sheen sparks play from "./shimmer.module.css";
+
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
 }
 
 @media (prefers-reduced-motion: reduce), (forced-colors: active) {
@@ -281,17 +283,39 @@
 }
 
 .visual {
+  /* The code's shimmer paints into this box. */
+  position: relative;
   min-width: 0;
   display: flex;
   flex-direction: column;
   gap: var(--space-s);
 }
 
-.explain {
+/* The sweep paints into this box, and lays its copy out exactly as the words
+   are: the copy carries these same column rules. */
+.explain,
+.sweep {
   min-width: 0;
   display: flex;
   flex-direction: column;
   gap: var(--space-xs);
+}
+
+.explain {
+  position: relative;
+}
+
+/* The type and spacing pinned on the wrapper rather than the element, so the
+   `h3` and the `p` the prose sheet styles by tag and the sweep's spans come out
+   the same box. */
+.title {
+  margin: var(--space-l) 0 var(--space-s);
+}
+
+.explain .title > *,
+.explain .prose > * {
+  display: block;
+  margin: 0;
 }
 
 /* ── Swatches ──────────────────────────────────────────────── */

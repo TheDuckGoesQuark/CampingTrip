@@ -23,6 +23,7 @@ function section(name: string) {
 
 // `composes` makes the export a list of class names, not one.
 const SHIMMER = `.${styles.sweep.trim().split(/\s+/).join(".")}`;
+const CODE_SHIMMER = `.${styles.codeShimmer.trim().split(/\s+/).join(".")}`;
 
 const follow = (name: string) => act(async () => treeNode(name).click());
 
@@ -119,7 +120,7 @@ describe("LayerWalk", () => {
       expect(scroll).toHaveBeenCalledWith(section("Components"), { instant: true });
     });
 
-    it("shimmers the row it lands on, and moves focus there", async () => {
+    it("sweeps the words and shimmers the code of the row it lands on, and moves focus there", async () => {
       render(<LayerWalk />);
       expect(document.querySelector(SHIMMER)).toBeNull();
 
@@ -128,7 +129,20 @@ describe("LayerWalk", () => {
       const row = section("Components");
       expect(row.querySelector(SHIMMER)).not.toBeNull();
       expect(document.querySelectorAll(SHIMMER)).toHaveLength(1);
+      expect(row.querySelector(CODE_SHIMMER)).not.toBeNull();
+      expect(document.querySelectorAll(CODE_SHIMMER)).toHaveLength(1);
       expect(document.activeElement).toBe(row);
+    });
+
+    it("keeps the sweep's copy of the words out of reach", async () => {
+      render(<LayerWalk />);
+      await follow("Primitive components");
+
+      const copy = section("Primitive components").querySelector(SHIMMER)!;
+      expect(copy).toHaveAttribute("aria-hidden", "true");
+      expect(copy).toHaveAttribute("inert");
+      expect(copy.querySelector("a")).not.toBeNull();
+      expect(screen.getAllByRole("heading", { level: 3 })).toHaveLength(6);
     });
 
     it("shimmers afresh on a second landing", async () => {

@@ -198,31 +198,52 @@ function TreeNode({
   );
 }
 
-/** `arrival` counts landings here from the tree; each mounts a fresh sweep, as the homepage greeting has. */
+/**
+ * The words of a layer, or the sweep's copy of them: the same text in the same
+ * type, so the two lay out identically, with the copy's elements plain spans so
+ * the page keeps one heading and one paragraph per layer.
+ */
+function Explain({ layer, copy = false }: { layer: Layer; copy?: boolean }) {
+  return (
+    <>
+      <div className={styles.title}>
+        <Text variant="title-4" as={copy ? "span" : "h3"}>
+          {layer.name}
+        </Text>
+      </div>
+      <div className={styles.prose}>
+        <Text variant="body-lg" as={copy ? "span" : "p"}>
+          {layer.prose}
+        </Text>
+      </div>
+    </>
+  );
+}
+
+/**
+ * `arrival` counts landings here from the tree; each mounts a fresh sweep over
+ * the words, as the homepage greeting has, and a fresh shimmer over the code,
+ * as the contact footer has. `inert` as well as hidden: the copy repeats the
+ * prose's links, and a hidden link can still be tabbed to.
+ */
 function LayerSection({ layer, arrival }: { layer: Layer; arrival?: number }) {
   const anchor = useDocumentId(`layer-${layer.id}`);
   return (
     <div className={styles.row} id={anchor} tabIndex={-1}>
       <div className={styles.explain}>
-        <div className={styles.heading}>
-          <Text variant="title-4" as="h3">
-            {layer.name}
-          </Text>
-          {/* The moving copy of the heading: same words, same type, exactly over
-              it, and out of the accessibility tree so the name is read once. */}
-          {arrival !== undefined && (
-            <span key={arrival} className={styles.sweep} aria-hidden="true">
-              <Text variant="title-4" as="span">
-                {layer.name}
-              </Text>
-            </span>
-          )}
-        </div>
-        <Text variant="body-sm" as="p">
-          {layer.prose}
-        </Text>
+        <Explain layer={layer} />
+        {arrival !== undefined && (
+          <div key={arrival} className={styles.sweep} aria-hidden="true" inert>
+            <Explain layer={layer} copy />
+          </div>
+        )}
       </div>
-      <div className={styles.visual}>{layer.visual}</div>
+      <div className={styles.visual}>
+        {arrival !== undefined && (
+          <span key={arrival} className={styles.codeShimmer} aria-hidden="true" />
+        )}
+        {layer.visual}
+      </div>
     </div>
   );
 }
