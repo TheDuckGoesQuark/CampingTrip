@@ -6,6 +6,7 @@ import { mailPreset } from "../../data/mailPresets";
 import { useMouseMailIntercept } from "../../hooks/useMouseMailIntercept";
 import { blogPaths } from "../../routing/blogPaths";
 import type { Cv } from "../../types/cv";
+import { asset } from "../../utils/assetPath";
 import { formatDate } from "./formatDate";
 import { offsiteLinkProps } from "./offsiteLink";
 
@@ -60,6 +61,14 @@ export default function CvHeader({ cv, variant }: { cv: Cv; variant: CvVariant }
             <Icon name="house" size="sm" />
             <Text variant="body-sm" as="span">
               {cv.location}
+            </Text>
+          </li>
+        )}
+        {cv.citizenship && (
+          <li>
+            <img className={styles.cvFlag} src={asset(cv.citizenship.flag)} alt="" />
+            <Text variant="body-sm" as="span">
+              {cv.citizenship.label}
             </Text>
           </li>
         )}

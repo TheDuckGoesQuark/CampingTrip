@@ -22,6 +22,11 @@
   color: var(--brand-text-muted);
 }
 
+.cvFlag {
+  height: var(--icon-sm);
+  width: auto;
+}
+
 .cvIdentity {
   display: flex;
   align-items: center;

@@ -327,7 +327,8 @@ export const cv: Cv = {
   name: "Jordan Mackie",
   headline:
     "Senior full-stack product engineer who loves building reliable systems for regulated, high-stakes domains, to solve real user problems and build powerful, trustworthy tools.",
-  location: "London, UK · Valencia, Spain (remote)",
+  location: "Valencia, Spain (remote)",
+  citizenship: { label: "British citizen", flag: "images/flags/scotland.svg" },
   updated: "2026-09-15",
   /* The address is its own label: a link that only says "Email" hides the one
      thing a reader might want to copy rather than click. */
