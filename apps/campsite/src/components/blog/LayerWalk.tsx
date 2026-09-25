@@ -198,18 +198,26 @@ function TreeNode({
   );
 }
 
-/** `arrival` counts landings here from the tree; each mounts a fresh shimmer, as the contact footer does. */
+/** `arrival` counts landings here from the tree; each mounts a fresh sweep, as the homepage greeting has. */
 function LayerSection({ layer, arrival }: { layer: Layer; arrival?: number }) {
   const anchor = useDocumentId(`layer-${layer.id}`);
   return (
     <div className={styles.row} id={anchor} tabIndex={-1}>
-      {arrival !== undefined && (
-        <span key={arrival} className={styles.rowShimmer} aria-hidden="true" />
-      )}
       <div className={styles.explain}>
-        <Text variant="title-4" as="h3">
-          {layer.name}
-        </Text>
+        <div className={styles.heading}>
+          <Text variant="title-4" as="h3">
+            {layer.name}
+          </Text>
+          {/* The moving copy of the heading: same words, same type, exactly over
+              it, and out of the accessibility tree so the name is read once. */}
+          {arrival !== undefined && (
+            <span key={arrival} className={styles.sweep} aria-hidden="true">
+              <Text variant="title-4" as="span">
+                {layer.name}
+              </Text>
+            </span>
+          )}
+        </div>
         <Text variant="body-sm" as="p">
           {layer.prose}
         </Text>

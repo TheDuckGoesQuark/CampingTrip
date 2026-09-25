@@ -220,8 +220,6 @@
 }
 
 .row {
-  /* The shimmer paints into this box. */
-  position: relative;
   min-width: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -236,14 +234,50 @@
   box-shadow: var(--shadow-focus);
 }
 
-/* Remounted per landing, as `ContactFooter` does: an animation starts over only
-   when its element does. */
-.rowShimmer {
-  composes: palette sheen sparks play from "./shimmer.module.css";
+/* The sweep paints into this box, so the box has to be the heading's: the
+   prose margin moves from the `h3` onto the wrapper, or the copy sits a margin
+   above the words it is meant to cover. */
+.heading {
+  position: relative;
+  margin: var(--space-l) 0 var(--space-s);
+}
+
+.explain .heading > h3 {
+  margin: 0;
+}
+
+/* The homepage greeting's sweep, on the layer's name: a copy of the heading
+   with the band clipped to its glyphs, so the light crosses the letters and
+   nothing else, with the specks riding it. Remounted per landing, since an
+   animation starts over only when its element does. */
+.sweep {
+  composes: palette travel sparks play from "./shimmer.module.css";
+
+  --shimmer-sparks-inset: -0.45em -0.6em;
 
   position: absolute;
   inset: 0;
   pointer-events: none;
+  user-select: none;
+  background-image: linear-gradient(
+    var(--shimmer-angle),
+    var(--shimmer-band),
+    var(--brand-text) 61% 100%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+}
+
+/* Safari honours `background-clip: text` only against a transparent fill. */
+.sweep > * {
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce), (forced-colors: active) {
+  .sweep {
+    display: none;
+  }
 }
 
 .visual {

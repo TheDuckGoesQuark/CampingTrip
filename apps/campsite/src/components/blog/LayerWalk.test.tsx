@@ -22,7 +22,7 @@ function section(name: string) {
 }
 
 // `composes` makes the export a list of class names, not one.
-const SHIMMER = `.${styles.rowShimmer.trim().split(/\s+/).join(".")}`;
+const SHIMMER = `.${styles.sweep.trim().split(/\s+/).join(".")}`;
 
 const follow = (name: string) => act(async () => treeNode(name).click());
 
