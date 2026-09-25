@@ -55,7 +55,7 @@ export const whatVibeCodingChanged: Post = {
       </p>
       <p>
         One of the engineers on my team had some tokens left over at the end of the week, and spent
-        them on holiday theming for our login page. A year ago that isn't a request anyone would
+        them on holiday theming for our login page. A year ago that wasn't a request anyone would
         have made, and nobody would have blamed the PM for saying no. This time it went in between
         two real tickets, and nobody had to ask. That little animated Christmas tree won't help
         anyone monitor patients any quicker. But it might put a smile on a doctor's face after a
