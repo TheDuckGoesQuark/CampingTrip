@@ -106,6 +106,7 @@ describe("CvPage", () => {
     renderCv();
     const header = screen.getByRole("banner");
     if (cv.location) expect(header.textContent).toContain(cv.location);
+    if (cv.citizenship) expect(header.textContent).toContain(cv.citizenship.label);
     for (const link of cv.links) {
       expect(within(header).getByRole("link", { name: new RegExp(link.label) })).toHaveAttribute(
         "href",

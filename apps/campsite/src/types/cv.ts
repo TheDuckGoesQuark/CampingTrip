@@ -102,6 +102,8 @@ export interface Cv {
   /** The one-line pitch. It is also the meta description and the link-preview text. */
   headline: string;
   location?: string;
+  /** The flag is the one flown at home, which need not be the passport's. */
+  citizenship?: { label: string; flag: string };
   /** Written first on the page, TSX like a post body. May hold `Island`s. */
   narrative: ReactNode;
   /** `narrative` in two or three sentences. Plain text, not TSX: a link in that
