@@ -46,7 +46,7 @@ export const ourDesignersWriteTheUi: Post = {
         the engineer was fast. But nobody was fully satisfied with the end result.
       </p>
       <p>
-        At Lindus Health, we build software to run clinical trials. A fortnight spent perfecting
+        I work at a company that builds software for clinical trials. A fortnight spent perfecting
         keyboard navigation on a complex form is a fortnight not spent enabling a medical monitor to
         assess if an adverse event is related to the treatment or not.
       </p>
@@ -105,8 +105,9 @@ export const ourDesignersWriteTheUi: Post = {
       <p>This project wasn't without its difficulties:</p>
       <ul>
         <li>
-          <strong>The migration took some time</strong>. Though it did progress exponentially, with
-          Claude translating the old to the new with ease.
+          <strong>The migration took some time</strong>, and most of it was a person's time: a
+          designer ported the components across one by one, with Claude doing the mechanical
+          translation once the pattern for each was set.
         </li>
         <li>
           <strong>Standards required alignment</strong>. Convincing yourself a rule is useful is
@@ -123,14 +124,20 @@ export const ourDesignersWriteTheUi: Post = {
       <h2>Did it work?</h2>
       <p>Boy did it.</p>
       <p>
-        Velocity and quality grew in tandem - an insane feat. Within weeks our designers completely
-        owned the design system. They're able to build, polish, and maintain components, with a just
-        a quick scan from engineers and automated review skills.
+        Velocity and quality grew in tandem - an insane feat. Within weeks our designers owned the
+        design system. They build, polish, and maintain components, and every change lands the same
+        way as any other: an engineer reviews it and owns what merges. The automated review skills
+        catch the mechanical stuff first, so that review is spent on the design rather than the
+        lint.
       </p>
       <p>
         Engineers could focus on modelling the data and the API, and stop worrying about which
         tailwind class they're meant to be using for a primary button on a table.
       </p>
+      <ul>
+        <li>Our users love the unified, consistent UI.</li>
+        <li>Our designers feel able to have the impact they want.</li>
+      </ul>
       <p>
         We stopped having to worry about the tools, and put all our time and energy into the problem
         to solve. And isn't that what it's all about?
