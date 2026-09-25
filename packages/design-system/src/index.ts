@@ -32,6 +32,7 @@ export {
   type WindowTitleBarProps,
   type WindowTabProps,
   type WindowAddressBarProps,
+  type WindowBookmarkProps,
   type WindowToolButtonProps,
   type WindowBodyProps,
 } from "./components/desktop/Window";

@@ -33,7 +33,7 @@ export const Default: Story = {
   ),
 };
 
-/** Every subpart at once: lights, tab strip, address bar, scrolling page. */
+/** Every subpart at once: lights, tab strip, address bar, bookmarks, scrolling page. */
 export const AllVariants: Story = {
   render: () => (
     <Window>
@@ -54,6 +54,11 @@ export const AllVariants: Story = {
         onBack={() => {}}
         onReload={() => {}}
       />
+      <Window.Bookmarks>
+        <Window.Bookmark label="Home Page" icon="🏠" href="#" />
+        <Window.Bookmark label="PhotoBroom" icon="🧹" href="#" current />
+        <Window.Bookmark label="CatMap" icon="🗺️" href="#" />
+      </Window.Bookmarks>
       <Window.Body>
         <Text>{lorem}</Text>
       </Window.Body>

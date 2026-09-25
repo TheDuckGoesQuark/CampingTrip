@@ -6,12 +6,14 @@ import {
   useMemo,
   useRef,
   useState,
+  type ComponentPropsWithoutRef,
   type CSSProperties,
   type PointerEvent as ReactPointerEvent,
   type MouseEvent as ReactMouseEvent,
   type ReactNode,
 } from "react";
 
+import { useRender, type UseRenderRenderProp } from "../../../primitives/useRender";
 import { cn } from "../../../utils/cn";
 import { Icon, type IconName } from "../../Icon";
 import {
@@ -158,8 +160,9 @@ export interface WindowProps {
  * Window — boxy desktop chrome. Pure chrome nested inside a takeover; not a
  * focus-trapping dialog, it lives inside one. Compound: render any subset of
  * `Window.TitleBar` / `Window.Tabs` (holding `Window.Tab` and `Window.NewTab`) /
- * `Window.AddressBar` / `Window.Toolbar` (holding `Window.ToolButton` and
- * `Window.Separator`) / `Window.Body` / `Window.StatusBar`, in any order.
+ * `Window.AddressBar` / `Window.Bookmarks` (holding `Window.Bookmark`) /
+ * `Window.Toolbar` (holding `Window.ToolButton` and `Window.Separator`) /
+ * `Window.Body` / `Window.StatusBar`, in any order.
  *
  * Which subparts a caller picks is what makes a window a browser or a viewer:
  * tabs plus an address bar, or a toolbar plus a status bar.
@@ -494,6 +497,58 @@ function AddressBar({ url, onBack, onForward, onReload }: WindowAddressBarProps)
   );
 }
 
+/**
+ * The bookmarks strip a browser keeps under its address bar: the places a
+ * visitor can always get back to, whatever tab is open. Give it
+ * `Window.Bookmark` children. A landmark, so it can be jumped to by name. The
+ * divider after the last bookmark closes the list, so a short one does not
+ * read as a bar that trails off.
+ */
+function Bookmarks({ children }: { children: ReactNode }) {
+  return (
+    <nav aria-label="Bookmarks" className={styles.bookmarks}>
+      {children}
+      <Separator />
+    </nav>
+  );
+}
+
+export interface WindowBookmarkProps extends Omit<ComponentPropsWithoutRef<"a">, "className"> {
+  label: string;
+  icon?: ReactNode;
+  /** The bookmark for the page on screen. */
+  current?: boolean;
+  /**
+   * Replace the rendered anchor, the way `Link` does: an app on a client-side
+   * router passes its own link (`render={<RouterLink to=… />}`) so the bookmark
+   * routes in place and stays a real anchor.
+   */
+  render?: UseRenderRenderProp;
+}
+
+/** A bookmark is a link, never a button: it names a place, so it can be opened in a new tab or copied. */
+function Bookmark({ label, icon, current = false, render, ...props }: WindowBookmarkProps) {
+  return useRender({
+    render,
+    defaultTagName: "a",
+    props: {
+      className: styles.bookmark,
+      "aria-current": current ? "page" : undefined,
+      ...props,
+      children: (
+        <>
+          {icon && (
+            <span className={styles.bookmarkIcon} aria-hidden="true">
+              {icon}
+            </span>
+          )}
+          <span className={styles.bookmarkLabel}>{label}</span>
+        </>
+      ),
+    },
+  });
+}
+
 export interface WindowToolButtonProps {
   /** Accessible name — the button is icon-only, so this is its only label. */
   label: string;
@@ -602,6 +657,8 @@ export const Window = Object.assign(Root, {
   Tab,
   NewTab,
   AddressBar,
+  Bookmarks,
+  Bookmark,
   Toolbar,
   ToolButton,
   Separator,

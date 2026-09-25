@@ -71,8 +71,10 @@ Add the named export to [`../index.ts`](../index.ts).
     `<body>`, so it layers via `--layer-popup` — see
     [../tokens/README.md](../tokens/README.md).
   - **Window** — compound chrome whose subparts decide what kind of window it is.
-    A browser takes `Window.Tabs` + `Window.Tab`/`Window.NewTab` and
-    `Window.AddressBar`; a viewer takes `Window.Toolbar` (holding
+    A browser takes `Window.Tabs` + `Window.Tab`/`Window.NewTab`,
+    `Window.AddressBar` and, if it wants one, `Window.Bookmarks` holding
+    `Window.Bookmark`s (real anchors, `render`-swappable for a router's link,
+    `current` for the page on screen); a viewer takes `Window.Toolbar` (holding
     `Window.ToolButton` and `Window.Separator`) and `Window.StatusBar`. Shared:
     `Window.TitleBar` (squared traffic lights) and `Window.Body`, which takes
     `inset` for a window displaying one object rather than a document. `size`

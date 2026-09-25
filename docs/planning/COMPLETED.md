@@ -6,6 +6,34 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## CatNav has a bookmarks bar, with the homepage on it
+
+**Date**: 2026-09-25
+
+**What was done**:
+
+`Window` in `@jordanscamp/ds` gained two subparts: `Window.Bookmarks`, a
+`nav` landmark named "Bookmarks", and `Window.Bookmark`, a real anchor with a
+`label`, an optional `icon`, a `current` flag that sets `aria-current="page"`,
+and the same `render` swap `Link` has, so an app on a client-side router keeps
+the bookmark as an anchor that routes in place. A window without the subpart has
+no bar. CatNav renders one bookmark, `Home Page`, under its address bar, marked
+current on `/blog/index.html`; every other page in the browser had no way back
+to the homepage short of the tab strip. A divider after the last bookmark
+closes the list. The tab and bookmark icons, which hung from the text baseline,
+are now flex-centred on the label and lifted a pixel to sit on its capitals.
+
+**Decisions**: a bookmark is a link, not a button, so it can be middle-clicked
+and copied; the bar is flat with a bevel on hover, since a row of permanently
+raised cells would read as a toolbar. The strip is a subpart of `Window` rather
+than a prop on the address bar, matching how the tab strip and toolbar opt in.
+
+**Deferred**: the bar holds one bookmark. The CV, the archive and anything else
+worth a permanent way in can join it, which is one of the candidates the
+"Work with me? / Get to know me?" item in TODO.md lists.
+
+---
+
 ## Blog tags come in two tiers
 
 **Date**: 2026-09-25
