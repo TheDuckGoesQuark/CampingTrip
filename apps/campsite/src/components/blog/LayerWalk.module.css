@@ -220,12 +220,30 @@
 }
 
 .row {
+  /* The shimmer paints into this box. */
+  position: relative;
   min-width: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: var(--space-s);
   /* Arriving from a tree node, so the heading clears the window chrome. */
   scroll-margin-top: var(--space-l);
+}
+
+/* Focus lands here after a tree node is followed, as it would on a fragment. */
+.row:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
+/* Remounted per landing, as `ContactFooter` does: an animation starts over only
+   when its element does. */
+.rowShimmer {
+  composes: palette sheen sparks play from "./shimmer.module.css";
+
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
 }
 
 .visual {

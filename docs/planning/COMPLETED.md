@@ -6,6 +6,37 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## The layer walk's tree eases to its section and shimmers where it lands
+
+**Date**: 2026-09-25
+
+**What was done**:
+
+A tree node in `LayerWalk` used to jump: the CatOS window answers any hash
+change by placing the fragment instantly, which is right for a page arriving and
+wrong for a move within one, and it overrode the frame's `scroll-behavior:
+smooth` on every click (a headless probe showed 0 to 3464px inside one frame).
+The node's click is now handled by hand: `easeScrollTo` in `utils/` animates the
+nearest scroll parent (the window's frame, or the document on the open page)
+with a quadratic ease-in-out over 300 to 800ms scaled by distance, honouring the
+frame's `scroll-padding-top` and the row's `scroll-margin-top`, and gives the
+scroll back to a wheel or touch mid-journey. On landing, focus moves to the row
+and a shimmer mounts on it, composed from the same `shimmer.module.css` the
+contact footer uses and remounted per landing. Reduced motion jumps straight
+there, and the shared sheet already hides the shimmer under it. The prerendered
+copy has no JS and keeps plain anchors.
+
+**Decisions**: the address does not change on a tree click, so the router's
+instant placement never runs. Each frame scrolls with `scrollTo({ behavior:
+"instant" })` rather than assigning `scrollTop`: on a frame carrying
+`scroll-behavior: smooth`, an assignment is itself animated by the browser,
+which dragged behind the curve and then caught up in a rush. A modified click
+(meta, ctrl, shift, alt, or a non-primary button) is left to the browser.
+
+**Deferred**: nothing.
+
+---
+
 ## CatNav has a bookmarks bar, with the homepage on it
 
 **Date**: 2026-09-25
