@@ -46,3 +46,9 @@ variable "contact_email" {
   type        = string
   default     = "jmackie97@hotmail.com"
 }
+
+variable "alert_email" {
+  description = "Where alarms are sent. The same public address as contact_email, kept separate so one can move without the other."
+  type        = string
+  default     = "jmackie97@hotmail.com"
+}

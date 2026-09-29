@@ -60,7 +60,8 @@
     "CommitHash",
     "UUID",
     "CssBehaviourProps",
-    "DomBehaviourApis"
+    "DomBehaviourApis",
+    "SesBehaviourArgs"
   ],
 
   "patterns": [
@@ -75,6 +76,12 @@
     {
       "name": "DomBehaviourApis",
       "pattern": "/\\b(?:scrollBehavior|ScrollBehavior|behavior:\\s*[\"']?(?:smooth|auto|instant))\\b/g"
+    },
+
+    // The AWS provider names SES's MX-failure setting `behavior_on_mx_failure`.
+    {
+      "name": "SesBehaviourArgs",
+      "pattern": "/\\bbehavior_on_mx_failure\\b/g"
     },
 
     // Used by the markdown override, so that a fenced command or a backticked
