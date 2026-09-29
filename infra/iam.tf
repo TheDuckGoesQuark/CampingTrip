@@ -196,6 +196,11 @@ resource "aws_iam_role_policy" "github_plan_readonly" {
           "sns:List*",
           "ses:Get*",
           "ses:List*",
+          "dynamodb:Describe*",
+          "dynamodb:List*",
+          "cloudwatch:DescribeAlarms",
+          "cloudwatch:ListTagsForResource",
+          "logs:DescribeMetricFilters",
           "ssm:GetParameter",
           "ssm:GetParameters",
         ]
@@ -782,6 +787,9 @@ resource "aws_iam_role_policy" "github_terraform_resources" {
           "logs:TagResource",
           "logs:ListTagsForResource",
           "logs:ListTagsLogGroup",
+          "logs:PutMetricFilter",
+          "logs:DeleteMetricFilter",
+          "logs:DescribeMetricFilters",
         ]
         # The second pair of patterns is Lambda's naming, not this project's: a
         # function's runtime writes to `/aws/lambda/<function-name>` whoever
@@ -849,6 +857,28 @@ resource "aws_iam_role_policy" "github_terraform_resources" {
           "ses:ListTagsForResource",
         ]
         Resource = "*"
+      },
+      {
+        Sid    = "DynamoDBThisProjectOnly"
+        Effect = "Allow"
+        Action = "dynamodb:*"
+        Resource = [
+          "arn:aws:dynamodb:${var.aws_region}:${data.aws_caller_identity.current.account_id}:table/${local.name_prefix}-*",
+          "arn:aws:dynamodb:${var.aws_region}:${data.aws_caller_identity.current.account_id}:table/${local.name_prefix}-*/index/*",
+        ]
+      },
+      {
+        Sid    = "CloudWatchAlarmsThisProjectOnly"
+        Effect = "Allow"
+        Action = [
+          "cloudwatch:PutMetricAlarm",
+          "cloudwatch:DeleteAlarms",
+          "cloudwatch:DescribeAlarms",
+          "cloudwatch:TagResource",
+          "cloudwatch:UntagResource",
+          "cloudwatch:ListTagsForResource",
+        ]
+        Resource = "arn:aws:cloudwatch:${var.aws_region}:${data.aws_caller_identity.current.account_id}:alarm:${local.name_prefix}-*"
       }
     ]
   })

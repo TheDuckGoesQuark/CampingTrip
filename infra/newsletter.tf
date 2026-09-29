@@ -9,6 +9,12 @@ module "newsletter" {
   aws_region  = var.aws_region
   account_id  = data.aws_caller_identity.current.account_id
 
+  alerts_topic_arn = aws_sns_topic.alerts.arn
+  from_address     = "Jordan Mackie <hello@${var.domain_name}>"
+  reply_to         = var.contact_email
+  site_origin      = "https://${var.domain_name}"
+  consent_version  = var.newsletter_consent_version
+
   # IAM does not order a policy before the calls it authorises; see contact.tf.
   depends_on = [aws_iam_role_policy.github_terraform_resources]
 }
@@ -16,4 +22,11 @@ module "newsletter" {
 output "newsletter_dkim_status" {
   description = "`SUCCESS` once SES has resolved the three DKIM records; the production-access request waits on it"
   value       = module.newsletter.dkim_status
+}
+
+# Paste this into `infra/Caddyfile`'s `handle /api/newsletter/*`, as with
+# `contact_function_url`: the id is generated at creation.
+output "newsletter_api_function_url" {
+  description = "The newsletter endpoint's Function URL"
+  value       = module.newsletter.api_function_url
 }
