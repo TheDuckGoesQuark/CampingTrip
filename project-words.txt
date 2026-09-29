@@ -7,6 +7,7 @@
 addressbar
 Akai
 allseen
+amazonses
 ampm
 animales
 arrowless
@@ -41,6 +42,7 @@ deped
 developerway
 dialogs
 DMARC
+domainkey
 DPIA
 drei
 eevxl
@@ -127,6 +129,7 @@ scriptless
 scrollport
 scrollytelling
 SDTM
+sesv
 Sketchfab
 Skyscanner
 smittens

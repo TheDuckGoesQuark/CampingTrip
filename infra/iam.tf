@@ -194,6 +194,8 @@ resource "aws_iam_role_policy" "github_plan_readonly" {
           "lambda:List*",
           "sns:Get*",
           "sns:List*",
+          "ses:Get*",
+          "ses:List*",
           "ssm:GetParameter",
           "ssm:GetParameters",
         ]
@@ -820,6 +822,33 @@ resource "aws_iam_role_policy" "github_terraform_resources" {
           "ssm:GetParameters",
         ]
         Resource = "arn:aws:ssm:${var.aws_region}::parameter/aws/service/ami-amazon-linux-latest/*"
+      },
+      {
+        # The one identity this site sends as, and configuration sets under
+        # the project prefix. `ses:*` on the account's other identities would
+        # let CI verify or delete a domain that is not this project's.
+        Sid    = "SESThisDomainAndProjectSets"
+        Effect = "Allow"
+        Action = "ses:*"
+        Resource = [
+          "arn:aws:ses:${var.aws_region}:${data.aws_caller_identity.current.account_id}:identity/${var.domain_name}",
+          "arn:aws:ses:${var.aws_region}:${data.aws_caller_identity.current.account_id}:configuration-set/${local.name_prefix}-*",
+        ]
+      },
+      {
+        # Account-level settings have no ARN to scope on. Reads, plus the one
+        # write the suppression list needs; not `ses:PutAccount*`, which would
+        # also cover sending toggles and the production-access request.
+        Sid    = "SESAccount"
+        Effect = "Allow"
+        Action = [
+          "ses:GetAccount",
+          "ses:PutAccountSuppressionAttributes",
+          "ses:ListConfigurationSets",
+          "ses:ListEmailIdentities",
+          "ses:ListTagsForResource",
+        ]
+        Resource = "*"
       }
     ]
   })
