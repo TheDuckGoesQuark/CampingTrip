@@ -22,6 +22,7 @@ jordanscamp.site {
     # Short enough to say aloud or put on paper.
     redir /cv /blog/cv.html permanent
     redir /cv-condensed /blog/cv-condensed.html permanent
+    redir /privacy /blog/privacy.html permanent
 
     # Same-origin, so the form posts without CORS ever entering the picture.
     #

@@ -1,0 +1,8 @@
+/* The post's measure: these pages are one thing to read, like a post. */
+.page {
+  max-width: 640px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-m);
+}

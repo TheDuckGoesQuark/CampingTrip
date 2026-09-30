@@ -13,6 +13,7 @@ import { posts } from "./posts";
 import { projects } from "./projects";
 import { SITE } from "./site";
 import { slugify } from "./slug";
+import { noticeNamed, type SubscribeNotice } from "./subscribeNotices";
 import { postsTagged } from "./tags";
 
 /** A blog URL resolved against the content behind it. */
@@ -26,7 +27,10 @@ export type BlogPage =
   | { kind: "cv"; cv: Cv }
   | { kind: "cvCondensed"; cv: Cv }
   | { kind: "desk"; item: DesktopItem }
-  | { kind: "about" };
+  | { kind: "about" }
+  | { kind: "privacy" }
+  | { kind: "subscribe" }
+  | { kind: "notice"; notice: SubscribeNotice };
 
 /**
  * The pages the mock browser renders. A desktop item and the About box are
@@ -79,6 +83,14 @@ export function resolveBlogPage(ref: BlogRef): BlogPage | null {
     }
     case "about":
       return { kind: "about" };
+    case "privacy":
+      return { kind: "privacy" };
+    case "subscribe":
+      return { kind: "subscribe" };
+    case "notice": {
+      const notice = noticeNamed(ref.name);
+      return notice ? { kind: "notice", notice } : null;
+    }
   }
 }
 
@@ -105,6 +117,12 @@ export function titleOfBlogPage(page: BlogPage): string {
       return page.item.label;
     case "about":
       return "About CatOS";
+    case "privacy":
+      return "Privacy";
+    case "subscribe":
+      return "Subscribe";
+    case "notice":
+      return page.notice.title;
   }
 }
 
@@ -130,6 +148,11 @@ export function iconOfBlogPage(page: BlogPage): IconName {
       return iconOfDesktopItem(page.item);
     case "about":
       return "cat";
+    case "privacy":
+      return "document";
+    case "subscribe":
+    case "notice":
+      return "envelope";
   }
 }
 
@@ -182,6 +205,12 @@ export type PageMeta = {
   description: string;
   /** Another form of the same page, such as a PDF. */
   alternate?: { type: string; path: string };
+  /**
+   * Prerendered, so a form post has somewhere to land with scripts off, but
+   * kept out of the sitemap and marked `noindex`: a page that only ever
+   * follows an action is not a destination.
+   */
+  unlisted?: true;
 } & (
   | { kind: "website" }
   | { kind: "article"; published: string }
@@ -243,6 +272,25 @@ export function metaOfBlogPage(page: BrowserPage): PageMeta {
         kind: "profile",
         person: personOf(page.cv),
         alternate: { type: "application/pdf", path: blogPaths.cvPdf },
+      };
+    case "privacy":
+      return {
+        title: "Privacy",
+        description: "What this site holds about you, where, and how to have it removed.",
+        kind: "website",
+      };
+    case "subscribe":
+      return {
+        title: "New posts, by email",
+        description: "Get the summary and a link when something new is published here.",
+        kind: "website",
+      };
+    case "notice":
+      return {
+        title: page.notice.title,
+        description: page.notice.description,
+        kind: "website",
+        unlisted: true,
       };
     // A second document about the same person, not a copy: an ATS landing here
     // still has to find the `Person`, so it is self-canonical and a `profile` too.

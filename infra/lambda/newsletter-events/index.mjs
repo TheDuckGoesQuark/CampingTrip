@@ -35,6 +35,6 @@ export const handler = async (event) => {
     } catch {
       continue;
     }
-    for (const marking of markingsFrom(message)) await mark(marking, nowIso);
+    await Promise.all(markingsFrom(message).map((marking) => mark(marking, nowIso)));
   }
 };

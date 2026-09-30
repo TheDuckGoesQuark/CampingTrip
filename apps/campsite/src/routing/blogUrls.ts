@@ -2,6 +2,7 @@ import { bookmarks } from "../data/bookmarks";
 import { published } from "../data/posts";
 import { projects } from "../data/projects";
 import { slugify } from "../data/slug";
+import { SUBSCRIBE_NOTICES } from "../data/subscribeNotices";
 import { tagsOf } from "../data/tags";
 import { blogPaths } from "./blogPaths";
 
@@ -17,9 +18,20 @@ export function blogUrls(): string[] {
     blogPaths.archive,
     blogPaths.cv,
     blogPaths.cvCondensed,
+    blogPaths.privacy,
+    blogPaths.subscribe,
     ...published.map((post) => blogPaths.post(slugify(post.title))),
     ...tagsOf(published).map(({ tag }) => blogPaths.tag(tag)),
     ...projects.map((project) => blogPaths.project(slugify(project.title))),
     ...bookmarks.map((bookmark) => blogPaths.tool(slugify(bookmark.title))),
   ];
+}
+
+/**
+ * Prerendered like the rest, so a form post lands on a real page with scripts
+ * off, but neither listed in the sitemap nor fed: each only ever follows an
+ * action, and is marked `noindex` in its head.
+ */
+export function unlistedBlogUrls(): string[] {
+  return SUBSCRIBE_NOTICES.map((notice) => blogPaths.subscribeNotice(notice.name));
 }

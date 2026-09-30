@@ -1,0 +1,26 @@
+.subscribe {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+  padding: var(--space-m);
+  border: var(--border-frame);
+  background: var(--brand-surface-sunken, transparent);
+}
+
+.form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-s);
+}
+
+/* The field takes what the button leaves, and the whole row on a narrow screen. */
+.address {
+  flex: 1 1 16rem;
+}
+
+/* The honeypot. `display: none` rather than an off-screen shift, as in
+   contact.module.css: a screen reader skips it entirely. */
+.trap {
+  display: none;
+}

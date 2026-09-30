@@ -11,6 +11,7 @@ import {
   ORIGIN,
   render,
   renderLanding,
+  unlistedBlogUrls,
 } from "../dist-ssr/entry.js";
 
 const DIST = "dist";
@@ -73,19 +74,20 @@ ${items}
 `;
 }
 
-const written = [];
-for (const path of blogUrls()) {
+const listed = blogUrls();
+for (const path of [...listed, ...unlistedBlogUrls()]) {
   const page = render(path);
-  if (!page) throw new Error(`blogUrls() named ${path}, but render() found no page there`);
+  if (!page) throw new Error(`${path} is named as a blog URL, but render() found no page there`);
   write(path, fill(page));
-  written.push(path);
 }
 // The shell itself, last: everything above read the template from it.
 write("index.html", fill(renderLanding()));
 
 // The PDF is made from the CV page by `build:pdf`, a separate step of the same deploy.
-write("sitemap.xml", sitemap(["/", ...written, CV_PDF_PATH, CV_CONDENSED_PDF_PATH]));
+write("sitemap.xml", sitemap(["/", ...listed, CV_PDF_PATH, CV_CONDENSED_PDF_PATH]));
 write("robots.txt", `User-agent: *\nAllow: /\nSitemap: ${ORIGIN}/sitemap.xml\n`);
 write(FEED_PATH, atom(feedEntries()));
 
-console.log(`prerendered ${written.length} blog pages, the landing page, sitemap, robots and feed`);
+console.log(
+  `prerendered ${listed.length} listed and ${unlistedBlogUrls().length} unlisted blog pages, the landing page, sitemap, robots and feed`,
+);
