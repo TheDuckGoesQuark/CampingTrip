@@ -17,12 +17,12 @@ function endpointNotices(): string[] {
   const source = readFileSync(ENDPOINT_SOURCE, "utf8");
   const block = source.match(/NOTICES = Object\.freeze\(\{([\s\S]*?)\}\)/);
   expect(block, "accept.mjs no longer declares NOTICES as a frozen object literal").not.toBeNull();
-  return [...block![1].matchAll(/:\s*"([a-z-]+)"/g)].map((match) => match[1]).toSorted();
+  return [...block![1].matchAll(/:\s*"([a-z-]+)"/g)].map((match) => match[1]).sort();
 }
 
 describe("subscribe notices", () => {
   it("are exactly the pages the endpoint redirects to", () => {
-    const here = SUBSCRIBE_NOTICES.map((notice) => notice.name).toSorted();
+    const here = SUBSCRIBE_NOTICES.map((notice) => notice.name).sort();
     expect(here).toEqual(endpointNotices());
   });
 
