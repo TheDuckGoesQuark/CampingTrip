@@ -127,6 +127,26 @@ describe("LaptopScreenOverlay (CatOS)", () => {
       expect(currentPath()).toBe("/blog/about");
     });
 
+    it("opens the Activity Monitor in a window of its own", async () => {
+      useSceneStore.setState({ laptopFocused: true });
+      renderWithPath();
+      const user = await openMenu();
+      await user.click(await screen.findByRole("menuitem", { name: "Activity Monitor" }));
+      expect(currentPath()).toBe("/blog/activity");
+    });
+
+    it("sends Admin to the stats dashboard in a new tab, not a window", async () => {
+      const opened = vi.fn();
+      vi.stubGlobal("open", opened);
+      useSceneStore.setState({ laptopFocused: true });
+      renderWithPath();
+      const user = await openMenu();
+      await user.click(await screen.findByRole("menuitem", { name: "Admin" }));
+      expect(opened).toHaveBeenCalledWith("https://stats.jordanscamp.site/", "_blank", "noopener");
+      expect(currentPath()).toBe("/");
+      vi.unstubAllGlobals();
+    });
+
     it("offers Close all windows only when there are some", async () => {
       useSceneStore.setState({ laptopFocused: true });
       renderOverlay();

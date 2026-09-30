@@ -2,6 +2,7 @@ import { DesktopIcon, Icon, MenuBar, Modal } from "@jordanscamp/ds";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { STATS_DASHBOARD } from "../../analytics/visitorCounts";
 import { playSoftClick, playWindowOpen } from "../../audio/soundEffects";
 import { iconOfDesktopItem, resolveBlogPage, type BlogPage } from "../../data/blogPages";
 import { desktopItems, desktopItemSlug } from "../../data/desktopItems";
@@ -101,6 +102,12 @@ export default function LaptopScreenOverlay() {
     [navigate],
   );
 
+  /** The dashboard is a real site, so it opens as one: a new tab, no window. */
+  const openStatsDashboard = useCallback(() => {
+    playSoftClick();
+    window.open(STATS_DASHBOARD, "_blank", "noopener");
+  }, []);
+
   const shutDown = useCallback(() => {
     playSoftClick();
     navigate(routes.tent);
@@ -197,6 +204,10 @@ export default function LaptopScreenOverlay() {
                 }
               >
                 <MenuBar.Item onClick={() => open(blogPaths.about)}>About CatOS</MenuBar.Item>
+                <MenuBar.Item onClick={() => open(blogPaths.activity)}>
+                  Activity Monitor
+                </MenuBar.Item>
+                <MenuBar.Item onClick={openStatsDashboard}>Admin</MenuBar.Item>
                 <MenuBar.Separator />
                 <MenuBar.Item onClick={closeAllWindows} disabled={!anyOpen}>
                   Close all windows
