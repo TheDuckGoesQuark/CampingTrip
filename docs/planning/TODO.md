@@ -429,6 +429,16 @@ inside the Canvas:
 
 ## Backlog
 
+### Design system — a broken dimension token is invisible to CI
+
+`--desktop-icon-cell-height` is a multi-line `calc()`. An edit that landed
+inside it left the token invalid, the icon field lost its row height, and every
+check passed: an invalid custom property is well-formed CSS to the formatter,
+the linter and the tests, and only a rendered desktop showed it. A check that
+each token in `packages/design-system/src/tokens/*.css` parses as the kind of
+value its name promises (a length for `--*-height`, `--*-width`, `--space-*`)
+would have refused the commit.
+
 ### Blog: a project page cannot reach its CV entry
 
 Deferred when the personal column kept its project pages: a "See this on my CV"
@@ -604,10 +614,11 @@ are there only for the tent:
 
 ## Future
 
-### Stats page as a status page
+### Activity Monitor as a status page
 
-Once `stats.jordanscamp.site` is public, the same page could carry panels for
-the rest of the platform: last deploy, last newsletter issue and its count,
-alarm state. Nothing exists for it yet beyond the GoatCounter dashboard.
+CatOS's Activity Monitor draws visits from GoatCounter's visitor counter. The
+same window could carry panels for the rest of the platform: last deploy, last
+newsletter issue and its count, alarm state. Each needs a public, credential-free
+source the way the counter is one; none exists yet.
 
 _(nothing queued)_
