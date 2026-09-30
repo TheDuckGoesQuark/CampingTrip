@@ -9,6 +9,10 @@ This file is what to do with it once it exists.
 | File         | Holds                                                                                                                                              |
 | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `sending.tf` | The SES identity for the apex, its DKIM, MAIL FROM and DMARC records, the configuration set, and the topic SES publishes bounces and complaints to |
+| `list.tf`    | The subscriber table, with a token index each for confirm and unsubscribe links                                                                    |
+| `api.tf`     | The public endpoint behind `/api/newsletter/*`: subscribe, confirm, unsubscribe. Code in `../lambda/newsletter-api/`                               |
+| `events.tf`  | The function that marks a subscriber bounced or complained from SES's events. Code in `../lambda/newsletter-events/`                               |
+| `alarms.tf`  | What emails the owner: function errors, the confirmation cap, and the account's bounce and complaint rates                                         |
 
 The module is wired in `infra/newsletter.tf`; the alerts topic every alarm
 emails through is `infra/alerts.tf` at the root, since it is not the
@@ -26,6 +30,28 @@ Two things need a person, and Terraform reports success without either.
    `SUCCESS`. Route53 serves them within a minute; SES checks on its own
    schedule and can take longer. The custom MAIL FROM's MX is detected the same
    way and is allowed up to three days.
+
+## Wiring the endpoint into the site
+
+The endpoint's Function URL is generated when it is created, so it cannot be
+in the Caddyfile before the first apply. `terraform output
+newsletter_api_function_url` prints it; paste it into the `handle
+/api/newsletter/*` block of `infra/Caddyfile`, as `contact_function_url` is in
+its block, and merge. deploy.yml ships the Caddyfile.
+
+Until the route exists the URL still answers directly, which is how the
+endpoint is exercised in the sandbox. With your own address verified in SES
+(the sandbox sends to verified addresses only):
+
+```bash
+curl -sS -o /dev/null -w '%{http_code}\n' -X POST -H 'Content-Type: application/json' -d '{"email":"jmackie97@hotmail.com","trap":""}' "$(cd infra && terraform output -raw newsletter_api_function_url)subscribe"
+```
+
+A `202` means a pending row was written and the confirmation email sent.
+Its link lands on `/blog/subscribe/confirmed.html` once followed; the
+unsubscribe link in a later issue lands on a page with one button. A `303` is
+the same outcome for a plain form post. Nothing about the address is logged,
+so the table is the place to look: the row is `SUB#<address>` / `META`.
 
 ## Leaving the SES sandbox
 
