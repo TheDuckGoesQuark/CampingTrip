@@ -8,6 +8,7 @@ import { blogPaths } from "../../routing/blogPaths";
 import "../../styles/blogProse.css";
 import type { Post } from "../../types/post";
 import { formatDate } from "./formatDate";
+import ArrivedAs from "./newsletter/ArrivedAs";
 import SubscribeForm from "./subscribe/SubscribeForm";
 
 import shared from "./blog.module.css";
@@ -53,6 +54,9 @@ export default function PostPage({ post }: PostPageProps) {
       <hr className={styles.rule} />
       <div className={`blog-prose ${styles.postBody}`}>{post.body}</div>
 
+      <div className={styles.subscribe}>
+        <ArrivedAs post={post} />
+      </div>
       <div className={styles.subscribe}>
         <SubscribeForm />
       </div>

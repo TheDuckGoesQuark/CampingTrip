@@ -3,12 +3,14 @@ import type { IconName } from "@jordanscamp/ds";
 import { blogPaths, type BlogRef } from "../routing/blogPaths";
 import type { Cv } from "../types/cv";
 import type { DesktopItem } from "../types/desktop";
+import type { Issue } from "../types/newsletter";
 import type { Post } from "../types/post";
 import type { Bookmark, Project } from "../types/project";
 import { bookmarks } from "./bookmarks";
 import { contactMailto, emailOf, MAILTO } from "./contactEmail";
 import { cv } from "./cv";
 import { findDesktopItem } from "./desktopItems";
+import { issues, sentIssues } from "./newsletters";
 import { posts } from "./posts";
 import { projects } from "./projects";
 import { SITE } from "./site";
@@ -30,7 +32,9 @@ export type BlogPage =
   | { kind: "about" }
   | { kind: "privacy" }
   | { kind: "subscribe" }
-  | { kind: "notice"; notice: SubscribeNotice };
+  | { kind: "notice"; notice: SubscribeNotice }
+  | { kind: "issues"; issues: Issue[] }
+  | { kind: "issue"; issue: Issue };
 
 /**
  * The pages the mock browser renders. A desktop item and the About box are
@@ -91,6 +95,14 @@ export function resolveBlogPage(ref: BlogRef): BlogPage | null {
       const notice = noticeNamed(ref.name);
       return notice ? { kind: "notice", notice } : null;
     }
+    case "issues":
+      return { kind: "issues", issues: sentIssues };
+    case "issue": {
+      // Every issue, not only the sent: an unsent one is viewable in the tent,
+      // as a draft post is, and is kept off `blogUrls()` the same way.
+      const issue = issues.find((candidate) => slugify(candidate.subject) === ref.slug);
+      return issue ? { kind: "issue", issue } : null;
+    }
   }
 }
 
@@ -123,6 +135,10 @@ export function titleOfBlogPage(page: BlogPage): string {
       return "Subscribe";
     case "notice":
       return page.notice.title;
+    case "issues":
+      return "Newsletter";
+    case "issue":
+      return page.issue.subject;
   }
 }
 
@@ -152,6 +168,8 @@ export function iconOfBlogPage(page: BlogPage): IconName {
       return "document";
     case "subscribe":
     case "notice":
+    case "issues":
+    case "issue":
       return "envelope";
   }
 }
@@ -291,6 +309,19 @@ export function metaOfBlogPage(page: BrowserPage): PageMeta {
         description: page.notice.description,
         kind: "website",
         unlisted: true,
+      };
+    case "issues":
+      return {
+        title: "Newsletter",
+        description: "Every issue that has gone out, as it arrived in subscribers' inboxes.",
+        kind: "website",
+      };
+    case "issue":
+      return {
+        title: page.issue.subject,
+        description: page.issue.note[0] ?? page.issue.subject,
+        kind: "article",
+        published: page.issue.sentOn ?? page.issue.date,
       };
     // A second document about the same person, not a copy: an ATS landing here
     // still has to find the `Person`, so it is self-canonical and a `profile` too.

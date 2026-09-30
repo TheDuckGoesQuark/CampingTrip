@@ -1,10 +1,11 @@
-import { Button, Tag, Text, TextField, TextSurface } from "@jordanscamp/ds";
+import { Button, Tag, Text, TextSurface } from "@jordanscamp/ds";
 import { type Icon, PaperPlaneRight } from "@jordanscamp/ds/icons";
 import { useId } from "react";
 
 import { MAIL_PRESETS } from "../../../data/mailPresets";
+import { MouseMail } from "./MouseMail";
 import SendDialog from "./SendDialog";
-import { MESSAGE_LIMIT, SUBJECT_LIMIT } from "./submitFeedback";
+import { MESSAGE_LIMIT } from "./submitFeedback";
 import type { Compose } from "./useCompose";
 
 import styles from "./contact.module.css";
@@ -24,29 +25,18 @@ export default function MouseMailForm({ compose, emailLabel, onClose }: MouseMai
   const busy = compose.phase !== "editing";
 
   return (
-    <div className={styles.stage}>
+    <MouseMail>
       {/* Switched off rather than unmounted, so a failed send hands it back. */}
       <div className={styles.compose} inert={busy}>
-        <div className={styles.headers}>
-          {/*
-          A field rather than a caption, so the address keeps a tab stop and stays
-          selectable. Read-only rather than disabled: nothing here is switched off.
-        */}
-          <TextField label="To" value={emailLabel} readOnly />
-          <TextField
-            label="From"
-            type="email"
+        <MouseMail.Headers>
+          <MouseMail.To value={emailLabel} />
+          <MouseMail.From
             optional="optional, only so I can reply"
             value={compose.email}
             onValueChange={compose.setEmail}
           />
-          <TextField
-            label="Subject"
-            value={compose.subject}
-            onValueChange={compose.setSubject}
-            maxLength={SUBJECT_LIMIT}
-          />
-        </div>
+          <MouseMail.Subject value={compose.subject} onValueChange={compose.setSubject} />
+        </MouseMail.Headers>
 
         <div className={styles.templates}>
           <Text variant="label" as="span" tone="muted" id={templatesId}>
@@ -84,7 +74,7 @@ export default function MouseMailForm({ compose, emailLabel, onClose }: MouseMai
           </div>
         </div>
 
-        <div className={styles.surface}>
+        <MouseMail.Body>
           <TextSurface
             face="text"
             fill="frame"
@@ -101,7 +91,7 @@ export default function MouseMailForm({ compose, emailLabel, onClose }: MouseMai
               {compose.messageError}
             </p>
           )}
-        </div>
+        </MouseMail.Body>
 
         <input
           className={styles.trap}
@@ -115,7 +105,7 @@ export default function MouseMailForm({ compose, emailLabel, onClose }: MouseMai
       </div>
 
       {busy && <SendDialog compose={compose} emailLabel={emailLabel} onClose={onClose} />}
-    </div>
+    </MouseMail>
   );
 }
 

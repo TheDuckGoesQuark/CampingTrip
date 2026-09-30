@@ -50,6 +50,9 @@ export const blogPaths = {
    * these files cannot drift apart without `subscribeNotices.test.ts` noticing.
    */
   subscribeNotice: (name: string) => `${ROOT}/subscribe/${encodeURIComponent(name)}.html`,
+  /** Every issue that has gone out. The directory index, as `archive` is for posts. */
+  issues: `${ROOT}/newsletter/index.html`,
+  issue: (slug: string) => `${ROOT}/newsletter/${encodeURIComponent(slug)}.html`,
 } as const;
 
 /** What a blog URL names, before any lookup against content. */
@@ -66,7 +69,9 @@ export type BlogRef =
   | { kind: "about" }
   | { kind: "privacy" }
   | { kind: "subscribe" }
-  | { kind: "notice"; name: string };
+  | { kind: "notice"; name: string }
+  | { kind: "issues" }
+  | { kind: "issue"; slug: string };
 
 /** Strips the cosmetic extension. Absent is fine; canonical links carry it. */
 export function stripHtml(segment: string): string {
@@ -82,6 +87,7 @@ const DIRECTORIES: Record<string, (slug: string) => BlogRef> = {
   tools: (slug) => ({ kind: "tool", slug }),
   desk: (slug) => ({ kind: "desk", slug }),
   subscribe: (name) => (name === "index" ? { kind: "subscribe" } : { kind: "notice", name }),
+  newsletter: (slug) => (slug === "index" ? { kind: "issues" } : { kind: "issue", slug }),
 };
 
 /**
@@ -146,5 +152,9 @@ export function blogPathFor(ref: BlogRef): string {
       return blogPaths.subscribe;
     case "notice":
       return blogPaths.subscribeNotice(ref.name);
+    case "issues":
+      return blogPaths.issues;
+    case "issue":
+      return blogPaths.issue(ref.slug);
   }
 }
