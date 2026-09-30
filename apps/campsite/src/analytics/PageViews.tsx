@@ -12,6 +12,14 @@ declare global {
 export const ENGAGEMENT_EVENTS = ["pointerdown", "keydown", "scroll", "touchstart"] as const;
 
 /**
+ * The path a view is recorded under. A directory's page is served as
+ * `index.html`, and its row reads as the directory; the query string stays,
+ * since that is where an issue's campaign tag lives.
+ */
+export const viewPath = (pathname: string, search: string) =>
+  `${pathname.replace(/\/index\.html$/, "/")}${search}`;
+
+/**
  * Counts a page view once the visitor has done something, and every route
  * change after that. Nothing on load: the site is fetched far more often by
  * things that never scroll than by people, and a count that includes them
@@ -23,7 +31,7 @@ export default function PageViews() {
   const engaged = useRef(false);
   const counted = useRef<string | null>(null);
 
-  const current = `${pathname}${search}`;
+  const current = viewPath(pathname, search);
 
   useEffect(() => {
     const count = () => {

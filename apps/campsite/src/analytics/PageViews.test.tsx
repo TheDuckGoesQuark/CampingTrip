@@ -2,7 +2,7 @@ import { act, render } from "@testing-library/react";
 import { MemoryRouter, Route, Routes, useNavigate } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import PageViews from "./PageViews";
+import PageViews, { viewPath } from "./PageViews";
 
 let count: ReturnType<typeof vi.fn<(vars?: { path?: string }) => void>>;
 let go: (to: string) => void = () => {};
@@ -59,9 +59,18 @@ describe("PageViews", () => {
     expect(count).not.toHaveBeenCalled();
     interact();
     expect(count).toHaveBeenCalledWith({ path: "/blog/posts/a.html" });
+    act(() => go("/blog/index.html"));
+    expect(count).toHaveBeenLastCalledWith({ path: "/blog/" });
     act(() => go("/blog/posts/b.html"));
-    expect(count).toHaveBeenCalledTimes(2);
+    expect(count).toHaveBeenCalledTimes(3);
     expect(count).toHaveBeenLastCalledWith({ path: "/blog/posts/b.html" });
+  });
+
+  it("records a directory's page as the directory, query string kept", () => {
+    expect(viewPath("/blog/index.html", "")).toBe("/blog/");
+    expect(viewPath("/index.html", "?utm_campaign=x")).toBe("/?utm_campaign=x");
+    expect(viewPath("/blog/posts/a.html", "")).toBe("/blog/posts/a.html");
+    expect(viewPath("/blog/newsletter/index.html", "")).toBe("/blog/newsletter/");
   });
 
   it("survives count.js not having loaded", () => {
