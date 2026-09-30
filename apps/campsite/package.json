@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "models:optimise": "node scripts/optimise-models.mjs"
+    "models:optimise": "node scripts/optimise-models.mjs",
+    "newsletter:render": "vite build --ssr src/prerender/entry.tsx --outDir dist-ssr && node scripts/render-newsletter.mjs"
   },
   "dependencies": {
     "@jordanscamp/ds": "workspace:*",

@@ -59,3 +59,18 @@ variable "confirm_cap_per_day" {
   type        = number
   default     = 100
 }
+
+variable "deploy_bucket_arn" {
+  description = "The deploy bucket; a rendered issue is uploaded under its `_newsletter/` prefix"
+  type        = string
+}
+
+variable "deploy_bucket_name" {
+  description = "The same bucket, by name, for the functions that read from it"
+  type        = string
+}
+
+variable "test_recipients" {
+  description = "Where a test send goes. In the SES sandbox these must be verified addresses."
+  type        = list(string)
+}

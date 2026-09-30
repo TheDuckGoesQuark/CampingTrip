@@ -27,3 +27,8 @@ output "table_name" {
   description = "The subscriber table, for the sending function and for a deletion request run by hand"
   value       = aws_dynamodb_table.list.name
 }
+
+output "send_function_name" {
+  description = "Invoked by CI with { issue, mode }"
+  value       = aws_lambda_function.send.function_name
+}

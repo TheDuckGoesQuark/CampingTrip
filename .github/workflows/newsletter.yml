@@ -1,0 +1,123 @@
+name: Newsletter
+
+# Dispatched by hand with an issue's slug. `test` mails the rendered issue to
+# the test recipients and records nothing; `send` waits for approval in the
+# `newsletter` environment, then mails every active subscriber once.
+on:
+  workflow_dispatch:
+    inputs:
+      issue:
+        description: "The issue's slug (its subject, slugified)"
+        required: true
+        type: string
+      mode:
+        description: "test mails the test recipients only; send mails the list"
+        required: true
+        type: choice
+        default: test
+        options:
+          - test
+          - send
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: eu-west-2
+  SEND_FUNCTION: jordanscamp-prod-newsletter-send
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Render the issue
+        run: pnpm --filter campsite newsletter:render ${{ inputs.issue }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # Private bucket: an unsent issue is not public until its archive page is.
+      - name: Upload the rendered issue
+        run: aws s3 cp "apps/campsite/dist-newsletter/${{ inputs.issue }}" "s3://${{ vars.S3_DEPLOY_BUCKET }}/_newsletter/${{ inputs.issue }}/" --recursive
+
+  test:
+    if: inputs.mode == 'test'
+    needs: render
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Send to the test recipients
+        run: |
+          aws lambda invoke --function-name "$SEND_FUNCTION" \
+            --cli-binary-format raw-in-base64-out \
+            --payload '{"issue":"${{ inputs.issue }}","mode":"test"}' \
+            response.json > invoke.json
+          cat response.json; echo
+          if grep -q FunctionError invoke.json; then echo "::error::the send function failed"; exit 1; fi
+
+  send:
+    if: inputs.mode == 'send'
+    needs: render
+    runs-on: ubuntu-latest
+    # Required reviewer: the run pauses here until approved in the Actions UI.
+    environment: newsletter
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Claim the issue and enqueue every active subscriber
+        run: |
+          aws lambda invoke --function-name "$SEND_FUNCTION" \
+            --cli-binary-format raw-in-base64-out \
+            --payload '{"issue":"${{ inputs.issue }}","mode":"send"}' \
+            response.json > invoke.json
+          cat response.json; echo
+          if grep -q FunctionError invoke.json; then echo "::error::the send function failed"; exit 1; fi
+          if grep -q '"refused"' response.json; then echo "::error::the send was refused; see the response above"; exit 1; fi
+
+      # The positive signal: sent equals the active count at the claim. The
+      # alarms are the negative one.
+      - name: Wait until every recipient has been sent to
+        run: |
+          for i in $(seq 1 40); do
+            aws lambda invoke --function-name "$SEND_FUNCTION" \
+              --cli-binary-format raw-in-base64-out \
+              --payload '{"issue":"${{ inputs.issue }}","mode":"status"}' \
+              status.json > /dev/null
+            expected=$(jq -r '.active_at_claim // 0' status.json)
+            sent=$(jq -r '.sent // 0' status.json)
+            echo "[$i/40] sent $sent of $expected"
+            if [ "$sent" -ge "$expected" ]; then
+              echo "## Newsletter sent" >> "$GITHUB_STEP_SUMMARY"
+              echo "\`${{ inputs.issue }}\` reached $sent of $expected active subscribers." >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "::error::sent $sent of $expected after ten minutes; check the worker's alarm and the dead-letter queue"
+          exit 1

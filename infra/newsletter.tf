@@ -15,6 +15,10 @@ module "newsletter" {
   site_origin      = "https://${var.domain_name}"
   consent_version  = var.newsletter_consent_version
 
+  deploy_bucket_arn  = aws_s3_bucket.deploy.arn
+  deploy_bucket_name = aws_s3_bucket.deploy.id
+  test_recipients    = [var.contact_email]
+
   # IAM does not order a policy before the calls it authorises; see contact.tf.
   depends_on = [aws_iam_role_policy.github_terraform_resources]
 }
@@ -29,4 +33,9 @@ output "newsletter_dkim_status" {
 output "newsletter_api_function_url" {
   description = "The newsletter endpoint's Function URL"
   value       = module.newsletter.api_function_url
+}
+
+output "newsletter_send_function" {
+  description = "The function the Newsletter workflow invokes"
+  value       = module.newsletter.send_function_name
 }

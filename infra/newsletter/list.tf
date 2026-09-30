@@ -28,6 +28,11 @@ resource "aws_dynamodb_table" "list" {
     type = "S"
   }
 
+  attribute {
+    name = "status"
+    type = "S"
+  }
+
   # A link carries a token and nothing else, so each token is a key lookup.
   # `KEYS_ONLY`: the query only needs the row's key to update it.
   global_secondary_index {
@@ -40,6 +45,15 @@ resource "aws_dynamodb_table" "list" {
     name            = "unsubscribe-token"
     hash_key        = "unsubscribe_token"
     projection_type = "KEYS_ONLY"
+  }
+
+  # Who an issue goes to: every `active` row, with the two things the worker
+  # needs and nothing else projected.
+  global_secondary_index {
+    name               = "status-index"
+    hash_key           = "status"
+    projection_type    = "INCLUDE"
+    non_key_attributes = ["email", "unsubscribe_token"]
   }
 
   # A pending row that is never confirmed carries `ttl`; nothing else does.
