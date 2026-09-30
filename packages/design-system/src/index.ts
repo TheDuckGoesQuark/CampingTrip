@@ -52,3 +52,4 @@ export {
   TransferProgress,
   type TransferProgressProps,
 } from "./components/desktop/TransferProgress";
+export { MonitorGraph, type MonitorGraphProps } from "./components/desktop/MonitorGraph";

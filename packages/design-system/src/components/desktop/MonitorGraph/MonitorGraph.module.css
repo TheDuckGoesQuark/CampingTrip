@@ -1,0 +1,31 @@
+/* A picture of a screen: the inverse surface whatever the scheme, the brand's
+   green for the trace, as the old monitors drew it. */
+
+.graph {
+  display: block;
+  width: 100%;
+  height: var(--monitor-graph-height);
+  border: var(--border-frame);
+  box-shadow: var(--shadow-bevel-in);
+}
+
+.well {
+  fill: var(--brand-surface-inverse);
+}
+
+.grid {
+  stroke: var(--brand-solid);
+  stroke-opacity: 0.35;
+  stroke-width: 0.5;
+}
+
+.bar {
+  fill: var(--brand-solid);
+}
+
+.line {
+  fill: none;
+  stroke: var(--brand-solid);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}

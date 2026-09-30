@@ -29,6 +29,7 @@ const PATHS = {
   minus: "M5 12h14",
   close: "M6 6l12 12M18 6 6 18",
   note: "M9 18V5l10-2v13M9 18a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0M19 16a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0",
+  pulse: "M3 12h4l3-7 4 14 3-7h4",
 } as const;
 
 export type IconName = keyof typeof PATHS;

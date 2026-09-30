@@ -26,6 +26,7 @@
   --desktop-icon-cell-height: calc(
     var(--tile-lg) + var(--space-s) * 3 + var(--text-body-sm-size) * var(--text-body-sm-lh) * 2
   );
+  --monitor-graph-height: 80px;
 
   /* Icon glyphs — the `Icon` size scale. Stroke is in viewBox user units, so
      one value holds an even optical weight across the three sizes. */
