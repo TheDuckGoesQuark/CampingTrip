@@ -36,6 +36,26 @@ resource "aws_sesv2_email_identity_mail_from_attributes" "domain" {
 
 locals {
   mail_from_domain = "${var.mail_from_subdomain}.${var.domain_name}"
+
+  # The bare address inside the display-name form, which is what the
+  # ses:FromAddress condition key compares against.
+  from_bare_address = try(regex("<([^>]+)>", var.from_address)[0], var.from_address)
+
+  # The one grant every sender here gets. While the account is in the sandbox
+  # SES authorises a send against the recipient's verified identity as well as
+  # the sender's, so naming only the domain identity denies every sandbox send;
+  # any identity is allowed and the From address is pinned instead.
+  send_email_statement = {
+    Effect = "Allow"
+    Action = "ses:SendEmail"
+    Resource = [
+      replace(aws_sesv2_email_identity.domain.arn, "/identity/.*$/", "identity/*"),
+      aws_sesv2_configuration_set.newsletter.arn,
+    ]
+    Condition = {
+      StringEquals = { "ses:FromAddress" = local.from_bare_address }
+    }
+  }
 }
 
 # Exactly one MX: a second on this name fails the SES setup outright.
