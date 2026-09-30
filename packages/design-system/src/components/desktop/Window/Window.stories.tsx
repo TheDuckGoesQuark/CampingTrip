@@ -238,3 +238,34 @@ export const Scrolling: Story = {
     </Window>
   ),
 };
+
+/**
+ * In the flow of a page: a window as a picture of one. No layer, no gestures,
+ * the amber and green lights inert, the parent's width and the content's
+ * height. The decorator's fixed-height desktop is replaced by a reading column.
+ */
+export const Inline: Story = {
+  parameters: { layout: "padded" },
+  decorators: [
+    (Story) => (
+      <div style={{ maxWidth: 640, margin: "0 auto", display: "grid", gap: 16 }}>
+        <Text>A paragraph of the page the window sits in.</Text>
+        <Story />
+        <Text>And the paragraph after it.</Text>
+      </div>
+    ),
+  ],
+  render: () => (
+    <Window inline>
+      <Window.TitleBar title="MouseMail" />
+      <Window.Body>
+        <Text>The message, as it arrived.</Text>
+      </Window.Body>
+      <Window.StatusBar>
+        <Text variant="label" tone="muted" as="span">
+          Received
+        </Text>
+      </Window.StatusBar>
+    </Window>
+  ),
+};

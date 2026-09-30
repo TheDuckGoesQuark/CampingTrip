@@ -36,6 +36,22 @@
   --radius-xl: var(--radius-none);
 }
 
+/* In the flow of a page: the parent's width, the content's height, and none of
+   the entrance a window opening over a desktop gets. A lighter shadow, since it
+   sits on a page rather than floats above one. */
+.inline {
+  position: static;
+  width: 100%;
+  height: auto;
+  box-shadow: var(--shadow-hard-2);
+  animation: none;
+}
+
+.inline .titlebar,
+.inline .titlebar:active {
+  cursor: default;
+}
+
 /* Only until the layer has been measured — `geometry.ts` takes over after that,
    and holds the same proportions and ceilings. */
 .xl {
