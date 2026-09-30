@@ -154,6 +154,14 @@ export interface WindowProps {
    * the browser handles on its own.
    */
   onFocus?: () => void;
+  /**
+   * In the flow of a page rather than floating over a desktop: no layer, no
+   * geometry, no gestures, and the amber and green lights inert. The frame
+   * takes its parent's width and its content's height. For a window shown as
+   * a picture of one, an email as it arrived, say, where the same chrome
+   * carries the meaning and none of the behaviour would.
+   */
+  inline?: boolean;
 }
 
 /**
@@ -193,6 +201,7 @@ function Root({
   cascade = 0,
   stackOrder = 0,
   onFocus,
+  inline = false,
 }: WindowProps) {
   const layerRef = useRef<HTMLDivElement>(null);
   const [layer, setLayer] = useState<Size | null>(null);
@@ -214,7 +223,7 @@ function Root({
    */
   useLayoutEffect(() => {
     const element = layerRef.current;
-    if (!element) return;
+    if (!element || inline) return;
 
     const measure = () => {
       const { width, height } = element.getBoundingClientRect();
@@ -243,7 +252,7 @@ function Root({
       window.removeEventListener("resize", measure);
       observer?.disconnect();
     };
-  }, []);
+  }, [inline]);
 
   // Centre on first measurement; afterwards only rescue a frame the layer has
   // outgrown, so a resized viewport never throws away where the user put it.
@@ -277,27 +286,37 @@ function Root({
    * exactly where it was — the two states are switchable in both directions.
    */
   const locked = layer ? isFixedLayer(layer) : false;
+  // Inline has no geometry either, but presents as `normal`: nothing to fill.
+  const stationary = locked || inline;
   const presented: WindowDisplay = locked ? "maximised" : current;
 
   // A maximised window is pinned; a shaded one can still be dragged out of the way.
-  const moveHandlers = usePointerDrag(onMoveDelta, !locked && presented !== "maximised");
-  const resizeHandlers = usePointerDrag(onResizeDelta, !locked && presented === "normal");
+  const moveHandlers = usePointerDrag(onMoveDelta, !stationary && presented !== "maximised");
+  const resizeHandlers = usePointerDrag(onResizeDelta, !stationary && presented === "normal");
 
   const frame = useMemo<WindowFrame>(
     () => ({
       display: presented,
-      geometryLocked: locked,
+      geometryLocked: stationary,
       toggleMaximised: () => setDisplay(current === "maximised" ? "normal" : "maximised"),
       toggleShaded: () => setDisplay(current === "shaded" ? "normal" : "shaded"),
       moveHandlers,
       onTitleBarDoubleClick: (event) => {
-        if (locked) return;
+        if (stationary) return;
         if ((event.target as HTMLElement).closest("button")) return;
         setDisplay(current === "maximised" ? "normal" : "maximised");
       },
     }),
-    [current, locked, moveHandlers, presented, setDisplay],
+    [current, stationary, moveHandlers, presented, setDisplay],
   );
+
+  if (inline) {
+    return (
+      <div className={cn(styles.window, styles.inline)} onPointerDownCapture={onFocus}>
+        <WindowFrameContext.Provider value={frame}>{children}</WindowFrameContext.Provider>
+      </div>
+    );
+  }
 
   const rendered = presented === "maximised" && layer ? maximised(layer) : box;
   const style: CSSProperties | undefined = rendered

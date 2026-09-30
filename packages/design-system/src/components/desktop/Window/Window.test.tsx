@@ -4,6 +4,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { Window } from "./Window";
 
+import styles from "./Window.module.css";
+
 describe("Window", () => {
   it("renders the title bar title and the page body", () => {
     render(
@@ -411,6 +413,47 @@ describe("Window", () => {
 
       await userEvent.click(screen.getByRole("button", { name: "Maximise" }));
       expect(growBox()).toBeNull();
+    });
+  });
+
+  describe("inline", () => {
+    it("renders in the flow, with no positioning layer and no grow box", () => {
+      const { container } = render(
+        <Window inline>
+          <Window.TitleBar title="MouseMail" />
+          <Window.Body>hello</Window.Body>
+        </Window>,
+      );
+      const root = container.firstElementChild!;
+      expect(root).toHaveClass(styles.window);
+      expect(root).toHaveClass(styles.inline);
+      expect(container.querySelector(`.${styles.layer}`)).toBeNull();
+      expect(container.querySelector(`.${styles.growBox}`)).toBeNull();
+      expect(root).not.toHaveAttribute("style");
+    });
+
+    it("makes amber and green inert, and leaves the red light to the caller", async () => {
+      const onClose = vi.fn();
+      render(
+        <Window inline>
+          <Window.TitleBar title="MouseMail" onClose={onClose} />
+        </Window>,
+      );
+      expect(screen.queryByRole("button", { name: "Minimise" })).toBeNull();
+      expect(screen.queryByRole("button", { name: "Maximise" })).toBeNull();
+      await userEvent.click(screen.getByRole("button", { name: "Close" }));
+      expect(onClose).toHaveBeenCalledTimes(1);
+    });
+
+    it("does not maximise on a title bar double-click", async () => {
+      const onDisplayChange = vi.fn();
+      render(
+        <Window inline onDisplayChange={onDisplayChange}>
+          <Window.TitleBar title="MouseMail" />
+        </Window>,
+      );
+      await userEvent.dblClick(screen.getByText("MouseMail"));
+      expect(onDisplayChange).not.toHaveBeenCalled();
     });
   });
 });
