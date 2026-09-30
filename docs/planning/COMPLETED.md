@@ -6,6 +6,44 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## The newsletter and analytics, owned end to end
+
+**Date**: 2026-09-30
+
+**What was done**:
+
+Readers can subscribe to the blog and be told about new posts, and the site
+counts how it is read, both on infrastructure this repo owns. The plan and its
+reasoning are in `newsletter-and-analytics.md`; the runbooks are
+`infra/newsletter/README.md` and `infra/box/README.md`. It landed as a stack:
+the SES identity on the apex with DKIM, MAIL FROM and DMARC, and an alerts
+topic (#187); the subscriber table, the subscribe, confirm and unsubscribe
+endpoint, the bounce and complaint marker, and the alarms (#189); the form under
+every post, its notice pages and the privacy page (#190); issues as data files,
+a renderer, and the send path from a hand-dispatched workflow through a queue
+to SES, gated by a GitHub environment with a required reviewer (#191); an inline
+mode for the design system's `Window` (#193) and MouseMail as compound parts,
+so an issue is shown under a post as it arrived and has an archive page once it
+has gone out (#194); and GoatCounter on the box at `stats.jordanscamp.site`,
+counting a view only after a visitor has scrolled, clicked or typed (#197).
+
+**Decisions**: the list is in DynamoDB, not on the box, because the functions
+cannot reach the box's disk. Sends are hand-dispatched with a test mode rather
+than feed-driven, so each issue carries a note and a test precedes it. The
+unsubscribe link opens a page with a button and only the POST acts, because
+mail scanners follow every link. A daily cap on confirmation emails, with an
+alarm, is the guard against a bot making the domain mail strangers, and it
+holds no IP address. Consent is recorded as the ICO describes a record of it,
+timestamps and wording version, no IP. An issue goes public only when `sentOn`
+is set by hand after the send. GoatCounter over Plausible or Umami because it is
+one binary and a SQLite file on a t4g.micro.
+
+**Deferred**: the IAM first-apply race (its own TODO entry). Making the stats
+page a status page (Future). The SES production-access request and the first
+real send are Jordan's steps, in the runbook.
+
+---
+
 ## The layer walk's tree eases to its section and shimmers where it lands
 
 **Date**: 2026-09-25
