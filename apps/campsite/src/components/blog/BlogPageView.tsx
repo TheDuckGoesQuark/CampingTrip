@@ -4,8 +4,11 @@ import CvCondensedPage from "./CvCondensedPage";
 import CvPage from "./CvPage";
 import FeedPage from "./FeedPage";
 import HomePage from "./HomePage";
+import NoticePage from "./NoticePage";
 import PostPage from "./PostPage";
+import PrivacyPage from "./PrivacyPage";
 import ProjectPage from "./ProjectPage";
+import SubscribePage from "./SubscribePage";
 import ToolPage from "./ToolPage";
 
 import styles from "./BlogPageView.module.css";
@@ -43,5 +46,11 @@ function PageBody({ page }: { page: BrowserPage }) {
       return <CvPage cv={page.cv} />;
     case "cvCondensed":
       return <CvCondensedPage cv={page.cv} />;
+    case "privacy":
+      return <PrivacyPage />;
+    case "subscribe":
+      return <SubscribePage />;
+    case "notice":
+      return <NoticePage notice={page.notice} />;
   }
 }

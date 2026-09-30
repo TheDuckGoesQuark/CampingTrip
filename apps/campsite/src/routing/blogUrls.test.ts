@@ -4,7 +4,7 @@ import { resolveBlogPage } from "../data/blogPages";
 import { posts, published } from "../data/posts";
 import { slugify } from "../data/slug";
 import { blogPathFor, blogPaths, parseBlogPath } from "./blogPaths";
-import { blogUrls } from "./blogUrls";
+import { blogUrls, unlistedBlogUrls } from "./blogUrls";
 
 describe("blogUrls", () => {
   const urls = blogUrls();
@@ -20,7 +20,16 @@ describe("blogUrls", () => {
 
   it("names every kind of browser page that has published content, and no desktop item", () => {
     const kinds = new Set(urls.map((url) => parseBlogPath(url)!.kind));
-    const expected = new Set(["home", "archive", "cv", "cvCondensed", "project", "tool"]);
+    const expected = new Set([
+      "home",
+      "archive",
+      "cv",
+      "cvCondensed",
+      "privacy",
+      "subscribe",
+      "project",
+      "tool",
+    ]);
     if (published.length > 0) expected.add("post").add("tag");
     expect(kinds).toEqual(expected);
   });
@@ -39,5 +48,16 @@ describe("blogUrls", () => {
 
   it("has no duplicates", () => {
     expect(new Set(urls).size).toBe(urls.length);
+  });
+});
+
+describe("unlistedBlogUrls", () => {
+  it("names a real page per notice, none of them in the listed set", () => {
+    const listed = new Set(blogUrls());
+    for (const url of unlistedBlogUrls()) {
+      expect(parseBlogPath(url)?.kind, url).toBe("notice");
+      expect(resolveBlogPage(parseBlogPath(url)!), url).not.toBeNull();
+      expect(listed.has(url), url).toBe(false);
+    }
   });
 });

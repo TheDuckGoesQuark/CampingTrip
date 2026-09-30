@@ -8,6 +8,7 @@ import { blogPaths } from "../../routing/blogPaths";
 import "../../styles/blogProse.css";
 import type { Post } from "../../types/post";
 import { formatDate } from "./formatDate";
+import SubscribeForm from "./subscribe/SubscribeForm";
 
 import shared from "./blog.module.css";
 import styles from "./PostPage.module.css";
@@ -51,6 +52,10 @@ export default function PostPage({ post }: PostPageProps) {
 
       <hr className={styles.rule} />
       <div className={`blog-prose ${styles.postBody}`}>{post.body}</div>
+
+      <div className={styles.subscribe}>
+        <SubscribeForm />
+      </div>
 
       <footer className={styles.postFooter}>
         <nav className={styles.neighbours} aria-label="Nearby posts">

@@ -40,6 +40,16 @@ export const blogPaths = {
   desk: (slug: string) => `${ROOT}/desk/${encodeURIComponent(slug)}`,
   /** The About box. A window rather than a page, so no `.html` — see `desk`. */
   about: `${ROOT}/about`,
+  /** What the site holds about a reader. One page, so a file beside `index.html`. */
+  privacy: `${ROOT}/privacy.html`,
+  /** The newsletter form on its own, for a link that is only about subscribing. */
+  subscribe: `${ROOT}/subscribe/index.html`,
+  /**
+   * The page the endpoint sends a form post back to. The names are the
+   * endpoint's (`infra/lambda/newsletter-api/accept.mjs`), so its redirects and
+   * these files cannot drift apart without `subscribeNotices.test.ts` noticing.
+   */
+  subscribeNotice: (name: string) => `${ROOT}/subscribe/${encodeURIComponent(name)}.html`,
 } as const;
 
 /** What a blog URL names, before any lookup against content. */
@@ -53,7 +63,10 @@ export type BlogRef =
   | { kind: "cv" }
   | { kind: "cvCondensed" }
   | { kind: "desk"; slug: string }
-  | { kind: "about" };
+  | { kind: "about" }
+  | { kind: "privacy" }
+  | { kind: "subscribe" }
+  | { kind: "notice"; name: string };
 
 /** Strips the cosmetic extension. Absent is fine; canonical links carry it. */
 export function stripHtml(segment: string): string {
@@ -68,6 +81,7 @@ const DIRECTORIES: Record<string, (slug: string) => BlogRef> = {
   projects: (slug) => ({ kind: "project", slug }),
   tools: (slug) => ({ kind: "tool", slug }),
   desk: (slug) => ({ kind: "desk", slug }),
+  subscribe: (name) => (name === "index" ? { kind: "subscribe" } : { kind: "notice", name }),
 };
 
 /**
@@ -84,6 +98,7 @@ export function parseBlogPath(path: string): BlogRef | null {
     if (name === "cv") return { kind: "cv" };
     if (name === "cv-condensed") return { kind: "cvCondensed" };
     if (name === "about") return { kind: "about" };
+    if (name === "privacy") return { kind: "privacy" };
     return null;
   }
 
@@ -125,5 +140,11 @@ export function blogPathFor(ref: BlogRef): string {
       return blogPaths.desk(ref.slug);
     case "about":
       return blogPaths.about;
+    case "privacy":
+      return blogPaths.privacy;
+    case "subscribe":
+      return blogPaths.subscribe;
+    case "notice":
+      return blogPaths.subscribeNotice(ref.name);
   }
 }

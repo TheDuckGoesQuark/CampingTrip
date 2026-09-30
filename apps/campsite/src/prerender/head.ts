@@ -71,6 +71,7 @@ export function headTags(meta: PageMeta, path: string): string {
     `<meta name="description" content="${description}" />`,
     `<meta name="author" content="${AUTHOR}" />`,
     `<link rel="canonical" href="${url}" />`,
+    ...(meta.unlisted ? [`<meta name="robots" content="noindex" />`] : []),
     `<link rel="alternate" type="application/atom+xml" title="${escapeHtml(AUTHOR)}" href="${ORIGIN}${FEED_PATH}" />`,
     ...(meta.alternate
       ? [

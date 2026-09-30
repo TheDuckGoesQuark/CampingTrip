@@ -34,6 +34,19 @@ Worth deciding before advertising the address more widely. MouseMail's `busy`
 copy says "handling too much at once" rather than "you have sent too many" — if
 a real per-sender limit lands, that wording should change with it.
 
+### Infra — the first apply after an IAM widening races its own grant
+
+`iam.tf` and the resources it authorises land in one PR, and the apply creates
+them in one run. IAM is eventually consistent, so the calls that follow the
+policy update by a second or two are refused with `AccessDenied`, and the run
+fails partway with the policy already in place. A re-run of the failed job
+succeeds every time. `depends_on` on the module does not help: Terraform waits
+for the policy resource to return, not for IAM to propagate it.
+
+Two fixes, and neither is free: a `time_sleep` after the policy (a new provider
+for one wait), or landing IAM changes in their own PR ahead of the resources
+(two applies per feature). Until one is chosen, the runbook says re-run once.
+
 ### Infra — a Terraform run can break the deploy in the same push
 
 `terraform.yml` and `deploy.yml` both trigger on push to main and run

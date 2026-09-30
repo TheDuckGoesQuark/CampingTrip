@@ -162,7 +162,7 @@ async function unsubscribe(event, method) {
 
 export const handler = async (event) => {
   const method = event?.requestContext?.http?.method;
-  const route = (event?.rawPath ?? "").split("/").filter(Boolean).pop();
+  const route = (event?.rawPath ?? "").split("/").findLast(Boolean);
 
   if (route === "subscribe" && method === "POST") return subscribe(event);
   if (route === "confirm" && method === "GET") return confirm(event);

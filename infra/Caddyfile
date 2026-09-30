@@ -22,6 +22,7 @@ jordanscamp.site {
     # Short enough to say aloud or put on paper.
     redir /cv /blog/cv.html permanent
     redir /cv-condensed /blog/cv-condensed.html permanent
+    redir /privacy /blog/privacy.html permanent
 
     # Same-origin, so the form posts without CORS ever entering the picture.
     #
@@ -40,10 +41,17 @@ jordanscamp.site {
         }
     }
 
-    # Wrapped in `handle` so the rewrite below cannot reach `/api/contact`:
+    # The newsletter endpoint, the same way. Its URL is `newsletter_api_function_url`.
+    handle /api/newsletter/* {
+        reverse_proxy https://u7k7uqwsc36oxwwhcxmdfyxg7e0tfrvz.lambda-url.eu-west-2.on.aws {
+            header_up Host {upstream_hostport}
+        }
+    }
+
+    # Wrapped in `handle` so the rewrite below cannot reach either `/api` path:
     # `try_files` runs ahead of every `handle` in Caddy's directive order, so at
-    # the top level it would turn that path into `/index.html` and the proxy
-    # matcher above would never see it.
+    # the top level it would turn those paths into `/index.html` and the proxy
+    # matchers above would never see them.
     handle {
         # A prerendered page answers its own URL; the shell is the fallback.
         try_files {path} {path}.html /index.html

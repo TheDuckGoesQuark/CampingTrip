@@ -10,14 +10,14 @@ import { cv } from "../data/cv";
 import { published } from "../data/posts";
 import { slugify } from "../data/slug";
 import { blogPaths, parseBlogPath } from "../routing/blogPaths";
-import { blogUrls } from "../routing/blogUrls";
+import { blogUrls, unlistedBlogUrls } from "../routing/blogUrls";
 import { FEED_PATH, headTags, ORIGIN } from "./head";
 import LandingReader from "./LandingReader";
 import { RenderTargetContext } from "./renderTarget";
 
 import "../styles/blogProse.css";
 
-export { blogUrls, CONTACT_HEADING, cv, FEED_PATH, ORIGIN };
+export { blogUrls, CONTACT_HEADING, cv, FEED_PATH, ORIGIN, unlistedBlogUrls };
 export const CV_PATH = blogPaths.cv;
 export const CV_PDF_PATH = blogPaths.cvPdf;
 export const CV_CONDENSED_PATH = blogPaths.cvCondensed;

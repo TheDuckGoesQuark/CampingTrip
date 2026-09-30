@@ -27,6 +27,10 @@
   margin-top: var(--space-l);
 }
 
+.subscribe {
+  margin-top: var(--space-xl);
+}
+
 .postFooter {
   border-top: var(--border-frame);
   margin-top: var(--space-xl);

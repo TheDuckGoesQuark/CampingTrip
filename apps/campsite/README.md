@@ -100,6 +100,10 @@ Rules this puts on anything rendered inside the blog window:
 
 - It must render in Node: no `window`, `document` or `localStorage` during
   render. Effects are fine, since a static render never runs them.
+- A form in it must work as a plain POST, because that is all the prerendered
+  copy can do. `SubscribeForm` is the pattern: the same markup, a native
+  submit when the render target is `static` and an intercepted one when it is
+  `live`, so the answer is shown in the tent rather than by leaving it.
 - Something interactive goes through `Island` with a fallback that is real
   content (a still, a caption, a sentence), because for a crawler the fallback
   is the whole thing. The module behind it is code-split and never loaded by
