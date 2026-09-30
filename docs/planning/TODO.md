@@ -225,6 +225,15 @@ the stroke crosses under the pill. Reproduce by measuring both
 `getBoundingClientRect()`s at a 320px viewport. The fix is a call on whether the
 arc shrinks, moves, or collapses to the time text alone on narrow screens.
 
+### Campsite — the chrome waits out the loader's last 200ms
+
+`CampfireLoadingScreen` fades over 1.6s but only unmounts after 1.8s, and
+`sceneReady` follows the unmount, so the tent sits fully revealed with no chrome
+for a beat before the tab bar, controls and arc rise in. Setting `sceneReady`
+when `fadingOut` starts would let the entrance overlap the fade. `SceneContent`
+also reads `sceneReady` to gate the ambient camera, so check that still reads
+right before moving it.
+
 ### Campsite — a full-screen settings takeover with model credits
 
 The cog opens a 180px popover. A takeover would have room for the three

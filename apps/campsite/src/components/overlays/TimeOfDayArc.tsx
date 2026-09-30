@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { useTimeStore, getTimeOfDay } from "../../store/timeStore";
 
+import entrance from "./chromeEntrance.module.css";
+
 const SIZE = 120;
 const PAD = 18;
 const RADIUS = SIZE - PAD * 2;
@@ -132,6 +134,7 @@ export default function TimeOfDayArc() {
       aria-valuemax={100}
       aria-valuenow={Math.round(progress * 100)}
       aria-valuetext={timeStr}
+      className={entrance.third}
       style={{
         position: "fixed",
         top: 14,

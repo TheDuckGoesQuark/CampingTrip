@@ -6,6 +6,27 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## Campsite — the tent chrome eases in
+
+**Date**: 2026-09-30
+
+**What was done**: the tab bar, scene controls and time-of-day arc fade in and
+rise 10px into place when the loader hands over to the tent, staggered in tab
+order, instead of appearing in one frame. One CSS module,
+`overlays/chromeEntrance.module.css`, holds the entrance; reduced motion keeps
+the fade and drops the movement.
+
+**Decisions**: `animation-fill-mode: backwards`, so no transform stays on the
+fixed roots once the entrance ends (a transform would become the containing
+block for their fixed descendants). The stagger is classes rather than an
+inline custom property, because `forbid-dom-props` rejects `style` on a
+component with a CSS module.
+
+**Deferred**: the chrome still mounts 200ms after the loader has finished
+fading; see TODO.
+
+---
+
 ## The newsletter and analytics, owned end to end
 
 **Date**: 2026-09-30
