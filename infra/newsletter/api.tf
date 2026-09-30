@@ -34,14 +34,7 @@ resource "aws_iam_role_policy" "api" {
         ]
         Resource = local.table_arns
       },
-      {
-        Effect = "Allow"
-        Action = "ses:SendEmail"
-        Resource = [
-          aws_sesv2_email_identity.domain.arn,
-          aws_sesv2_configuration_set.newsletter.arn,
-        ]
-      },
+      local.send_email_statement,
     ]
   })
 }

@@ -160,14 +160,7 @@ resource "aws_iam_role_policy" "worker" {
         Action   = "s3:GetObject"
         Resource = "${var.deploy_bucket_arn}/_newsletter/*"
       },
-      {
-        Effect = "Allow"
-        Action = "ses:SendEmail"
-        Resource = [
-          aws_sesv2_email_identity.domain.arn,
-          aws_sesv2_configuration_set.newsletter.arn,
-        ]
-      },
+      local.send_email_statement,
     ]
   })
 }
