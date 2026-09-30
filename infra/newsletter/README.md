@@ -13,6 +13,7 @@ This file is what to do with it once it exists.
 | `api.tf`     | The public endpoint behind `/api/newsletter/*`: subscribe, confirm, unsubscribe. Code in `../lambda/newsletter-api/`                               |
 | `events.tf`  | The function that marks a subscriber bounced or complained from SES's events. Code in `../lambda/newsletter-events/`                               |
 | `alarms.tf`  | What emails the owner: function errors, the confirmation cap, and the account's bounce and complaint rates                                         |
+| `issues.tf`  | Sending: the queue and its dead-letter queue, the `send` function CI invokes, and the `worker` that drains the queue into SES                      |
 
 The module is wired in `infra/newsletter.tf`; the alerts topic every alarm
 emails through is `infra/alerts.tf` at the root, since it is not the
@@ -52,6 +53,30 @@ Its link lands on `/blog/subscribe/confirmed.html` once followed; the
 unsubscribe link in a later issue lands on a page with one button. A `303` is
 the same outcome for a plain form post. Nothing about the address is logged,
 so the table is the place to look: the row is `SUB#<address>` / `META`.
+
+## Sending an issue
+
+An issue is a file under `apps/campsite/src/data/newsletters/`: a subject, a
+date, a short note, and the posts it points at. Its slug is made from the
+subject, as a post's is from its title. `draft: true` lets it be test-sent and
+refuses a real send.
+
+1. Actions, `Newsletter`, `Run workflow`. Give the slug and choose `test`.
+   The rendered issue lands in the test recipients' inboxes (in the sandbox,
+   only verified addresses) with `[TEST]` in the subject. Nothing is recorded.
+2. Read it there. Check the links carry `utm_campaign=<slug>` and the
+   unsubscribe link points at the site.
+3. Run it again with `send`. The run pauses at the `newsletter` environment
+   until approved in the Actions UI; then the issue is claimed, one message per
+   active subscriber is queued, and the job waits until every one is marked
+   sent, or fails after ten minutes naming the alarm to look at.
+
+A second `send` of the same slug finds the claim and is refused; there is no
+way to send an issue twice short of deleting its `ISSUE#<slug>` row by hand.
+
+Locally, `pnpm --filter campsite newsletter:render <slug>` writes the same
+three files under `apps/campsite/dist-newsletter/<slug>/`, which is the quick
+way to look at the HTML in a browser before a test send.
 
 ## Leaving the SES sandbox
 

@@ -201,6 +201,8 @@ resource "aws_iam_role_policy" "github_plan_readonly" {
           "cloudwatch:DescribeAlarms",
           "cloudwatch:ListTagsForResource",
           "logs:DescribeMetricFilters",
+          "sqs:Get*",
+          "sqs:List*",
           "ssm:GetParameter",
           "ssm:GetParameters",
         ]
@@ -879,6 +881,12 @@ resource "aws_iam_role_policy" "github_terraform_resources" {
           "cloudwatch:ListTagsForResource",
         ]
         Resource = "arn:aws:cloudwatch:${var.aws_region}:${data.aws_caller_identity.current.account_id}:alarm:${local.name_prefix}-*"
+      },
+      {
+        Sid      = "SQSThisProjectOnly"
+        Effect   = "Allow"
+        Action   = "sqs:*"
+        Resource = "arn:aws:sqs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:${local.name_prefix}-*"
       }
     ]
   })

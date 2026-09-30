@@ -9,6 +9,7 @@ import { isBrowserPage, metaOfBlogPage, resolveBlogPage } from "../data/blogPage
 import { cv } from "../data/cv";
 import { published } from "../data/posts";
 import { slugify } from "../data/slug";
+import { issueSlugs, renderIssueBySlug } from "../newsletter/renderIssue";
 import { blogPaths, parseBlogPath } from "../routing/blogPaths";
 import { blogUrls, unlistedBlogUrls } from "../routing/blogUrls";
 import { FEED_PATH, headTags, ORIGIN } from "./head";
@@ -17,7 +18,16 @@ import { RenderTargetContext } from "./renderTarget";
 
 import "../styles/blogProse.css";
 
-export { blogUrls, CONTACT_HEADING, cv, FEED_PATH, ORIGIN, unlistedBlogUrls };
+export {
+  blogUrls,
+  CONTACT_HEADING,
+  cv,
+  FEED_PATH,
+  issueSlugs,
+  ORIGIN,
+  renderIssueBySlug,
+  unlistedBlogUrls,
+};
 export const CV_PATH = blogPaths.cv;
 export const CV_PDF_PATH = blogPaths.cvPdf;
 export const CV_CONDENSED_PATH = blogPaths.cvCondensed;
