@@ -27,6 +27,49 @@ fading; see TODO.
 
 ---
 
+## The Activity Monitor, and the first day of the newsletter and stats in service
+
+**Date**: 2026-09-30
+
+**What was done**:
+
+The first test send and the first GoatCounter install both failed, and both
+are fixed. The worker was denied `ses:SendEmail`: while an account is in the
+SES sandbox, SES authorises a send against the recipient's verified identity
+as well as the sender's, so a grant naming only the domain identity refuses
+every sandbox send. Both senders now share one statement, `identity/*` with
+`ses:FromAddress` pinned to the bare From address (#200). GoatCounter's
+`-user.password` is a plain string flag, so the `-` meant to select stdin was
+a one-byte password; the value is passed directly, and the site guard asks
+`db show site -find` rather than testing for the database file, since the
+rolled-back transaction leaves a file with no site in it (#199). With both
+fixed the test issue arrived in the inbox, not junk, and the dashboard is
+live and public.
+
+Page views are recorded under the URL a reader sees, `/blog/` rather than
+`/blog/index.html` (#201).
+
+CatOS has an Activity Monitor off the cat menu (#202, #203, #204): the site's
+visitors per day for a fortnight, the session's "memory" sampled each second,
+and every published post as a process with its visits and share, all from
+GoatCounter's visitor counter, the one endpoint it serves without a login.
+An Admin item beside it opens the full dashboard in a new tab. The graphs are
+a design-system component, `MonitorGraph`, because the app forbids inline SVG.
+
+**Decisions**: the counter endpoint over GoatCounter's API, so no credential
+ever exists in the browser; the API would need a token behind a Caddy route.
+Per-day figures are differences of "from this day to now" counts, because the
+endpoint's `end` bound is a midnight and inclusive. The total is fetched first
+and alone, so a host that will not answer costs one request. The monitor is a
+window of its own kind, as About CatOS is, never a browser tab and never
+prerendered.
+
+**Deferred**: a parse check on dimension tokens (see TODO), after an edit that
+landed inside a multi-line `calc()` and stretched every desktop icon to the
+full height of the desktop, unnoticed by any check.
+
+---
+
 ## The newsletter and analytics, owned end to end
 
 **Date**: 2026-09-30
