@@ -30,6 +30,7 @@ export type BlogPage =
   | { kind: "cvCondensed"; cv: Cv }
   | { kind: "desk"; item: DesktopItem }
   | { kind: "about" }
+  | { kind: "activity" }
   | { kind: "privacy" }
   | { kind: "subscribe" }
   | { kind: "notice"; notice: SubscribeNotice }
@@ -41,11 +42,14 @@ export type BlogPage =
  * windows of their own kind, never pages in a tab, so excluding them here makes
  * the browser's own renderer exhaustive rather than quietly falling through.
  */
-export type BrowserPage = Exclude<BlogPage, { kind: "desk" } | { kind: "about" }>;
+export type BrowserPage = Exclude<
+  BlogPage,
+  { kind: "desk" } | { kind: "about" } | { kind: "activity" }
+>;
 
 /** The page-level counterpart of `isBrowserPath`, for narrowing a renderer. */
 export function isBrowserPage(page: BlogPage): page is BrowserPage {
-  return page.kind !== "desk" && page.kind !== "about";
+  return page.kind !== "desk" && page.kind !== "about" && page.kind !== "activity";
 }
 
 const bySlug = <T extends { title: string }>(items: T[], slug: string): T | undefined =>
@@ -87,6 +91,8 @@ export function resolveBlogPage(ref: BlogRef): BlogPage | null {
     }
     case "about":
       return { kind: "about" };
+    case "activity":
+      return { kind: "activity" };
     case "privacy":
       return { kind: "privacy" };
     case "subscribe":
@@ -129,6 +135,8 @@ export function titleOfBlogPage(page: BlogPage): string {
       return page.item.label;
     case "about":
       return "About CatOS";
+    case "activity":
+      return "Activity Monitor";
     case "privacy":
       return "Privacy";
     case "subscribe":
@@ -164,6 +172,8 @@ export function iconOfBlogPage(page: BlogPage): IconName {
       return iconOfDesktopItem(page.item);
     case "about":
       return "cat";
+    case "activity":
+      return "pulse";
     case "privacy":
       return "document";
     case "subscribe":

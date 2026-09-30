@@ -263,3 +263,73 @@
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
+
+/* ── Activity Monitor ──────────────────────────────────────── */
+
+.monitorBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-m);
+  padding: var(--space-m);
+}
+
+.monitorGraphs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: var(--space-m);
+}
+
+.monitorPanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.monitorReadout {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-label-size);
+  font-variant-numeric: tabular-nums;
+  color: var(--brand-text-muted);
+}
+
+.monitorProcesses {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-body-sm-size);
+}
+
+.monitorProcesses th,
+.monitorProcesses td {
+  padding: var(--space-xxs) var(--space-xs);
+  text-align: left;
+  border-bottom: 1px solid var(--brand-border-subtle);
+}
+
+.monitorProcesses th {
+  font-size: var(--text-label-size);
+  font-weight: var(--weight-bold);
+  color: var(--brand-text-muted);
+}
+
+.monitorCaption {
+  text-align: left;
+  padding-bottom: var(--space-xs);
+  font-size: var(--text-label-size);
+  font-weight: var(--weight-bold);
+  color: var(--brand-text-muted);
+}
+
+.monitorNumber {
+  text-align: right;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.monitorShare {
+  display: block;
+  width: 100%;
+  min-width: 4rem;
+  height: 0.5rem;
+}

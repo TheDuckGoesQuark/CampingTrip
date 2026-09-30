@@ -40,6 +40,8 @@ export const blogPaths = {
   desk: (slug: string) => `${ROOT}/desk/${encodeURIComponent(slug)}`,
   /** The About box. A window rather than a page, so no `.html` — see `desk`. */
   about: `${ROOT}/about`,
+  /** The Activity Monitor: a window, as `about` is. */
+  activity: `${ROOT}/activity`,
   /** What the site holds about a reader. One page, so a file beside `index.html`. */
   privacy: `${ROOT}/privacy.html`,
   /** The newsletter form on its own, for a link that is only about subscribing. */
@@ -67,6 +69,7 @@ export type BlogRef =
   | { kind: "cvCondensed" }
   | { kind: "desk"; slug: string }
   | { kind: "about" }
+  | { kind: "activity" }
   | { kind: "privacy" }
   | { kind: "subscribe" }
   | { kind: "notice"; name: string }
@@ -104,6 +107,7 @@ export function parseBlogPath(path: string): BlogRef | null {
     if (name === "cv") return { kind: "cv" };
     if (name === "cv-condensed") return { kind: "cvCondensed" };
     if (name === "about") return { kind: "about" };
+    if (name === "activity") return { kind: "activity" };
     if (name === "privacy") return { kind: "privacy" };
     return null;
   }
@@ -115,13 +119,15 @@ export function parseBlogPath(path: string): BlogRef | null {
 
 /**
  * Whether a path names something the mock browser can hold in a tab. Desktop
- * items and the About box open in windows of their own, so they must not join
- * the tab strip.
+ * items, the About box and the Activity Monitor open in windows of their own,
+ * so they must not join the tab strip.
  */
 export function isBrowserPath(path: string): boolean {
   const ref = parseBlogPath(path);
-  return ref !== null && ref.kind !== "desk" && ref.kind !== "about";
+  return ref !== null && !OWN_WINDOW_KINDS.has(ref.kind);
 }
+
+const OWN_WINDOW_KINDS: ReadonlySet<BlogRef["kind"]> = new Set(["desk", "about", "activity"]);
 
 /** The canonical path for a ref — the inverse of `parseBlogPath`. */
 export function blogPathFor(ref: BlogRef): string {
@@ -146,6 +152,8 @@ export function blogPathFor(ref: BlogRef): string {
       return blogPaths.desk(ref.slug);
     case "about":
       return blogPaths.about;
+    case "activity":
+      return blogPaths.activity;
     case "privacy":
       return blogPaths.privacy;
     case "subscribe":

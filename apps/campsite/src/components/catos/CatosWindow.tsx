@@ -2,6 +2,7 @@ import type { BlogPage } from "../../data/blogPages";
 import { contactLabel, contactMailto } from "../../data/contactEmail";
 import { useSceneStore } from "../../store/sceneStore";
 import AboutWindow from "./AboutWindow";
+import ActivityWindow from "./ActivityWindow";
 import BinWindow from "./BinWindow";
 import BrowserWindow from "./BrowserWindow";
 import MouseMailWindow from "./MouseMailWindow";
@@ -26,6 +27,7 @@ export default function CatosWindow({ page, onClose, ...frame }: CatosWindowProp
   const preset = useSceneStore((s) => s.mailPreset);
 
   if (page.kind === "about") return <AboutWindow onClose={onClose} {...frame} />;
+  if (page.kind === "activity") return <ActivityWindow onClose={onClose} {...frame} />;
   if (page.kind !== "desk") return <BrowserWindow page={page} onClose={onClose} {...frame} />;
 
   const { item } = page;
