@@ -103,13 +103,19 @@ Ids from React's `useId` are not covered and are still duplicated.
 
 All infrastructure is managed by Terraform in `infra/`.
 
-| Service                    | Purpose                                                                                                       |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| **EC2** (t4g.micro, ARM64) | Runs Caddy serving the static frontends. Docker + Compose are installed but idle, ready for a future backend. |
-| **S3**                     | Deploy artifacts (frontend tarballs), Terraform state                                                         |
-| **Route53**                | DNS for jordanscamp.site and subdomains                                                                       |
+| Service                    | Purpose                                                                                                                                                               |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **EC2** (t4g.micro, ARM64) | Runs Caddy serving the static frontends, and GoatCounter beside it for `stats.jordanscamp.site`. Docker + Compose are installed but idle, ready for a future backend. |
+| **S3**                     | Deploy artifacts (frontend tarballs), rendered newsletter issues, GoatCounter backups, Terraform state                                                                |
+| **Route53**                | DNS for jordanscamp.site and subdomains, and the SES records (DKIM, MAIL FROM, DMARC)                                                                                 |
+| **Lambda + Function URLs** | The contact endpoint, and the newsletter's subscribe endpoint, bounce marker, send and worker functions                                                               |
+| **SES, DynamoDB, SQS**     | Sending as the apex domain; the subscriber list and per-issue marks; one queue message per recipient                                                                  |
+| **SNS + CloudWatch**       | Contact notes and alerts by email; alarms on the newsletter's functions, queue and the account's bounce rate                                                          |
 
 The EC2 instance can be started/stopped via GitHub Actions (`infra-control.yml`) for cost management.
+The newsletter is a Terraform module, `infra/newsletter/`, with its runbook beside it; services on
+the box are installed by the scripts under `infra/box/`, run over SSM by `box.yml` and by
+`user_data.sh` on a rebuild.
 
 ### Account isolation
 
@@ -145,6 +151,10 @@ Push to main
   ├── ci.yml          pnpm install -> typecheck -> test -> build
   ├── deploy.yml      build static apps -> upload tarballs to S3 -> SSM deploy
   └── terraform.yml   terraform plan -> apply (infra/** changes only)
+
+By hand
+  ├── newsletter.yml  render an issue -> test-send to my inbox, or send to the list after approval
+  └── box.yml         run a service script under infra/box on the instance over SSM
 ```
 
 **Deploy flow**:

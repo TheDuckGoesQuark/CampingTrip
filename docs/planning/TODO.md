@@ -6,17 +6,6 @@ All planned and deferred work, organised by priority.
 
 ## Next Up
 
-### Newsletter and analytics, owned end to end
-
-Planned in [`newsletter-and-analytics.md`](newsletter-and-analytics.md): a
-subscribe form with confirmed opt-in, issues sent from `hello@jordanscamp.site`
-through SES by a hand-dispatched workflow with a test mode and an approval
-gate, and GoatCounter on the box at `stats.jordanscamp.site`. Lands as a stack
-of five PRs, each verifiable alone: domain and permissions; list and endpoints;
-issues and the workflow; archive and preview; GoatCounter. The production-access
-request to SES is Jordan's to file once the identity verifies, and the first
-real send waits on a test issue read in his own inbox with DKIM passing.
-
 ### Contact — nothing limits how often one sender may post
 
 `/api/contact` is public and unauthenticated, and the only ceiling anywhere is
