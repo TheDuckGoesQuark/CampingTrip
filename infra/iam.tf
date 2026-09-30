@@ -817,6 +817,34 @@ resource "aws_iam_role_policy" "github_terraform_resources" {
         Resource = "arn:aws:lambda:${var.aws_region}:${data.aws_caller_identity.current.account_id}:function:${local.name_prefix}-*"
       },
       {
+        # An event source mapping's ARN is a UUID, so it cannot be scoped by name
+        # the way the functions above are. The condition scopes it by the
+        # function it feeds instead, which is the thing that matters.
+        Sid    = "LambdaEventSourceMappingsForProjectFunctions"
+        Effect = "Allow"
+        Action = [
+          "lambda:CreateEventSourceMapping",
+          "lambda:UpdateEventSourceMapping",
+          "lambda:DeleteEventSourceMapping",
+        ]
+        Resource = "arn:aws:lambda:${var.aws_region}:${data.aws_caller_identity.current.account_id}:event-source-mapping:*"
+        Condition = {
+          ArnLike = {
+            "lambda:FunctionArn" = "arn:aws:lambda:${var.aws_region}:${data.aws_caller_identity.current.account_id}:function:${local.name_prefix}-*"
+          }
+        }
+      },
+      {
+        # Reads on mappings take no resource-level scope.
+        Sid    = "LambdaEventSourceMappingsRead"
+        Effect = "Allow"
+        Action = [
+          "lambda:GetEventSourceMapping",
+          "lambda:ListEventSourceMappings",
+        ]
+        Resource = "*"
+      },
+      {
         # Same reasoning. One prefix covers topic and subscription both: a
         # subscription's ARN is its topic's with a UUID appended.
         Sid      = "SNSThisProjectOnly"
