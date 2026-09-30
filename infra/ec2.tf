@@ -49,9 +49,10 @@ resource "aws_instance" "app" {
   # placeholders are single-brace (`{path}`, `{uri}`), so nothing in it collides
   # with Terraform's `${...}` anyway.
   user_data = base64encode(templatefile("${path.module}/templates/user_data.sh", {
-    aws_region = var.aws_region
-    s3_bucket  = aws_s3_bucket.deploy.id
-    caddyfile  = file("${path.module}/Caddyfile")
+    aws_region  = var.aws_region
+    s3_bucket   = aws_s3_bucket.deploy.id
+    caddyfile   = file("${path.module}/Caddyfile")
+    admin_email = var.contact_email
   }))
 
   tags = {

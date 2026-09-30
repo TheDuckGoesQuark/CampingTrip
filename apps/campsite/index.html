@@ -12,6 +12,14 @@
     />
     <meta name="author" content="Jordan Mackie" />
     <!-- /prerender:head -->
+    <!-- Self-hosted analytics, counting nothing on load: src/analytics/PageViews.tsx
+         records a view once the visitor has scrolled, clicked or typed. -->
+    <script
+      data-goatcounter="https://stats.jordanscamp.site/count"
+      data-goatcounter-settings='{"no_onload": true}'
+      async
+      src="https://stats.jordanscamp.site/count.js"
+    ></script>
 
     <!-- With JavaScript the app redraws the reader's content inside the tent. -->
     <script>

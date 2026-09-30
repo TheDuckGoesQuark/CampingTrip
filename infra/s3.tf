@@ -29,6 +29,21 @@ resource "aws_s3_bucket_lifecycle_configuration" "deploy" {
       noncurrent_days = 7
     }
   }
+
+  # Dated GoatCounter backups; `latest.sqlite3` is rewritten nightly and so
+  # never ages past a day.
+  rule {
+    id     = "expire-old-backups"
+    status = "Enabled"
+
+    filter {
+      prefix = "_backup/"
+    }
+
+    expiration {
+      days = 30
+    }
+  }
 }
 
 resource "aws_s3_bucket_public_access_block" "deploy" {
