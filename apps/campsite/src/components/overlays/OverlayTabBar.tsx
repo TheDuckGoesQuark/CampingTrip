@@ -5,6 +5,7 @@ import { destinationOf, OVERLAY_LINKS } from "../../routing/overlays";
 import { useSceneNavigate } from "../../routing/useSceneNavigate";
 import { useInteractionStore } from "../../store/interactionStore";
 
+import entrance from "./chromeEntrance.module.css";
 import styles from "./OverlayTabBar.module.css";
 
 /**
@@ -20,7 +21,7 @@ export default function OverlayTabBar() {
   const setFocused = useInteractionStore((s) => s.setFocused);
 
   return (
-    <nav className={styles.bar} aria-label="Places in the tent">
+    <nav className={`${styles.bar} ${entrance.first}`} aria-label="Places in the tent">
       <div className={styles.pill}>
         {OVERLAY_LINKS.filter((link) => link.inTabBar).map((link) => {
           const active = location.pathname.startsWith(link.path);

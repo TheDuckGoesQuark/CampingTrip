@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useSessionStore } from "../../store/sessionStore";
 import VolumeSlider from "./VolumeSlider";
 
+import entrance from "./chromeEntrance.module.css";
 import styles from "./SceneControls.module.css";
 
 /**
@@ -58,7 +59,7 @@ export default function SceneControls() {
   }, [resetWelcome]);
 
   return (
-    <div ref={clusterRef} className={styles.cluster}>
+    <div ref={clusterRef} className={`${styles.cluster} ${entrance.second}`}>
       <ControlButton
         className={styles.quick}
         label={effectsEnabled ? "Turn visual effects off" : "Turn visual effects on"}
