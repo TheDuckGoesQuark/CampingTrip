@@ -835,12 +835,17 @@ resource "aws_iam_role_policy" "github_terraform_resources" {
         }
       },
       {
-        # Reads on mappings take no resource-level scope.
-        Sid    = "LambdaEventSourceMappingsRead"
+        # Reads on mappings take no resource-level scope, and the provider's
+        # default tags are written to a mapping at creation, before its UUID
+        # is known to anything, so tagging is scoped by the mapping ARN type.
+        Sid    = "LambdaEventSourceMappingsReadAndTag"
         Effect = "Allow"
         Action = [
           "lambda:GetEventSourceMapping",
           "lambda:ListEventSourceMappings",
+          "lambda:ListTags",
+          "lambda:TagResource",
+          "lambda:UntagResource",
         ]
         Resource = "*"
       },
