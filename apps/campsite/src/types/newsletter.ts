@@ -15,4 +15,10 @@ export interface Issue {
   posts: Post[];
   /** Can be test-sent, and is refused by a real send. */
   draft?: boolean;
+  /**
+   * ISO date it went to the list, set by hand after the send. Only an issue
+   * with it is prerendered, listed in the archive or previewed under a post;
+   * without it the issue is viewable in CatOS, as a draft post is, and no more.
+   */
+  sentOn?: string;
 }

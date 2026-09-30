@@ -4,6 +4,8 @@ import CvCondensedPage from "./CvCondensedPage";
 import CvPage from "./CvPage";
 import FeedPage from "./FeedPage";
 import HomePage from "./HomePage";
+import IssuePage from "./newsletter/IssuePage";
+import IssuesPage from "./newsletter/IssuesPage";
 import NoticePage from "./NoticePage";
 import PostPage from "./PostPage";
 import PrivacyPage from "./PrivacyPage";
@@ -52,5 +54,9 @@ function PageBody({ page }: { page: BrowserPage }) {
       return <SubscribePage />;
     case "notice":
       return <NoticePage notice={page.notice} />;
+    case "issues":
+      return <IssuesPage issues={page.issues} />;
+    case "issue":
+      return <IssuePage issue={page.issue} />;
   }
 }

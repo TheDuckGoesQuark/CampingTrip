@@ -1,4 +1,5 @@
 import { bookmarks } from "../data/bookmarks";
+import { sentIssues } from "../data/newsletters";
 import { published } from "../data/posts";
 import { projects } from "../data/projects";
 import { slugify } from "../data/slug";
@@ -20,6 +21,8 @@ export function blogUrls(): string[] {
     blogPaths.cvCondensed,
     blogPaths.privacy,
     blogPaths.subscribe,
+    blogPaths.issues,
+    ...sentIssues.map((issue) => blogPaths.issue(slugify(issue.subject))),
     ...published.map((post) => blogPaths.post(slugify(post.title))),
     ...tagsOf(published).map(({ tag }) => blogPaths.tag(tag)),
     ...projects.map((project) => blogPaths.project(slugify(project.title))),

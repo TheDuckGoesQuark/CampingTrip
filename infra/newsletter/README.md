@@ -74,6 +74,11 @@ refuses a real send.
 A second `send` of the same slug finds the claim and is refused; there is no
 way to send an issue twice short of deleting its `ISSUE#<slug>` row by hand.
 
+4. Set `sentOn` on the issue's file to the date it went out and merge. That is
+   what puts it in the public archive at `/blog/newsletter/`, gives it a page,
+   and shows it under each post it announced. Until then it is viewable in
+   CatOS only, as a draft post is.
+
 Locally, `pnpm --filter campsite newsletter:render <slug>` writes the same
 three files under `apps/campsite/dist-newsletter/<slug>/`, which is the quick
 way to look at the HTML in a browser before a test send.

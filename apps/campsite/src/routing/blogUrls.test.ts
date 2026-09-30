@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { resolveBlogPage } from "../data/blogPages";
+import { sentIssues } from "../data/newsletters";
 import { posts, published } from "../data/posts";
 import { slugify } from "../data/slug";
 import { blogPathFor, blogPaths, parseBlogPath } from "./blogPaths";
@@ -27,10 +28,12 @@ describe("blogUrls", () => {
       "cvCondensed",
       "privacy",
       "subscribe",
+      "issues",
       "project",
       "tool",
     ]);
     if (published.length > 0) expected.add("post").add("tag");
+    if (sentIssues.length > 0) expected.add("issue");
     expect(kinds).toEqual(expected);
   });
 
