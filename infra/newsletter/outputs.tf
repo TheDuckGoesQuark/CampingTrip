@@ -17,3 +17,13 @@ output "events_topic_arn" {
   description = "Where SES publishes bounces and complaints; the marking function subscribes here"
   value       = aws_sns_topic.events.arn
 }
+
+output "api_function_url" {
+  description = "The endpoint's Function URL, for the Caddyfile's reverse_proxy"
+  value       = aws_lambda_function_url.api.function_url
+}
+
+output "table_name" {
+  description = "The subscriber table, for the sending function and for a deletion request run by hand"
+  value       = aws_dynamodb_table.list.name
+}

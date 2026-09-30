@@ -28,3 +28,34 @@ variable "mail_from_subdomain" {
   type        = string
   default     = "mail"
 }
+
+variable "alerts_topic_arn" {
+  description = "Where every alarm here publishes"
+  type        = string
+}
+
+variable "from_address" {
+  description = "The From header on every message, display name included; its domain must be the identity"
+  type        = string
+}
+
+variable "reply_to" {
+  description = "Where a reply to any message lands; the From address has no mailbox"
+  type        = string
+}
+
+variable "site_origin" {
+  description = "Origin the confirmation and unsubscribe links, and every redirect, are built on"
+  type        = string
+}
+
+variable "consent_version" {
+  description = "Names the consent sentence and privacy page in force; stored on every row so a change to either is dated"
+  type        = string
+}
+
+variable "confirm_cap_per_day" {
+  description = "Confirmation emails the endpoint will send in one UTC day before refusing sign-ups and raising an alarm"
+  type        = number
+  default     = 100
+}
