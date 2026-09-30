@@ -35,17 +35,20 @@ if [ ! -f "$DATA/version" ] || [ "$(cat "$DATA/version")" != "$GOATCOUNTER_VERSI
 fi
 
 # A rebuilt instance has no database; the nightly backup is where it went.
-if [ ! -f "$DB" ]; then
-  if aws s3 cp "s3://$BUCKET/_backup/goatcounter/latest.sqlite3" "$DB" --region "$AWS_REGION" >/dev/null 2>&1; then
-    chown goatcounter:goatcounter "$DB"
-    echo "database restored from the last backup"
-  else
-    password=$(openssl rand -base64 24)
-    printf '%s' "$password" | sudo -u goatcounter "$BIN" db create site -createdb -db "$DSN" \
-      -vhost "$SITE_HOST" -user.email "$ADMIN_EMAIL" -user.password -
-    (umask 077; printf '%s\n' "$password" > "$PASSWORD_FILE")
-    echo "site $SITE_HOST created; the login password is in $PASSWORD_FILE"
-  fi
+if [ ! -f "$DB" ] && aws s3 cp "s3://$BUCKET/_backup/goatcounter/latest.sqlite3" "$DB" --region "$AWS_REGION" >/dev/null 2>&1; then
+  chown goatcounter:goatcounter "$DB"
+  echo "database restored from the last backup"
+fi
+
+# The site is created inside a transaction, so a database can exist with no
+# site in it; ask the database, not the filesystem. The password flag takes the
+# value itself: "-" is a one-byte password, not stdin.
+if ! sudo -u goatcounter "$BIN" db show site -db "$DSN" -find "$SITE_HOST" >/dev/null 2>&1; then
+  password=$(openssl rand -base64 24)
+  sudo -u goatcounter "$BIN" db create site -createdb -db "$DSN" \
+    -vhost "$SITE_HOST" -user.email "$ADMIN_EMAIL" -user.password "$password"
+  (umask 077; printf '%s\n' "$password" > "$PASSWORD_FILE")
+  echo "site $SITE_HOST created; the login password is in $PASSWORD_FILE"
 fi
 
 cat > /etc/systemd/system/goatcounter.service <<UNIT
