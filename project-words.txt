@@ -12,6 +12,7 @@ ampm
 animales
 arrowless
 autofocuses
+automigrate
 awsdns
 barless
 Baronnies
@@ -33,6 +34,7 @@ chonky
 codegen
 Comeau
 COPR
+createdb
 crossfade
 crossfaded
 crossfades
@@ -57,6 +59,7 @@ frameloop
 geocities
 githack
 GLTF
+goatcounter
 gphotos
 grabbable
 greppable
@@ -104,6 +107,7 @@ noncurrent
 notepadb
 nxdomain
 offsite
+oneshot
 opengameart
 papercut
 photobroom

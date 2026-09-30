@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
  * subscriber saw as `newsletter_consent_version` in infra/variables.tf, and a
  * change to what this page says about the list is a change to that too.
  */
-export const PRIVACY_UPDATED = "2026-09-29";
+export const PRIVACY_UPDATED = "2026-09-30";
 
 export const PRIVACY_TITLE = "Privacy";
 
@@ -41,8 +41,11 @@ export const privacyBody: ReactNode = (
 
     <h2>Your browser</h2>
     <p>
-      There are no analytics scripts and no cookies. A few settings, such as whether sound is on,
-      are kept in your own browser's storage, where they stay.
+      Page views are counted by GoatCounter, running on the same server as the site, once you have
+      scrolled, clicked or typed. It sets no cookie and keeps no address: a visit is a hash that
+      lives in memory for a few hours and is then gone. What it counts is public at{" "}
+      <a href="https://stats.jordanscamp.site">stats.jordanscamp.site</a>. A few settings, such as
+      whether sound is on, are kept in your own browser's storage, where they stay.
     </p>
 
     <h2>Your rights</h2>

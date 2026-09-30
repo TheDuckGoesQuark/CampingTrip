@@ -59,6 +59,13 @@ jordanscamp.site {
     }
 }
 
+# The site's analytics, on the same box. GoatCounter serves its dashboard and
+# its count endpoint for this one hostname; Caddy's default forwarded headers
+# are what it reads the visitor's address and scheme from.
+stats.jordanscamp.site {
+    reverse_proxy localhost:8081
+}
+
 # One canonical hostname. Serving the same site on both would give every page
 # two addresses, which splits search ranking and makes analytics lie; a 301 to
 # the apex keeps www working for anyone who types it out of habit without

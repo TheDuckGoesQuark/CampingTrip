@@ -138,6 +138,15 @@ else
   echo "No webapp tarball in S3 yet — will be deployed by CI"
 fi
 
+# --- GoatCounter (see infra/box/README.md) ---
+# Same two-path rule as the Caddyfile: the Box workflow runs this script on the
+# live instance and leaves it in S3, and a rebuilt instance takes it from there.
+if aws s3 cp "s3://${s3_bucket}/_deploy/goatcounter.sh" /tmp/goatcounter.sh --region "${aws_region}" 2>/dev/null; then
+  ADMIN_EMAIL="${admin_email}" BUCKET="${s3_bucket}" AWS_REGION="${aws_region}" bash /tmp/goatcounter.sh || echo "GoatCounter setup failed; the site still serves"
+else
+  echo "No goatcounter.sh in S3 yet; run the Box workflow"
+fi
+
 # --- Start Caddy ---
 systemctl start caddy
 

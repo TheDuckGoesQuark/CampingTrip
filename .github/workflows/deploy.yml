@@ -8,6 +8,7 @@ on:
       - "package.json"
       - "pnpm-workspace.yaml"
       - "infra/Caddyfile"
+      - "infra/box/**"
       - ".github/workflows/deploy.yml"
 
 permissions:
@@ -64,7 +65,9 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          sparse-checkout: infra/Caddyfile
+          sparse-checkout: |
+            infra/Caddyfile
+            infra/box
           sparse-checkout-cone-mode: false
 
       - name: Configure AWS credentials
@@ -85,6 +88,8 @@ jobs:
           aws s3 cp campsite.tar.gz s3://${{ vars.S3_DEPLOY_BUCKET }}/_deploy/webapp.tar.gz
 
           aws s3 cp infra/Caddyfile s3://${{ vars.S3_DEPLOY_BUCKET }}/_deploy/Caddyfile
+          # Kept current for a rebuilt instance; the Box workflow is what runs them.
+          aws s3 cp infra/box/ s3://${{ vars.S3_DEPLOY_BUCKET }}/_deploy/ --recursive --exclude "*" --include "*.sh"
 
       - name: Find EC2 instance by tag
         id: ec2

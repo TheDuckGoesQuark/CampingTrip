@@ -24,24 +24,32 @@ resource "aws_iam_instance_profile" "ec2" {
   role = aws_iam_role.ec2.name
 }
 
-# S3 deploy bucket read
+# S3 deploy bucket read, and the one prefix the box writes: its nightly
+# GoatCounter backup. Not the deploy artefacts, which only CI may replace.
 resource "aws_iam_role_policy" "ec2_s3" {
   name = "s3-deploy-read"
   role = aws_iam_role.ec2.id
 
   policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [{
-      Effect = "Allow"
-      Action = [
-        "s3:GetObject",
-        "s3:ListBucket",
-      ]
-      Resource = [
-        aws_s3_bucket.deploy.arn,
-        "${aws_s3_bucket.deploy.arn}/*",
-      ]
-    }]
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:ListBucket",
+        ]
+        Resource = [
+          aws_s3_bucket.deploy.arn,
+          "${aws_s3_bucket.deploy.arn}/*",
+        ]
+      },
+      {
+        Effect   = "Allow"
+        Action   = "s3:PutObject"
+        Resource = "${aws_s3_bucket.deploy.arn}/_backup/*"
+      },
+    ]
   })
 }
 
