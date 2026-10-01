@@ -49,7 +49,7 @@ describe("SubscribeForm", () => {
     mount("static");
     expect(screen.getByRole("heading", { name: SUBSCRIBE_HEADING })).toBeInTheDocument();
     expect(screen.getByText(CONSENT, { exact: false })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /how your address is handled/i })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /how i secure your email/i })).toHaveAttribute(
       "href",
       blogPaths.privacy,
     );
@@ -76,14 +76,14 @@ describe("SubscribeForm", () => {
     expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
   });
 
-  it("tells a reader the day is paused on a 503, and keeps the form", async () => {
+  it("tells a reader the day's sign-ups are used up on a 503, and keeps the form", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("", { status: 503 })));
     mount("live");
     const user = userEvent.setup();
     await user.type(screen.getByRole("textbox", { name: EMAIL_LABEL }), "reader@example.com");
     await user.click(screen.getByRole("button", { name: SUBMIT_LABEL }));
 
-    expect(await screen.findByText(/paused for today/)).toBeInTheDocument();
+    expect(await screen.findByText(/too many sign ups today/)).toBeInTheDocument();
     expect(screen.getByRole("textbox", { name: EMAIL_LABEL })).toBeInvalid();
   });
 });

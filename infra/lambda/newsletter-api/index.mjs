@@ -35,7 +35,7 @@ const {
   CONFIRM_CAP_PER_DAY,
 } = process.env;
 
-const SITE_NAME = "Jordan's Camp";
+const SITE_NAME = "JordansCamp.Site";
 
 const store = makeStore(DynamoDBDocumentClient.from(new DynamoDBClient({})), TABLE_NAME);
 const ses = new SESv2Client({});

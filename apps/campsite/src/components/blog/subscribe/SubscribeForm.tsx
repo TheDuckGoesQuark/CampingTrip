@@ -8,29 +8,30 @@ import { type FailureReason, SUBSCRIBE_ENDPOINT, submitSubscription } from "./su
 
 import styles from "./subscribe.module.css";
 
-export const SUBSCRIBE_HEADING = "New posts, by email";
+export const SUBSCRIBE_HEADING = "Join my mailing list";
 
 export const SUBSCRIBE_LEAD =
-  "When something new lands here, I'll send you the summary and a link. Nothing else, and rarely.";
+  "If you'd like more of my internal monologue and shower thoughts every now and then, just add your email here.";
 
 export const CONSENT =
-  "A confirmation link comes first, and nothing is sent until you click it. Every issue carries an unsubscribe link.";
+  "A confirmation link will be sent to your email. If you get fed up with me, a two-click unsubscribe link will be in the footer of every email.";
 
-export const SENT = "Check your inbox for a confirmation link.";
+export const SENT = "Thank you! A confirmation link is on its way to you now.";
 
 export const EMAIL_LABEL = "Email address";
 
-export const SUBMIT_LABEL = "Subscribe";
+export const SUBMIT_LABEL = "Sign me up";
 
 const HEADING_ID = "subscribe-heading";
 
 type State = "idle" | "sending" | "sent" | FailureReason;
 
 const FAILURE_COPY: Record<FailureReason, string> = {
-  refused: "That didn't look like an address. Check it and try again.",
-  paused: "Sign-ups are paused for today. Try again tomorrow.",
-  server: "That didn't go through. Try again in a minute.",
-  offline: "You seem to be offline. Try again once you're back.",
+  refused: "That doesn't look like an email address. Have another go?",
+  paused:
+    "Server says I've had too many sign ups today. Please try again tomorrow. Mum, I made it!",
+  server: "Something broke on my end. Try again in a minute.",
+  offline: "Looks like you're offline. Try again once you're back.",
 };
 
 function isFailure(state: State): state is FailureReason {
@@ -104,14 +105,14 @@ export default function SubscribeForm({ headingLevel = "h2" }: SubscribeFormProp
             aria-hidden
           />
           <Button type="submit" disabled={state === "sending"}>
-            {state === "sending" ? "Sending…" : SUBMIT_LABEL}
+            {state === "sending" ? "Signing you up…" : SUBMIT_LABEL}
           </Button>
         </form>
       )}
 
       <Text variant="body-sm" tone="muted">
         {CONSENT}{" "}
-        <Link render={<RouterLink to={blogPaths.privacy} />}>How your address is handled</Link>.
+        <Link render={<RouterLink to={blogPaths.privacy} />}>How I secure your email</Link>
       </Text>
     </section>
   );
