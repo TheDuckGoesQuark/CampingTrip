@@ -121,8 +121,8 @@ export function unsubscribePage({ token, siteName }) {
 </head>
 <body>
 <main>
-<h1>Leave the list?</h1>
-<p>Press the button and no more issues of ${escapeHtml(siteName)} will reach this address.</p>
+<h1>Need to take a break from my rambling?</h1>
+<p>Press the button and I'll stop emailing you.</p>
 <form method="post">
 <input type="hidden" name="t" value="${escapeHtml(token)}">
 <button type="submit">Unsubscribe</button>
@@ -135,19 +135,18 @@ export function unsubscribePage({ token, siteName }) {
 
 /** The confirmation email. Nothing a reader typed reaches it. */
 export function confirmationMail({ link, siteName }) {
+  const opening = `Someone - hopefully you! - asked to hear about any new posts from ${siteName} via their inbox.`;
+  const confirm = "Click to let me know you really mean it!";
+  const fallback = "Button not working? Paste this into your browser:";
+  const closing = "If you have no idea what I'm on about, ignore this email.";
+  const href = escapeHtml(link);
   return {
     subject: `Confirm your subscription to ${siteName}`,
-    text: [
-      `Someone, probably you, asked for new posts from ${siteName} by email.`,
-      "",
-      "Click to confirm, and nothing is sent until you do:",
-      link,
-      "",
-      "If that wasn't you, ignore this and the request expires on its own.",
-    ].join("\n"),
-    html: `<p>Someone, probably you, asked for new posts from ${escapeHtml(siteName)} by email.</p>
-<p><a href="${escapeHtml(link)}">Confirm the subscription</a>, and nothing is sent until you do.</p>
-<p>If that wasn't you, ignore this and the request expires on its own.</p>
+    text: [opening, "", confirm, link, "", closing].join("\n"),
+    html: `<p>${escapeHtml(opening)}</p>
+<p><a href="${href}" style="display:inline-block;padding:12px 24px;border-radius:999px;background:#2b2a26;color:#f4efe6;text-decoration:none;">${confirm}</a></p>
+<p style="font-size:13px;">${fallback}<br>${href}</p>
+<p>${closing}</p>
 `,
   };
 }

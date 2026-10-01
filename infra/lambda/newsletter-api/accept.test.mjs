@@ -130,8 +130,15 @@ describe("confirmationMail", () => {
     assert.match(mail.html, /href="https:\/\/example\.com\/confirm\?t=abc"/);
   });
 
-  it("says nothing is sent before the click", () => {
-    assert.match(mail.text, /nothing is sent until you do/);
-    assert.match(mail.subject, /^Confirm your subscription/);
+  it("names the site in the subject and offers the link as a button with the address below it", () => {
+    assert.match(mail.subject, /^Confirm your subscription to /);
+    assert.match(
+      mail.html,
+      /<a href="[^"]+" style="[^"]*">Click to let me know you really mean it!<\/a>/,
+    );
+    assert.match(
+      mail.html,
+      /Paste this into your browser:<br>https:\/\/example\.com\/confirm\?t=abc/,
+    );
   });
 });

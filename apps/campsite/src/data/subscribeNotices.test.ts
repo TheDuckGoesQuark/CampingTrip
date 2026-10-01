@@ -27,7 +27,7 @@ describe("subscribe notices", () => {
   });
 
   it("are found by name", () => {
-    expect(noticeNamed("confirmed")?.title).toBe("You're in");
+    expect(noticeNamed("confirmed")?.title).toBe("You're on the list!");
     expect(noticeNamed("nothing")).toBeUndefined();
   });
 
