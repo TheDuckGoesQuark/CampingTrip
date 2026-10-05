@@ -6,8 +6,9 @@ import { describe, expect, it } from "vitest";
 import { EMAIL_TOKENS } from "./emailTheme";
 
 /** From the package root, which is where vitest runs this file. */
+const CONFIRMATION_SOURCE = resolve(process.cwd(), "../../infra/lambda/newsletter-api/accept.mjs");
 const TOKENS_DIR = resolve(process.cwd(), "../../packages/design-system/src/tokens");
-const SOURCES = ["primitives.css", "semantic.css", "typography.css", "dimensions.css"];
+const SOURCES = ["primitives.css", "semantic.css", "typography.css", "shadow.css"];
 
 /** The first declaration of each custom property wins: that is the light `:root`. */
 function lightDeclarations(): Map<string, string> {
@@ -34,5 +35,30 @@ describe("EMAIL_TOKENS", () => {
 
   it.each(Object.entries(EMAIL_TOKENS))("holds %s at the design system's value", (name, value) => {
     expect(value.toLowerCase()).toBe(resolveToken(name, declared).toLowerCase());
+  });
+});
+
+/**
+ * `infra/` is not a workspace package, so the confirmation email's copy of the
+ * tokens is read from source, as `subscribeNotices.test.ts` reads its notices.
+ */
+function confirmationTokens(): [string, string][] {
+  const source = readFileSync(CONFIRMATION_SOURCE, "utf8");
+  const block = source.match(/EMAIL_TOKENS = Object\.freeze\(\{([\s\S]*?)\}\)/);
+  expect(
+    block,
+    "accept.mjs no longer declares EMAIL_TOKENS as a frozen object literal",
+  ).not.toBeNull();
+  return [...block![1].matchAll(/"(--[a-z0-9-]+)":\s*(?:"([^"]*)"|`([^`]*)`)/g)].map((match) => [
+    match[1],
+    match[2] ?? match[3],
+  ]);
+}
+
+describe("the confirmation email's tokens", () => {
+  it.each(confirmationTokens())("holds %s at the same value as the newsletter", (name, value) => {
+    expect(EMAIL_TOKENS[name as keyof typeof EMAIL_TOKENS], `${name} is not in EMAIL_TOKENS`).toBe(
+      value,
+    );
   });
 });
