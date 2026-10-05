@@ -151,8 +151,8 @@ issue's row by hand. Do not do that.
 
 Set `sentOn: "<ISO date it went out>"` on the issue file and merge. That single
 line puts the issue in the public archive at `/blog/newsletter/`, gives it a
-page, and shows it under each post it announced as "How this reached
-subscribers". Until then the issue is viewable in CatOS only.
+page that is the email as sent (less its unsubscribe link), and folds it under
+each post it announced. Until then the issue is viewable in CatOS only.
 
 Do not set `sentOn` before the send: it is the record of a fact.
 
@@ -170,7 +170,9 @@ For a pass over the words readers see, these are the files:
   `PRIVACY_UPDATED` when its newsletter wording changes, and the consent
   version in `infra/variables.tf` with it.
 - `apps/campsite/src/newsletter/renderIssue.ts`: the email's frame, footer and
-  plain-text form.
+  plain-text form. Its colours and fonts come from `emailTheme.ts`, which a
+  test holds to the design system's tokens.
 - `infra/lambda/newsletter-api/accept.mjs`: the confirmation email's words.
 - `apps/campsite/src/components/blog/newsletter/IssuesPage.tsx` and
-  `ArrivedAs.tsx`: the archive's introduction and the heading under a post.
+  `ArrivedAs.tsx`: the archive's title and empty state, and the heading,
+  expand button and archive link under a post.

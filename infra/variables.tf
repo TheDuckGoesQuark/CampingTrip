@@ -56,5 +56,5 @@ variable "alert_email" {
 variable "newsletter_consent_version" {
   description = "Names the consent sentence and privacy page a subscriber saw. Bump it when either changes; every row records the value in force when it was written."
   type        = string
-  default     = "2026-09-30"
+  default     = "2026-10-05"
 }
