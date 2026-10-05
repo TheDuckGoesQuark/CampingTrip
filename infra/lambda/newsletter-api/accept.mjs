@@ -133,20 +133,95 @@ export function unsubscribePage({ token, siteName }) {
 `;
 }
 
+/**
+ * The site's design tokens as an email needs them, inline. The campsite's
+ * `src/newsletter/emailTheme.ts` holds the same names, checked against the
+ * design system, and its test holds this copy equal to that one.
+ */
+export const EMAIL_TOKENS = Object.freeze({
+  "--brand-bg": "#f5f9e9",
+  "--brand-surface": "#ffffff",
+  "--brand-subtle": "#dde9d4",
+  "--brand-solid": "#5a9367",
+  "--brand-text": "#3f4b3b",
+  "--brand-text-muted": "#5f7356",
+  "--brand-text-on-brand": "#ffffff",
+  "--brand-link": "#4c7d57",
+  "--brand-border-strong": "#b3bdaa",
+  "--brand-control-close": "#c0492f",
+  "--brand-control-minimise": "#f2913a",
+  "--brand-control-maximise": "#5a9367",
+  "--shadow-hard-color": "rgba(43, 51, 39, 0.9)",
+  "--shadow-bevel-light": "rgba(255, 255, 255, 0.85)",
+  "--shadow-bevel-dark": "rgba(43, 51, 39, 0.35)",
+  "--font-sans": `"Nunito", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`,
+  "--font-text": `"Nunito Sans Variable", "Nunito Sans", "Nunito", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`,
+});
+
+const T = EMAIL_TOKENS;
+const fontStack = (stack) => stack.replaceAll('"', "'");
+const SANS = `font-family:${fontStack(T["--font-sans"])};`;
+const TEXT = `font-family:${fontStack(T["--font-text"])};`;
+const BEVEL_OUT = `box-shadow:inset 1px 1px 0 0 ${T["--shadow-bevel-light"]},inset -1px -1px 0 0 ${T["--shadow-bevel-dark"]};`;
+
+const light = (colour) =>
+  `<td style="width:14px;height:14px;background:${colour};border:1px solid ${T["--brand-border-strong"]};font-size:0;line-height:0;">&nbsp;</td><td style="width:4px;font-size:0;line-height:0;">&nbsp;</td>`;
+
+/**
+ * An email dressed as a CatOS window, the same frame as the newsletter's
+ * `windowEmail` in the campsite, which this cannot import. `body` is trusted,
+ * already-escaped table rows.
+ */
+function windowEmail({ title, body }) {
+  const page = `margin:0;padding:0;background:${T["--brand-bg"]};`;
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${escapeHtml(title)}</title>
+</head>
+<body style="${page}${TEXT}color:${T["--brand-text"]};">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="${page}"><tr><td align="center" style="padding:32px 12px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:${T["--brand-surface"]};border:2px solid ${T["--brand-border-strong"]};box-shadow:4px 4px 0 0 ${T["--shadow-hard-color"]};">
+<tr><td style="background:${T["--brand-subtle"]};border-bottom:2px solid ${T["--brand-border-strong"]};padding:7px 8px;${BEVEL_OUT}">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
+<td style="width:54px;"><table role="presentation" cellpadding="0" cellspacing="0"><tr>${light(T["--brand-control-close"])}${light(T["--brand-control-minimise"])}${light(T["--brand-control-maximise"])}</tr></table></td>
+<td style="${SANS}text-align:center;color:${T["--brand-text"]};font-size:14px;line-height:1.4;font-weight:700;">${escapeHtml(title)}</td>
+<td style="width:54px;">&nbsp;</td>
+</tr></table>
+</td></tr>
+${body}
+</table>
+</td></tr></table>
+</body>
+</html>
+`;
+}
+
 /** The confirmation email. Nothing a reader typed reaches it. */
 export function confirmationMail({ link, siteName }) {
+  const subject = `Confirm your subscription to ${siteName}`;
   const opening = `Someone - hopefully you! - asked to hear about any new posts from ${siteName} via their inbox.`;
   const confirm = "Click to let me know you really mean it!";
   const fallback = "Button not working? Paste this into your browser:";
   const closing = "If you have no idea what I'm on about, ignore this email.";
   const href = escapeHtml(link);
+  const muted = `${TEXT}color:${T["--brand-text-muted"]};font-size:14px;line-height:1.55;`;
   return {
-    subject: `Confirm your subscription to ${siteName}`,
+    subject,
     text: [opening, "", confirm, link, "", closing].join("\n"),
-    html: `<p>${escapeHtml(opening)}</p>
-<p><a href="${href}" style="display:inline-block;padding:12px 24px;border-radius:999px;background:#2b2a26;color:#f4efe6;text-decoration:none;">${confirm}</a></p>
-<p style="font-size:13px;">${fallback}<br>${href}</p>
-<p>${closing}</p>
-`,
+    html: windowEmail({
+      title: subject,
+      body: `<tr><td style="padding:36px 40px 32px;text-align:center;">
+<p style="${TEXT}margin:0;color:${T["--brand-text"]};font-size:17px;line-height:1.62;">${escapeHtml(opening)}</p>
+<table role="presentation" cellpadding="0" cellspacing="0" align="center" style="margin:28px auto;"><tr><td>
+<a href="${href}" style="${SANS}display:inline-block;padding:12px 24px;background:${T["--brand-solid"]};color:${T["--brand-text-on-brand"]};font-size:17px;font-weight:700;text-decoration:none;border:1px solid ${T["--brand-border-strong"]};${BEVEL_OUT}">${confirm}</a>
+</td></tr></table>
+<p style="${muted}margin:0 0 4px;">${fallback}</p>
+<p style="${muted}margin:0 0 24px;word-break:break-all;"><a href="${href}" style="color:${T["--brand-link"]};">${href}</a></p>
+<p style="${muted}margin:0;">${closing}</p>
+</td></tr>`,
+    }),
   };
 }

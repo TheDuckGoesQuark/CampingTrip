@@ -5,6 +5,7 @@ import {
   acceptSubscribe,
   acceptToken,
   confirmationMail,
+  EMAIL_TOKENS,
   EMAIL_LIMIT,
   MAX_BODY_BYTES,
   NOTICES,
@@ -136,9 +137,13 @@ describe("confirmationMail", () => {
       mail.html,
       /<a href="[^"]+" style="[^"]*">Click to let me know you really mean it!<\/a>/,
     );
-    assert.match(
-      mail.html,
-      /Paste this into your browser:<br>https:\/\/example\.com\/confirm\?t=abc/,
-    );
+    assert.match(mail.html, /Button not working\? Paste this into your browser:/);
+    assert.match(mail.html, />https:\/\/example\.com\/confirm\?t=abc<\/a>/);
+  });
+
+  it("is a whole document in the window frame, titled with the subject", () => {
+    assert.match(mail.html, /^<!doctype html>/);
+    assert.match(mail.html, new RegExp(`<title>${mail.subject.replace("'", "&#39;|'")}</title>`));
+    assert.ok(mail.html.includes(EMAIL_TOKENS["--brand-control-close"]), "the title bar's lights");
   });
 });
