@@ -12,7 +12,7 @@ import styles from "./newsletter.module.css";
 
 export const ARRIVED_AS_HEADING = "Get the next blog post to your inbox";
 export const ALL_ISSUES_LINK = "See all newsletters";
-export const EXPAND_LABEL = "Show the whole email";
+export const EXPAND_LABEL = "Show more";
 export const COLLAPSE_LABEL = "Show less";
 
 /** The issue that announced a post, or `undefined` while none has gone out. */
