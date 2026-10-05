@@ -89,7 +89,10 @@ That writes `apps/campsite/dist-newsletter/<slug>/email.html`, `email.txt` and
 `utm_source=newsletter` and `utm_campaign=<slug>`; the footer must carry the
 unsubscribe placeholder and the privacy link.
 
-Open the PR. The issue can be test-sent from its branch before it merges.
+Open the PR and merge it with `draft: true` still set. A test send runs only
+from `main`: the deploy role it assumes trusts `main` and the `production`
+environment and nothing else (`infra/iam.tf`), so a branch run fails at
+"Configure AWS credentials".
 
 ## 4. Test-send it
 
@@ -99,7 +102,7 @@ address in `infra/variables.tf`). Nothing is recorded: no claim, no per-recipien
 mark, so a test can run as often as needed.
 
 ```bash
-gh workflow run newsletter.yml --ref <branch> -f issue=<slug> -f mode=test
+gh workflow run newsletter.yml --ref main -f issue=<slug> -f mode=test
 ```
 
 Then, in the inbox:
