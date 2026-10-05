@@ -1,11 +1,12 @@
 import { formatDate } from "../components/blog/formatDate";
 import { issues } from "../data/newsletters";
-import { SITE, SITE_ORIGIN } from "../data/site";
+import { SITE_ORIGIN } from "../data/site";
 import { slugify } from "../data/slug";
 import { escapeHtml } from "../prerender/head";
 import { blogPaths } from "../routing/blogPaths";
 import type { Issue } from "../types/newsletter";
 import type { Post } from "../types/post";
+import { EMAIL_TOKENS, fontStack } from "./emailTheme";
 
 /**
  * Left where each recipient's own unsubscribe link goes. The worker fills it;
@@ -40,33 +41,50 @@ export function postLink(issue: Issue, post: Post): string {
   return `${SITE_ORIGIN}${blogPaths.post(slugify(post.title))}?${params}`;
 }
 
-/* Inline styles, tables and web-safe fonts: an email client loads no
-   stylesheet and honours little else. */
-const PAGE = "margin:0;padding:0;background:#f4efe6;";
-const BODY_FONT = "font-family:Georgia,'Times New Roman',serif;color:#2b2a26;";
-const CARD = "max-width:600px;margin:0 auto;background:#fffdf8;border:2px solid #2b2a26;";
-const PAD = "padding:24px 28px;";
-const MUTED = "color:#6b675f;font-size:14px;";
-const LINK = "color:#3f6b4f;";
+export const ISSUE_MASTHEAD = "Jordan's Camp.Site";
 
-function htmlOf(issue: Issue): string {
+export const ISSUE_SIGN_OFF = "You joined my mailing list at";
+export const ISSUE_REPLY_INVITE = "Feel free to reply with questions and ideas to this email!";
+
+/* Tables and inline styles: an email client loads no stylesheet and honours
+   little else. The values are the site's own tokens, from `emailTheme`. */
+const T = EMAIL_TOKENS;
+const SANS = `font-family:${fontStack(T["--font-sans"])};`;
+const TEXT = `font-family:${fontStack(T["--font-text"])};`;
+const PAGE = `margin:0;padding:0;background:${T["--brand-bg"]};`;
+const CARD = `max-width:640px;margin:0 auto;background:${T["--brand-surface"]};border:1px solid ${T["--brand-border"]};border-radius:${T["--radius-l"]};`;
+const PAD = "padding:24px 32px;";
+const LABEL = `${SANS}margin:0;color:${T["--brand-text-muted"]};font-size:12px;line-height:1.4;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;`;
+const MASTHEAD = `${SANS}margin:0;color:${T["--brand-text-muted"]};font-size:14px;line-height:1.4;font-weight:700;`;
+const MUTED = `${TEXT}color:${T["--brand-text-muted"]};font-size:14px;line-height:1.55;`;
+const LINK = `color:${T["--brand-link"]};`;
+const BODY = `${TEXT}margin:0 0 16px;color:${T["--brand-text"]};font-size:17px;line-height:1.62;`;
+
+interface Frame {
+  /** The archive's copy has no one to unsubscribe, and the placeholder would be a dead link. */
+  unsubscribe: boolean;
+}
+
+function htmlOf(issue: Issue, { unsubscribe }: Frame): string {
   const paragraphs = issue.note
-    .map(
-      (line) =>
-        `<p style="margin:0 0 16px;font-size:17px;line-height:1.55;">${escapeHtml(line)}</p>`,
-    )
+    .map((line, index) => {
+      const last = index === issue.note.length - 1 ? "margin-bottom:0;" : "";
+      return `<p style="${BODY}${last}">${escapeHtml(line)}</p>`;
+    })
     .join("\n");
   const posts = issue.posts
     .map((post) => {
       const href = escapeHtml(postLink(issue, post));
-      return `<tr><td style="${PAD}border-top:1px solid #d9d2c3;">
-  <p style="margin:0 0 4px;${MUTED}">${escapeHtml(formatDate(post.date))}</p>
-  <h2 style="margin:0 0 8px;font-size:22px;line-height:1.3;"><a href="${href}" style="${LINK}text-decoration:none;">${escapeHtml(post.title)}</a></h2>
-  <p style="margin:0 0 12px;font-size:16px;line-height:1.5;">${escapeHtml(post.standfirst)}</p>
-  <p style="margin:0;"><a href="${href}" style="${LINK}font-weight:bold;">Read it</a></p>
+      return `<tr><td style="${PAD}border-top:1px solid ${T["--brand-border"]};">
+  <p style="${LABEL}">${escapeHtml(formatDate(post.date))}</p>
+  <h2 style="${SANS}margin:8px 0 8px;font-size:21px;line-height:1.3;font-weight:800;"><a href="${href}" style="${LINK}text-decoration:none;">${escapeHtml(post.title)}</a></h2>
+  <p style="${TEXT}margin:0;font-size:18px;line-height:1.6;"><a href="${href}" style="color:${T["--brand-text-muted"]};text-decoration:none;">${escapeHtml(post.standfirst)}</a></p>
 </td></tr>`;
     })
     .join("\n");
+  const unsubscribeLink = unsubscribe
+    ? `<a href="${UNSUBSCRIBE_PLACEHOLDER}" style="${LINK}">Unsubscribe</a> · `
+    : "";
 
   return `<!doctype html>
 <html lang="en">
@@ -75,20 +93,20 @@ function htmlOf(issue: Issue): string {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${escapeHtml(issue.subject)}</title>
 </head>
-<body style="${PAGE}${BODY_FONT}">
+<body style="${PAGE}${TEXT}color:${T["--brand-text"]};">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="${PAGE}"><tr><td style="padding:24px 12px;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="${CARD}">
-<tr><td style="${PAD}border-bottom:2px solid #2b2a26;">
-  <p style="margin:0;${MUTED}"><a href="${SITE_ORIGIN}" style="${LINK}text-decoration:none;font-weight:bold;">${escapeHtml(SITE)}</a> · ${escapeHtml(formatDate(issue.date))}</p>
-  <h1 style="margin:8px 0 0;font-size:26px;line-height:1.25;">${escapeHtml(issue.subject)}</h1>
+<tr><td style="${PAD}border-bottom:1px solid ${T["--brand-border-strong"]};">
+  <p style="${MASTHEAD}"><a href="${SITE_ORIGIN}" style="${LINK}text-decoration:none;">${escapeHtml(ISSUE_MASTHEAD)}</a> · ${escapeHtml(formatDate(issue.date))}</p>
+  <h1 style="${SANS}margin:8px 0 0;color:${T["--brand-text"]};font-size:32px;line-height:1.2;font-weight:800;">${escapeHtml(issue.subject)}</h1>
 </td></tr>
 <tr><td style="${PAD}">
 ${paragraphs}
 </td></tr>
 ${posts}
-<tr><td style="${PAD}border-top:2px solid #2b2a26;${MUTED}">
-  <p style="margin:0 0 8px;">You asked for these at <a href="${SITE_ORIGIN}" style="${LINK}">jordanscamp.site</a>. Reply to this email and it reaches me.</p>
-  <p style="margin:0;"><a href="${UNSUBSCRIBE_PLACEHOLDER}" style="${LINK}">Unsubscribe</a> · <a href="${SITE_ORIGIN}${blogPaths.privacy}" style="${LINK}">Privacy</a></p>
+<tr><td style="${PAD}border-top:1px solid ${T["--brand-border"]};">
+  <p style="${MUTED}margin:0 0 8px;">${ISSUE_SIGN_OFF} <a href="${SITE_ORIGIN}" style="${LINK}">jordanscamp.site</a>. ${ISSUE_REPLY_INVITE}</p>
+  <p style="${MUTED}margin:0;">${unsubscribeLink}<a href="${SITE_ORIGIN}${blogPaths.privacy}" style="${LINK}">Privacy</a></p>
 </td></tr>
 </table>
 </td></tr></table>
@@ -105,18 +123,23 @@ function textOf(issue: Issue): string {
     "",
   ]);
   return [
-    `${SITE} · ${formatDate(issue.date)}`,
+    `${ISSUE_MASTHEAD} · ${formatDate(issue.date)}`,
     "",
     issue.subject.toUpperCase(),
     "",
     ...issue.note.flatMap((line) => [line, ""]),
     ...posts,
     "--",
-    `You asked for these at ${SITE_ORIGIN}. Reply to this email and it reaches me.`,
+    `${ISSUE_SIGN_OFF} ${SITE_ORIGIN}. ${ISSUE_REPLY_INVITE}`,
     `Unsubscribe: ${UNSUBSCRIBE_PLACEHOLDER}`,
     `Privacy: ${SITE_ORIGIN}${blogPaths.privacy}`,
     "",
   ].join("\n");
+}
+
+/** The issue as it was sent, for the archive: the same document, less the unsubscribe link. */
+export function archivedIssueHtml(issue: Issue): string {
+  return htmlOf(issue, { unsubscribe: false });
 }
 
 export function renderIssue(issue: Issue): RenderedIssue {
@@ -131,7 +154,7 @@ export function renderIssue(issue: Issue): RenderedIssue {
     subject: issue.subject,
     date: issue.date,
     draft: issue.draft === true,
-    html: htmlOf(issue),
+    html: htmlOf(issue, { unsubscribe: true }),
     text: textOf(issue),
   };
 }

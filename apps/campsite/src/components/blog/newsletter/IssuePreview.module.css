@@ -1,9 +1,0 @@
-/* A message's worth of height: enough for the note and the first post without
-   scrolling, and the frame's own scrollbar past that, as a mail client does. */
-.message {
-  display: block;
-  width: 100%;
-  height: 480px;
-  border: 0;
-  background: var(--brand-surface-raised);
-}
