@@ -173,8 +173,7 @@ export const ourFormsWereTooSlow: Post = {
         In production, the team's own measurements tell the rest. Every edit used to re-check the
         form's entire rule set, 901 times over. Now an edit checks only the rules that read the
         field that changed, and the whole set gets scanned twice. A keystroke went from 104 ms to 16
-        ms. That's the dependency graph, landing for real. Later fixes brought a keystroke that used
-        to freeze the browser for most of a second down to about 4 ms.
+        ms. I've never been so excited about a dependency graph before.
       </p>
       <p>
         Fast doesn't stay fast on its own, though. It decays one innocent PR at a time. So I built a
