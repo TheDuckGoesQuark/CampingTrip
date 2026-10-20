@@ -6,6 +6,14 @@ All planned and deferred work, organised by priority.
 
 ## Next Up
 
+### Publish the form-engine post and add it to Trailhead
+
+"Our forms were too slow, so we built five" is merged as a draft. Once it has
+been read in CatOS: remove `draft: true`, add it to `trailheadNewsletter`'s
+`posts` as the lead, render the issue locally, and test-send it from the branch
+(the `publish-newsletter` skill has the steps). An issue that points at a draft
+post fails to render, so both changes go in the same PR.
+
 ### Contact — nothing limits how often one sender may post
 
 `/api/contact` is public and unauthenticated, and the only ceiling anywhere is
