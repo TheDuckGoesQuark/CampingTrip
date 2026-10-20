@@ -1,11 +1,17 @@
 import type { Post } from "../../types/post";
 import { growAndSystems } from "./growAndSystems";
 import { ourDesignersWriteTheUi } from "./ourDesignersWriteTheUi";
+import { ourFormsWereTooSlow } from "./ourFormsWereTooSlow";
 import { whatVibeCodingChanged } from "./whatVibeCodingChanged";
 
 /** One file per post: a body is TSX, and one growing module would make every new
  *  post a merge conflict waiting to happen. Order here doesn't matter. */
-const authored: Post[] = [ourDesignersWriteTheUi, whatVibeCodingChanged, growAndSystems];
+const authored: Post[] = [
+  ourFormsWereTooSlow,
+  ourDesignersWriteTheUi,
+  whatVibeCodingChanged,
+  growAndSystems,
+];
 
 /** Every post, newest first, tags alphabetical: no feed or card sorts either. */
 export const posts: Post[] = authored
