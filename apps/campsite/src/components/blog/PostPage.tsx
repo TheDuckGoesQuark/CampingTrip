@@ -9,6 +9,7 @@ import "../../styles/blogProse.css";
 import type { Post } from "../../types/post";
 import { formatDate } from "./formatDate";
 import ArrivedAs from "./newsletter/ArrivedAs";
+import SiteLink from "./SiteLink";
 import SubscribeForm from "./subscribe/SubscribeForm";
 
 import shared from "./blog.module.css";
@@ -62,10 +63,7 @@ export default function PostPage({ post }: PostPageProps) {
       </div>
 
       <footer className={styles.postFooter}>
-        <nav className={styles.neighbours} aria-label="Nearby posts">
-          <Neighbour post={older} direction="older" />
-          <Neighbour post={newer} direction="newer" />
-        </nav>
+        <ReadNext older={older} newer={newer} />
 
         <div className={styles.allPosts}>
           <Button variant="subtle" size="sm" render={<RouterLink to={blogPaths.archive} />}>
@@ -77,24 +75,60 @@ export default function PostPage({ post }: PostPageProps) {
   );
 }
 
-/** Renders an inert placeholder at either end of the run, so the pair stays even. */
-function Neighbour({ post, direction }: { post?: Post; direction: "older" | "newer" }) {
-  const className = direction === "older" ? styles.neighbour : styles.neighbourNewer;
-  if (!post) {
-    return <div className={className} aria-hidden="true" />;
+/**
+ * The newer post is the one a reader arriving from the archive has not read yet,
+ * so it gets the card; on the newest post the older one takes its place.
+ */
+function ReadNext({ older, newer }: { older?: Post; newer?: Post }) {
+  const next = newer ?? older;
+  if (!next) {
+    return null;
   }
+  const behind = newer && older;
+
   return (
-    <div className={className}>
-      <Card tone="sunken" render={<RouterLink to={blogPaths.post(slugify(post.title))} />}>
-        <Text variant="label" tone="muted" as="span">
-          {direction === "older" ? "← Older" : "Newer →"}
-        </Text>
-        <div className={styles.neighbourTitle}>
-          <Text variant="body-sm" as="span">
-            <strong>{post.title}</strong>
+    <nav className={styles.readNext} aria-label="Read next">
+      <Card
+        tone="sunken"
+        elevation="raised"
+        render={<RouterLink to={blogPaths.post(slugify(next.title))} />}
+      >
+        <div className={styles.readNextMeta}>
+          <Text variant="label" tone="muted" as="span">
+            Read next
+          </Text>
+          <Text variant="body-sm" tone="muted" as="span">
+            <time dateTime={next.date}>{formatDate(next.date, "short")}</time>
           </Text>
         </div>
+        <div className={styles.readNextTitle}>
+          <Text variant="title-4" as="span">
+            {next.title}
+          </Text>
+        </div>
+        <Text variant="body-sm" tone="muted" as="span">
+          {next.standfirst}
+        </Text>
+        {/* Plain tags: a link inside the card's own link would be invalid markup. */}
+        <ul className={`${shared.tagList} ${styles.readNextTags}`}>
+          {next.tags.map((tag) => (
+            <li key={tag}>
+              <Tag>{tag}</Tag>
+            </li>
+          ))}
+        </ul>
       </Card>
-    </div>
+
+      {behind && (
+        <div className={styles.readNextBehind}>
+          <Text variant="label" tone="muted" as="span">
+            ← Older · <time dateTime={behind.date}>{formatDate(behind.date, "short")}</time>
+          </Text>
+          <Text variant="body-sm">
+            <SiteLink to={blogPaths.post(slugify(behind.title))}>{behind.title}</SiteLink>
+          </Text>
+        </div>
+      )}
+    </nav>
   );
 }

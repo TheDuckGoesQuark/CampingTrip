@@ -6,6 +6,29 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## A post ends with one "Read next" card
+
+**Date**: 2026-10-21
+
+**What changed**: the older/newer pair of cards at the foot of a post became
+one raised "Read next" card (date, title, standfirst, tags) for the newer post,
+or the older one on the newest post, with the other neighbour as a small link
+beneath it.
+
+**Why**: the pair could not stay level, because each card was as tall as its own
+title, and neither said when a post was written or what it was about.
+
+**Decisions**: a design spike weighed stretched cards, stacked rows, a ruled
+list and a single feature card; the feature card won. Its tags are plain spans,
+since the whole card is the link. Hovering the card underlines its title,
+because the Card's background step alone did not read as clickable. Under 600px
+of window the tags are hidden.
+
+**Deferred**: a reading time on the card. `Post.body` is React elements, so it
+means counting words from the prerendered text.
+
+---
+
 ## The welcome letter goes out when someone confirms
 
 **Date**: 2026-10-21
