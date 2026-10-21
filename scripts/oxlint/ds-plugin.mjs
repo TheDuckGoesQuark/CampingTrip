@@ -78,6 +78,10 @@ export default {
         return {
           JSXElement(node) {
             if (tagName(node) !== "svg") return;
+            // An illustration declares itself an image with a name; an icon is
+            // hidden and takes its name from the control it decorates.
+            if (literalAttribute(node, "role") === "img" && literalAttribute(node, "aria-label"))
+              return;
 
             context.report({
               node: node.openingElement,

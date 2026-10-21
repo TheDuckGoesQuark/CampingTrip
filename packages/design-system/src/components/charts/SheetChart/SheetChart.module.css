@@ -1,0 +1,246 @@
+.window {
+  margin: 0;
+  background: var(--brand-surface-raised);
+  border: var(--border-frame);
+}
+
+.titleBar {
+  padding: var(--space-xs) var(--space-s);
+  background: var(--brand-subtle);
+  border-bottom: var(--border-frame);
+  box-shadow: var(--shadow-bevel-out);
+}
+
+.book {
+  display: flex;
+  flex-direction: column;
+}
+
+.sheet {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+  margin: var(--space-s);
+  padding: var(--space-s) var(--space-s) var(--space-m);
+  background: var(--brand-surface);
+  box-shadow: var(--shadow-bevel-in);
+}
+
+/* The axes draw their own lines, so the area carries no border of its own. */
+.plot {
+  height: 18rem;
+  padding: var(--space-s) var(--space-xs) 0 0;
+  background: var(--brand-surface-sunken);
+}
+
+.grid line {
+  stroke: var(--brand-border);
+}
+
+.axis line,
+.axis path {
+  stroke: var(--brand-text);
+}
+
+.axis text {
+  fill: var(--brand-text);
+  font-family: var(--font-mono);
+  font-size: var(--text-body-sm-size);
+}
+
+.bar {
+  stroke: var(--brand-text);
+  stroke-width: 1;
+  stroke-linejoin: round;
+}
+
+/* The tone colours every face; these two tint the top and the side over it. */
+.lit {
+  fill: var(--brand-surface);
+  fill-opacity: 0.35;
+  stroke: none;
+}
+
+.shaded {
+  fill: var(--brand-text);
+  fill-opacity: 0.3;
+  stroke: none;
+}
+
+.line {
+  fill: none;
+  stroke-width: 2.5;
+}
+
+.marker {
+  stroke: var(--brand-text);
+  stroke-width: 1;
+}
+
+.line.toneDefault,
+.marker.toneDefault {
+  stroke: var(--brand-border-strong);
+}
+
+.line.toneAccent,
+.marker.toneAccent {
+  stroke: var(--brand-accent);
+}
+
+.line.toneDanger,
+.marker.toneDanger {
+  stroke: var(--brand-danger);
+}
+
+.sheetHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-s);
+}
+
+.views {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-xxs);
+  font-family: var(--font-mono);
+  font-size: var(--text-body-sm-size);
+}
+
+.viewsLabel {
+  margin-right: var(--space-xs);
+  color: var(--brand-text-muted);
+}
+
+.view {
+  padding: var(--space-xxs) var(--space-s);
+  font: inherit;
+  color: var(--brand-text);
+  background: var(--brand-subtle);
+  border: 1px solid var(--brand-text);
+  box-shadow: var(--shadow-bevel-out);
+  cursor: pointer;
+}
+
+.view[aria-pressed="true"] {
+  background: var(--brand-surface);
+  box-shadow: var(--shadow-bevel-in);
+  font-weight: bold;
+}
+
+.view:focus-visible {
+  outline: 2px solid var(--brand-focus);
+  outline-offset: 2px;
+}
+
+.toneDefault {
+  fill: var(--brand-border-strong);
+  background: var(--brand-border-strong);
+}
+
+.toneAccent {
+  fill: var(--brand-accent);
+  background: var(--brand-accent);
+}
+
+.toneDanger {
+  fill: var(--brand-danger);
+  background: var(--brand-danger);
+}
+
+/* Pinned over the plot's top right, the way a spreadsheet floats its legend.
+   Below the breakpoint there is no room beside the tall bar, so it drops under.
+   Scoped under the window: a host page's own `table` and `th` rules (a blog's
+   prose sheet) would otherwise outrank a lone class and stretch it full width. */
+.window .legend {
+  width: max-content;
+  margin: 0;
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+  font-size: var(--text-body-sm-size);
+  line-height: 1.4;
+  background: var(--brand-surface-raised);
+  border: 1px solid var(--brand-text);
+  box-shadow: var(--shadow-hard-1);
+}
+
+@media (min-width: 40rem) {
+  .window .legend {
+    position: absolute;
+    top: calc(var(--space-xl) + var(--space-m));
+    right: calc(var(--space-s) + var(--space-m));
+  }
+}
+
+.window .legend th,
+.window .legend td {
+  padding: var(--space-xxs) var(--space-xs);
+  text-align: left;
+  vertical-align: middle;
+  font-weight: normal;
+  background: none;
+  border: 0;
+}
+
+.window .legend td {
+  text-align: right;
+}
+
+.swatch {
+  display: inline-block;
+  width: 0.75em;
+  height: 0.75em;
+  margin-right: var(--space-xs);
+  border: 1px solid var(--brand-text);
+  vertical-align: middle;
+}
+
+/* Sheet tabs: one row of equal cells, every cell a full-height target. */
+.tabs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(6rem, 1fr));
+  gap: 1px;
+  padding: 0 var(--space-s) var(--space-s);
+}
+
+.tab {
+  padding: var(--space-xs) var(--space-s);
+  font: inherit;
+  font-family: var(--font-mono);
+  font-size: var(--text-body-sm-size);
+  color: var(--brand-text);
+  text-align: center;
+  background: var(--brand-subtle);
+  border: 1px solid var(--brand-text);
+  border-top: none;
+  cursor: pointer;
+}
+
+.tab:hover {
+  background: var(--brand-subtle-hover);
+}
+
+.tab[aria-selected="true"] {
+  background: var(--brand-surface);
+  font-weight: bold;
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--brand-focus);
+  outline-offset: 2px;
+}
+
+.caption {
+  padding: 0 var(--space-s) var(--space-s);
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

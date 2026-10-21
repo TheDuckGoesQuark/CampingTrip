@@ -49,6 +49,10 @@ Add the named export to [`../index.ts`](../index.ts).
 - **Modal** — compound dialog on the Base UI Dialog primitive: focus trap,
   focus-return, Escape + click-outside dismissal, ARIA. `variant`
   `centered` / `takeover` / `bare`. Subparts `Modal.Trigger/Header/Title/Body/Footer/Close`.
+- **charts/SheetChart** — a 1995 spreadsheet's chart window: one sheet tab per
+  metric, 3D bars, a legend table pinned over the plot, and a bars/lines switch
+  on any metric given `steps`. Recharts draws underneath; every colour is a tone
+  class over a token, and the figures are real text in the legend.
 - **form/** — text controls, grouped because they share their chrome. `FieldShell`
   (internal) holds the label, the optional marker, the hint and the error, tied
   together by a Base UI `Field.Root`; `field.module.css` is shared by both

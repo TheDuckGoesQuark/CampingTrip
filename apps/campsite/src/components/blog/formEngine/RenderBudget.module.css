@@ -1,0 +1,57 @@
+.figure {
+  margin: var(--space-xl) 0;
+}
+
+.graph {
+  width: 100%;
+  height: auto;
+  font-family: var(--font-sans);
+}
+
+.verdict {
+  opacity: 0;
+  transition: opacity 300ms ease-out;
+}
+
+.verdict[data-shown] {
+  opacity: 1;
+}
+
+/* Parked at the origin until the motion begins; the frozen end position is the
+   crossing, where the dot turns red and flashes. */
+.dot {
+  transform: translate(60px, 230px);
+  opacity: 0;
+}
+
+.figure[data-phase="travelling"] .dot,
+.figure[data-phase="rejected"] .dot {
+  transform: none;
+  opacity: 1;
+}
+
+.figure[data-phase="rejected"] .dot {
+  fill: var(--brand-danger);
+  animation: flash 500ms steps(2, jump-none) 4;
+}
+
+@keyframes flash {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0.25;
+  }
+}
+
+/* With motion reduced the end state is shown at once: the curve, the line and the verdict. */
+@media (prefers-reduced-motion: reduce) {
+  .verdict {
+    opacity: 1;
+  }
+
+  .dot {
+    display: none;
+  }
+}

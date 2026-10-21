@@ -4,4 +4,6 @@
    the footer sits on the container's floor rather than under the last line. */
 .page {
   flex: 1;
+  /* A figure that must breach the post's measure sizes itself from this width. */
+  container-type: inline-size;
 }

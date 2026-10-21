@@ -1,0 +1,32 @@
+.figure {
+  margin: var(--space-xl) 0;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-l);
+}
+
+.diagram {
+  flex: 1 1 24rem;
+  width: 100%;
+  height: auto;
+  font-family: var(--font-sans);
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  flex: 0 1 12rem;
+}
+
+.statNumber {
+  font-size: var(--text-title-1-size);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  color: var(--brand-danger);
+}

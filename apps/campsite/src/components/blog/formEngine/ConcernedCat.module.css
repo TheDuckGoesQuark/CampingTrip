@@ -1,0 +1,37 @@
+.figure {
+  width: min(100%, 18rem);
+  margin: var(--space-l) auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.frame {
+  position: relative;
+  width: 100%;
+  border: 2px solid var(--brand-border-strong);
+  box-shadow: var(--shadow-hard-2);
+}
+
+.image {
+  display: block;
+  width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+}
+
+/* The meme's own lettering, which the image does not carry: Impact, white, outlined black. */
+.meme {
+  position: absolute;
+  inset: auto 0 var(--space-xs);
+  font-family: Impact, "Haettenschweiler", "Arial Narrow Bold", sans-serif;
+  font-size: var(--text-title-2-size);
+  line-height: 1;
+  text-align: center;
+  text-transform: uppercase;
+  color: white;
+  -webkit-text-stroke: 2px black;
+  paint-order: stroke fill;
+  letter-spacing: 0.02em;
+}

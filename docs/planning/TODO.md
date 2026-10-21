@@ -6,13 +6,11 @@ All planned and deferred work, organised by priority.
 
 ## Next Up
 
-### Publish the form-engine post and add it to Trailhead
+### Add the form-engine post to Trailhead
 
-"Our forms were too slow, so we built five" is merged as a draft. Once it has
-been read in CatOS: remove `draft: true`, add it to `trailheadNewsletter`'s
-`posts` as the lead, render the issue locally, and test-send it from the branch
-(the `publish-newsletter` skill has the steps). An issue that points at a draft
-post fails to render, so both changes go in the same PR.
+"Our forms were too slow, so we built five" is published. Add it to
+`trailheadNewsletter`'s `posts` as the lead, render the issue locally, and
+test-send it from the branch (the `publish-newsletter` skill has the steps).
 
 ### Contact — nothing limits how often one sender may post
 
@@ -386,21 +384,6 @@ That script lives in a scratch directory and is gone with the session. Nothing i
 the repo can see an animation, and `packages/design-system` cannot either, since
 Vitest runs with CSS disabled. Worth deciding whether a frame-sheet script earns
 a place in `scripts/`, or whether animation stays a thing only a human checks.
-
-### Repo: `ds/no-inline-icon` cannot tell an icon from an illustration
-
-The rule reports every `<svg>` in app code, but its message argues about icons:
-DS sizing, colour tokens, the `aria-hidden` default. Those are reasons an icon
-belongs in the design system, and they say nothing about a one-off illustration
-whose parts animate independently. The useless machine's paw took the long way
-round it (rounded boxes and a `clip-path`), and `shimmer.module.css` takes the
-other one (SVG as a `data:` URI in CSS), so the rule is currently routed around
-twice rather than obeyed.
-
-Two consumers is not yet a pattern, so this is worth watching rather than
-fixing. If a third arrives, the question is whether the rule should exempt an
-`<svg>` that carries no `role="img"` and no title, or whether the DS should
-export an `Illustration` escape hatch that owns them.
 
 ### Design system — boxy pass on in-window content
 

@@ -67,6 +67,7 @@ Grzinich
 gsap
 gstatic
 gtotowk
+Haettenschweiler
 HDRI
 HEMI
 hostedzone
@@ -90,6 +91,7 @@ Lindus
 linters
 LUFS
 maximisable
+memoising
 metalness
 MHRA
 minigame
@@ -99,6 +101,7 @@ moiré
 Moka
 Molenaar
 mousemail
+mrleicester
 mynoise
 networkidle
 nofile
