@@ -6,6 +6,27 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## The first newsletter issue went out
+
+**Date**: 2026-10-21
+
+**What changed**: Trailhead, leading with the form-engine post, was sent to the
+list and marked `sentOn`, so it is in the archive and under each post it named.
+
+**Why it took a fix**: the first real send failed at "Configure AWS
+credentials". A job that names an environment is issued that environment as
+its OIDC subject, and the deploy role trusted only `main` and `production`,
+so the `send` job (in the `newsletter` environment) could never assume it.
+The role now also trusts `environment:newsletter`, and that environment was
+limited to `main`, so the subject only comes from an approved run on `main`.
+
+**Decisions**: CI's role cannot update its own trust policy, which is right,
+so that one change was applied by hand with `-target`; the next CI apply
+re-ran green. Nothing was claimed by the failed attempt, so the issue's single
+send was not spent.
+
+---
+
 ## The form-engine post, with its charts and diagrams
 
 **Date**: 2026-10-21

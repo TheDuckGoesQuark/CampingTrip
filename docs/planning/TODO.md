@@ -6,12 +6,6 @@ All planned and deferred work, organised by priority.
 
 ## Next Up
 
-### Test-send and send the Trailhead issue
-
-It leads with the form-engine post now. Test-send it from its branch, read it
-in the inbox, then follow the `publish-newsletter` skill from step 5: SES
-production access, `draft: true` removed, send, then `sentOn`.
-
 ### Contact — nothing limits how often one sender may post
 
 `/api/contact` is public and unauthenticated, and the only ceiling anywhere is
