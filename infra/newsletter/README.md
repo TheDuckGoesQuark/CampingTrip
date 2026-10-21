@@ -83,6 +83,21 @@ Locally, `pnpm --filter campsite newsletter:render <slug>` writes the same
 three files under `apps/campsite/dist-newsletter/<slug>/`, which is the quick
 way to look at the HTML in a browser before a test send.
 
+## The welcome letter
+
+The issue marked `welcome: true` (Trailhead) is not dispatched. Following a
+confirmation link queues it for that one address on the same queue, and the
+worker sends it. The row records `welcome_queued_at`, and the worker's
+`ISSUE#trailhead-newsletter` / `SUB#<address>` mark refuses a second copy to
+an address that already had one.
+
+The worker sends the rendered copy under `_newsletter/trailhead-newsletter/`
+in the bucket. After the issue's words change, run the workflow with
+`trailhead-newsletter` and `test`: the render job uploads in every mode, so
+that refreshes the copy and mails the test recipients the new version. A
+welcome that cannot be sent (the copy missing, SES refusing) fails like any
+issue email, into the dead-letter queue and its alarm.
+
 ## Leaving the SES sandbox
 
 A new SES account sends only to verified addresses and domains, at most two

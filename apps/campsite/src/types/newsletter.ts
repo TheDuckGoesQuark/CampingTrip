@@ -21,4 +21,10 @@ export interface Issue {
    * without it the issue is viewable in CatOS, as a draft post is, and no more.
    */
   sentOn?: string;
+  /**
+   * The letter each subscriber is sent on confirming, by the newsletter
+   * endpoint rather than the workflow. It goes out on a different day for
+   * everyone, so it never carries `sentOn` and the archive never lists it.
+   */
+  welcome?: true;
 }

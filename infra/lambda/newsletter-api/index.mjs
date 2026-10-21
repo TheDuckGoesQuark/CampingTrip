@@ -2,15 +2,17 @@
 //
 // Three routes, told apart by the last path segment: `subscribe` writes a
 // pending row and emails a confirmation link; `confirm` activates the row the
-// link's token names; `unsubscribe` shows a page on GET and acts on POST. What
-// to accept and what to say lives in `accept.mjs`; the table in `store.mjs`.
+// link's token names and queues the welcome issue (`confirm.mjs`);
+// `unsubscribe` shows a page on GET and acts on POST. What to accept and what
+// to say lives in `accept.mjs`; the table in `store.mjs`.
 //
-// Nothing a reader typed is logged. The one log line, on the confirmation
-// cap, is a constant that an alarm's metric filter matches.
+// Nothing a reader typed is logged. The log line on the confirmation cap is a
+// constant that an alarm's metric filter matches.
 import { randomBytes } from "node:crypto";
 
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { SendEmailCommand, SESv2Client } from "@aws-sdk/client-sesv2";
+import { SendMessageCommand, SQSClient } from "@aws-sdk/client-sqs";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 
 import {
@@ -23,6 +25,7 @@ import {
   unsubscribeToken,
   wantsJson,
 } from "./accept.mjs";
+import { confirmSubscriber } from "./confirm.mjs";
 import { makeStore } from "./store.mjs";
 
 const {
@@ -33,12 +36,17 @@ const {
   SITE_ORIGIN,
   CONSENT_VERSION,
   CONFIRM_CAP_PER_DAY,
+  QUEUE_URL,
 } = process.env;
 
 const SITE_NAME = "JordansCamp.Site";
 
 const store = makeStore(DynamoDBDocumentClient.from(new DynamoDBClient({})), TABLE_NAME);
 const ses = new SESv2Client({});
+const sqs = new SQSClient({});
+
+const enqueue = (message) =>
+  sqs.send(new SendMessageCommand({ QueueUrl: QUEUE_URL, MessageBody: JSON.stringify(message) }));
 
 const newToken = () => randomBytes(24).toString("base64url");
 
@@ -135,11 +143,8 @@ async function subscribe(event) {
 
 async function confirm(event) {
   const token = acceptToken(event.queryStringParameters?.t);
-  if (!token) return redirect(NOTICES.linkExpired);
-  const key = await store.findByToken("confirm-token", "confirm_token", token);
-  if (!key) return redirect(NOTICES.linkExpired);
-  const activated = await store.activate(key, new Date().toISOString());
-  return redirect(activated ? NOTICES.confirmed : NOTICES.linkExpired);
+  const nowIso = new Date().toISOString();
+  return redirect(await confirmSubscriber({ store, enqueue, token, nowIso }));
 }
 
 async function unsubscribe(event, method) {
