@@ -37,22 +37,40 @@
   padding-top: 20px;
 }
 
-.neighbours {
+.readNextMeta {
   display: flex;
+  justify-content: space-between;
+  align-items: baseline;
   gap: var(--space-s);
+  flex-wrap: wrap;
 }
 
-.neighbour {
-  flex: 1;
+.readNextTitle {
+  margin: var(--space-xs) 0;
 }
 
-.neighbourNewer {
-  flex: 1;
-  text-align: right;
+/* The whole card is the link, but a background step alone does not say so. */
+.readNext > a:is(:hover, :focus-visible) .readNextTitle {
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
-.neighbourTitle {
-  margin-top: var(--space-xs);
+.readNextTags {
+  margin-top: var(--space-s);
+}
+
+.readNextBehind {
+  margin-top: var(--space-m);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+/* Narrow, the tags add a row of chrome without telling a reader whether to click. */
+@container window-page (max-width: 600px) {
+  .readNextTags {
+    display: none;
+  }
 }
 
 .allPosts {
