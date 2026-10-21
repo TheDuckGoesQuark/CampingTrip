@@ -208,6 +208,9 @@ resource "aws_iam_role_policy" "github_plan_readonly" {
           "sns:List*",
           "ses:Get*",
           "ses:List*",
+          # Email receiving is the one SES surface whose reads are spelled
+          # `Describe`: the rule set, its rules, and which set is active.
+          "ses:Describe*",
           "dynamodb:Describe*",
           "dynamodb:List*",
           "cloudwatch:DescribeAlarms",
@@ -337,6 +340,30 @@ resource "aws_iam_role_policy" "github_s3_deploy" {
       ]
       Resource = "${aws_s3_bucket.deploy.arn}/*"
     }]
+  })
+}
+
+# GitHub Actions: read and clear the newsletter check's inbox. The bucket is
+# named as a string rather than referenced, so this grant can land an apply
+# ahead of the bucket (the first-apply race in docs/planning/TODO.md).
+resource "aws_iam_role_policy" "github_newsletter_inbox" {
+  name = "newsletter-inbox"
+  role = aws_iam_role.github_actions.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = "s3:ListBucket"
+        Resource = "arn:aws:s3:::${local.name_prefix}-newsletter-inbox"
+      },
+      {
+        Effect   = "Allow"
+        Action   = ["s3:GetObject", "s3:DeleteObject"]
+        Resource = "arn:aws:s3:::${local.name_prefix}-newsletter-inbox/*"
+      },
+    ]
   })
 }
 
@@ -902,6 +929,27 @@ resource "aws_iam_role_policy" "github_terraform_resources" {
           "ses:ListConfigurationSets",
           "ses:ListEmailIdentities",
           "ses:ListTagsForResource",
+        ]
+        Resource = "*"
+      },
+      {
+        # Email receiving: the rule set, its rules, and which set is active.
+        # Which of these honour a receipt-rule-set ARN is undocumented in a
+        # form a plan can check, and a region holds one active set for the
+        # whole account, so the boundary here is the enumerated actions.
+        Sid    = "SESReceiving"
+        Effect = "Allow"
+        Action = [
+          "ses:CreateReceiptRuleSet",
+          "ses:DeleteReceiptRuleSet",
+          "ses:DescribeReceiptRuleSet",
+          "ses:ListReceiptRuleSets",
+          "ses:CreateReceiptRule",
+          "ses:DeleteReceiptRule",
+          "ses:DescribeReceiptRule",
+          "ses:UpdateReceiptRule",
+          "ses:SetActiveReceiptRuleSet",
+          "ses:DescribeActiveReceiptRuleSet",
         ]
         Resource = "*"
       },
