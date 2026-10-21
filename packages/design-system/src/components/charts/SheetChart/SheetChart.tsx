@@ -1,5 +1,5 @@
 import { cva } from "class-variance-authority";
-import { type ReactNode, useId, useState } from "react";
+import { type ReactNode, useState } from "react";
 import {
   Bar,
   BarChart,
@@ -29,6 +29,8 @@ export type SheetChartTone = "default" | "accent" | "danger";
 export interface SheetChartCategory {
   id: string;
   label: string;
+  /** The x-axis text, where the label is too long to sit beside its neighbours. The legend keeps `label`. */
+  short?: string;
   /** `accent` for the one the chart is about, `danger` for the one it warns against. */
   tone?: SheetChartTone;
 }
@@ -64,6 +66,7 @@ export interface SheetChartProps {
 type View = "bars" | "lines";
 
 interface Row extends SheetChartCategory {
+  axis: string;
   value: number;
 }
 
@@ -98,6 +101,7 @@ function Bars({
 }) {
   const rows: Row[] = categories.map((category, index) => ({
     ...category,
+    axis: category.short ?? category.label,
     value: metric.values[index] ?? 0,
   }));
   return (
@@ -108,7 +112,7 @@ function Bars({
         barCategoryGap="35%"
       >
         <CartesianGrid className={styles.grid} vertical={false} />
-        <XAxis dataKey="label" className={styles.axis} tickLine={false} interval={0} />
+        <XAxis dataKey="axis" className={styles.axis} tickLine={false} interval={0} />
         <YAxis className={styles.axis} tickFormatter={metric.format} width={72} />
         <Bar dataKey="value" isAnimationActive={false} shape={ToneBar} />
       </BarChart>
@@ -162,7 +166,6 @@ interface SheetProps {
 }
 
 function Sheet({ metric, categories, view, onViewChange }: SheetProps) {
-  const viewLabel = useId();
   const steps = metric.steps;
   const last = steps?.at(-1)?.label;
 
@@ -173,10 +176,7 @@ function Sheet({ metric, categories, view, onViewChange }: SheetProps) {
           {metric.label}
         </Text>
         {steps === undefined ? null : (
-          <div className={styles.views} role="group" aria-labelledby={viewLabel}>
-            <span id={viewLabel} className={styles.viewsLabel}>
-              View
-            </span>
+          <div className={styles.views} role="group" aria-label="Chart view">
             <button
               type="button"
               className={styles.view}

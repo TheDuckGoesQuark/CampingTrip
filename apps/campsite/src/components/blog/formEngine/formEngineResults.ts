@@ -32,23 +32,23 @@ function metric(
 }
 
 export const libraryCategories: SheetChartCategory[] = [
-  { id: "rhf", label: "react-hook-form", tone: "danger" },
+  { id: "rhf", label: "react-hook-form", short: "RHF", tone: "danger" },
   { id: "tanstack", label: "TanStack Form", tone: "accent" },
   { id: "jotai", label: "Jotai" },
 ];
 
 export const libraryMetrics: SheetChartMetric[] = [
-  metric("open", "Time to open", "Open", ms, [
+  metric("open", "Open", "Open", ms, [
     [612, 241, 191],
     [3761, 460, 272],
     [29_184, 1248, 469],
   ]),
-  metric("hide", "Time to hide a section", "Hide section", ms, [
+  metric("hide", "Hide a section", "Hide section", ms, [
     [531, 452, 445],
     [702, 467, 441],
     [1389, 487, 446],
   ]),
-  metric("key", "Time per keystroke", "Keypress", keystroke, [
+  metric("key", "Keypress", "Keypress", keystroke, [
     [18.1, 7.2, 7.2],
     [8.2, 6.3, 18.6],
     [84.8, 9.1, 75.9],
@@ -61,22 +61,22 @@ export const libraryMetrics: SheetChartMetric[] = [
 ];
 
 export const graphCategories: SheetChartCategory[] = [
-  { id: "graph", label: "With the dependency graph", tone: "accent" },
-  { id: "control", label: "Without it (control)", tone: "danger" },
+  { id: "graph", label: "With the dependency graph", short: "With graph", tone: "accent" },
+  { id: "control", label: "Without it (control)", short: "Control", tone: "danger" },
 ];
 
 export const graphMetrics: SheetChartMetric[] = [
-  metric("open", "Time to open", "Open", ms, [
+  metric("open", "Open", "Open", ms, [
     [157, 148],
     [174, 181],
     [253, 257],
   ]),
-  metric("hide", "Time to hide a section", "Hide section", ms, [
+  metric("hide", "Hide a section", "Hide section", ms, [
     [444, 463],
     [448, 479],
     [460, 501],
   ]),
-  metric("key", "Time per keystroke", "Keypress", keystroke, [
+  metric("key", "Keypress", "Keypress", keystroke, [
     [8.6, 6.6],
     [7.3, 9.9],
     [6.2, 19.6],

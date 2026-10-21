@@ -858,16 +858,6 @@ function After() {
           markerEnd="url(#layers-after-arrow)"
         />
         <text
-          x="584.0"
-          y="216"
-          fill="var(--brand-text-muted)"
-          fontSize="11"
-          textAnchor="start"
-          fontWeight="400"
-        >
-          memo
-        </text>
-        <text
           x="0.0"
           y="304"
           fill="var(--brand-text)"

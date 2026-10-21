@@ -109,11 +109,6 @@
   font-size: var(--text-body-sm-size);
 }
 
-.viewsLabel {
-  margin-right: var(--space-xs);
-  color: var(--brand-text-muted);
-}
-
 .view {
   padding: var(--space-xxs) var(--space-s);
   font: inherit;
