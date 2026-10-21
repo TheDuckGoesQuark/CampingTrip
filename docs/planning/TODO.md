@@ -6,6 +6,17 @@ All planned and deferred work, organised by priority.
 
 ## Next Up
 
+### Send the welcome letter when someone confirms
+
+`trailheadNewsletter.ts` is the welcome letter: it is meant for each new
+subscriber, once, when they confirm. Nothing sends it. The confirm step in
+`infra/lambda/newsletter-api/` writes the subscriber active and stops; it
+would also need to queue the welcome for that one address and mark it sent
+on the subscriber's row, so a re-confirm never sends it twice. The issue
+already carries `sentOn` from going to the first subscriber on 2026-10-21,
+which the archive reads; decide whether a welcome belongs in the public
+archive at all, or whether `sentOn` means something different for it.
+
 ### Contact — nothing limits how often one sender may post
 
 `/api/contact` is public and unauthenticated, and the only ceiling anywhere is
