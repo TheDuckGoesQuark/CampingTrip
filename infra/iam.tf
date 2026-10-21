@@ -367,6 +367,22 @@ resource "aws_iam_role_policy" "github_newsletter_inbox" {
   })
 }
 
+# GitHub Actions: a failed newsletter check publishes to the alerts topic, so
+# it reaches the owner as an alarm does.
+resource "aws_iam_role_policy" "github_alerts_publish" {
+  name = "alerts-publish"
+  role = aws_iam_role.github_actions.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = "sns:Publish"
+      Resource = aws_sns_topic.alerts.arn
+    }]
+  })
+}
+
 # GitHub Actions: Terraform state access (S3 backend + DynamoDB locks)
 resource "aws_iam_role_policy" "github_terraform_state" {
   name = "terraform-state"

@@ -10,7 +10,13 @@ import { appendFileSync } from "node:fs";
 import { promisify } from "node:util";
 
 import { WELCOME_ISSUE } from "../../lambda/newsletter-api/confirm.mjs";
-import { confirmLink, isAddressedTo, parseMessage, unsubscribeLink } from "./mail.mjs";
+import {
+  authenticationResults,
+  confirmLink,
+  isAddressedTo,
+  parseMessage,
+  unsubscribeLink,
+} from "./mail.mjs";
 
 const exec = promisify(execFile);
 
@@ -19,10 +25,20 @@ const { SITE_ORIGIN, INBOX_DOMAIN, INBOX_BUCKET, WAIT_SECONDS = "180" } = proces
 const started = Date.now();
 const elapsed = () => `${((Date.now() - started) / 1000).toFixed(0)}s`;
 
+/** The reason also becomes the step's `reason` output, for the alert that follows. */
 function fail(message) {
   console.error(`FAIL ${message}`);
+  if (process.env.GITHUB_OUTPUT) {
+    appendFileSync(process.env.GITHUB_OUTPUT, `reason=${message.replaceAll("\n", " ")}\n`);
+  }
   process.exit(1);
 }
+
+// A thrown error (the site unreachable, the CLI refused) reports like a missed step.
+const describe = (error) =>
+  [error?.message ?? String(error), error?.cause?.message].filter(Boolean).join(": ");
+process.on("uncaughtException", (error) => fail(`crashed after ${elapsed()}: ${describe(error)}`));
+process.on("unhandledRejection", (error) => fail(`crashed after ${elapsed()}: ${describe(error)}`));
 
 function note(message) {
   console.log(`[${elapsed()}] ${message}`);
@@ -106,6 +122,28 @@ note(`subscribed ${address}`);
 
 const confirmation = await awaitMail("confirmation", address, (m) => confirmLink(m, SITE_ORIGIN));
 note(`confirmation arrived: "${confirmation.subject}"`);
+
+// SES verified the sending domain's DNS on receipt; the verdicts are the
+// runbook's manual header check, made daily.
+const siteDomain = new URL(SITE_ORIGIN).hostname;
+const results = authenticationResults(confirmation);
+const passed = (method, detail = "") =>
+  results.some((r) => r.method === method && r.result === "pass" && r.detail.includes(detail));
+for (const [method, detail] of [
+  ["spf", ""],
+  ["dkim", `header.i=@${siteDomain}`],
+  ["dmarc", `header.from=${siteDomain}`],
+]) {
+  if (!passed(method, detail)) {
+    fail(
+      `confirmation: ${method} did not pass; ${confirmation.headers.get("authentication-results")}`,
+    );
+  }
+}
+if (confirmation.headers.get("x-ses-spam-verdict") !== "PASS") {
+  fail(`confirmation: spam verdict ${confirmation.headers.get("x-ses-spam-verdict")}`);
+}
+note("confirmation passed spf, dkim, dmarc and the spam scan");
 
 const confirmed = await fetch(confirmLink(confirmation, SITE_ORIGIN), { redirect: "manual" });
 expectRedirect("confirm", confirmed, "confirmed");

@@ -129,3 +129,15 @@ export function confirmLink(message, siteOrigin) {
 export function unsubscribeLink(message) {
   return (message.headers.get("list-unsubscribe") ?? "").match(/<([^>]+)>/)?.[1] ?? null;
 }
+
+/**
+ * The `Authentication-Results` header SES adds on receipt, one entry per
+ * method: `{ method: "dkim", result: "pass", detail: "header.i=@example.com" }`.
+ */
+export function authenticationResults(message) {
+  return (message.headers.get("authentication-results") ?? "")
+    .split(";")
+    .map((entry) => entry.trim().match(/^(spf|dkim|dmarc)=(\w+)\s*(.*)$/))
+    .filter(Boolean)
+    .map(([, method, result, detail]) => ({ method, result: result.toLowerCase(), detail }));
+}

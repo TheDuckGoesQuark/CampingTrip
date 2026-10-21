@@ -6,6 +6,33 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## A failed newsletter check is an alarm, and the confirmation must authenticate
+
+**Date**: 2026-10-21
+
+**What changed**: the `Newsletter check` workflow publishes a failed run's
+reason and link to the alerts topic, so it is emailed as an alarm is; the
+deploy role gained `sns:Publish` on that topic. The check also holds the
+confirmation to the verdicts SES records on receipt: SPF, DKIM for the apex,
+DMARC, and the spam scan, read from `Authentication-Results` and
+`X-SES-Spam-Verdict`.
+
+**Why**: GitHub's own notice of a failed scheduled run is easy to miss, and
+the AWS alarm emails already reach the owner. The DKIM check in the runbook
+was a one-off by hand; a probe message showed which header carries it.
+
+**Decisions**:
+
+- The reason is the check's `reason` step output, written by `fail()`; the
+  alert step reads it and falls back to a fixed line if the run died earlier.
+- The topic ARN is built from the caller's account at run time rather than
+  stored as a variable; the name is already a constant in the workflow.
+- The DKIM assertion names the apex (`header.i=@jordanscamp.site`), since SES
+  signs with its own domain as well and that verdict proves nothing about the
+  site's DNS.
+
+---
+
 ## The subscriber flow is checked end to end, daily
 
 **Date**: 2026-10-21
