@@ -39,3 +39,13 @@ output "newsletter_send_function" {
   description = "The function the Newsletter workflow invokes"
   value       = module.newsletter.send_function_name
 }
+
+output "newsletter_inbox_domain" {
+  description = "The newsletter check subscribes `e2e+<run>@` this domain"
+  value       = module.newsletter.inbox_domain
+}
+
+output "newsletter_inbox_bucket" {
+  description = "Received mail for the check, one object per message under `inbox/`"
+  value       = module.newsletter.inbox_bucket
+}

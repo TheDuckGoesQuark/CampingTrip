@@ -32,3 +32,13 @@ output "send_function_name" {
   description = "Invoked by CI with { issue, mode }"
   value       = aws_lambda_function.send.function_name
 }
+
+output "inbox_domain" {
+  description = "The domain the newsletter check mints its addresses under"
+  value       = local.inbox_domain
+}
+
+output "inbox_bucket" {
+  description = "Where SES writes mail received for the inbox domain; the check reads and clears it"
+  value       = aws_s3_bucket.inbox.bucket
+}
