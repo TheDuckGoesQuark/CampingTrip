@@ -74,3 +74,9 @@ variable "test_recipients" {
   description = "Where a test send goes. In the SES sandbox these must be verified addresses."
   type        = list(string)
 }
+
+variable "inbox_subdomain" {
+  description = "Label of the subdomain the newsletter check subscribes from; SES receives its mail into the inbox bucket"
+  type        = string
+  default     = "e2e"
+}

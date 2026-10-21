@@ -14,6 +14,7 @@ This file is what to do with it once it exists.
 | `events.tf`  | The function that marks a subscriber bounced or complained from SES's events. Code in `../lambda/newsletter-events/`                               |
 | `alarms.tf`  | What emails the owner: function errors, the confirmation cap, and the account's bounce and complaint rates                                         |
 | `issues.tf`  | Sending: the queue and its dead-letter queue, the `send` function CI invokes, and the `worker` that drains the queue into SES                      |
+| `inbox.tf`   | The check's inbox: the subdomain SES receives mail for, its receipt rule, and the bucket each message lands in                                     |
 
 The module is wired in `infra/newsletter.tf`; the alerts topic every alarm
 emails through is `infra/alerts.tf` at the root, since it is not the
@@ -141,3 +142,17 @@ Open the message's headers in the receiving client. `dkim=pass` with
 `header.d=jordanscamp.site` is the result the whole file above exists for;
 `spf=pass` against `mail.jordanscamp.site` appears once SES has detected the
 MX.
+
+## The check's inbox
+
+`inbox.tf` makes the one place this project receives mail: an MX on
+`e2e.<domain>` pointing at SES, a receipt rule that matches that subdomain
+only, and a bucket SES writes each message to under `inbox/`. The newsletter
+check in CI subscribes an address there, reads the confirmation and the
+welcome out of the bucket, and deletes what it read; the bucket expires
+anything left after a day.
+
+Nothing else sees this mail. The apex has no MX, so a reply to the From
+address goes nowhere; the Reply-To is the contact address.
+To read a message by hand, `aws s3 cp s3://$(cd infra && terraform output
+-raw newsletter_inbox_bucket)/inbox/<key> -` prints it raw, headers first.
