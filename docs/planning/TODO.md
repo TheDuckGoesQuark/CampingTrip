@@ -6,11 +6,11 @@ All planned and deferred work, organised by priority.
 
 ## Next Up
 
-### Add the form-engine post to Trailhead
+### Test-send and send the Trailhead issue
 
-"Our forms were too slow, so we built five" is published. Add it to
-`trailheadNewsletter`'s `posts` as the lead, render the issue locally, and
-test-send it from the branch (the `publish-newsletter` skill has the steps).
+It leads with the form-engine post now. Test-send it from its branch, read it
+in the inbox, then follow the `publish-newsletter` skill from step 5: SES
+production access, `draft: true` removed, send, then `sentOn`.
 
 ### Contact — nothing limits how often one sender may post
 
