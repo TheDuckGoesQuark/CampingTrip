@@ -57,6 +57,16 @@ the live site before going further: the issue will link to it.
 
 ## 3. Prepare the issue
 
+Every published post gets an issue of its own: a new file, its subject and
+note written for that post, and `posts: [thatPost]`. Never add a post to an
+issue that already exists.
+
+`trailheadNewsletter.ts` is the exception and is never a post's issue. It is
+the welcome letter, meant for someone who has just subscribed. Nothing sends
+it on confirmation yet (the TODO entry "Send the welcome letter when someone
+confirms" owns that), so until something does, it is not dispatched by hand
+either.
+
 Create `apps/campsite/src/data/newsletters/<camelCase>.ts` exporting an `Issue`:
 
 ```ts
