@@ -2,7 +2,8 @@ name: Newsletter check
 
 # Subscribes a fresh address on the check's inbox domain to the live site,
 # follows the confirmation, waits for the welcome, and unsubscribes. Runs
-# daily, after each deploy, and by hand; a failed run is the alert.
+# daily, after each deploy, and by hand; a failed run publishes to the alerts
+# topic, which emails the owner as an alarm does.
 on:
   schedule:
     - cron: "17 6 * * *"
@@ -37,8 +38,23 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Subscribe, confirm, receive the welcome, unsubscribe
+        id: check
         run: node infra/check/newsletter/run.mjs
         env:
           SITE_ORIGIN: https://jordanscamp.site
           INBOX_DOMAIN: e2e.jordanscamp.site
           INBOX_BUCKET: jordanscamp-prod-newsletter-inbox
+
+      - name: Raise the alert
+        if: failure()
+        run: |
+          account=$(aws sts get-caller-identity --query Account --output text)
+          aws sns publish \
+            --topic-arn "arn:aws:sns:${AWS_REGION}:${account}:jordanscamp-prod-alerts" \
+            --subject "Newsletter check failed" \
+            --message "${REASON:-the run failed before the check reported a step}
+
+          ${RUN_URL}"
+        env:
+          REASON: ${{ steps.check.outputs.reason }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}

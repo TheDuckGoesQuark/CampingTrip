@@ -154,5 +154,10 @@ anything left after a day.
 
 Nothing else sees this mail. The apex has no MX, so a reply to the From
 address goes nowhere; the Reply-To is the contact address.
+
+A failed run publishes its reason and link to the alerts topic, so it is
+emailed as an alarm is. The confirmation is also held to the verdicts SES
+records on receipt (`Authentication-Results`: SPF, DKIM for the apex, DMARC,
+and the spam scan), which is the DKIM check at the end of this file, daily.
 To read a message by hand, `aws s3 cp s3://$(cd infra && terraform output
 -raw newsletter_inbox_bucket)/inbox/<key> -` prints it raw, headers first.

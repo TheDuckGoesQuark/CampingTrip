@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import {
+  authenticationResults,
   confirmLink,
   decodeBody,
   decodeQuotedPrintable,
@@ -141,5 +142,32 @@ describe("the links a check follows", () => {
     const headers = new Map([["to", "E2E+Run1@e2e.jordanscamp.site"]]);
     assert.equal(isAddressedTo({ headers }, "e2e+run1@e2e.jordanscamp.site"), true);
     assert.equal(isAddressedTo({ headers }, "e2e+run2@e2e.jordanscamp.site"), false);
+  });
+});
+
+describe("authenticationResults", () => {
+  it("reads one verdict per method from the header SES adds on receipt", () => {
+    const headers = new Map([
+      [
+        "authentication-results",
+        "amazonses.com; spf=pass (spfCheck: domain of mail.jordanscamp.site designates 1.2.3.4 as permitted sender) client-ip=1.2.3.4; dkim=pass header.i=@amazonses.com; dkim=pass header.i=@jordanscamp.site; dmarc=pass header.from=jordanscamp.site;",
+      ],
+    ]);
+    const results = authenticationResults({ headers });
+    assert.deepEqual(
+      results.map((r) => [r.method, r.result]),
+      [
+        ["spf", "pass"],
+        ["dkim", "pass"],
+        ["dkim", "pass"],
+        ["dmarc", "pass"],
+      ],
+    );
+    assert.equal(results[2].detail, "header.i=@jordanscamp.site");
+    assert.match(results[0].detail, /^\(spfCheck/);
+  });
+
+  it("is empty when the header is absent", () => {
+    assert.deepEqual(authenticationResults({ headers: new Map() }), []);
   });
 });
