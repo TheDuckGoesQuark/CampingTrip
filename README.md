@@ -80,7 +80,9 @@ Americanisms deliberately left unenforced, and why, is commented in
   pages there; the step fails rather than ship a third.
 - **Newsletter**: SES sending as the apex domain, a DynamoDB list with confirmed
   opt-in, and issues authored as files under `src/data/newsletters` and sent by
-  the hand-dispatched `Newsletter` workflow. Runbook in `infra/newsletter/README.md`.
+  the hand-dispatched `Newsletter` workflow. The `Newsletter check` workflow
+  subscribes a throwaway address daily and fails if the confirmation or the
+  welcome does not arrive. Runbook in `infra/newsletter/README.md`.
 - **Analytics**: GoatCounter self-hosted on the same box at `stats.jordanscamp.site`,
   counting a view only once a visitor has scrolled, clicked or typed. No cookies.
 - **Hosting**: Caddy (auto-TLS static file server) on a single EC2 instance

@@ -414,6 +414,20 @@ inside the Canvas:
 
 ## Backlog
 
+### Newsletter check — assert the verdicts SES records on received mail
+
+SES receiving verifies DKIM, SPF and DMARC on every message it accepts and
+records the verdicts, which would turn the runbook's manual `dkim=pass`
+header check into a daily one. Which header or notification field carries
+them is to be read off a real message in the inbox bucket before the check
+asserts on it.
+
+### Newsletter check — a failed run reaches the alerts topic
+
+A failed `Newsletter check` run relies on GitHub's own notification. If that
+proves too quiet, one more step can publish to the alerts topic so it lands
+beside the alarms; the deploy role would need `sns:Publish` on that topic.
+
 ### Design system — a broken dimension token is invisible to CI
 
 `--desktop-icon-cell-height` is a multi-line `calc()`. An edit that landed

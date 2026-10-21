@@ -1,0 +1,44 @@
+name: Newsletter check
+
+# Subscribes a fresh address on the check's inbox domain to the live site,
+# follows the confirmation, waits for the welcome, and unsubscribes. Runs
+# daily, after each deploy, and by hand; a failed run is the alert.
+on:
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+  workflow_run:
+    workflows: [Deploy]
+    types: [completed]
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: eu-west-2
+
+jobs:
+  check:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Subscribe, confirm, receive the welcome, unsubscribe
+        run: node infra/check/newsletter/run.mjs
+        env:
+          SITE_ORIGIN: https://jordanscamp.site
+          INBOX_DOMAIN: e2e.jordanscamp.site
+          INBOX_BUCKET: jordanscamp-prod-newsletter-inbox
