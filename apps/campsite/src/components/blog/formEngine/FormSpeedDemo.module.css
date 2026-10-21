@@ -1,0 +1,89 @@
+.demo {
+  margin: var(--space-xl) 0;
+}
+
+.forms {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: var(--space-m);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+  padding: var(--space-m);
+  background: var(--brand-surface-raised);
+  border: var(--border-frame);
+  box-shadow: var(--shadow-hard-2);
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-s);
+}
+
+.heading {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-weight: bold;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.saved,
+.failed {
+  margin: 0;
+  font-size: var(--text-body-sm-size);
+  font-weight: bold;
+  visibility: hidden;
+}
+
+.saved {
+  color: var(--brand-solid);
+}
+
+.failed {
+  color: var(--brand-danger);
+}
+
+.saved[data-shown],
+.failed[data-shown] {
+  visibility: visible;
+}
+
+.spinner {
+  display: inline-block;
+  width: 0.9em;
+  height: 0.9em;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: var(--radius-full);
+  vertical-align: -0.1em;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 3s;
+  }
+}
+
+.caption {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-s);
+  margin-top: var(--space-s);
+  font-size: var(--text-body-sm-size);
+  color: var(--brand-text-muted);
+}

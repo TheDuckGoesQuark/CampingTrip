@@ -45,7 +45,8 @@ The DS may **not** import from:
   swap-readiness chokepoint enforced by `ds-base-ui-via-primitives-only`.
 
 The DS **may** import: `react`, `react-dom`, `@base-ui/react` (primitives layer
-only), `class-variance-authority`, `clsx`, `@fontsource/nunito`, and its own
+only), `class-variance-authority`, `clsx`, `@fontsource/nunito`, `recharts` (charts
+only, as the drawing engine under `components/charts/**`), and its own
 tokens/utilities.
 
 If you find yourself wanting a forbidden import, **it's a feature conversation.**

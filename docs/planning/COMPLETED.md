@@ -6,6 +6,54 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## The form-engine post, with its charts and diagrams
+
+**Date**: 2026-10-21
+
+**What changed**: "Our forms were too slow, so we built five" is published. It
+carries four figures drawn for it (the click cascade, the three-way pipeline,
+the before-and-after layers converted from the talk's own SVG, and the
+render-budget animation), a self-playing before/after form demo, and two
+benchmark charts. The charts are a new design-system component, `SheetChart`:
+a 1995 spreadsheet window on Recharts, with a sheet tab per metric, 3D bars, a
+legend table over the plot, and a bars/lines switch on any metric given per-scale
+`steps`. The blog page is now a CSS size container, so a figure can widen past
+the post's measure when there is room for it.
+
+**Decisions**: Recharts rather than a hand-rolled SVG, because the legend
+overlays a real chart and the DS will show more charts later. The chart's
+legend styles are scoped under its window, because the blog's prose `table`
+rules outrank a lone module class. `ds/no-inline-icon` exempts an `<svg>` that
+is `role="img"` with a name (recorded separately). The old platform's product
+name is not in the diagrams' labels; the post names no employer or colleague.
+
+**Deferred**: telling the newsletter list, which is the Trailhead issue's job
+(TODO).
+
+---
+
+## `ds/no-inline-icon` tells an icon from an illustration
+
+**Date**: 2026-10-20
+
+**What changed**: the rule skips an `<svg>` that carries `role="img"` and a
+literal `aria-label`. Everything else it reported before, it still reports.
+
+**Why**: the form-engine post brought three diagrams drawn as inline SVG (the
+click cascade, the five-way pipeline, the before-and-after layers), which was
+the third consumer the TODO entry was waiting for. The rule's message argues
+about icons: DS sizing, colour tokens, an `aria-hidden` default. An illustration
+is the opposite shape, visible and named, so the attributes that make it one are
+the exemption.
+
+**Decisions**: the alternative was a DS `Illustration` escape hatch owning them.
+Rejected for now: the diagrams are post content, which the DS may not know
+about, and an escape hatch with three consumers is a `className` prop by another
+name. The two earlier workarounds (the useless machine's clip-path paw, the
+shimmer's data-URI) are left as they are; they work.
+
+---
+
 ## Campsite — the tent chrome eases in
 
 **Date**: 2026-09-30

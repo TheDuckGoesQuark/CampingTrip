@@ -24,6 +24,14 @@ export {
   type SegmentedNavProps,
 } from "./components/SegmentedNav";
 export { Tile, type TileProps } from "./components/Tile";
+export {
+  SheetChart,
+  type SheetChartCategory,
+  type SheetChartMetric,
+  type SheetChartProps,
+  type SheetChartStep,
+  type SheetChartTone,
+} from "./components/charts/SheetChart";
 
 // Faux-desktop chrome
 export {

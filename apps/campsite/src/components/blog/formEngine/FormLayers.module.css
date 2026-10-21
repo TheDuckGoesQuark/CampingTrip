@@ -1,0 +1,31 @@
+/* One column at the post's measure, and only when the page can give both
+   halves their minimum does the figure widen past it to put them side by side. */
+.figure {
+  width: 100%;
+  margin: var(--space-xl) 0;
+}
+
+@container (min-width: 64rem) {
+  .figure {
+    --layers-width: min(100cqw, 68rem);
+
+    width: var(--layers-width);
+    margin-inline: calc((100% - var(--layers-width)) / 2);
+  }
+}
+
+.panels {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr));
+  gap: var(--space-l);
+}
+
+.panel {
+  width: 100%;
+  height: auto;
+  font-family: var(--font-sans);
+}
+
+.caption {
+  margin-top: var(--space-s);
+}

@@ -2,6 +2,7 @@
   "comment": "Violations ds-guard accepts today, so the checks can be adopted on a repo that already has debt. CI fails on anything not listed here, and on any entry listed here that no longer occurs — so removing debt means deleting its line. Regenerate with `pnpm ds-guard --update-baseline`.",
   "accepted": [
     "missing-primitive|apps/campsite/src/components/blog/contact/SendDialog.tsx|component:SendDialog",
+    "missing-primitive|apps/campsite/src/components/blog/formEngine/FormSpeedDemo.tsx|style:spinner",
     "missing-primitive|apps/campsite/src/components/catos/AppearanceMenu.tsx|component:AppearanceMenu",
     "missing-primitive|apps/campsite/src/components/catos/VolumeMenu.tsx|component:VolumeMenu",
     "missing-primitive|apps/campsite/src/components/overlays/LaptopScreenOverlay.tsx|style:iconField",
