@@ -6,6 +6,45 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## The subscriber flow is checked end to end, daily
+
+**Date**: 2026-10-21
+
+**What changed**: a `Newsletter check` workflow subscribes a fresh
+`e2e+<run>@e2e.jordanscamp.site` address to the live site, reads the
+confirmation out of an inbox bucket, follows its link, waits for Trailhead
+to arrive, and unsubscribes through the one-click link. SES receives mail
+for that subdomain (`infra/newsletter/inbox.tf`); the deploy role may read
+and clear the bucket and manage SES receiving. It runs daily, after each
+deploy, and by hand, and a failed run is the alert.
+
+**Why**: nothing told anyone when the subscribe path broke. The alarms watch
+function errors and bounce rates, not a confirmation that never arrives.
+
+**Decisions**:
+
+- An inbox on the site's own domain rather than a hosted one (Mailosaur and
+  the like): no vendor, no secret, same Terraform. A subdomain rather than
+  the apex, so the apex keeps no MX.
+- IAM landed in its own PR ahead of the resources, per the first-apply race
+  note in TODO.
+- The check asserts what the code sets: the redirects, the links, the
+  `List-Unsubscribe` headers, and the welcome's `utm_campaign`, whose slug
+  it imports from `confirm.mjs`. The subject is logged, not asserted, so a
+  retitled Trailhead does not fail it and a different welcome issue does.
+- Each run must end by unsubscribing: a row left `active` would get every
+  real issue. A fresh address each run, since an active address is answered
+  with the same 202 and no second email.
+- The AWS CLI reads the bucket, not the SDK: `infra/check` has no install
+  step to keep green.
+- Each run leaves an `unsubscribed` row and a welcome mark in the table.
+  They are inert, and deleting them would need a delete grant for CI.
+
+**Deferred**: asserting SES's own DKIM and SPF verdicts on the received
+confirmation, once a real received message shows which header carries them.
+Publishing a failed run to the alerts topic, if GitHub's own notification
+proves too quiet.
+
 ## A post ends with one "Read next" card
 
 **Date**: 2026-10-21
