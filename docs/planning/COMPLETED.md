@@ -6,6 +6,44 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## The welcome letter goes out when someone confirms
+
+**Date**: 2026-10-21
+
+**What changed**: following a confirmation link now queues Trailhead for that
+one address on the existing send queue, and the worker sends it as it sends
+any issue. The subscriber's row records `welcome_queued_at`. Trailhead lost
+its `sentOn` and is marked `welcome: true` instead, so it is out of the
+public archive and no longer shown under the posts it names.
+
+**Why**: Trailhead is written for someone who has just subscribed, and
+nothing sent it.
+
+**Decisions**:
+
+- No new sender: the API function gets `sqs:SendMessage` on the send queue
+  and a `QUEUE_URL`, and the worker is unchanged.
+- Once only, twice over. The claim on the row is a conditional update made
+  before the enqueue, so a second click queues nothing; a failed enqueue
+  releases it, and the reader is told they are confirmed either way. Behind
+  that, the worker's `ISSUE#trailhead-newsletter` / `SUB#<address>` mark
+  refuses a second send to an address that has had it, which covers the first
+  subscriber (sent by hand) and anyone who unsubscribes and joins again (a
+  new pending row drops `welcome_queued_at`).
+- The token index projects keys only, so the claim returns the row
+  (`ReturnValues: ALL_NEW`) for the address and unsubscribe token rather than
+  widening the index.
+- Out of the archive: the archive lists what went to the list on a day, and
+  the welcome goes to each reader on their own day. Jordan's call.
+- The slug lives in `confirm.mjs`; a site test reads it from source and holds
+  it to the issue marked `welcome`.
+
+**Deferred**: the worker sends whatever rendered copy of Trailhead is in S3.
+Changing its words means a `test` dispatch of `trailhead-newsletter` to
+re-upload it; nothing does that on merge.
+
+---
+
 ## The first newsletter issue went out
 
 **Date**: 2026-10-21

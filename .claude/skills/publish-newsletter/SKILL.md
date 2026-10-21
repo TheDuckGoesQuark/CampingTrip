@@ -28,6 +28,7 @@ Two rules hold throughout:
 | The workflow | `.github/workflows/newsletter.yml`                  | `workflow_dispatch` with `issue` (slug) and `mode` (`test` or `send`)       |
 | The gate     | GitHub environment `newsletter`                     | `send` pauses there until a required reviewer approves it in the Actions UI |
 | The archive  | `/blog/newsletter/`                                 | Lists issues with `sentOn` set; each also appears under the posts it named  |
+| The welcome  | `newsletters/trailheadNewsletter.ts`                | `welcome: true`; queued per subscriber on confirm by `newsletter-api`       |
 
 An issue's slug is its subject through `slugify`, the same way a post's slug
 comes from its title. The workflow is dispatched with that slug.
@@ -62,10 +63,12 @@ note written for that post, and `posts: [thatPost]`. Never add a post to an
 issue that already exists.
 
 `trailheadNewsletter.ts` is the exception and is never a post's issue. It is
-the welcome letter, meant for someone who has just subscribed. Nothing sends
-it on confirmation yet (the TODO entry "Send the welcome letter when someone
-confirms" owns that), so until something does, it is not dispatched by hand
-either.
+the welcome letter, marked `welcome: true`: the newsletter endpoint queues it
+for each subscriber when they confirm, once per address, so it is never
+dispatched with `send` and never gets `sentOn`. The worker sends the copy in
+S3, so after changing its words, merge and run a `test` of
+`trailhead-newsletter` (step 4): that re-renders and re-uploads it, and is
+the only thing that does.
 
 Create `apps/campsite/src/data/newsletters/<camelCase>.ts` exporting an `Issue`:
 

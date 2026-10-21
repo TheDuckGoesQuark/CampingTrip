@@ -1,6 +1,7 @@
 # Sending an issue: `send` claims the issue and enqueues one message per
 # active subscriber; `worker` drains the queue into SES. CI invokes `send`;
-# nothing else does.
+# nothing else does. The API's confirm route also enqueues, one welcome per
+# new subscriber (`api.tf`).
 
 # --- The queue ---
 

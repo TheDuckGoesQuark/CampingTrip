@@ -15,8 +15,9 @@ resource "aws_iam_role" "api" {
   })
 }
 
-# Rows and the two token indexes, and sending as this one identity through
-# this one configuration set. `SendEmail` is checked against both ARNs.
+# Rows and the two token indexes, sending as this one identity through this
+# one configuration set (`SendEmail` is checked against both ARNs), and the
+# send queue, for the welcome issue a confirmation queues.
 resource "aws_iam_role_policy" "api" {
   name = "list-and-send"
   role = aws_iam_role.api.id
@@ -35,6 +36,11 @@ resource "aws_iam_role_policy" "api" {
         Resource = local.table_arns
       },
       local.send_email_statement,
+      {
+        Effect   = "Allow"
+        Action   = "sqs:SendMessage"
+        Resource = aws_sqs_queue.send.arn
+      },
     ]
   })
 }
@@ -52,7 +58,7 @@ resource "aws_cloudwatch_log_group" "api" {
 data "archive_file" "api" {
   type        = "zip"
   source_dir  = "${path.module}/../lambda/newsletter-api"
-  excludes    = ["accept.test.mjs"]
+  excludes    = ["accept.test.mjs", "confirm.test.mjs"]
   output_path = "${path.module}/../.terraform/newsletter-api.zip"
 }
 
@@ -78,6 +84,7 @@ resource "aws_lambda_function" "api" {
       SITE_ORIGIN         = var.site_origin
       CONSENT_VERSION     = var.consent_version
       CONFIRM_CAP_PER_DAY = tostring(var.confirm_cap_per_day)
+      QUEUE_URL           = aws_sqs_queue.send.url
     }
   }
 

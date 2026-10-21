@@ -121,6 +121,41 @@ export function makeStore(client, tableName) {
       }
     },
 
+    /**
+     * The whole row, the one time the welcome is claimed for it; `undefined`
+     * after that. The token index projects keys only, so this is where the
+     * address and the unsubscribe token come from.
+     */
+    async claimWelcome(key, nowIso) {
+      try {
+        const { Attributes } = await client.send(
+          new UpdateCommand({
+            ...table,
+            Key: { pk: key.pk, sk: key.sk },
+            UpdateExpression: "SET welcome_queued_at = :now",
+            ConditionExpression: "#s = :active AND attribute_not_exists(welcome_queued_at)",
+            ExpressionAttributeNames: { "#s": "status" },
+            ExpressionAttributeValues: { ":active": "active", ":now": nowIso },
+            ReturnValues: "ALL_NEW",
+          }),
+        );
+        return Attributes;
+      } catch (error) {
+        if (isConditionFailure(error)) return undefined;
+        throw error;
+      }
+    },
+
+    async releaseWelcome(key) {
+      await client.send(
+        new UpdateCommand({
+          ...table,
+          Key: { pk: key.pk, sk: key.sk },
+          UpdateExpression: "REMOVE welcome_queued_at",
+        }),
+      );
+    },
+
     async unsubscribe(key, nowIso) {
       await client.send(
         new UpdateCommand({
