@@ -28,8 +28,12 @@ function perform(command: Command, actions: Actions): void {
   }
 }
 
-/** Handlers for the game's focusable element. They only ever call `actions`. */
-export function useKeyboard(actions: Actions) {
+/**
+ * Handlers for the game's focusable element. They only ever call `actions`,
+ * and `onStart`, which runs inside the key press that starts a game, where a
+ * browser lets audio begin.
+ */
+export function useKeyboard(actions: Actions, onStart: () => void = () => {}) {
   return {
     onKeyDown(event: KeyboardEvent) {
       if (event.altKey || event.ctrlKey || event.metaKey) return;
@@ -37,6 +41,7 @@ export function useKeyboard(actions: Actions) {
       if (!command) return;
       // The arrows would otherwise scroll the window, and Space page it.
       event.preventDefault();
+      if (command.kind === "primary" && "start" in actions) onStart();
       perform(command, actions);
     },
     /** Leaving the game mid-play pauses it, so nobody dies while reading the menu bar. */
