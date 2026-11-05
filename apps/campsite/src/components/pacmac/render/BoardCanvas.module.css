@@ -1,0 +1,8 @@
+/* Sized by its box; `useScale` matches the backing store to it in whole
+   multiples, and `pixelated` keeps any leftover stretch hard-edged. */
+.board {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}

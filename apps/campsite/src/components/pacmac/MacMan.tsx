@@ -1,8 +1,13 @@
 import { useRef } from "react";
 
+import { MAZE } from "./engine/maze";
+import BoardCanvas from "./render/BoardCanvas";
+import { dealtScene } from "./render/scene";
 import { useRoom } from "./useRoom";
 
 import styles from "./MacMan.module.css";
+
+const DEALT = dealtScene(MAZE);
 
 /** The game: a cabinet holding the screen and the chrome around it. */
 export default function MacMan() {
@@ -16,6 +21,7 @@ export default function MacMan() {
       </h1>
       <div className={styles.stage}>
         <div className={styles.screen}>
+          <BoardCanvas scene={DEALT} />
           <div className={styles.overlay}>
             <p className={styles.title} aria-hidden>
               MACMAN

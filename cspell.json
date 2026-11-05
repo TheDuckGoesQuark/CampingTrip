@@ -41,6 +41,8 @@
     "apps/campsite/public/**",
     "cspell.json",
     "project-words.txt",
+    // A grid of tiles, one character each: its runs of letters are spawns, not words.
+    "apps/campsite/src/components/pacmac/engine/maze.txt",
 
     // An append-only log of work already done. Its entries quote the real
     // symbol names of code that no longer exists (a Django app's

@@ -41,9 +41,11 @@
   overflow: hidden;
 }
 
+/* A band across the ghost house, the board still showing above and below. */
 .overlay {
   position: absolute;
-  inset: 0;
+  inset: 30% 0;
+  background: rgb(0 0 0 / 0.8);
   display: flex;
   flex-direction: column;
   align-items: center;
