@@ -7,8 +7,15 @@
   --macman-wall: #2121de;
   --macman-text: #fff;
 
-  /* `useRoom` measures the window; the fallback is for the first paint. */
+  /* Out to the window's edges, so the whole tab is the cabinet's black rather
+     than a black square on a white page. `useRoom` measures the window; the
+     fallback is for the first paint. */
+  box-sizing: border-box;
+  margin-inline: calc(-1 * var(--window-page-inset-inline, 0px));
+  margin-block: calc(-1 * var(--window-page-inset-block, 0px));
   height: var(--macman-room, 70vh);
+  padding: var(--space-m);
+  background: var(--macman-black);
   display: flex;
   flex-direction: column;
   gap: var(--space-s);
@@ -31,8 +38,6 @@
   width: min(100cqw, 100cqh * 28 / 31);
   aspect-ratio: 28 / 31;
   container-type: inline-size;
-  background: var(--macman-black);
-  border-radius: var(--radius-m);
   overflow: hidden;
 }
 

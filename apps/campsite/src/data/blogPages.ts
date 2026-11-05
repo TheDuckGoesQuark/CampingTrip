@@ -1,4 +1,5 @@
 import type { IconName } from "@jordanscamp/ds";
+import { FloppyDisk, type Icon as Glyph } from "@jordanscamp/ds/icons";
 
 import { blogPaths, type BlogRef } from "../routing/blogPaths";
 import type { Cv } from "../types/cv";
@@ -155,8 +156,11 @@ export function titleOfBlogPage(page: BlogPage): string {
   }
 }
 
+/** A tab carries one of the drawn icons, or a Phosphor glyph where none of those fits. */
+export type TabIcon = IconName | Glyph;
+
 /** The glyph on a page's tab. */
-export function iconOfBlogPage(page: BlogPage): IconName {
+export function iconOfBlogPage(page: BlogPage): TabIcon {
   switch (page.kind) {
     case "home":
       return "house";
@@ -186,9 +190,8 @@ export function iconOfBlogPage(page: BlogPage): IconName {
     case "issues":
     case "issue":
       return "envelope";
-    // Games came on tape once.
     case "pacmac":
-      return "cassette";
+      return FloppyDisk;
   }
 }
 

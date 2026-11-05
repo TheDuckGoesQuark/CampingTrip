@@ -55,11 +55,8 @@ export const blogPaths = {
   /** Every issue that has gone out. The directory index, as `archive` is for posts. */
   issues: `${ROOT}/newsletter/index.html`,
   issue: (slug: string) => `${ROOT}/newsletter/${encodeURIComponent(slug)}.html`,
-  /**
-   * The hidden game. No `.html`: nothing links to it, so the address is typed
-   * or reached by the Konami code, and the short form is the one worth typing.
-   */
-  pacmac: `${ROOT}/pacmac`,
+  /** The hidden game: a page in a tab like any other, so it keeps the extension. */
+  pacmac: `${ROOT}/pacmac.html`,
 } as const;
 
 /** What a blog URL names, before any lookup against content. */

@@ -1,3 +1,4 @@
+import { FloppyDisk } from "@jordanscamp/ds/icons";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -72,6 +73,7 @@ describe("titleOfBlogPage and iconOfBlogPage", () => {
     expect(iconOfBlogPage({ kind: "tag", tag: "music", posts: [] })).toBe("tag");
     expect(titleOfBlogPage({ kind: "cv", cv })).toBe("CV");
     expect(titleOfBlogPage({ kind: "pacmac" })).toBe("MacMan");
+    expect(iconOfBlogPage({ kind: "pacmac" })).toBe(FloppyDisk);
   });
 });
 

@@ -67,13 +67,14 @@ describe("parseBlogPath", () => {
     });
     expect(parseBlogPath("/blog/cv.html")).toEqual({ kind: "cv" });
     expect(parseBlogPath("/blog/about")).toEqual({ kind: "about" });
-    expect(parseBlogPath("/blog/pacmac")).toEqual({ kind: "pacmac" });
+    expect(parseBlogPath("/blog/pacmac.html")).toEqual({ kind: "pacmac" });
   });
 
   it("treats the extension as optional, since it is decoration", () => {
     expect(parseBlogPath("/blog/tags/music")).toEqual({ kind: "tag", tag: "music" });
     expect(parseBlogPath("/blog/index")).toEqual({ kind: "home" });
     expect(parseBlogPath("/blog/cv")).toEqual({ kind: "cv" });
+    expect(parseBlogPath("/blog/pacmac")).toEqual({ kind: "pacmac" });
   });
 
   it("decodes an encoded slug", () => {
