@@ -14,11 +14,14 @@ export type GhostName = "blinky" | "pinky" | "inky" | "clyde";
 
 export const GHOST_NAMES: readonly GhostName[] = ["blinky", "pinky", "inky", "clyde"];
 
-export type GhostMode = "house" | "leaving" | "active";
+/** `eyes` is an eaten ghost going home; `entering` is it dropping back through the door. */
+export type GhostMode = "house" | "leaving" | "active" | "eyes" | "entering";
 
 export interface Ghost extends Mover {
   name: GhostName;
   mode: GhostMode;
+  /** Blue and edible, from a power pellet until it wears off or the ghost is eaten. */
+  scared: boolean;
 }
 
 export type Hunt = "scatter" | "chase";
@@ -87,14 +90,25 @@ const roams = (cell: Cell) => cell === "floor" || cell === "tunnel";
  * a no-up tile, and otherwise whichever next tile is nearest its target in a
  * straight line, ties going up, left, down, right.
  */
-export function chooseDir(maze: Maze, ghost: Mover, target: Point): Dir {
+function waysOn(maze: Maze, ghost: Mover, upAllowed: boolean): Dir[] {
   const tile = tileOf(maze, ghost);
-  const options = DIRS.filter(
+  return DIRS.filter(
     (dir) =>
       dir !== opposite(ghost.dir) &&
-      !(dir === "up" && NO_UP.has(`${tile.x},${tile.y}`)) &&
+      !(dir === "up" && !upAllowed && NO_UP.has(`${tile.x},${tile.y}`)) &&
       canStep(maze, ghost, dir, roams),
   );
+}
+
+/** A frightened ghost wanders: any way but back, picked by `roll`, a number in [0, 1). */
+export function chooseRandomDir(maze: Maze, ghost: Mover, roll: number): Dir {
+  const options = waysOn(maze, ghost, true);
+  return options.length === 0 ? opposite(ghost.dir) : options[Math.floor(roll * options.length)];
+}
+
+export function chooseDir(maze: Maze, ghost: Mover, target: Point): Dir {
+  const tile = tileOf(maze, ghost);
+  const options = waysOn(maze, ghost, false);
   if (options.length === 0) return opposite(ghost.dir);
   let best = options[0];
   for (const dir of options.slice(1)) {
@@ -107,12 +121,19 @@ export function chooseDir(maze: Maze, ghost: Mover, target: Point): Dir {
   return best;
 }
 
-export function roam(maze: Maze, ghost: Ghost, distance: number, target: Point): Ghost {
+/** How a loose ghost picks its way at a tile centre: towards a target, or at random. */
+export type Steering = { target: Point } | { roll: number };
+
+export function roam(maze: Maze, ghost: Ghost, distance: number, steering: Steering): Ghost {
   let mover: Mover = { x: ghost.x, y: ghost.y, dir: ghost.dir };
   let remaining = distance;
   while (remaining > 1e-9) {
     if (isCentred(mover.x) && isCentred(mover.y)) {
-      mover = { ...mover, dir: chooseDir(maze, mover, target) };
+      const dir =
+        "target" in steering
+          ? chooseDir(maze, mover, steering.target)
+          : chooseRandomDir(maze, mover, steering.roll);
+      mover = { ...mover, dir };
     }
     const step = Math.min(remaining, toNextCentre(mover, mover.dir));
     mover = slide(maze, mover, step);
@@ -124,8 +145,29 @@ export function roam(maze: Maze, ghost: Ghost, distance: number, target: Point):
 /** How far above and below its spawn a waiting ghost bobs. */
 const BOB = 0.5;
 
-/** A waiting ghost bobs in its bay; a leaving one slides to the door's column, then up and out. */
+/** The tile above the door that eyes aim for; they drop in once they reach the doorstep. */
+export const DOOR_TARGET: Point = { x: 13, y: 11 };
+
+/** Close enough to the doorstep that the eyes go in. */
+export function atDoorstep(maze: Maze, at: Point): boolean {
+  const out = maze.spawns.blinky;
+  return Math.abs(at.y - out.y) < 1e-6 && Math.abs(at.x - out.x) <= 0.5;
+}
+
+/**
+ * A waiting ghost bobs in its bay; a leaving one slides to the door's column,
+ * then up and out; returning eyes drop through the door to the house's middle
+ * and come straight back out as a ghost.
+ */
 export function inHouse(maze: Maze, ghost: Ghost, distance: number): Ghost {
+  if (ghost.mode === "entering") {
+    const middle = maze.spawns.pinky;
+    const x = maze.spawns.blinky.x;
+    const y = Math.min(middle.y, ghost.y + distance);
+    return y >= middle.y
+      ? { ...ghost, x, y, dir: "up", mode: "leaving", scared: false }
+      : { ...ghost, x, y, dir: "down" };
+  }
   if (ghost.mode === "house") {
     const home = maze.spawns[ghost.name];
     let dir: Dir = ghost.dir === "down" ? "down" : "up";

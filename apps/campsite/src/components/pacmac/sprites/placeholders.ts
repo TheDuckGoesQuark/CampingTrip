@@ -1,3 +1,4 @@
+import { FRUITS } from "../engine/fruit";
 import { GHOSTS, type GhostName, SPRITES, type SpriteKey } from "./manifest";
 
 /** A loaded strip, whatever drew it. */
@@ -62,7 +63,8 @@ function ghost(name: GhostName): Paint {
   };
 }
 
-function cherry(ctx: CanvasRenderingContext2D) {
+/** One cherry pair stands in for any fruit without its own PNG. */
+function fruit(ctx: CanvasRenderingContext2D) {
   ctx.strokeStyle = "#de9751";
   ctx.lineWidth = 1;
   ctx.beginPath();
@@ -108,7 +110,7 @@ const RECIPES: Partial<Record<SpriteKey, Recipe>> = {
   inky: actor("inky", ghost("inky")),
   clyde: actor("clyde", ghost("clyde")),
   eyes: actor("eyes", (ctx) => eyes(ctx, 1)),
-  cherry: actor("cherry", cherry),
+  ...Object.fromEntries(FRUITS.map(({ name }) => [name, actor(name, fruit)])),
   pellet: {
     frames: 1,
     cell: 8,

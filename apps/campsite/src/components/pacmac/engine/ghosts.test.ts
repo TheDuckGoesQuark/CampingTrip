@@ -26,6 +26,7 @@ const ghost = (over: Partial<Ghost>): Ghost => ({
   y: 0,
   dir: "left",
   mode: "active",
+  scared: false,
   ...over,
 });
 
@@ -87,7 +88,7 @@ describe("chooseDir", () => {
 
 describe("roam", () => {
   it("moves on along the corridor and turns at a junction towards the target", () => {
-    const moved = roam(MAZE, ghost({ x: 5.5, y: 5, dir: "right" }), 1, { x: 6, y: 0 });
+    const moved = roam(MAZE, ghost({ x: 5.5, y: 5, dir: "right" }), 1, { target: { x: 6, y: 0 } });
     expect(moved).toMatchObject({ x: 6, dir: "up" });
     expect(moved.y).toBeCloseTo(4.5);
   });

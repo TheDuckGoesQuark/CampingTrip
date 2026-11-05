@@ -13,6 +13,10 @@ export interface Art {
 
 const QUARTER = Math.PI / 2;
 
+/** The arcade's cyan, in the site's face, at a size that fits a tile and a half. */
+const POINTS_COLOUR = "#2ff3f3";
+const POINTS_FONT = "800 8px Nunito, sans-serif";
+
 function turn(ctx: CanvasRenderingContext2D, dir: Dir, orientation: "rotate" | "mirror" | "fixed") {
   if (orientation === "fixed") return;
   if (dir === "left") ctx.scale(-1, 1);
@@ -50,6 +54,14 @@ export function paint(
   ctx.fillRect(0, 0, BOARD_PX.width, BOARD_PX.height);
 
   for (const op of ops) {
+    if (op.kind === "points") {
+      ctx.fillStyle = POINTS_COLOUR;
+      ctx.font = POINTS_FONT;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(op.text, op.x, op.y);
+      continue;
+    }
     if (op.kind === "maze") {
       const image = art.maze && (op.flash ? art.maze.flash : art.maze.normal);
       if (image) ctx.drawImage(image, 0, 0, BOARD_PX.width, BOARD_PX.height);

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { FRUITS } from "../engine/fruit";
 import { pingPong, SPRITES } from "./manifest";
 
 describe("pingPong", () => {
@@ -17,10 +18,16 @@ describe("pingPong", () => {
 });
 
 describe("SPRITES", () => {
-  it("names each PNG after its entity, under one folder", () => {
-    for (const [key, entry] of Object.entries(SPRITES)) {
-      expect(entry.src).toBe(`/images/pacmac/${key}.png`);
-    }
+  it("names each PNG after its entity, under one folder, and each fruit's as fruit-<name>", () => {
+    expect(SPRITES.macman.src).toBe("/images/pacmac/macman.png");
+    expect(SPRITES.eyes.src).toBe("/images/pacmac/eyes.png");
+    for (const { name } of FRUITS)
+      expect(SPRITES[name].src).toBe(`/images/pacmac/fruit-${name}.png`);
+  });
+
+  it("fetches nothing for the pellets, which are always drawn in code", () => {
+    expect(SPRITES.pellet.src).toBeNull();
+    expect(SPRITES.powerPellet.src).toBeNull();
   });
 
   it("describes the supplied strips: MacMan in three 48px frames, two ghosts in two", () => {

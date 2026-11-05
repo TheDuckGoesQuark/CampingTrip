@@ -1,9 +1,8 @@
 import { asset } from "../../../utils/assetPath";
+import { FRUITS, type FruitName } from "../engine/fruit";
 import type { GhostName } from "../engine/ghosts";
 
-export type { GhostName };
-
-export type FruitName = "cherry";
+export type { FruitName, GhostName };
 
 export type SpriteKey =
   | "macman"
@@ -22,8 +21,8 @@ export type SpriteKey =
 export type Orientation = "rotate" | "mirror" | "fixed";
 
 export interface SpriteEntry {
-  /** One PNG per entity: frames left to right, each `cell` pixels square. */
-  src: string;
+  /** One PNG per entity: frames left to right, each `cell` pixels square. `null` is always code-drawn. */
+  src: string | null;
   frames: number;
   /**
    * Three device pixels per board pixel: 48 for an actor, which covers two
@@ -43,7 +42,7 @@ export interface GhostEntry extends SpriteEntry {
 const ACTOR = 48;
 const PELLET = 24;
 
-const png = (key: SpriteKey) => asset(`images/pacmac/${key}.png`);
+const png = (name: string) => asset(`images/pacmac/${name}.png`);
 
 const ghost = (key: GhostName, displayName: string, colour: string): GhostEntry => ({
   src: png(key),
@@ -83,26 +82,31 @@ export const SPRITES: Readonly<Record<SpriteKey, SpriteEntry>> = {
   },
   eyes: { src: png("eyes"), frames: 1, cell: ACTOR, orientation: "mirror", displayName: "Eyes" },
   pellet: {
-    src: png("pellet"),
+    src: null,
     frames: 1,
     cell: PELLET,
     orientation: "fixed",
     displayName: "Pellet",
   },
   powerPellet: {
-    src: png("powerPellet"),
+    src: null,
     frames: 1,
     cell: PELLET,
     orientation: "fixed",
     displayName: "Power pellet",
   },
-  cherry: {
-    src: png("cherry"),
-    frames: 1,
-    cell: ACTOR,
-    orientation: "fixed",
-    displayName: "Cherry",
-  },
+  ...(Object.fromEntries(
+    FRUITS.map(({ name }) => [
+      name,
+      {
+        src: png(`fruit-${name}`),
+        frames: 1,
+        cell: ACTOR,
+        orientation: "fixed",
+        displayName: name.charAt(0).toUpperCase() + name.slice(1),
+      },
+    ]),
+  ) as Record<FruitName, SpriteEntry>),
 };
 
 /** Animation runs out and back, so a three-frame mouth goes open, half, shut, half. */

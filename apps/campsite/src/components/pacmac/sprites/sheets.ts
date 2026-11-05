@@ -23,6 +23,7 @@ export function loadSuppliedSheets(onSheet: (key: SpriteKey, sheet: Sheet) => vo
   let cancelled = false;
   for (const key of KEYS) {
     const { src, frames, cell } = SPRITES[key];
+    if (src === null) continue;
     const image = new Image();
     image.addEventListener("load", () => {
       if (cancelled) return;
