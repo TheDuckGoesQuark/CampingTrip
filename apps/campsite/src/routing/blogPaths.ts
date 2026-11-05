@@ -55,6 +55,11 @@ export const blogPaths = {
   /** Every issue that has gone out. The directory index, as `archive` is for posts. */
   issues: `${ROOT}/newsletter/index.html`,
   issue: (slug: string) => `${ROOT}/newsletter/${encodeURIComponent(slug)}.html`,
+  /**
+   * The hidden game. No `.html`: nothing links to it, so the address is typed
+   * or reached by the Konami code, and the short form is the one worth typing.
+   */
+  pacmac: `${ROOT}/pacmac`,
 } as const;
 
 /** What a blog URL names, before any lookup against content. */
@@ -74,7 +79,8 @@ export type BlogRef =
   | { kind: "subscribe" }
   | { kind: "notice"; name: string }
   | { kind: "issues" }
-  | { kind: "issue"; slug: string };
+  | { kind: "issue"; slug: string }
+  | { kind: "pacmac" };
 
 /** Strips the cosmetic extension. Absent is fine; canonical links carry it. */
 export function stripHtml(segment: string): string {
@@ -109,6 +115,7 @@ export function parseBlogPath(path: string): BlogRef | null {
     if (name === "about") return { kind: "about" };
     if (name === "activity") return { kind: "activity" };
     if (name === "privacy") return { kind: "privacy" };
+    if (name === "pacmac") return { kind: "pacmac" };
     return null;
   }
 
@@ -164,5 +171,7 @@ export function blogPathFor(ref: BlogRef): string {
       return blogPaths.issues;
     case "issue":
       return blogPaths.issue(ref.slug);
+    case "pacmac":
+      return blogPaths.pacmac;
   }
 }

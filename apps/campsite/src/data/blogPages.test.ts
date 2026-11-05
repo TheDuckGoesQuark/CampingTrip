@@ -71,6 +71,14 @@ describe("titleOfBlogPage and iconOfBlogPage", () => {
     expect(iconOfBlogPage({ kind: "home" })).toBe("house");
     expect(iconOfBlogPage({ kind: "tag", tag: "music", posts: [] })).toBe("tag");
     expect(titleOfBlogPage({ kind: "cv", cv })).toBe("CV");
+    expect(titleOfBlogPage({ kind: "pacmac" })).toBe("MacMan");
+  });
+});
+
+describe("the pacmac page", () => {
+  it("resolves without a lookup and is marked unlisted", () => {
+    expect(resolveBlogPage({ kind: "pacmac" })).toEqual({ kind: "pacmac" });
+    expect(metaOfBlogPage({ kind: "pacmac" }).unlisted).toBe(true);
   });
 });
 

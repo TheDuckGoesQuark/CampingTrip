@@ -35,7 +35,8 @@ export type BlogPage =
   | { kind: "subscribe" }
   | { kind: "notice"; notice: SubscribeNotice }
   | { kind: "issues"; issues: Issue[] }
-  | { kind: "issue"; issue: Issue };
+  | { kind: "issue"; issue: Issue }
+  | { kind: "pacmac" };
 
 /**
  * The pages the mock browser renders. A desktop item and the About box are
@@ -109,6 +110,8 @@ export function resolveBlogPage(ref: BlogRef): BlogPage | null {
       const issue = issues.find((candidate) => slugify(candidate.subject) === ref.slug);
       return issue ? { kind: "issue", issue } : null;
     }
+    case "pacmac":
+      return { kind: "pacmac" };
   }
 }
 
@@ -147,6 +150,8 @@ export function titleOfBlogPage(page: BlogPage): string {
       return "Newsletter";
     case "issue":
       return page.issue.subject;
+    case "pacmac":
+      return "MacMan";
   }
 }
 
@@ -181,6 +186,9 @@ export function iconOfBlogPage(page: BlogPage): IconName {
     case "issues":
     case "issue":
       return "envelope";
+    // Games came on tape once.
+    case "pacmac":
+      return "cassette";
   }
 }
 
@@ -332,6 +340,14 @@ export function metaOfBlogPage(page: BrowserPage): PageMeta {
         description: page.issue.note[0] ?? page.issue.subject,
         kind: "article",
         published: page.issue.sentOn ?? page.issue.date,
+      };
+    // Never prerendered, since `blogUrls` leaves it out; here for the type's sake.
+    case "pacmac":
+      return {
+        title: "MacMan",
+        description: "A maze, four ghosts and a man named Mac.",
+        kind: "website",
+        unlisted: true,
       };
     // A second document about the same person, not a copy: an ATS landing here
     // still has to find the `Person`, so it is self-canonical and a `profile` too.
