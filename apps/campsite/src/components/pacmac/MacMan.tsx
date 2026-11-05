@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useRef } from "react";
 
+import { isMobile } from "../../utils/deviceDetect";
+import VirtualJoystick from "../VirtualJoystick";
 import Hud from "./chrome/Hud";
 import Lives from "./chrome/Lives";
 import Overlay, { announcementFor } from "./chrome/Overlay";
 import { MAZE } from "./engine/maze";
+import { useJoystick } from "./input/useJoystick";
 import { useKeyboard } from "./input/useKeyboard";
 import BoardCanvas from "./render/BoardCanvas";
 import { sceneOf } from "./render/scene";
@@ -29,6 +32,7 @@ export default function MacMan({ scores = LOCAL_SCORES }: { scores?: HighScoreSt
 
   const { state, actions } = useMacMan();
   const keyboard = useKeyboard(actions, unlockAudio);
+  useJoystick(actions);
   useGameSound(state);
   const table = useHighScores(scores, state);
   const scene = useMemo(() => sceneOf(state, MAZE), [state]);
@@ -53,11 +57,12 @@ export default function MacMan({ scores = LOCAL_SCORES }: { scores?: HighScoreSt
           <Hud score={state.round.score} best={table[0]?.score ?? 0} />
           <div className={styles.board}>
             <BoardCanvas scene={scene} />
-            <Overlay state={state} />
+            <Overlay state={state} touch={isMobile} />
           </div>
           <Lives lives={state.round.lives} />
         </div>
       </div>
+      <VirtualJoystick placement="inline" />
       <p role="status" className={styles.visuallyHidden}>
         {announcementFor(state)}
       </p>
