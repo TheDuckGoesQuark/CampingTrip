@@ -9,6 +9,9 @@ const FULL_SPEED = 75.75 / 8 / TICKS_PER_SECOND;
 /** Fractions of full speed, as the first level sets them. */
 export const SPEED = {
   macman: 0.8 * FULL_SPEED,
+  ghost: 0.75 * FULL_SPEED,
+  ghostInTunnel: 0.4 * FULL_SPEED,
+  ghostInHouse: 0.4 * FULL_SPEED,
 };
 
 export const POINTS = { pellet: 10, power: 50 };
@@ -16,8 +19,37 @@ export const POINTS = { pellet: 10, power: 50 };
 /** Ticks MacMan stands still to eat, which is what slows him through a corridor of pellets. */
 export const STALL = { pellet: 1, power: 3 };
 
-/** How long "READY!" shows before a new game starts moving. */
+/** How long "READY!" shows before a new game starts moving, and before a new life does. */
 export const READY_TICKS = seconds(4);
+export const READY_AFTER_DEATH_TICKS = seconds(2);
+
+export const LIVES = 3;
+
+/**
+ * Scatter, chase, scatter, chase and so on: the first level's timings, after
+ * which the ghosts chase for good. The clock stops while they are frightened.
+ */
+export const HUNT_SCHEDULE: readonly number[] = [7, 20, 7, 20, 5, 20, 5].map(seconds);
+
+/**
+ * Pellets eaten before each ghost leaves the house: counted from the start of
+ * the board, and after a death from the start of the new life, when they come
+ * out sooner.
+ */
+export const RELEASE_DOTS = {
+  fresh: { pinky: 0, inky: 30, clyde: 90 },
+  afterDeath: { pinky: 7, inky: 17, clyde: 32 },
+} as const;
+
+/** A player who stops eating cannot keep the ghosts in: the next one leaves after this long. */
+export const RELEASE_IDLE_TICKS = seconds(4);
+
+/** Everything stops for a beat when MacMan is caught, then he spins away. */
+export const CAUGHT_TICKS = seconds(1);
+export const DEATH_SPIN_TICKS = seconds(1.5);
+
+/** How long the walls flash before the win screen. */
+export const CLEARED_TICKS = seconds(2);
 
 /** Ticks per beat of the power pellets' blink. */
 export const BLINK_TICKS = 10;

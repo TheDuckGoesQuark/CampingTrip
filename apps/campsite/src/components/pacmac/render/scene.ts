@@ -1,7 +1,12 @@
+import { GHOST_NAMES } from "../engine/ghosts";
+import type { GhostName } from "../engine/ghosts";
 import type { Dir, Food, Maze, Point } from "../engine/maze";
-import { BLINK_TICKS } from "../engine/rules";
+import { BLINK_TICKS, DEATH_SPIN_TICKS, seconds } from "../engine/rules";
 import type { GameState } from "../engine/state";
-import type { FruitName, GhostName } from "../sprites/manifest";
+import type { FruitName } from "../sprites/manifest";
+
+/** Ticks per white flash of the walls once the board is cleared. */
+const FLASH_TICKS = seconds(0.25);
 
 export type GhostLook = "normal" | "frightened" | "flashing" | "eyes";
 
@@ -50,22 +55,38 @@ export function dealtScene(maze: Maze): Scene {
 /** Strides of the mouth per tile moved: a full open-and-shut every tile and a third. */
 const CHOMPS_PER_TILE = 3;
 
+/** How far through the spin a dying MacMan is, or `null` before it starts or while alive. */
+function dyingProgress(state: GameState): number | null {
+  if (state.phase !== "dying" || state.ticksLeft > DEATH_SPIN_TICKS) return null;
+  return 1 - state.ticksLeft / DEATH_SPIN_TICKS;
+}
+
 /** What the board shows for a game state. Read-only: the renderer's whole view of the game. */
-export function sceneOf(state: GameState, maze: Maze): Scene {
+export function sceneOf(state: GameState): Scene {
   const { round } = state;
-  const dealt = dealtScene(maze);
   const { macman } = round;
+  const dying = dyingProgress(state);
   return {
-    ...dealt,
     food: round.food,
     macman: {
       x: macman.x,
       y: macman.y,
       dir: macman.dir,
       chomp: Math.floor(macman.travelled * CHOMPS_PER_TILE),
-      dying: null,
+      dying,
     },
+    // They vanish once he starts to spin, as in the arcade, so the death reads.
+    ghosts:
+      dying === null
+        ? GHOST_NAMES.map((name) => {
+            const ghost = round.ghosts[name];
+            return { x: ghost.x, y: ghost.y, dir: ghost.dir, name, look: "normal" as const };
+          })
+        : [],
+    fruit: null,
     powerLit: state.phase !== "playing" || Math.floor(round.clock / BLINK_TICKS) % 2 === 0,
+    mazeFlash:
+      state.phase === "levelCleared" && Math.floor(state.ticksLeft / FLASH_TICKS) % 2 === 1,
     clock: round.clock,
   };
 }

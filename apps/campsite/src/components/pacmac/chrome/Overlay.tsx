@@ -23,7 +23,25 @@ export default function Overlay({ state }: { state: GameState }) {
           <p className={styles.prompt}>press space to resume</p>
         </div>
       );
+    case "won":
+      return (
+        <div className={styles.band}>
+          <p className={styles.marquee}>YOU WIN</p>
+          <p className={styles.result}>{state.round.score} points</p>
+          <p className={styles.prompt}>press space to play again</p>
+        </div>
+      );
+    case "gameOver":
+      return (
+        <div className={styles.band}>
+          <p className={`${styles.marquee} ${styles.over}`}>GAME OVER</p>
+          <p className={styles.result}>{state.round.score} points</p>
+          <p className={styles.prompt}>press space to play again</p>
+        </div>
+      );
     case "playing":
+    case "dying":
+    case "levelCleared":
       return null;
   }
 }
@@ -37,7 +55,14 @@ export function announcementFor(state: GameState): string {
       return "Ready.";
     case "paused":
       return "Paused. Press space to resume.";
+    case "dying":
+      return state.round.lives > 1 ? "Caught." : "Caught, on the last life.";
+    case "won":
+      return `Board cleared, ${state.round.score} points. Press space to play again.`;
+    case "gameOver":
+      return `Game over, ${state.round.score} points. Press space to play again.`;
     case "playing":
+    case "levelCleared":
       return "";
   }
 }
