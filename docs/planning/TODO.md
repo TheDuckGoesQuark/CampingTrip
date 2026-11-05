@@ -424,13 +424,8 @@ inside the Canvas:
 ### MacMan — notes from the first play-test
 
 An agent played two full games in headless Chromium. Nothing broke; these
-are what it found awkward, in its words' order of weight:
+are the smaller things it found awkward, still open:
 
-- A turn asked for just too late is held until the next opening, which can
-  be several tiles on and walk MacMan into a ghost. A held turn could expire
-  after one junction.
-- Keys pressed during READY! are dropped, so the first move has to wait for
-  play to start. The phase rules allow `move` only while playing.
 - Between games the top ten shows only on the attract screen, so a player
   who has just signed it does not see it until the tab is reopened.
 - MacMan's face turns sideways going up or down; a mirrored or fixed

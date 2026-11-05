@@ -11,7 +11,7 @@ const keysOf = (phase: Phase) =>
 describe("actionsFor", () => {
   it("offers each phase exactly its own actions", () => {
     expect(keysOf("attract")).toEqual(["start"]);
-    expect(keysOf("ready")).toEqual([]);
+    expect(keysOf("ready")).toEqual(["move"]);
     expect(keysOf("playing")).toEqual(["move", "pause"]);
     expect(keysOf("paused")).toEqual(["resume"]);
     expect(keysOf("dying")).toEqual([]);

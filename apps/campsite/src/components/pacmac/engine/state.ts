@@ -90,7 +90,14 @@ type Kept = Pick<Round, "food" | "score" | "lives" | "clock" | "fruitsShown" | "
 export function respawn(kept: Kept, afterDeath: boolean): Round {
   return {
     ...kept,
-    macman: { ...MAZE.spawns.macman, dir: "left", queued: null, stall: 0, travelled: 0 },
+    macman: {
+      ...MAZE.spawns.macman,
+      dir: "left",
+      queued: null,
+      queuedAt: 0,
+      stall: 0,
+      travelled: 0,
+    },
     ghosts: dealtGhosts(),
     hunt: { kind: "scatter", stage: 0, ticksLeft: HUNT_SCHEDULE[0] },
     house: { dots: 0, idle: 0, afterDeath },

@@ -40,8 +40,13 @@ cat fruit, and a game-over picture, are in `public/images/pacmac/`.
 - `VirtualJoystick` gained an inline placement for the game; the tent's use is
   unchanged.
 
+- After a play-test, a turn asked for lapses once MacMan has gone a tile and
+  a half without it, and a late turn is taken up to 0.4 of a tile past the
+  centre. A direction pressed during READY! is held for the first move, so
+  `move` is offered in that phase as well as in play.
+
 **Deferred**: the recorded "macka" clip (the synthesised bite stands in) and a
-`frightened.png`; the play-test notes in TODO.
+`frightened.png`; the play-test's smaller notes in TODO.
 
 ---
 

@@ -37,4 +37,21 @@ describe("useJoystick", () => {
     frame();
     expect(start).not.toHaveBeenCalled();
   });
+
+  it("asks again while a direction is held, so the turn does not lapse", () => {
+    const move = vi.fn();
+    renderHook(() => useJoystick({ phase: "playing", move, pause: vi.fn() }));
+    Object.assign(mobileInput, { x: 0, y: -0.9, active: true });
+    for (let i = 0; i < 17; i++) frame();
+    expect(move.mock.calls.length).toBeGreaterThanOrEqual(3);
+    expect(new Set(move.mock.calls.map(([dir]) => dir))).toEqual(new Set(["up"]));
+  });
+
+  it("steers during READY! too", () => {
+    const move = vi.fn();
+    renderHook(() => useJoystick({ phase: "ready", move }));
+    Object.assign(mobileInput, { x: 0.9, y: 0, active: true });
+    frame();
+    expect(move).toHaveBeenCalledWith("right");
+  });
 });
