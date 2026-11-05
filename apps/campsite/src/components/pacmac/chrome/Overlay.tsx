@@ -1,0 +1,43 @@
+import type { GameState } from "../engine/state";
+
+import styles from "./chrome.module.css";
+
+/** Whatever the phase puts over the board, if anything. */
+export default function Overlay({ state }: { state: GameState }) {
+  switch (state.phase) {
+    case "attract":
+      return (
+        <div className={styles.band}>
+          <p className={styles.marquee} aria-hidden>
+            MACMAN
+          </p>
+          <p className={styles.prompt}>press space to start</p>
+        </div>
+      );
+    case "ready":
+      return <p className={styles.ready}>READY!</p>;
+    case "paused":
+      return (
+        <div className={styles.band}>
+          <p className={styles.marquee}>PAUSED</p>
+          <p className={styles.prompt}>press space to resume</p>
+        </div>
+      );
+    case "playing":
+      return null;
+  }
+}
+
+/** The same news for a screen reader, which sees no board. */
+export function announcementFor(state: GameState): string {
+  switch (state.phase) {
+    case "attract":
+      return "Press space to start. Arrow keys or W, A, S and D to move.";
+    case "ready":
+      return "Ready.";
+    case "paused":
+      return "Paused. Press space to resume.";
+    case "playing":
+      return "";
+  }
+}

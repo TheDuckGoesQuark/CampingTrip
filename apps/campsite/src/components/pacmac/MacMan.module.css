@@ -4,7 +4,6 @@
   --macman-black: #000;
   --macman-yellow: #ffd23f;
   --macman-shadow: #c2410c;
-  --macman-wall: #2121de;
   --macman-text: #fff;
 
   /* Out to the window's edges, so the whole tab is the cabinet's black rather
@@ -32,62 +31,26 @@
   place-items: center;
 }
 
-/* The board is 28 by 31 tiles, as large as fits the stage either way round. */
+/* The arcade's screen is 28 tiles by 36: three rows of score above the 31 of
+   the maze, two of lives below. Laid out in the same proportions, so the
+   chrome scales with the board. */
 .screen {
-  position: relative;
-  width: min(100cqw, 100cqh * 28 / 31);
-  aspect-ratio: 28 / 31;
+  width: min(100cqw, 100cqh * 28 / 36);
+  aspect-ratio: 28 / 36;
   container-type: inline-size;
-  overflow: hidden;
+  display: grid;
+  grid-template-rows: 3fr 31fr 2fr;
+  outline: none;
 }
 
-/* A band across the ghost house, the board still showing above and below. */
-.overlay {
-  position: absolute;
-  inset: 30% 0;
-  background: rgb(0 0 0 / 0.8);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-m);
-  text-align: center;
+.screen:focus-visible {
+  outline: 2px solid var(--macman-yellow);
+  outline-offset: 4px;
 }
 
-/* Chunky: the heaviest cut the site loads, stroked and dropped on a hard shadow
-   so it reads as a cabinet marquee rather than a heading. */
-.title {
-  margin: 0;
-  font-size: clamp(2rem, 9cqi, 4.5rem);
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  line-height: 1;
-  color: var(--macman-yellow);
-  -webkit-text-stroke: 0.08em var(--macman-shadow);
-  paint-order: stroke fill;
-  text-shadow: 0 0.08em 0 var(--macman-shadow);
-}
-
-.prompt {
-  margin: 0;
-  font-size: clamp(0.9rem, 3cqi, 1.4rem);
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--macman-text);
-  animation: blink 1.1s steps(2, jump-none) infinite;
-}
-
-@keyframes blink {
-  50% {
-    opacity: 0;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .prompt {
-    animation: none;
-  }
+.board {
+  position: relative;
+  min-height: 0;
 }
 
 .visuallyHidden {

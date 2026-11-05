@@ -1,4 +1,6 @@
 import type { Dir, Food, Maze, Point } from "../engine/maze";
+import { BLINK_TICKS } from "../engine/rules";
+import type { GameState } from "../engine/state";
 import type { FruitName, GhostName } from "../sprites/manifest";
 
 export type GhostLook = "normal" | "frightened" | "flashing" | "eyes";
@@ -42,5 +44,28 @@ export function dealtScene(maze: Maze): Scene {
     powerLit: true,
     mazeFlash: false,
     clock: 0,
+  };
+}
+
+/** Strides of the mouth per tile moved: a full open-and-shut every tile and a third. */
+const CHOMPS_PER_TILE = 3;
+
+/** What the board shows for a game state. Read-only: the renderer's whole view of the game. */
+export function sceneOf(state: GameState, maze: Maze): Scene {
+  const { round } = state;
+  const dealt = dealtScene(maze);
+  const { macman } = round;
+  return {
+    ...dealt,
+    food: round.food,
+    macman: {
+      x: macman.x,
+      y: macman.y,
+      dir: macman.dir,
+      chomp: Math.floor(macman.travelled * CHOMPS_PER_TILE),
+      dying: null,
+    },
+    powerLit: state.phase !== "playing" || Math.floor(round.clock / BLINK_TICKS) % 2 === 0,
+    clock: round.clock,
   };
 }
