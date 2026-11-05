@@ -39,3 +39,10 @@ output "contact_function_url" {
   description = "The contact Lambda's Function URL"
   value       = aws_lambda_function_url.contact.function_url
 }
+
+# Copied into the Caddyfile's `/api/pacmac/*` block after the first apply:
+# the id in it is generated at creation, as `contact_function_url`'s is.
+output "pacmac_scores_function_url" {
+  description = "The MacMan leaderboard's Function URL"
+  value       = aws_lambda_function_url.pacmac_scores.function_url
+}
