@@ -1,6 +1,10 @@
+import { asset } from "../../../utils/assetPath";
 import type { GameState } from "../engine/state";
 
 import styles from "./chrome.module.css";
+
+/** Fetched when the game ends, not before: it only exists in that overlay. */
+const GAME_OVER_PICTURE = asset("images/pacmac/game-over.png");
 
 /** Whatever the phase puts over the board, if anything. */
 export default function Overlay({ state }: { state: GameState }) {
@@ -33,8 +37,15 @@ export default function Overlay({ state }: { state: GameState }) {
       );
     case "gameOver":
       return (
-        <div className={styles.band}>
+        <div className={`${styles.band} ${styles.tall}`}>
           <p className={`${styles.marquee} ${styles.over}`}>GAME OVER</p>
+          <img
+            className={styles.picture}
+            src={GAME_OVER_PICTURE}
+            alt="What happened?"
+            width={192}
+            height={145}
+          />
           <p className={styles.result}>{state.round.score} points</p>
           <p className={styles.prompt}>press space to play again</p>
         </div>

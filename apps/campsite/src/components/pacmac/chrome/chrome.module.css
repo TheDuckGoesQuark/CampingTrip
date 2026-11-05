@@ -55,6 +55,19 @@
   text-shadow: 0 0.08em 0 var(--macman-shadow);
 }
 
+/* Room for the game-over picture as well as the words. */
+.tall {
+  inset: 8% 0;
+}
+
+/* Two thirds of the board's width, its pixels kept square. */
+.picture {
+  display: block;
+  width: 66cqi;
+  height: auto;
+  image-rendering: pixelated;
+}
+
 /* Classic red, for the one marquee that is bad news. */
 .over {
   font-size: 9cqi;
