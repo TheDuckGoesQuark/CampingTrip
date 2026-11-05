@@ -6,6 +6,13 @@ All planned and deferred work, organised by priority.
 
 ## Next Up
 
+### MacMan — paste the leaderboard's URL into the Caddyfile
+
+The first apply of `infra/pacmac.tf` prints `pacmac_scores_function_url`. Its
+id replaces the placeholder host in the Caddyfile's `/api/pacmac/*` block, as
+the contact block's was. Until then every leaderboard request fails at the
+proxy and the game keeps scores in the browser alone.
+
 ### Contact — nothing limits how often one sender may post
 
 `/api/contact` is public and unauthenticated, and the only ceiling anywhere is
@@ -413,6 +420,31 @@ inside the Canvas:
 ---
 
 ## Backlog
+
+### MacMan — notes from the first play-test
+
+An agent played two full games in headless Chromium. Nothing broke; these
+are what it found awkward, in its words' order of weight:
+
+- A turn asked for just too late is held until the next opening, which can
+  be several tiles on and walk MacMan into a ghost. A held turn could expire
+  after one junction.
+- Keys pressed during READY! are dropped, so the first move has to wait for
+  play to start. The phase rules allow `move` only while playing.
+- Between games the top ten shows only on the attract screen, so a player
+  who has just signed it does not see it until the tab is reopened.
+- MacMan's face turns sideways going up or down; a mirrored or fixed
+  orientation may read better with a photographic sprite.
+- The cat fruit is dark on the black board, and the cyan ghost points are
+  drawn over MacMan's face.
+- Resizing the viewport live leaves the CatNav window at its old size and can
+  cut off the lives row; a fresh load at the same size fits.
+
+### MacMan — the two assets still to come
+
+The bite plays Jordan's recording once `public/audio/pacmac/macka.mp3`
+exists, and frightened ghosts use `public/images/pacmac/frightened.png` once
+it does; the game folder's README gives both formats.
 
 ### Design system — a broken dimension token is invisible to CI
 

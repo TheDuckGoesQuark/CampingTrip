@@ -11,6 +11,7 @@ import { useKeyboard } from "./input/useKeyboard";
 import BoardCanvas from "./render/BoardCanvas";
 import { sceneOf } from "./render/scene";
 import { localScoreStore } from "./scores/localStore";
+import { serverScoreStore } from "./scores/serverStore";
 import type { HighScoreStore } from "./scores/store";
 import { useHighScores } from "./scores/useHighScores";
 import { unlockAudio } from "./sound/sound";
@@ -22,10 +23,11 @@ import styles from "./MacMan.module.css";
 
 const HELP = "MacMan. Arrow keys or W, A, S and D to move; space to start and pause.";
 
-const LOCAL_SCORES = localScoreStore();
+/** The shared top ten, with this browser's own table whenever it cannot be reached. */
+const SCORES = serverScoreStore({ fallback: localScoreStore() });
 
 /** The game: a cabinet holding the screen and the chrome around it. */
-export default function MacMan({ scores = LOCAL_SCORES }: { scores?: HighScoreStore }) {
+export default function MacMan({ scores = SCORES }: { scores?: HighScoreStore }) {
   const cabinet = useRef<HTMLElement>(null);
   const screen = useRef<HTMLDivElement>(null);
   useRoom(cabinet);
@@ -34,7 +36,7 @@ export default function MacMan({ scores = LOCAL_SCORES }: { scores?: HighScoreSt
   const keyboard = useKeyboard(actions, unlockAudio);
   useJoystick(actions);
   useGameSound(state);
-  const table = useHighScores(scores, state);
+  const { table, asking, submit } = useHighScores(scores, state);
   const scene = useMemo(() => sceneOf(state, MAZE), [state]);
 
   // The tab opened to play, so the keys go to the game without a click first.
@@ -57,7 +59,12 @@ export default function MacMan({ scores = LOCAL_SCORES }: { scores?: HighScoreSt
           <Hud score={state.round.score} best={table[0]?.score ?? 0} />
           <div className={styles.board}>
             <BoardCanvas scene={scene} />
-            <Overlay state={state} touch={isMobile} />
+            <Overlay
+              state={state}
+              touch={isMobile}
+              table={table}
+              onInitials={asking === null ? null : submit}
+            />
           </div>
           <Lives lives={state.round.lives} />
         </div>

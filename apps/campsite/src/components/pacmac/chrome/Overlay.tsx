@@ -1,5 +1,8 @@
 import { asset } from "../../../utils/assetPath";
 import type { GameState } from "../engine/state";
+import type { ScoreTable } from "../scores/store";
+import InitialsEntry from "./InitialsEntry";
+import TopTen from "./TopTen";
 
 import styles from "./chrome.module.css";
 
@@ -7,15 +10,29 @@ import styles from "./chrome.module.css";
 const GAME_OVER_PICTURE = asset("images/pacmac/game-over.png");
 
 /** Whatever the phase puts over the board, if anything. */
-export default function Overlay({ state, touch }: { state: GameState; touch: boolean }) {
+export interface OverlayProps {
+  state: GameState;
+  touch: boolean;
+  table: ScoreTable;
+  /** Set while a finished game's score waits for initials. */
+  onInitials: ((initials: string) => void) | null;
+}
+
+export default function Overlay({ state, touch, table, onInitials }: OverlayProps) {
   const press = touch ? "tap" : "press space";
+  const again = onInitials ? (
+    <InitialsEntry onSubmit={onInitials} />
+  ) : (
+    <p className={styles.prompt}>{press} to play again</p>
+  );
   switch (state.phase) {
     case "attract":
       return (
-        <div className={styles.band}>
+        <div className={`${styles.band} ${table.length > 0 ? styles.tall : ""}`}>
           <p className={styles.marquee} aria-hidden>
             MACMAN
           </p>
+          <TopTen table={table} />
           <p className={styles.prompt}>{press} to start</p>
         </div>
       );
@@ -33,7 +50,7 @@ export default function Overlay({ state, touch }: { state: GameState; touch: boo
         <div className={styles.band}>
           <p className={styles.marquee}>YOU WIN</p>
           <p className={styles.result}>{state.round.score} points</p>
-          <p className={styles.prompt}>{press} to play again</p>
+          {again}
         </div>
       );
     case "gameOver":
@@ -48,7 +65,7 @@ export default function Overlay({ state, touch }: { state: GameState; touch: boo
             height={145}
           />
           <p className={styles.result}>{state.round.score} points</p>
-          <p className={styles.prompt}>{press} to play again</p>
+          {again}
         </div>
       );
     case "playing":

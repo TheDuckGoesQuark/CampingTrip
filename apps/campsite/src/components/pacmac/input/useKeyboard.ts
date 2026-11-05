@@ -1,4 +1,4 @@
-import type { KeyboardEvent } from "react";
+import type { KeyboardEvent, MouseEvent } from "react";
 
 import type { Actions } from "../engine/actions";
 import { type Command, commandFor } from "./keyboard";
@@ -38,6 +38,8 @@ export function useKeyboard(actions: Actions, onStart: () => void = () => {}) {
   return {
     onKeyDown(event: KeyboardEvent) {
       if (event.altKey || event.ctrlKey || event.metaKey) return;
+      // The initials field takes its own letters, Space and Enter.
+      if (event.target instanceof HTMLInputElement) return;
       const command = commandFor(event.key);
       if (!command) return;
       // The arrows would otherwise scroll the window, and Space page it.
@@ -45,7 +47,8 @@ export function useKeyboard(actions: Actions, onStart: () => void = () => {}) {
       if (command.kind === "primary" && "start" in actions) onStart();
       perform(command, actions);
     },
-    onClick() {
+    onClick(event: MouseEvent) {
+      if (event.target instanceof HTMLInputElement) return;
       if ("start" in actions) onStart();
       perform({ kind: "primary" }, actions);
     },
