@@ -11,8 +11,8 @@ const keysOf = (phase: Phase) =>
 describe("actionsFor", () => {
   it("offers each phase exactly its own actions", () => {
     expect(keysOf("attract")).toEqual(["start"]);
-    expect(keysOf("ready")).toEqual(["move"]);
-    expect(keysOf("playing")).toEqual(["move", "pause"]);
+    expect(keysOf("ready")).toEqual(["hold", "move"]);
+    expect(keysOf("playing")).toEqual(["hold", "move", "pause"]);
     expect(keysOf("paused")).toEqual(["resume"]);
     expect(keysOf("dying")).toEqual([]);
     expect(keysOf("levelCleared")).toEqual([]);
@@ -24,8 +24,13 @@ describe("actionsFor", () => {
     const dispatch = vi.fn();
     const actions = actionsFor({ phase: "playing", round: dealRound() }, dispatch);
     actions.move("up");
+    actions.hold("left");
     actions.pause();
-    expect(dispatch.mock.calls).toEqual([[{ type: "move", dir: "up" }], [{ type: "pause" }]]);
+    expect(dispatch.mock.calls).toEqual([
+      [{ type: "move", dir: "up", until: "lapse" }],
+      [{ type: "move", dir: "left", until: "taken" }],
+      [{ type: "pause" }],
+    ]);
   });
 
   it("tags the actions with their phase, so a caller can narrow by it", () => {

@@ -1,0 +1,93 @@
+/* A Game Boy Color's pad: a charcoal cross on three by three cells, each arm
+   embossed with the way it points. */
+.pad {
+  --dpad-plastic: #2d2d33;
+  --dpad-edge: #121216;
+  --dpad-mark: #55555f;
+
+  flex-shrink: 0;
+  align-self: center;
+  width: clamp(132px, 42vw, 184px);
+  aspect-ratio: 1;
+  display: grid;
+  grid-template: repeat(3, 1fr) / repeat(3, 1fr);
+  filter: drop-shadow(0 4px 0 var(--dpad-edge));
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.arm {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: var(--dpad-plastic);
+  cursor: pointer;
+}
+
+/* The arrow pressed into each arm, pointing outwards. */
+.arm::before {
+  content: "";
+  position: absolute;
+  inset: 32%;
+  background: var(--dpad-mark);
+  clip-path: polygon(50% 15%, 95% 85%, 5% 85%);
+}
+
+.up {
+  grid-area: 1 / 2;
+  border-radius: 10% 10% 0 0;
+}
+
+.left {
+  grid-area: 2 / 1;
+  border-radius: 10% 0 0 10%;
+}
+
+.left::before {
+  rotate: -90deg;
+}
+
+.right {
+  grid-area: 2 / 3;
+  border-radius: 0 10% 10% 0;
+}
+
+.right::before {
+  rotate: 90deg;
+}
+
+.down {
+  grid-area: 3 / 2;
+  border-radius: 0 0 10% 10%;
+}
+
+.down::before {
+  rotate: 180deg;
+}
+
+/* The centre of the cross, with the dimple a thumb rests in. */
+.hub {
+  grid-area: 2 / 2;
+  background: radial-gradient(circle, var(--dpad-edge) 0 28%, var(--dpad-plastic) 32%);
+}
+
+/* The turn being held, in the cabinet's yellow until MacMan takes it. */
+.arm[aria-pressed="true"] {
+  background: var(--macman-yellow);
+}
+
+.arm[aria-pressed="true"]::before {
+  background: var(--macman-black);
+}
+
+.arm:active {
+  translate: 0 2px;
+}
+
+.arm:focus-visible {
+  outline: 2px solid var(--macman-text);
+  outline-offset: -4px;
+}

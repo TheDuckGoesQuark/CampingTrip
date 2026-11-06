@@ -9,6 +9,7 @@ tab opens, and is never prerendered.
 | `render/`  | The canvas. Reads a `Scene` and draws it; never changes anything.                   |
 | `sprites/` | Which PNG each entity is drawn from, and the code-drawn stand-ins for missing ones. |
 | `sound/`   | What each change of state sounds like, played through the site's mute and volume.   |
+| `input/`   | Keys, taps and the touch pad, each turned into a call to the phase's actions.       |
 
 The maze is `engine/maze.txt`, one character per tile:
 

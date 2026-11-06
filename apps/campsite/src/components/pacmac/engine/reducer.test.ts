@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { FRUITS } from "./fruit";
+import { QUEUE_HOLD } from "./macman";
 import { cellAt, indexOf, MAZE } from "./maze";
 import { tileOf } from "./movement";
 import { reduce } from "./reducer";
@@ -52,7 +53,7 @@ describe("reduce", () => {
 
   it("holds a direction pressed during READY! for when play starts", () => {
     const ready = reduce(initialState(), { type: "start" });
-    const asked = reduce(ready, { type: "move", dir: "right" });
+    const asked = reduce(ready, { type: "move", dir: "right", until: "lapse" });
     expect(asked.round.macman.queued).toBe("right");
     const playing = run(asked, READY_TICKS + 1);
     expect(playing.phase).toBe("playing");
@@ -66,8 +67,15 @@ describe("reduce", () => {
   });
 
   it("queues a direction asked for while playing", () => {
-    const next = reduce(playing(), { type: "move", dir: "right" });
+    const next = reduce(playing(), { type: "move", dir: "right", until: "lapse" });
     expect(next.round.macman.queued).toBe("right");
+  });
+
+  it("sets a key's turn to lapse a tile and a half on, and the touch pad's never", () => {
+    const keyed = reduce(playing(), { type: "move", dir: "up", until: "lapse" });
+    expect(keyed.round.macman.lapsesAt).toBe(keyed.round.macman.travelled + QUEUE_HOLD);
+    const held = reduce(playing(), { type: "move", dir: "up", until: "taken" });
+    expect(held.round.macman.lapsesAt).toBe(Infinity);
   });
 
   it("eats a pellet for ten points and stops a tick to swallow it", () => {
@@ -97,7 +105,7 @@ describe("reduce", () => {
     const state = playing();
     expect(reduce(state, { type: "start" })).toBe(state);
     const attract = initialState();
-    expect(reduce(attract, { type: "move", dir: "up" })).toBe(attract);
+    expect(reduce(attract, { type: "move", dir: "up", until: "lapse" })).toBe(attract);
   });
 });
 
@@ -141,7 +149,7 @@ describe("the ghosts", () => {
     const state = playing(withGhost("blinky", { x: 13, y: 23, dir: "right" }));
     const caught = reduce(state, tick);
     expect(caught).toMatchObject({ phase: "dying", ticksLeft: DEATH });
-    expect(reduce(caught, { type: "move", dir: "up" })).toBe(caught);
+    expect(reduce(caught, { type: "move", dir: "up", until: "lapse" })).toBe(caught);
   });
 
   it("ignore MacMan while they are still in the house", () => {
@@ -210,7 +218,7 @@ describe("a long game", () => {
       if (state.phase === "gameOver" || state.phase === "won")
         state = reduce(state, { type: "start" });
       if (state.phase === "playing" && t % 45 === 0) {
-        state = reduce(state, { type: "move", dir: dirs[(t * 7) % 4] });
+        state = reduce(state, { type: "move", dir: dirs[(t * 7) % 4], until: "lapse" });
       }
       state = reduce(state, tick);
       const { round } = state;

@@ -13,7 +13,7 @@ import {
   targetOf,
   touching,
 } from "./ghosts";
-import { moveMacMan } from "./macman";
+import { moveMacMan, QUEUE_HOLD } from "./macman";
 import { countFood, type Dir, indexOf, MAZE } from "./maze";
 import { opposite, tileOf } from "./movement";
 import { nextRandom } from "./random";
@@ -273,9 +273,11 @@ function play(state: Extract<GameState, { phase: "playing" }>): GameState {
   return { phase: "playing", round: met === "ate" ? round : agePopups(tendFruit(round)) };
 }
 
-/** Holds a direction for MacMan to take at the next chance, starting `QUEUE_HOLD` from here. */
-function queue(round: Round, dir: Dir): Round {
-  return { ...round, macman: { ...round.macman, queued: dir, queuedAt: round.macman.travelled } };
+/** Holds a direction for MacMan to take at the next chance, for `QUEUE_HOLD` or until taken. */
+function queue(round: Round, dir: Dir, until: "lapse" | "taken"): Round {
+  const { macman } = round;
+  const lapsesAt = until === "lapse" ? macman.travelled + QUEUE_HOLD : Infinity;
+  return { ...round, macman: { ...macman, queued: dir, lapsesAt } };
 }
 
 function newGame(): GameState {
@@ -305,7 +307,9 @@ export function reduce(state: GameState, action: Action): GameState {
       return action.type === "start" ? newGame() : state;
     case "ready":
       // A direction pressed while READY! shows is the first one he takes.
-      if (action.type === "move") return { ...state, round: queue(state.round, action.dir) };
+      if (action.type === "move") {
+        return { ...state, round: queue(state.round, action.dir, action.until) };
+      }
       if (action.type !== "tick") return state;
       return state.ticksLeft > 1
         ? { ...state, ticksLeft: state.ticksLeft - 1 }
@@ -315,7 +319,7 @@ export function reduce(state: GameState, action: Action): GameState {
         case "tick":
           return play(state);
         case "move":
-          return { ...state, round: queue(state.round, action.dir) };
+          return { ...state, round: queue(state.round, action.dir, action.until) };
         case "pause":
           return { phase: "paused", round: state.round };
         default:
