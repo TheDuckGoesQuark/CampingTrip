@@ -67,12 +67,14 @@ describe("parseBlogPath", () => {
     });
     expect(parseBlogPath("/blog/cv.html")).toEqual({ kind: "cv" });
     expect(parseBlogPath("/blog/about")).toEqual({ kind: "about" });
+    expect(parseBlogPath("/blog/pacmac.html")).toEqual({ kind: "pacmac" });
   });
 
   it("treats the extension as optional, since it is decoration", () => {
     expect(parseBlogPath("/blog/tags/music")).toEqual({ kind: "tag", tag: "music" });
     expect(parseBlogPath("/blog/index")).toEqual({ kind: "home" });
     expect(parseBlogPath("/blog/cv")).toEqual({ kind: "cv" });
+    expect(parseBlogPath("/blog/pacmac")).toEqual({ kind: "pacmac" });
   });
 
   it("decodes an encoded slug", () => {
@@ -97,6 +99,7 @@ describe("parseBlogPath", () => {
       { kind: "cv" },
       { kind: "desk", slug: "words-with-friends-txt" },
       { kind: "about" },
+      { kind: "pacmac" },
     ];
     for (const ref of refs) {
       expect(parseBlogPath(blogPathFor(ref))).toEqual(ref);
@@ -111,6 +114,7 @@ describe("isBrowserPath", () => {
     expect(isBrowserPath(blogPaths.tag("music"))).toBe(true);
     expect(isBrowserPath(blogPaths.project("catmaps"))).toBe(true);
     expect(isBrowserPath(blogPaths.cv)).toBe(true);
+    expect(isBrowserPath(blogPaths.pacmac)).toBe(true);
   });
 
   it("rejects a desktop item and the About box, which open in windows of their own", () => {

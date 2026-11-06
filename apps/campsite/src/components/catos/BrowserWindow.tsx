@@ -9,6 +9,7 @@ import {
   resolveBlogPage,
   titleOfBlogPage,
   type BrowserPage,
+  type TabIcon,
 } from "../../data/blogPages";
 import { SITE_ORIGIN } from "../../data/site";
 import { blogPaths, parseBlogPath } from "../../routing/blogPaths";
@@ -25,6 +26,12 @@ function browserPageAt(path: string): BrowserPage | null {
   const page = resolveBlogPage(ref);
   // Narrow on the resolved page, not the ref: a desktop item is not a tab.
   return page && isBrowserPage(page) ? page : null;
+}
+
+function TabGlyph({ icon }: { icon: TabIcon }) {
+  if (typeof icon === "string") return <Icon name={icon} size="sm" />;
+  const Glyph = icon;
+  return <Glyph className={styles.tabGlyph} weight="bold" aria-hidden />;
 }
 
 export interface BrowserWindowProps extends WindowFrameProps {
@@ -111,7 +118,7 @@ export default function BrowserWindow({ page, onClose, ...frame }: BrowserWindow
           <Window.Tab
             key={tab.path}
             label={titleOfBlogPage(tab.page)}
-            icon={<Icon name={iconOfBlogPage(tab.page)} size="sm" />}
+            icon={<TabGlyph icon={iconOfBlogPage(tab.page)} />}
             active={tab.path === browserPath}
             onSelect={() => navigate(tab.path)}
             onClose={() => closeTab(tab.path)}

@@ -7,6 +7,7 @@ import HomePage from "./HomePage";
 import IssuePage from "./newsletter/IssuePage";
 import IssuesPage from "./newsletter/IssuesPage";
 import NoticePage from "./NoticePage";
+import PacmacPage from "./PacmacPage";
 import PostPage from "./PostPage";
 import PrivacyPage from "./PrivacyPage";
 import ProjectPage from "./ProjectPage";
@@ -25,7 +26,8 @@ export default function BlogPageView({ page }: { page: BrowserPage }) {
       <div className={styles.page}>
         <PageBody page={page} />
       </div>
-      <ContactFooter page={page} />
+      {/* A game is the whole tab; a footer under it would only scroll it away. */}
+      {page.kind !== "pacmac" && <ContactFooter page={page} />}
     </>
   );
 }
@@ -58,5 +60,7 @@ function PageBody({ page }: { page: BrowserPage }) {
       return <IssuesPage issues={page.issues} />;
     case "issue":
       return <IssuePage issue={page.issue} />;
+    case "pacmac":
+      return <PacmacPage />;
   }
 }

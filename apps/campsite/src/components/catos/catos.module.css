@@ -333,3 +333,10 @@
   min-width: 4rem;
   height: 0.5rem;
 }
+
+/* A Phosphor glyph on a tab, at the drawn set's size so the strip stays level. */
+.tabGlyph {
+  flex-shrink: 0;
+  width: var(--icon-sm);
+  height: var(--icon-sm);
+}
