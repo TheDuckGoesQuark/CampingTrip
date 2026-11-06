@@ -1,6 +1,7 @@
 import { asset } from "../../../utils/assetPath";
 import type { GameState } from "../engine/state";
 import type { ScoreTable } from "../scores/store";
+import HowToSteer from "./HowToSteer";
 import InitialsEntry from "./InitialsEntry";
 import TopTen from "./TopTen";
 
@@ -86,20 +87,6 @@ export default function Overlay({ state, touch, table, onInitials, signed }: Ove
     case "levelCleared":
       return null;
   }
-}
-
-/** The touch controls, taught in the seconds before the first move. */
-function HowToSteer() {
-  return (
-    <div className={styles.howTo}>
-      <p className={styles.label}>How to steer</p>
-      <ul className={styles.steps}>
-        <li>Swipe or press the pad</li>
-        <li>A lit arm is your next turn</li>
-        <li>The pause button is up top</li>
-      </ul>
-    </div>
-  );
 }
 
 /** The same news for a screen reader, which sees no board. */

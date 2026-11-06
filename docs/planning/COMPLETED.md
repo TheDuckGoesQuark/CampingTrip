@@ -60,6 +60,9 @@ cat fruit, and a game-over picture, are in `public/images/pacmac/`.
   without having moved, so a swipe that starts on the pad never presses the
   arm under it. A tap never pauses on a touch screen, where a missed swipe
   would be one; a pause button in the score row does instead.
+- How to steer is shown rather than told: a finger swipes left across a little
+  pad and its left arm lights, then a finger taps the up arm. With reduced
+  motion each is held on the moment it counts.
 
 **Deferred**: the recorded "macka" clip (the synthesised bite stands in) and a
 `frightened.png`; the play-test's smaller notes in TODO.
