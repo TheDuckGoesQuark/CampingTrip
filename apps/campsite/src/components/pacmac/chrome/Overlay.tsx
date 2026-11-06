@@ -40,7 +40,13 @@ export default function Overlay({ state, touch, table, onInitials, signed }: Ove
         </div>
       );
     case "ready":
-      return <p className={styles.ready}>READY!</p>;
+      return (
+        <>
+          {/* The game's first READY!, not the one after each life. */}
+          {touch && state.round.clock === 0 && <HowToSteer />}
+          <p className={styles.ready}>READY!</p>
+        </>
+      );
     case "paused":
       return (
         <div className={styles.band}>
@@ -80,6 +86,20 @@ export default function Overlay({ state, touch, table, onInitials, signed }: Ove
     case "levelCleared":
       return null;
   }
+}
+
+/** The touch controls, taught in the seconds before the first move. */
+function HowToSteer() {
+  return (
+    <div className={styles.howTo}>
+      <p className={styles.label}>How to steer</p>
+      <ul className={styles.steps}>
+        <li>Swipe or press the pad</li>
+        <li>A lit arm is your next turn</li>
+        <li>Tap the board to pause</li>
+      </ul>
+    </div>
+  );
 }
 
 /** The same news for a screen reader, which sees no board. */

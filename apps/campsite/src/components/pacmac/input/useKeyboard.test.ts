@@ -1,7 +1,8 @@
-import type { KeyboardEvent, MouseEvent } from "react";
+import type { FocusEvent, KeyboardEvent, MouseEvent } from "react";
 import { describe, expect, it, vi } from "vitest";
 
 import type { Actions } from "../engine/actions";
+import { resetHaptics, tick } from "./haptics";
 import { useKeyboard } from "./useKeyboard";
 
 function between() {
@@ -32,5 +33,26 @@ describe("useKeyboard around the initials form", () => {
     const { start, handlers } = between();
     handlers.onClick({ target: document.body } as unknown as MouseEvent);
     expect(start).toHaveBeenCalledOnce();
+  });
+});
+
+describe("useKeyboard losing focus", () => {
+  it("pauses when focus leaves mid-game, but not for the haptic switch", () => {
+    const pause = vi.fn();
+    const handlers = useKeyboard({ phase: "playing", move: vi.fn(), pause } as unknown as Actions);
+    vi.stubGlobal("navigator", { ...navigator, vibrate: undefined });
+    const game = document.createElement("div");
+    game.tabIndex = 0;
+    document.body.append(game);
+    game.focus();
+    tick("release");
+    const toggle = document.querySelector("input[switch]");
+    handlers.onBlur({ relatedTarget: toggle } as unknown as FocusEvent);
+    expect(pause).not.toHaveBeenCalled();
+    handlers.onBlur({ relatedTarget: null } as unknown as FocusEvent);
+    expect(pause).toHaveBeenCalledOnce();
+    vi.unstubAllGlobals();
+    resetHaptics();
+    game.remove();
   });
 });

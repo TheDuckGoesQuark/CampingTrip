@@ -4,9 +4,10 @@ import { isMobile } from "../../utils/deviceDetect";
 import Hud from "./chrome/Hud";
 import Lives from "./chrome/Lives";
 import Overlay, { announcementFor } from "./chrome/Overlay";
-import { MAZE } from "./engine/maze";
+import { type Dir, MAZE } from "./engine/maze";
 import DPad from "./input/DPad";
 import { useKeyboard } from "./input/useKeyboard";
+import { useSwipe } from "./input/useSwipe";
 import BoardCanvas from "./render/BoardCanvas";
 import { sceneOf } from "./render/scene";
 import { localScoreStore } from "./scores/localStore";
@@ -20,7 +21,8 @@ import { useRoom } from "./useRoom";
 
 import styles from "./MacMan.module.css";
 
-const HELP = "MacMan. Arrow keys or W, A, S and D to move; space to start and pause.";
+const HELP =
+  "MacMan. Arrow keys or W, A, S and D to move, or swipe the board; space or a tap to start and pause.";
 
 /** The shared top ten, with this browser's own table whenever it cannot be reached. */
 const SCORES = serverScoreStore({ fallback: localScoreStore() });
@@ -33,6 +35,10 @@ export default function MacMan({ scores = SCORES }: { scores?: HighScoreStore })
 
   const { state, actions } = useMacMan();
   const keyboard = useKeyboard(actions, unlockAudio);
+  const hold = (dir: Dir) => {
+    if ("hold" in actions) actions.hold(dir);
+  };
+  const swipe = useSwipe(hold);
   useGameSound(state);
   const { table, asking, signed, submit } = useHighScores(scores, state);
   const scene = useMemo(() => sceneOf(state, MAZE), [state]);
@@ -53,6 +59,7 @@ export default function MacMan({ scores = SCORES }: { scores?: HighScoreStore })
           aria-label={HELP}
           tabIndex={0}
           {...keyboard}
+          {...swipe}
         >
           <Hud score={state.round.score} best={table[0]?.score ?? 0} />
           <div className={styles.board}>
@@ -68,14 +75,7 @@ export default function MacMan({ scores = SCORES }: { scores?: HighScoreStore })
           <Lives lives={state.round.lives} />
         </div>
       </div>
-      {isMobile && (
-        <DPad
-          queued={state.round.macman.queued}
-          onHold={(dir) => {
-            if ("hold" in actions) actions.hold(dir);
-          }}
-        />
-      )}
+      {isMobile && <DPad queued={state.round.macman.queued} onHold={hold} />}
       <p role="status" className={styles.visuallyHidden}>
         {announcementFor(state)}
       </p>

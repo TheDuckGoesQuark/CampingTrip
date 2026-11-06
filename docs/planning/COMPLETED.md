@@ -49,6 +49,11 @@ cat fruit, and a game-over picture, are in `public/images/pacmac/`.
 - On a touch screen a Game Boy style pad replaces the joystick, which took a
   long drag for every turn. A press holds the turn until MacMan takes it,
   lighting that arm; a key's turn still lapses, since nothing shows it.
+- A swipe on the board holds a turn the same way, and a stroke round a corner
+  asks for both. A press or swipe ticks under the finger: the Vibration API
+  where there is one, and on iPhone, which has none, a hidden native switch
+  that Safari ticks for when it toggles. The game's first READY! on a touch
+  screen shows how to steer.
 
 **Deferred**: the recorded "macka" clip (the synthesised bite stands in) and a
 `frightened.png`; the play-test's smaller notes in TODO.

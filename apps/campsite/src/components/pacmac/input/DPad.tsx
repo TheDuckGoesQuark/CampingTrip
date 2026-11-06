@@ -1,6 +1,7 @@
 import type { MouseEvent, PointerEvent } from "react";
 
 import type { Dir } from "../engine/maze";
+import { tick } from "./haptics";
 
 import styles from "./DPad.module.css";
 
@@ -27,8 +28,10 @@ export default function DPad({ queued, onHold }: DPadProps) {
           // which would blur the game and pause it.
           onPointerDown={(event: PointerEvent) => {
             event.preventDefault();
+            tick("press");
             onHold(dir);
           }}
+          onPointerUp={() => tick("release")}
           // A click with no pointer behind it, from a keyboard or a screen reader.
           onClick={(event: MouseEvent) => {
             if (event.detail === 0) onHold(dir);
