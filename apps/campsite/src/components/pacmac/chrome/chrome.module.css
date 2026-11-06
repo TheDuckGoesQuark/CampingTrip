@@ -167,34 +167,6 @@
   color: var(--macman-yellow);
 }
 
-/* Over the top of the maze while READY! counts down, clear of the ghost house. */
-.howTo {
-  position: absolute;
-  inset: 8% 8% auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2cqi;
-  padding: 3cqi 4cqi;
-  border: 0.5cqi solid var(--macman-yellow);
-  background: rgb(0 0 0 / 0.88);
-}
-
-.steps {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 1.4cqi;
-  text-align: center;
-  font-size: 3.6cqi;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--macman-yellow);
-}
-
 /* The arcade's bottom rows: a MacMan for each life in hand. */
 .lives {
   display: flex;

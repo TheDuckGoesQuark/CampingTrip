@@ -47,7 +47,8 @@ describe("Overlay on a touch screen", () => {
         signed={null}
       />,
     );
-    expect(screen.getByText("Swipe or press the pad")).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: /swipes left/ })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: /taps the pad/ })).toBeInTheDocument();
     first.unmount();
     render(
       <Overlay
@@ -58,7 +59,7 @@ describe("Overlay on a touch screen", () => {
         signed={null}
       />,
     );
-    expect(screen.queryByText("Swipe or press the pad")).not.toBeInTheDocument();
+    expect(screen.queryByText("How to steer")).not.toBeInTheDocument();
   });
 
   it("leaves the keyboard's READY! bare", () => {

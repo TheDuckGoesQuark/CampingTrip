@@ -1,0 +1,228 @@
+/* Over the top of the maze while READY! counts down, clear of the ghost house. */
+.howTo {
+  --howto-plastic: #2d2d33;
+  --howto-edge: #121216;
+  --howto-mark: #55555f;
+  --howto-skin: #f2c39b;
+  --howto-skin-edge: #7a4a2a;
+
+  position: absolute;
+  inset: 6% 6% auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5cqi;
+  padding: 2.5cqi 3cqi;
+  border: 0.5cqi solid var(--macman-yellow);
+  background: rgb(0 0 0 / 0.9);
+  text-align: center;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.title {
+  margin: 0;
+  font-size: 3cqi;
+  letter-spacing: 0.12em;
+  color: var(--macman-text);
+}
+
+.demos {
+  display: flex;
+  gap: 4cqi;
+}
+
+.demo {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5cqi;
+  font-size: 3.2cqi;
+  letter-spacing: 0.06em;
+  color: var(--macman-yellow);
+}
+
+.demo svg {
+  display: block;
+  width: 30cqi;
+  height: auto;
+}
+
+.note {
+  margin: 0;
+  font-size: 2.8cqi;
+  letter-spacing: 0.1em;
+  color: var(--macman-text);
+}
+
+.arm {
+  fill: var(--howto-plastic);
+}
+
+.mark {
+  fill: var(--howto-mark);
+}
+
+.hub {
+  fill: var(--howto-edge);
+}
+
+.finger {
+  fill: var(--howto-skin);
+  stroke: var(--howto-skin-edge);
+  stroke-width: 0.8;
+}
+
+.nail {
+  fill: #fbe3cf;
+}
+
+.ripple {
+  fill: none;
+  stroke: var(--macman-text);
+  stroke-width: 0.8;
+  opacity: 0;
+}
+
+/* One loop each: the finger comes in, does its one thing, and the arm it asked
+   for lights the moment it counts, as the game's pad would. */
+.swiping {
+  animation: swipe 2.4s ease-in-out infinite;
+}
+
+.tapping {
+  animation: tap 2.4s ease-in-out infinite;
+}
+
+.tapping .ripple {
+  animation: ripple 2.4s ease-out infinite;
+}
+
+.lights {
+  fill: var(--howto-plastic);
+  animation: light 2.4s steps(1, end) infinite;
+}
+
+.lightsMark {
+  fill: var(--howto-mark);
+  animation: light-mark 2.4s steps(1, end) infinite;
+}
+
+/* The swipe crosses from the right of the pad to its left. */
+@keyframes swipe {
+  0%,
+  10% {
+    opacity: 0;
+    transform: translate(64px, 36px);
+  }
+  18% {
+    opacity: 1;
+    transform: translate(64px, 36px);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(16px, 36px);
+  }
+  62%,
+  100% {
+    opacity: 0;
+    transform: translate(16px, 36px);
+  }
+}
+
+/* The tap comes down on the up arm and lifts again. */
+@keyframes tap {
+  0%,
+  10% {
+    opacity: 0;
+    transform: translate(40px, 8px);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(40px, 8px);
+  }
+  32%,
+  40% {
+    opacity: 1;
+    transform: translate(40px, 21px);
+  }
+  52% {
+    opacity: 1;
+    transform: translate(40px, 10px);
+  }
+  62%,
+  100% {
+    opacity: 0;
+    transform: translate(40px, 10px);
+  }
+}
+
+@keyframes ripple {
+  0%,
+  34% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  36% {
+    opacity: 0.9;
+    transform: scale(0.6);
+  }
+  56%,
+  100% {
+    opacity: 0;
+    transform: scale(1.8);
+  }
+}
+
+/* The swipe counts part-way across, the tap as it lifts: both light at 40%. */
+@keyframes light {
+  0% {
+    fill: var(--howto-plastic);
+  }
+  40% {
+    fill: var(--macman-yellow);
+  }
+  92% {
+    fill: var(--howto-plastic);
+  }
+}
+
+@keyframes light-mark {
+  0% {
+    fill: var(--howto-mark);
+  }
+  40% {
+    fill: var(--macman-black);
+  }
+  92% {
+    fill: var(--howto-mark);
+  }
+}
+
+/* Held on the moment each one counts: the finger in place, the arm lit. */
+@media (prefers-reduced-motion: reduce) {
+  .swiping,
+  .tapping,
+  .tapping .ripple,
+  .lights,
+  .lightsMark {
+    animation: none;
+  }
+
+  .swiping {
+    transform: translate(14px, 36px);
+  }
+
+  .tapping {
+    transform: translate(40px, 21px);
+  }
+
+  .lights {
+    fill: var(--macman-yellow);
+  }
+
+  .lightsMark {
+    fill: var(--macman-black);
+  }
+}
