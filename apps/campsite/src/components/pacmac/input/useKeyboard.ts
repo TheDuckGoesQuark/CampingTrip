@@ -5,9 +5,10 @@ import { type Command, commandFor } from "./keyboard";
 
 /**
  * Space is the one button the attract and pause screens ask for: it starts,
- * pauses and resumes, whichever the phase allows.
+ * pauses and resumes, whichever the phase allows. On a touch screen, a tap on
+ * the board is that button.
  */
-function perform(command: Command, actions: Actions): void {
+export function perform(command: Command, actions: Actions): void {
   switch (actions.phase) {
     case "attract":
     case "won":
@@ -43,6 +44,10 @@ export function useKeyboard(actions: Actions, onStart: () => void = () => {}) {
       event.preventDefault();
       if (command.kind === "primary" && "start" in actions) onStart();
       perform(command, actions);
+    },
+    onClick() {
+      if ("start" in actions) onStart();
+      perform({ kind: "primary" }, actions);
     },
     /** Leaving the game mid-play pauses it, so nobody dies while reading the menu bar. */
     onBlur() {

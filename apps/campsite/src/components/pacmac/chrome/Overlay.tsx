@@ -7,7 +7,8 @@ import styles from "./chrome.module.css";
 const GAME_OVER_PICTURE = asset("images/pacmac/game-over.png");
 
 /** Whatever the phase puts over the board, if anything. */
-export default function Overlay({ state }: { state: GameState }) {
+export default function Overlay({ state, touch }: { state: GameState; touch: boolean }) {
+  const press = touch ? "tap" : "press space";
   switch (state.phase) {
     case "attract":
       return (
@@ -15,7 +16,7 @@ export default function Overlay({ state }: { state: GameState }) {
           <p className={styles.marquee} aria-hidden>
             MACMAN
           </p>
-          <p className={styles.prompt}>press space to start</p>
+          <p className={styles.prompt}>{press} to start</p>
         </div>
       );
     case "ready":
@@ -24,7 +25,7 @@ export default function Overlay({ state }: { state: GameState }) {
       return (
         <div className={styles.band}>
           <p className={styles.marquee}>PAUSED</p>
-          <p className={styles.prompt}>press space to resume</p>
+          <p className={styles.prompt}>{press} to resume</p>
         </div>
       );
     case "won":
@@ -32,7 +33,7 @@ export default function Overlay({ state }: { state: GameState }) {
         <div className={styles.band}>
           <p className={styles.marquee}>YOU WIN</p>
           <p className={styles.result}>{state.round.score} points</p>
-          <p className={styles.prompt}>press space to play again</p>
+          <p className={styles.prompt}>{press} to play again</p>
         </div>
       );
     case "gameOver":
@@ -47,7 +48,7 @@ export default function Overlay({ state }: { state: GameState }) {
             height={145}
           />
           <p className={styles.result}>{state.round.score} points</p>
-          <p className={styles.prompt}>press space to play again</p>
+          <p className={styles.prompt}>{press} to play again</p>
         </div>
       );
     case "playing":

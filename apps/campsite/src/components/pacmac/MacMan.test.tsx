@@ -35,6 +35,12 @@ describe("MacMan", () => {
     expect(Number(score?.textContent)).toBeGreaterThan(0);
   });
 
+  it("starts on a tap as well, for a screen with no keyboard", () => {
+    render(<MacMan />);
+    fireEvent.click(game());
+    expect(screen.getByText("READY!")).toBeInTheDocument();
+  });
+
   it("pauses when it loses focus mid-game, and resumes on Space", () => {
     render(<MacMan />);
     fireEvent.keyDown(game(), { key: " " });
