@@ -1,6 +1,7 @@
-import type { KeyboardEvent, MouseEvent } from "react";
+import type { FocusEvent, KeyboardEvent, MouseEvent } from "react";
 
 import type { Actions } from "../engine/actions";
+import { isHapticSwitch } from "./haptics";
 import { type Command, commandFor } from "./keyboard";
 
 /**
@@ -58,7 +59,8 @@ export function useKeyboard(actions: Actions, onStart: () => void = () => {}) {
       perform({ kind: "primary" }, actions);
     },
     /** Leaving the game mid-play pauses it, so nobody dies while reading the menu bar. */
-    onBlur() {
+    onBlur(event: FocusEvent) {
+      if (isHapticSwitch(event.relatedTarget)) return;
       if (actions.phase === "playing") actions.pause();
     },
   };

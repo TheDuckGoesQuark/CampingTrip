@@ -37,6 +37,43 @@ describe("Overlay", () => {
 });
 
 describe("Overlay on a touch screen", () => {
+  it("teaches the touch controls during the game's first READY!, and not after a lost life", () => {
+    const first = render(
+      <Overlay
+        state={{ phase: "ready", round: dealRound(), ticksLeft: 60 }}
+        touch
+        table={[]}
+        onInitials={null}
+        signed={null}
+      />,
+    );
+    expect(screen.getByText("Swipe or press the pad")).toBeInTheDocument();
+    first.unmount();
+    render(
+      <Overlay
+        state={{ phase: "ready", round: { ...dealRound(), clock: 900 }, ticksLeft: 60 }}
+        touch
+        table={[]}
+        onInitials={null}
+        signed={null}
+      />,
+    );
+    expect(screen.queryByText("Swipe or press the pad")).not.toBeInTheDocument();
+  });
+
+  it("leaves the keyboard's READY! bare", () => {
+    render(
+      <Overlay
+        state={{ phase: "ready", round: dealRound(), ticksLeft: 60 }}
+        touch={false}
+        table={[]}
+        onInitials={null}
+        signed={null}
+      />,
+    );
+    expect(screen.queryByText("How to steer")).not.toBeInTheDocument();
+  });
+
   it("asks for a tap rather than a key", () => {
     render(
       <Overlay

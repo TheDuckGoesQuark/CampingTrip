@@ -426,6 +426,13 @@ are the smaller things it found awkward, still open:
 - Resizing the viewport live leaves the CatNav window at its old size and can
   cut off the lives row; a fresh load at the same size fits.
 
+### MacMan — feel the haptics on a real iPhone
+
+Safari ticks for the hidden switch only inside a user gesture, so the game
+clicks it on the finger's release. Headless WebKit confirms the click and that
+focus stays on the game, but no simulator plays a haptic: a swipe and a pad
+press on an iPhone are the only check that it is felt.
+
 ### MacMan — the two assets still to come
 
 The bite plays Jordan's recording once `public/audio/pacmac/macka.mp3`

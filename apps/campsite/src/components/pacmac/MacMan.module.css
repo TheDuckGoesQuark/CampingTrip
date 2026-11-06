@@ -54,6 +54,11 @@
   .screen:focus-visible {
     outline: none;
   }
+
+  /* A swipe on the board steers, so it must not scroll the page. */
+  .screen {
+    touch-action: none;
+  }
 }
 
 .board {
