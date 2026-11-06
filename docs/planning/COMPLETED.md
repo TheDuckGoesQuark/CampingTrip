@@ -54,6 +54,12 @@ cat fruit, and a game-over picture, are in `public/images/pacmac/`.
   where there is one, and on iPhone, which has none, a hidden native switch
   that Safari ticks for when it toggles. The game's first READY! on a touch
   screen shows how to steer.
+- Touch is read for the whole cabinet, so a swipe steers wherever it starts,
+  the pad included. The blank area under the board is all pad, cut into four
+  by an X through the drawn pad's centre. A tap counts when the finger lifts
+  without having moved, so a swipe that starts on the pad never presses the
+  arm under it. A tap never pauses on a touch screen, where a missed swipe
+  would be one; a pause button in the score row does instead.
 
 **Deferred**: the recorded "macka" clip (the synthesised bite stands in) and a
 `frightened.png`; the play-test's smaller notes in TODO.

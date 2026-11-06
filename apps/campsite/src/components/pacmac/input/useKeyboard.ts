@@ -3,6 +3,7 @@ import type { FocusEvent, KeyboardEvent, MouseEvent } from "react";
 import type { Actions } from "../engine/actions";
 import { isHapticSwitch } from "./haptics";
 import { type Command, commandFor } from "./keyboard";
+import { fromControl } from "./useTouch";
 
 /**
  * Space is the one button the attract and pause screens ask for: it starts,
@@ -32,10 +33,6 @@ export function perform(command: Command, actions: Actions): void {
   }
 }
 
-/** Whether an event came from the initials form, which takes its own keys and taps. */
-const fromForm = (target: EventTarget) =>
-  target instanceof Element && target.closest("form") !== null;
-
 /**
  * Handlers for the game's focusable element. They only ever call `actions`,
  * and `onStart`, which runs inside the key press that starts a game, where a
@@ -45,7 +42,7 @@ export function useKeyboard(actions: Actions, onStart: () => void = () => {}) {
   return {
     onKeyDown(event: KeyboardEvent) {
       if (event.altKey || event.ctrlKey || event.metaKey) return;
-      if (fromForm(event.target)) return;
+      if (fromControl(event.target)) return;
       const command = commandFor(event.key);
       if (!command) return;
       // The arrows would otherwise scroll the window, and Space page it.
@@ -54,13 +51,15 @@ export function useKeyboard(actions: Actions, onStart: () => void = () => {}) {
       perform(command, actions);
     },
     onClick(event: MouseEvent) {
-      if (fromForm(event.target)) return;
+      if (fromControl(event.target)) return;
       if ("start" in actions) onStart();
       perform({ kind: "primary" }, actions);
     },
     /** Leaving the game mid-play pauses it, so nobody dies while reading the menu bar. */
     onBlur(event: FocusEvent) {
-      if (isHapticSwitch(event.relatedTarget)) return;
+      // Focus moving to the pause button, inside the screen, or to the haptic switch is not leaving.
+      const to = event.relatedTarget;
+      if (isHapticSwitch(to) || (to instanceof Node && event.currentTarget.contains(to))) return;
       if (actions.phase === "playing") actions.pause();
     },
   };

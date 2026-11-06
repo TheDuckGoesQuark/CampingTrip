@@ -19,9 +19,27 @@
   align-items: center;
 }
 
-/* An empty third column, so the hi-score sits in the middle of the row. */
+/* A third column, so the hi-score sits in the middle of the row; on a touch
+   screen it holds the pause button. */
 .balance {
   flex: 1;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Big enough for a thumb, small enough to leave the score row alone. */
+.pause {
+  display: grid;
+  place-items: center;
+  min-width: 11cqi;
+  min-height: 7cqi;
+  padding: 0 2cqi;
+  border: 0.4cqi solid var(--macman-yellow);
+  border-radius: 1cqi;
+  background: var(--macman-black);
+  color: var(--macman-yellow);
+  font-size: 4.4cqi;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .hud > .readout {
