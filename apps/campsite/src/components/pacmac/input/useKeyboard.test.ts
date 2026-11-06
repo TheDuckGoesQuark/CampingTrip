@@ -56,3 +56,15 @@ describe("useKeyboard losing focus", () => {
     game.remove();
   });
 });
+
+describe("useKeyboard and the pause button", () => {
+  it("does not pause when focus moves to a control inside the screen", () => {
+    const pause = vi.fn();
+    const handlers = useKeyboard({ phase: "playing", move: vi.fn(), pause } as unknown as Actions);
+    const screen = document.createElement("div");
+    const button = document.createElement("button");
+    screen.append(button);
+    handlers.onBlur({ relatedTarget: button, currentTarget: screen } as unknown as FocusEvent);
+    expect(pause).not.toHaveBeenCalled();
+  });
+});

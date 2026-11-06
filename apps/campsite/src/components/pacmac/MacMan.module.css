@@ -55,10 +55,23 @@
     outline: none;
   }
 
-  /* A swipe on the board steers, so it must not scroll the page. */
-  .screen {
+  /* A swipe anywhere in the cabinet steers, so it must not scroll the page. */
+  .cabinet {
     touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
   }
+}
+
+/* Everything under the board is pad: out to the cabinet's edges, the drawn pad
+   at its centre, which is where its X is measured from. */
+.padArea {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  min-height: clamp(150px, 46vw, 220px);
+  margin: 0 calc(-1 * var(--space-m)) calc(-1 * var(--space-m));
 }
 
 .board {

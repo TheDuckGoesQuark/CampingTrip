@@ -12,10 +12,7 @@
   display: grid;
   grid-template: repeat(3, 1fr) / repeat(3, 1fr);
   filter: drop-shadow(0 4px 0 var(--dpad-edge));
-  touch-action: none;
-  user-select: none;
-  -webkit-user-select: none;
-  -webkit-tap-highlight-color: transparent;
+  pointer-events: none;
 }
 
 .arm {
@@ -24,7 +21,6 @@
   padding: 0;
   border: 0;
   background: var(--dpad-plastic);
-  cursor: pointer;
 }
 
 /* The arrow pressed into each arm, pointing outwards. */
@@ -75,19 +71,10 @@
 }
 
 /* The turn being held, in the cabinet's yellow until MacMan takes it. */
-.arm[aria-pressed="true"] {
+.lit {
   background: var(--macman-yellow);
 }
 
-.arm[aria-pressed="true"]::before {
+.lit::before {
   background: var(--macman-black);
-}
-
-.arm:active {
-  translate: 0 2px;
-}
-
-.arm:focus-visible {
-  outline: 2px solid var(--macman-text);
-  outline-offset: -4px;
 }

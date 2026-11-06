@@ -96,7 +96,7 @@ function HowToSteer() {
       <ul className={styles.steps}>
         <li>Swipe or press the pad</li>
         <li>A lit arm is your next turn</li>
-        <li>Tap the board to pause</li>
+        <li>The pause button is up top</li>
       </ul>
     </div>
   );
