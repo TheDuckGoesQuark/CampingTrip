@@ -7,6 +7,7 @@ describe("MacMan", () => {
   beforeEach(() => {
     vi.useFakeTimers({ toFake: ["requestAnimationFrame", "cancelAnimationFrame", "performance"] });
     vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(null);
+    localStorage.clear();
   });
 
   afterEach(() => {
@@ -30,7 +31,8 @@ describe("MacMan", () => {
 
     // From the spawn he heads left into a row of pellets.
     act(() => vi.advanceTimersByTime(1000));
-    expect(Number(screen.getByText(/^\d+$/).textContent)).toBeGreaterThan(0);
+    const score = screen.getByText("Score").nextElementSibling;
+    expect(Number(score?.textContent)).toBeGreaterThan(0);
   });
 
   it("pauses when it loses focus mid-game, and resumes on Space", () => {
@@ -52,5 +54,19 @@ describe("MacMan", () => {
     });
     game().dispatchEvent(event);
     expect(event.defaultPrevented).toBe(true);
+  });
+});
+
+describe("MacMan's high score", () => {
+  beforeEach(() => {
+    vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(null);
+    localStorage.clear();
+  });
+
+  it("shows the best score this browser has kept", async () => {
+    localStorage.setItem("macman-scores", JSON.stringify([{ initials: null, score: 4210 }]));
+    render(<MacMan />);
+    const best = screen.getByText("Hi-score").nextElementSibling;
+    await vi.waitFor(() => expect(best?.textContent).toBe("4210"));
   });
 });

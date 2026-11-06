@@ -15,6 +15,19 @@
   line-height: 1.05;
 }
 
+.centred {
+  align-items: center;
+}
+
+/* An empty third column, so the hi-score sits in the middle of the row. */
+.balance {
+  flex: 1;
+}
+
+.hud > .readout {
+  flex: 1;
+}
+
 .label {
   font-size: 3cqi;
   letter-spacing: 0.12em;
