@@ -6,13 +6,6 @@ All planned and deferred work, organised by priority.
 
 ## Next Up
 
-### MacMan — paste the leaderboard's URL into the Caddyfile
-
-The first apply of `infra/pacmac.tf` prints `pacmac_scores_function_url`. Its
-id replaces the placeholder host in the Caddyfile's `/api/pacmac/*` block, as
-the contact block's was. Until then every leaderboard request fails at the
-proxy and the game keeps scores in the browser alone.
-
 ### Contact — nothing limits how often one sender may post
 
 `/api/contact` is public and unauthenticated, and the only ceiling anywhere is

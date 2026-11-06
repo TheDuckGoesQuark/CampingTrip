@@ -44,6 +44,7 @@ cat fruit, and a game-over picture, are in `public/images/pacmac/`.
   a half without it, and a late turn is taken up to 0.4 of a tile past the
   centre. A direction pressed during READY! is held for the first move, so
   `move` is offered in that phase as well as in play.
+- The Caddyfile proxies `/api/pacmac/*` to the Lambda's function URL.
 
 **Deferred**: the recorded "macka" clip (the synthesised bite stands in) and a
 `frightened.png`; the play-test's smaller notes in TODO.
