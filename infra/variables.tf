@@ -58,3 +58,9 @@ variable "newsletter_consent_version" {
   type        = string
   default     = "2026-10-05"
 }
+
+variable "pacmac_write_cap_per_day" {
+  description = "Scores the MacMan leaderboard will record in one UTC day before refusing more"
+  type        = number
+  default     = 200
+}

@@ -48,7 +48,16 @@ jordanscamp.site {
         }
     }
 
-    # Wrapped in `handle` so the rewrite below cannot reach either `/api` path:
+    # MacMan's leaderboard, the same way. Its URL is `pacmac_scores_function_url`,
+    # and until it is pasted over this placeholder the game keeps scores in the
+    # browser alone: the proxy fails and the client falls back.
+    handle /api/pacmac/* {
+        reverse_proxy https://paste-pacmac-scores-url-id-here.lambda-url.eu-west-2.on.aws {
+            header_up Host {upstream_hostport}
+        }
+    }
+
+    # Wrapped in `handle` so the rewrite below cannot reach any `/api` path:
     # `try_files` runs ahead of every `handle` in Caddy's directive order, so at
     # the top level it would turn those paths into `/index.html` and the proxy
     # matchers above would never see them.
