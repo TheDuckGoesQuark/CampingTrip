@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { RenderTargetContext } from "../../prerender/renderTarget";
 import { blogPaths } from "../../routing/blogPaths";
@@ -7,6 +7,11 @@ import { blogUrls, unlistedBlogUrls } from "../../routing/blogUrls";
 import PacmacPage from "./PacmacPage";
 
 describe("PacmacPage", () => {
+  // jsdom has no 2D canvas and says so on every call; the board copes with none.
+  beforeEach(() => {
+    vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(null);
+  });
+
   it("loads the game and shows its attract screen", async () => {
     render(<PacmacPage />);
     expect(await screen.findByText("press space to start")).toBeInTheDocument();

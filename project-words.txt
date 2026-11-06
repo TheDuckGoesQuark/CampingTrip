@@ -17,6 +17,7 @@ awsdns
 barless
 Baronnies
 baselined
+blinky
 breathiness
 Buis
 buttonish
