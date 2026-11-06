@@ -13,8 +13,8 @@ export const RECOVERING_WHITE: Rgb = [222, 222, 255];
 export function tintPixels(data: Uint8ClampedArray, [r, g, b]: Rgb): void {
   for (let i = 0; i < data.length; i += 4) {
     const light = (0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2]) / 255;
-    // Lifted, so the darkest outline still reads as part of the ghost.
-    const lifted = 0.35 + 0.65 * light;
+    // Lifted, so a dark sprite still reads as a bright blue ghost on the black maze.
+    const lifted = 0.55 + 0.75 * light;
     data[i] = r * lifted;
     data[i + 1] = g * lifted;
     data[i + 2] = b * lifted;

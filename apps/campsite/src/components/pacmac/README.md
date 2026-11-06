@@ -33,11 +33,14 @@ frame, transparent background, drawn facing right.
 | `blinky.png`, `pinky.png`, `inky.png`, `clyde.png` | 48   | 2: the hem's two positions. Drawn front-on, never turned.    |
 | `frightened.png`                                   | 48   | 4: two blue, then two white for the flash before recovering. |
 | `eyes.png`                                         | 48   | 1, looking right; mirrored when going left.                  |
-| `cherry.png`                                       | 48   | 1                                                            |
-| `pellet.png`, `powerPellet.png`                    | 24   | 1                                                            |
+| `fruit-<name>.png`                                 | 48   | 1                                                            |
 
-A cell is three screen pixels per board pixel: an actor covers two 8-pixel
-tiles, a pellet one. MacMan is rotated to face up or down and mirrored to face
+The fruit, their points and the order they appear in are `FRUITS` in
+`engine/fruit.ts`; adding one is a line there and its PNG. The pellets are
+always drawn in code.
+
+A cell is three screen pixels per board pixel, so an actor's 48 covers two
+8-pixel tiles. MacMan is rotated to face up or down and mirrored to face
 left.
 
 A file that is missing, or not the size its row says, is replaced by a

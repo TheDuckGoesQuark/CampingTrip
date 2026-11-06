@@ -20,7 +20,8 @@ export type DrawOp =
       scale: number;
       /** Whose sprite a frightened ghost is drawn from while it has none of its own. */
       ghost?: GhostName;
-    };
+    }
+  | { kind: "points"; text: string; x: number; y: number };
 
 type SpriteOp = Extract<DrawOp, { kind: "sprite" }>;
 
@@ -94,6 +95,15 @@ export function drawList(scene: Scene): DrawOp[] {
   for (const ghost of scene.ghosts) {
     const [key, frame] = ghostSprite(ghost.look, ghost.name, scene.clock);
     ops.push({ ...sprite(key, frame, ghost, ghost.dir), ghost: ghost.name });
+  }
+  // A ghost's points are drawn where it was eaten, and it is not drawn there, so they go on top.
+  for (const popup of scene.popups) {
+    ops.push({
+      kind: "points",
+      text: String(popup.points),
+      x: centreOf(popup.x),
+      y: centreOf(popup.y),
+    });
   }
   return ops;
 }

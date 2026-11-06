@@ -12,9 +12,26 @@ export const SPEED = {
   ghost: 0.75 * FULL_SPEED,
   ghostInTunnel: 0.4 * FULL_SPEED,
   ghostInHouse: 0.4 * FULL_SPEED,
+  macmanPowered: 0.9 * FULL_SPEED,
+  ghostFrightened: 0.5 * FULL_SPEED,
+  eyes: 1.6 * FULL_SPEED,
 };
 
 export const POINTS = { pellet: 10, power: 50 };
+
+/** Each ghost eaten on one power pellet is worth double the last. */
+export const GHOST_POINTS: readonly number[] = [200, 400, 800, 1600];
+
+/** How long a power pellet frightens the ghosts, and the flashing warning at its end. */
+export const FRIGHT_TICKS = seconds(6);
+export const FRIGHT_FLASH_TICKS = seconds(2);
+
+/** Everything stops for a beat while an eaten ghost's points show. */
+export const GHOST_EATEN_TICKS = seconds(1);
+
+/** How long a fruit waits to be eaten, and its points show once it is. */
+export const FRUIT_TICKS = seconds(9.5);
+export const POPUP_TICKS = seconds(2);
 
 /** Ticks MacMan stands still to eat, which is what slows him through a corridor of pellets. */
 export const STALL = { pellet: 1, power: 3 };

@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef } from "react";
 import Hud from "./chrome/Hud";
 import Lives from "./chrome/Lives";
 import Overlay, { announcementFor } from "./chrome/Overlay";
+import { MAZE } from "./engine/maze";
 import { useKeyboard } from "./input/useKeyboard";
 import BoardCanvas from "./render/BoardCanvas";
 import { sceneOf } from "./render/scene";
@@ -21,7 +22,7 @@ export default function MacMan() {
 
   const { state, actions } = useMacMan();
   const keyboard = useKeyboard(actions);
-  const scene = useMemo(() => sceneOf(state), [state]);
+  const scene = useMemo(() => sceneOf(state, MAZE), [state]);
 
   // The tab opened to play, so the keys go to the game without a click first.
   useEffect(() => screen.current?.focus(), []);

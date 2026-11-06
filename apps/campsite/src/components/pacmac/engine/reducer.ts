@@ -1,4 +1,7 @@
+import { FRUIT_AT_DOTS, fruitFor } from "./fruit";
 import {
+  atDoorstep,
+  DOOR_TARGET,
   GHOST_NAMES,
   type Ghost,
   type GhostName,
@@ -6,18 +9,25 @@ import {
   isTunnel,
   type Quarry,
   roam,
+  type Steering,
   targetOf,
   touching,
 } from "./ghosts";
 import { moveMacMan } from "./macman";
-import { indexOf, MAZE } from "./maze";
+import { countFood, indexOf, MAZE } from "./maze";
 import { opposite, tileOf } from "./movement";
+import { nextRandom } from "./random";
 import {
   CAUGHT_TICKS,
   CLEARED_TICKS,
   DEATH_SPIN_TICKS,
+  FRIGHT_TICKS,
+  FRUIT_TICKS,
+  GHOST_EATEN_TICKS,
+  GHOST_POINTS,
   HUNT_SCHEDULE,
   POINTS,
+  POPUP_TICKS,
   READY_AFTER_DEATH_TICKS,
   READY_TICKS,
   RELEASE_DOTS,
@@ -35,12 +45,26 @@ function eat(round: Round): Round {
   if (item === "none") return { ...round, house: { ...round.house, idle: round.house.idle + 1 } };
   const food = round.food.slice();
   food[index] = "none";
-  return {
+  const fed: Round = {
     ...round,
     food,
     score: round.score + POINTS[item],
     macman: { ...round.macman, stall: STALL[item] },
     house: { ...round.house, dots: round.house.dots + 1, idle: 0 },
+  };
+  return item === "power" ? frighten(fed) : fed;
+}
+
+/** Every ghost not already eaten turns blue, and the loose ones turn round. */
+function frighten(round: Round): Round {
+  return {
+    ...round,
+    fright: { ticksLeft: FRIGHT_TICKS, eaten: 0 },
+    ghosts: mapGhosts(round, (ghost) => {
+      if (ghost.mode === "eyes" || ghost.mode === "entering") return ghost;
+      const dir = ghost.mode === "active" ? opposite(ghost.dir) : ghost.dir;
+      return { ...ghost, scared: true, dir };
+    }),
   };
 }
 
@@ -53,7 +77,8 @@ function moveMacManIn(round: Round): Round {
       house: { ...round.house, idle: round.house.idle + 1 },
     };
   }
-  return eat({ ...round, macman: moveMacMan(MAZE, macman, SPEED.macman) });
+  const speed = round.fright ? SPEED.macmanPowered : SPEED.macman;
+  return eat({ ...round, macman: moveMacMan(MAZE, macman, speed) });
 }
 
 const mapGhosts = (round: Round, change: (ghost: Ghost) => Ghost) =>
@@ -62,9 +87,13 @@ const mapGhosts = (round: Round, change: (ghost: Ghost) => Ghost) =>
     Ghost
   >;
 
-/** Counts down the scatter-chase schedule; every change of plan turns the loose ghosts round. */
+/**
+ * Counts down the scatter-chase schedule, which stands still while the ghosts
+ * are frightened. Every change of plan turns the loose ghosts round.
+ */
 function advanceHunt(round: Round): Round {
   const { hunt } = round;
+  if (round.fright) return round;
   if (hunt.ticksLeft > 1) return { ...round, hunt: { ...hunt, ticksLeft: hunt.ticksLeft - 1 } };
   const stage = hunt.stage + 1;
   return {
@@ -95,39 +124,153 @@ function release(round: Round): Round {
   };
 }
 
+function moveGhost(round: Round, ghost: Ghost, quarry: Quarry, roll: number): Ghost {
+  switch (ghost.mode) {
+    case "house":
+    case "leaving":
+    case "entering":
+      return inHouse(MAZE, ghost, SPEED.ghostInHouse);
+    case "eyes": {
+      const moved = roam(MAZE, ghost, SPEED.eyes, { target: DOOR_TARGET });
+      return atDoorstep(MAZE, moved)
+        ? { ...moved, ...MAZE.spawns.blinky, mode: "entering" }
+        : moved;
+    }
+    case "active": {
+      const steering: Steering = ghost.scared
+        ? { roll }
+        : { target: targetOf(ghost, round.hunt.kind, quarry, MAZE) };
+      const speed = isTunnel(MAZE, ghost)
+        ? SPEED.ghostInTunnel
+        : ghost.scared
+          ? SPEED.ghostFrightened
+          : SPEED.ghost;
+      return roam(MAZE, ghost, speed, steering);
+    }
+  }
+}
+
 function moveGhosts(round: Round): Round {
   const quarry: Quarry = {
     tile: tileOf(MAZE, round.macman),
     dir: round.macman.dir,
     blinky: tileOf(MAZE, round.ghosts.blinky),
   };
+  let { seed } = round;
+  const ghosts = mapGhosts(round, (ghost) => {
+    const [roll, next] = nextRandom(seed);
+    seed = next;
+    return moveGhost(round, ghost, quarry, roll);
+  });
+  return { ...round, ghosts, seed };
+}
+
+/** The power pellet's clock; when it runs out, every ghost still blue is dangerous again. */
+function advanceFright(round: Round): Round {
+  if (!round.fright) return round;
+  if (round.fright.ticksLeft > 1) {
+    return { ...round, fright: { ...round.fright, ticksLeft: round.fright.ticksLeft - 1 } };
+  }
   return {
     ...round,
-    ghosts: mapGhosts(round, (ghost) => {
-      if (ghost.mode !== "active") return inHouse(MAZE, ghost, SPEED.ghostInHouse);
-      const speed = isTunnel(MAZE, ghost) ? SPEED.ghostInTunnel : SPEED.ghost;
-      return roam(MAZE, ghost, speed, targetOf(ghost, round.hunt.kind, quarry, MAZE));
-    }),
+    fright: null,
+    ghosts: mapGhosts(round, (ghost) => ({ ...ghost, scared: false })),
   };
 }
 
-const caught = (round: Round) =>
-  GHOST_NAMES.some(
-    (name) =>
-      round.ghosts[name].mode === "active" && touching(MAZE, round.ghosts[name], round.macman),
-  );
+type Meeting = "none" | "caught" | "ate";
+
+/**
+ * Settles every ghost MacMan is touching: a blue one is eaten, for double the
+ * last one's points, and turns to eyes; any other loose one catches him.
+ */
+function meet(round: Round): [Round, Meeting] {
+  let result: Meeting = "none";
+  let next = round;
+  for (const name of GHOST_NAMES) {
+    const ghost = next.ghosts[name];
+    if (ghost.mode !== "active" || !touching(MAZE, ghost, next.macman)) continue;
+    if (!ghost.scared || !next.fright) return [next, "caught"];
+    const { eaten } = next.fright;
+    const points = GHOST_POINTS[Math.min(eaten, GHOST_POINTS.length - 1)];
+    next = {
+      ...next,
+      score: next.score + points,
+      fright: { ...next.fright, eaten: eaten + 1 },
+      ghosts: { ...next.ghosts, [name]: { ...ghost, mode: "eyes", scared: false } },
+      popups: [...next.popups, { x: ghost.x, y: ghost.y, points, ticksLeft: GHOST_EATEN_TICKS }],
+      freeze: GHOST_EATEN_TICKS,
+    };
+    result = "ate";
+  }
+  return [next, result];
+}
+
+const BOARD_FOOD = countFood(MAZE.food, "pellet") + countFood(MAZE.food, "power");
+
+/** Puts out the next fruit when enough has been eaten, times it out, or lets MacMan eat it. */
+function tendFruit(round: Round): Round {
+  const eaten = BOARD_FOOD - countFood(round.food, "pellet") - countFood(round.food, "power");
+  let next = round;
+  const due = FRUIT_AT_DOTS[next.fruitsShown];
+  if (!next.fruit && due !== undefined && eaten >= due) {
+    next = {
+      ...next,
+      fruit: { name: fruitFor(next.fruitsShown).name, ticksLeft: FRUIT_TICKS },
+      fruitsShown: next.fruitsShown + 1,
+    };
+  }
+  if (!next.fruit) return next;
+  const spot = MAZE.spawns.fruit;
+  if (touching(MAZE, spot, next.macman)) {
+    const { points } = fruitFor(next.fruitsShown - 1);
+    return {
+      ...next,
+      fruit: null,
+      score: next.score + points,
+      popups: [...next.popups, { ...spot, points, ticksLeft: POPUP_TICKS }],
+    };
+  }
+  return next.fruit.ticksLeft > 1
+    ? { ...next, fruit: { ...next.fruit, ticksLeft: next.fruit.ticksLeft - 1 } }
+    : { ...next, fruit: null };
+}
+
+const agePopups = (round: Round): Round => ({
+  ...round,
+  popups: round.popups
+    .map((popup) => ({ ...popup, ticksLeft: popup.ticksLeft - 1 }))
+    .filter((popup) => popup.ticksLeft > 0),
+});
 
 const cleared = (round: Round) => !round.food.some((item) => item !== "none");
 
+const dying = (round: Round): GameState => ({
+  phase: "dying",
+  round: { ...round, fruit: null, popups: [] },
+  ticksLeft: CAUGHT_TICKS + DEATH_SPIN_TICKS,
+});
+
 /** One tick of play, and what it led to. */
 function play(state: Extract<GameState, { phase: "playing" }>): GameState {
-  let round: Round = { ...state.round, clock: state.round.clock + 1 };
+  const held = state.round;
+  // An eaten ghost's points hold the board still; only the popups age.
+  if (held.freeze > 0) {
+    return { phase: "playing", round: agePopups({ ...held, freeze: held.freeze - 1 }) };
+  }
+  let round: Round = { ...held, clock: held.clock + 1 };
   round = moveMacManIn(round);
   if (cleared(round)) return { phase: "levelCleared", round, ticksLeft: CLEARED_TICKS };
-  if (caught(round)) return { phase: "dying", round, ticksLeft: CAUGHT_TICKS + DEATH_SPIN_TICKS };
-  round = moveGhosts(release(advanceHunt(round)));
-  if (caught(round)) return { phase: "dying", round, ticksLeft: CAUGHT_TICKS + DEATH_SPIN_TICKS };
-  return { phase: "playing", round };
+
+  let met: Meeting;
+  [round, met] = meet(round);
+  if (met === "caught") return dying(round);
+  if (met === "ate") return { phase: "playing", round };
+
+  round = moveGhosts(release(advanceHunt(advanceFright(round))));
+  [round, met] = meet(round);
+  if (met === "caught") return dying(round);
+  return { phase: "playing", round: met === "ate" ? round : agePopups(tendFruit(round)) };
 }
 
 function newGame(): GameState {

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { FRUITS } from "./fruit";
 import { cellAt, indexOf, MAZE } from "./maze";
 import { tileOf } from "./movement";
 import { reduce } from "./reducer";
@@ -7,6 +8,9 @@ import {
   CAUGHT_TICKS,
   CLEARED_TICKS,
   DEATH_SPIN_TICKS,
+  FRIGHT_TICKS,
+  FRUIT_TICKS,
+  GHOST_EATEN_TICKS,
   HUNT_SCHEDULE,
   READY_AFTER_DEATH_TICKS,
   READY_TICKS,
@@ -209,5 +213,111 @@ describe("a long game", () => {
         .filter((tile) => !["floor", "tunnel"].includes(cellAt(MAZE, tile.x, tile.y)));
       expect(walls, `tick ${t}`).toEqual([]);
     }
+  });
+});
+
+describe("power pellets", () => {
+  // A power pellet's tile, with MacMan about to step onto it.
+  const powered = () => run(playing(withMacMan({ x: 1, y: 3.6, dir: "up" })), 6);
+
+  it("frighten every ghost and turn the loose ones round", () => {
+    const before = playing();
+    const after = powered();
+    expect(after.round.fright).toMatchObject({ eaten: 0 });
+    expect(Object.values(after.round.ghosts).every((g) => g.scared)).toBe(true);
+    expect(after.round.ghosts.blinky.dir).not.toBe(before.round.ghosts.blinky.dir);
+  });
+
+  it("stop the scatter-chase clock while they last", () => {
+    const after = powered();
+    expect(run(after, 60).round.hunt.ticksLeft).toBe(after.round.hunt.ticksLeft);
+  });
+
+  it("wear off, leaving every ghost dangerous again", () => {
+    const worn = run(powered(), FRIGHT_TICKS);
+    expect(worn.round.fright).toBeNull();
+    expect(Object.values(worn.round.ghosts).some((g) => g.scared)).toBe(false);
+  });
+
+  it("make a blue ghost worth 200, the next 400, and freeze the board while it shows", () => {
+    const blue = (round: Round): Round => ({
+      ...round,
+      fright: { ticksLeft: FRIGHT_TICKS, eaten: 0 },
+      ghosts: {
+        ...round.ghosts,
+        blinky: { ...round.ghosts.blinky, x: 13, y: 23, scared: true },
+        pinky: { ...round.ghosts.pinky, x: 12.9, y: 23, mode: "active", scared: true },
+      },
+    });
+    const ate = reduce(playing(blue), tick);
+    expect(ate.round.score).toBe(200 + 400);
+    expect(ate.round.ghosts.blinky.mode).toBe("eyes");
+    expect(ate.round.ghosts.pinky.mode).toBe("eyes");
+    expect(ate.round.freeze).toBe(GHOST_EATEN_TICKS);
+    expect(ate.round.popups.map((p) => p.points)).toEqual([200, 400]);
+    const { x } = ate.round.macman;
+    expect(reduce(ate, tick).round.macman.x).toBe(x);
+  });
+
+  it("send eaten eyes home, where they come back out as a ghost", () => {
+    let state = playing((round) => ({
+      ...round,
+      ghosts: {
+        ...round.ghosts,
+        blinky: { ...round.ghosts.blinky, x: 1, y: 29, dir: "right", mode: "eyes" },
+      },
+    }));
+    const modes = new Set<string>();
+    for (let i = 0; i < 1200 && state.phase === "playing"; i++) {
+      state = reduce(state, tick);
+      modes.add(state.round.ghosts.blinky.mode);
+      if (state.round.ghosts.blinky.mode === "active") break;
+    }
+    expect([...modes]).toEqual(expect.arrayContaining(["eyes", "entering", "leaving", "active"]));
+    expect(state.round.ghosts.blinky.scared).toBe(false);
+  });
+});
+
+describe("fruit", () => {
+  const eatenSoFar =
+    (count: number) =>
+    (round: Round): Round => {
+      let left = count;
+      return {
+        ...round,
+        food: round.food.map((item) => (item !== "none" && left-- > 0 ? "none" : item)),
+      };
+    };
+
+  it("appears once seventy pellets are gone", () => {
+    expect(reduce(playing(eatenSoFar(69)), tick).round.fruit).toBeNull();
+    const shown = reduce(playing(eatenSoFar(70)), tick).round;
+    expect(shown.fruit).toMatchObject({ name: FRUITS[0].name });
+    expect(shown.fruitsShown).toBe(1);
+  });
+
+  it("goes again if nobody eats it in time", () => {
+    const shown = reduce(playing(eatenSoFar(70)), tick);
+    const parked = {
+      ...shown,
+      round: {
+        ...shown.round,
+        macman: { ...shown.round.macman, x: 1, y: 1, dir: "left" as const },
+      },
+    };
+    expect(run(parked, FRUIT_TICKS).round.fruit).toBeNull();
+  });
+
+  it("is worth its points to MacMan, and shows them", () => {
+    const waiting = playing((round) => ({
+      ...eatenSoFar(70)(round),
+      fruit: { name: FRUITS[0].name, ticksLeft: FRUIT_TICKS },
+      fruitsShown: 1,
+      macman: { ...round.macman, ...MAZE.spawns.fruit },
+    }));
+    const ate = reduce(waiting, tick).round;
+    expect(ate.fruit).toBeNull();
+    expect(ate.score).toBe(FRUITS[0].points);
+    expect(ate.popups).toEqual([expect.objectContaining({ points: FRUITS[0].points })]);
   });
 });

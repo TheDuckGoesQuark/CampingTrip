@@ -1,7 +1,14 @@
+import type { FruitName } from "./fruit";
 import { GHOST_NAMES, type Ghost, type GhostName, type Hunt } from "./ghosts";
 import type { MacManState } from "./macman";
-import { type Dir, type Food, MAZE } from "./maze";
+import { type Dir, type Food, MAZE, type Point } from "./maze";
 import { HUNT_SCHEDULE, LIVES } from "./rules";
+
+/** Points shown where they were scored, for a moment. */
+export interface Popup extends Point {
+  points: number;
+  ticksLeft: number;
+}
 
 /** One board's worth of play: what is left on it and where everyone is. */
 export interface Round {
@@ -15,6 +22,16 @@ export interface Round {
   hunt: { kind: Hunt; stage: number; ticksLeft: number };
   /** What decides the next ghost out: pellets eaten this life, and ticks since the last. */
   house: { dots: number; idle: number; afterDeath: boolean };
+  /** A power pellet's effect, and how many ghosts it has paid for so far. */
+  fright: { ticksLeft: number; eaten: number } | null;
+  fruit: { name: FruitName; ticksLeft: number } | null;
+  /** Fruit this board has offered, eaten or not, which picks the next. */
+  fruitsShown: number;
+  popups: readonly Popup[];
+  /** Ticks everything holds still, as it does while an eaten ghost's points show. */
+  freeze: number;
+  /** The seed for a frightened ghost's next wander. */
+  seed: number;
   /** Ticks of play since the board was dealt; still while paused or getting ready. */
   clock: number;
 }
@@ -61,12 +78,13 @@ function dealtGhosts(): Record<GhostName, Ghost> {
         name,
         dir: DEALT_DIRS[name],
         mode: name === "blinky" ? "active" : "house",
+        scared: false,
       },
     ]),
   ) as Record<GhostName, Ghost>;
 }
 
-type Kept = Pick<Round, "food" | "score" | "lives" | "clock">;
+type Kept = Pick<Round, "food" | "score" | "lives" | "clock" | "fruitsShown" | "seed">;
 
 /** Everyone back on their spawn, as at the start of a board or a life. */
 export function respawn(kept: Kept, afterDeath: boolean): Round {
@@ -76,11 +94,18 @@ export function respawn(kept: Kept, afterDeath: boolean): Round {
     ghosts: dealtGhosts(),
     hunt: { kind: "scatter", stage: 0, ticksLeft: HUNT_SCHEDULE[0] },
     house: { dots: 0, idle: 0, afterDeath },
+    fright: null,
+    fruit: null,
+    popups: [],
+    freeze: 0,
   };
 }
 
 export function dealRound(): Round {
-  return respawn({ food: MAZE.food, score: 0, lives: LIVES, clock: 0 }, false);
+  return respawn(
+    { food: MAZE.food, score: 0, lives: LIVES, clock: 0, fruitsShown: 0, seed: 1 },
+    false,
+  );
 }
 
 export function initialState(): GameState {
