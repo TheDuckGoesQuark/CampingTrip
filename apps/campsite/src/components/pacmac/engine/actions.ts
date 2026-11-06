@@ -1,11 +1,22 @@
 import type { Dir } from "./maze";
 import type { Action, GameState, Phase } from "./state";
 
+/** A key's turn lapses if not taken soon; the touch pad's is held until it is. */
+interface Steering {
+  move(dir: Dir): void;
+  hold(dir: Dir): void;
+}
+
+const steering = (dispatch: Dispatch): Steering => ({
+  move: (dir) => dispatch({ type: "move", dir, until: "lapse" }),
+  hold: (dir) => dispatch({ type: "move", dir, until: "taken" }),
+});
+
 /** What the player may do in each phase, and nothing else. */
 export interface PhaseActions {
   attract: { start(): void };
-  ready: { move(dir: Dir): void };
-  playing: { move(dir: Dir): void; pause(): void };
+  ready: Steering;
+  playing: Steering & { pause(): void };
   paused: { resume(): void };
   dying: Record<never, never>;
   levelCleared: Record<never, never>;
@@ -28,16 +39,12 @@ export function actionsForPhase(phase: Phase, dispatch: Dispatch): Actions {
     case "gameOver":
       return { phase, start: () => dispatch({ type: "start" }) };
     case "ready":
-      return { phase, move: (dir) => dispatch({ type: "move", dir }) };
+      return { phase, ...steering(dispatch) };
     case "dying":
     case "levelCleared":
       return { phase };
     case "playing":
-      return {
-        phase,
-        move: (dir) => dispatch({ type: "move", dir }),
-        pause: () => dispatch({ type: "pause" }),
-      };
+      return { phase, ...steering(dispatch), pause: () => dispatch({ type: "pause" }) };
     case "paused":
       return { phase, resume: () => dispatch({ type: "resume" }) };
   }

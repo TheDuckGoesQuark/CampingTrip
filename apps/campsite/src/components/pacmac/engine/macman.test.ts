@@ -8,7 +8,7 @@ const at = (x: number, y: number, dir: Dir, queued: Dir | null = null): MacManSt
   y,
   dir,
   queued,
-  queuedAt: 0,
+  lapsesAt: QUEUE_HOLD,
   stall: 0,
   travelled: 0,
 });
@@ -75,6 +75,12 @@ describe("moveMacMan", () => {
     expect(macman.x).toBeGreaterThan(12.5);
     expect(macman).toMatchObject({ dir: "right", queued: null, y: 5 });
     expect(macman.travelled).toBeGreaterThan(QUEUE_HOLD);
+  });
+
+  it("holds a touch turn past any distance, until it is taken", () => {
+    let macman = { ...at(6 + CORNERING + 0.05, 5, "right", "up"), lapsesAt: Infinity };
+    for (let i = 0; i < 70; i++) macman = moveMacMan(MAZE, macman, 0.1);
+    expect(macman).toMatchObject({ x: 12, dir: "up", queued: null });
   });
 
   it("still takes a turn asked for a tile early", () => {

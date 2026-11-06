@@ -58,7 +58,7 @@ export type StateIn<P extends Phase> = Extract<GameState, { phase: P }>;
 export type Action =
   | { type: "tick" }
   | { type: "start" }
-  | { type: "move"; dir: Dir }
+  | { type: "move"; dir: Dir; until: "lapse" | "taken" }
   | { type: "pause" }
   | { type: "resume" };
 
@@ -94,7 +94,7 @@ export function respawn(kept: Kept, afterDeath: boolean): Round {
       ...MAZE.spawns.macman,
       dir: "left",
       queued: null,
-      queuedAt: 0,
+      lapsesAt: 0,
       stall: 0,
       travelled: 0,
     },

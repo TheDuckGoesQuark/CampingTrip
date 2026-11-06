@@ -37,8 +37,6 @@ cat fruit, and a game-over picture, are in `public/images/pacmac/`.
 - The leaderboard rejects anything above one board's maximum, 14,800, and a
   game test reads the Lambda's constant to keep the two equal. A daily
   counter caps writes, and a score that would not make the board spends none.
-- `VirtualJoystick` gained an inline placement for the game; the tent's use is
-  unchanged.
 
 - After a play-test, a turn asked for lapses once MacMan has gone a tile and
   a half without it, and a late turn is taken up to 0.4 of a tile past the
@@ -48,6 +46,9 @@ cat fruit, and a game-over picture, are in `public/images/pacmac/`.
 - The initials field has a save button, since a phone keyboard may offer no
   Enter. Once signed, the game-over or win screen shows the top ten in place
   of the picture, the new row in yellow.
+- On a touch screen a Game Boy style pad replaces the joystick, which took a
+  long drag for every turn. A press holds the turn until MacMan takes it,
+  lighting that arm; a key's turn still lapses, since nothing shows it.
 
 **Deferred**: the recorded "macka" clip (the synthesised bite stands in) and a
 `frightened.png`; the play-test's smaller notes in TODO.

@@ -48,6 +48,14 @@
   outline-offset: 4px;
 }
 
+/* A press on the touch pad keeps focus on the screen without counting as a
+   pointer, so the browser would draw a keyboard's ring there. */
+@media (pointer: coarse) {
+  .screen:focus-visible {
+    outline: none;
+  }
+}
+
 .board {
   position: relative;
   min-height: 0;

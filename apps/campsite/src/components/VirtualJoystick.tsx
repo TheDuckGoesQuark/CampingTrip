@@ -8,16 +8,7 @@ const SIZE = 110; // outer ring diameter
 const KNOB = 40; // inner knob diameter
 const MAX_R = (SIZE - KNOB) / 2; // max knob travel from center
 
-export interface VirtualJoystickProps {
-  /**
-   * `scene` floats over the tent and hides while the laptop is up, since the
-   * camera ignores it then. `inline` sits wherever it is rendered and shows on
-   * any touch device, for a game inside the laptop that wants it.
-   */
-  placement?: "scene" | "inline";
-}
-
-export default function VirtualJoystick({ placement = "scene" }: VirtualJoystickProps) {
+export default function VirtualJoystick() {
   const [active, setActive] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const knobRef = useRef<HTMLDivElement>(null);
@@ -113,24 +104,23 @@ export default function VirtualJoystick({ placement = "scene" }: VirtualJoystick
     };
   }, [updateKnob, resetKnob]);
 
-  if (!isTouch || (placement === "scene" && laptopFocused)) return null;
-
-  const position: React.CSSProperties =
-    placement === "scene"
-      ? { position: "fixed", bottom: 28, left: "50%", transform: "translateX(-50%)", zIndex: 25 }
-      : { position: "relative", flexShrink: 0, margin: "0 auto" };
+  if (!isTouch || laptopFocused) return null;
 
   return (
     <div
       ref={containerRef}
       onTouchStart={handleTouchStart}
       style={{
-        ...position,
+        position: "fixed",
+        bottom: 28,
+        left: "50%",
+        transform: "translateX(-50%)",
         width: SIZE,
         height: SIZE,
         borderRadius: "50%",
         border: "1.5px solid rgba(255, 220, 150, 0.22)",
         background: "rgba(255, 220, 150, 0.05)",
+        zIndex: 25,
         touchAction: "none",
         display: "flex",
         alignItems: "center",
