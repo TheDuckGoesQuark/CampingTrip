@@ -1,14 +1,24 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { GameState } from "../engine/state";
-import { type HighScoreStore, qualifies, type ScoreTable } from "./store";
+import { type HighScoreStore, qualifies, type ScoreEntry, type ScoreTable } from "./store";
 
 const finished = (state: GameState) => state.phase === "gameOver" || state.phase === "won";
+
+/** The entry's row, the lowest of any equal ones, since a tie goes below the scores already there. */
+function rowOf(table: ScoreTable, entry: ScoreEntry): number | null {
+  for (let row = table.length - 1; row >= 0; row--) {
+    if (table[row].initials === entry.initials && table[row].score === entry.score) return row;
+  }
+  return null;
+}
 
 export interface HighScores {
   table: ScoreTable;
   /** The score waiting for initials, while the game-over screen asks for them. */
   asking: number | null;
+  /** The row just signed, while the finished game's screen is still up. */
+  signed: number | null;
   submit(initials: string): void;
 }
 
@@ -21,6 +31,7 @@ export interface HighScores {
 export function useHighScores(store: HighScoreStore, state: GameState): HighScores {
   const [table, setTable] = useState<ScoreTable>([]);
   const [asking, setAsking] = useState<number | null>(null);
+  const [signed, setSigned] = useState<number | null>(null);
   const ended = useRef(finished(state));
   const latestTable = useRef(table);
   useEffect(() => {
@@ -40,7 +51,10 @@ export function useHighScores(store: HighScoreStore, state: GameState): HighScor
   useEffect(() => {
     const justEnded = over && !ended.current;
     ended.current = over;
-    if (!over) setAsking(null);
+    if (!over) {
+      setAsking(null);
+      setSigned(null);
+    }
     if (justEnded && qualifies(latestTable.current, score)) setAsking(score);
   }, [over, score]);
 
@@ -48,10 +62,14 @@ export function useHighScores(store: HighScoreStore, state: GameState): HighScor
     (initials: string) => {
       if (asking === null) return;
       setAsking(null);
-      void store.write({ initials, score: asking }).then(setTable);
+      const entry = { initials, score: asking };
+      void store.write(entry).then((written) => {
+        setTable(written);
+        if (ended.current) setSigned(rowOf(written, entry));
+      });
     },
     [asking, store],
   );
 
-  return { table, asking, submit };
+  return { table, asking, signed, submit };
 }

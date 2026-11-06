@@ -16,15 +16,18 @@ export interface OverlayProps {
   table: ScoreTable;
   /** Set while a finished game's score waits for initials. */
   onInitials: ((initials: string) => void) | null;
+  /** The row just signed, shown in the table once the initials are in. */
+  signed: number | null;
 }
 
-export default function Overlay({ state, touch, table, onInitials }: OverlayProps) {
+export default function Overlay({ state, touch, table, onInitials, signed }: OverlayProps) {
   const press = touch ? "tap" : "press space";
   const again = onInitials ? (
     <InitialsEntry onSubmit={onInitials} />
   ) : (
     <p className={styles.prompt}>{press} to play again</p>
   );
+  const standing = signed === null ? null : <TopTen table={table} mine={signed} />;
   switch (state.phase) {
     case "attract":
       return (
@@ -47,9 +50,10 @@ export default function Overlay({ state, touch, table, onInitials }: OverlayProp
       );
     case "won":
       return (
-        <div className={styles.band}>
+        <div className={`${styles.band} ${standing ? styles.tall : ""}`}>
           <p className={styles.marquee}>YOU WIN</p>
           <p className={styles.result}>{state.round.score} points</p>
+          {standing}
           {again}
         </div>
       );
@@ -57,14 +61,17 @@ export default function Overlay({ state, touch, table, onInitials }: OverlayProp
       return (
         <div className={`${styles.band} ${styles.tall}`}>
           <p className={`${styles.marquee} ${styles.over}`}>GAME OVER</p>
-          <img
-            className={styles.picture}
-            src={GAME_OVER_PICTURE}
-            alt="What happened?"
-            width={192}
-            height={145}
-          />
+          {standing ? null : (
+            <img
+              className={styles.picture}
+              src={GAME_OVER_PICTURE}
+              alt="What happened?"
+              width={192}
+              height={145}
+            />
+          )}
           <p className={styles.result}>{state.round.score} points</p>
+          {standing}
           {again}
         </div>
       );

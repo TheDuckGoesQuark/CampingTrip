@@ -12,6 +12,7 @@ describe("Overlay", () => {
         touch={false}
         table={[]}
         onInitials={null}
+        signed={null}
       />,
     );
     const picture = screen.getByRole("img", { name: "What happened?" });
@@ -28,6 +29,7 @@ describe("Overlay", () => {
         touch={false}
         table={[]}
         onInitials={null}
+        signed={null}
       />,
     );
     expect(screen.queryByRole("img")).not.toBeInTheDocument();
@@ -42,6 +44,7 @@ describe("Overlay on a touch screen", () => {
         touch
         table={[]}
         onInitials={null}
+        signed={null}
       />,
     );
     expect(screen.getByText("tap to start")).toBeInTheDocument();
@@ -61,6 +64,7 @@ describe("Overlay and the leaderboard", () => {
         touch={false}
         table={table}
         onInitials={null}
+        signed={null}
       />,
     );
     const rows = within(screen.getByRole("list", { name: "Top ten" })).getAllByRole("listitem");
@@ -75,6 +79,7 @@ describe("Overlay and the leaderboard", () => {
         touch={false}
         table={[]}
         onInitials={onInitials}
+        signed={null}
       />,
     );
     expect(screen.queryByText("press space to play again")).not.toBeInTheDocument();
@@ -86,6 +91,42 @@ describe("Overlay and the leaderboard", () => {
     expect(onInitials).toHaveBeenCalledWith("MAC");
   });
 
+  it("keeps the initials with the save button, which waits for three letters", () => {
+    const onInitials = vi.fn();
+    render(
+      <Overlay
+        state={{ phase: "gameOver", round: dealRound() }}
+        touch
+        table={[]}
+        onInitials={onInitials}
+        signed={null}
+      />,
+    );
+    const save = screen.getByRole("button", { name: "save" });
+    expect(save).toBeDisabled();
+    fireEvent.change(screen.getByLabelText("top ten! your initials"), { target: { value: "JMK" } });
+    expect(save).toBeEnabled();
+    fireEvent.click(save);
+    expect(onInitials).toHaveBeenCalledWith("JMK");
+  });
+
+  it("shows the table in place of the picture once signed, with the new row marked", () => {
+    render(
+      <Overlay
+        state={{ phase: "gameOver", round: { ...dealRound(), score: 120 } }}
+        touch={false}
+        table={table}
+        onInitials={null}
+        signed={1}
+      />,
+    );
+    expect(screen.queryByRole("img")).not.toBeInTheDocument();
+    const rows = within(screen.getByRole("list", { name: "Top ten" })).getAllByRole("listitem");
+    expect(rows[1]).toHaveAttribute("aria-current", "true");
+    expect(rows[0]).not.toHaveAttribute("aria-current");
+    expect(screen.getByText("press space to play again")).toBeInTheDocument();
+  });
+
   it("keeps the initials until there are three", () => {
     const onInitials = vi.fn();
     render(
@@ -94,6 +135,7 @@ describe("Overlay and the leaderboard", () => {
         touch={false}
         table={[]}
         onInitials={onInitials}
+        signed={null}
       />,
     );
     const field = screen.getByLabelText("top ten! your initials");

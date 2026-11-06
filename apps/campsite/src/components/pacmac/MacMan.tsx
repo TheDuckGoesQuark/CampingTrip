@@ -36,7 +36,7 @@ export default function MacMan({ scores = SCORES }: { scores?: HighScoreStore })
   const keyboard = useKeyboard(actions, unlockAudio);
   useJoystick(actions);
   useGameSound(state);
-  const { table, asking, submit } = useHighScores(scores, state);
+  const { table, asking, signed, submit } = useHighScores(scores, state);
   const scene = useMemo(() => sceneOf(state, MAZE), [state]);
 
   // The tab opened to play, so the keys go to the game without a click first.
@@ -64,6 +64,7 @@ export default function MacMan({ scores = SCORES }: { scores?: HighScoreStore })
               touch={isMobile}
               table={table}
               onInitials={asking === null ? null : submit}
+              signed={signed}
             />
           </div>
           <Lives lives={state.round.lives} />

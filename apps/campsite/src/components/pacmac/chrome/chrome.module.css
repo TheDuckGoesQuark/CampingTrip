@@ -191,7 +191,6 @@
   list-style: none;
   display: grid;
   grid-template-columns: auto auto auto;
-  column-gap: 4cqi;
   row-gap: 0.4cqi;
 }
 
@@ -207,6 +206,8 @@
   font-weight: 800;
   font-variant-numeric: tabular-nums;
   line-height: 1.2;
+  /* Padding rather than a column gap, so a highlighted row is one unbroken bar. */
+  padding-inline: 2cqi;
 }
 
 .place {
@@ -224,11 +225,25 @@
   color: var(--macman-text);
 }
 
+/* The row just signed, in the cabinet's yellow. */
+.mine > .place,
+.mine > .who,
+.mine > .points {
+  background: var(--macman-yellow);
+  color: var(--macman-black);
+}
+
 .initials {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 1.5cqi;
+}
+
+.entryRow {
+  display: flex;
+  align-items: stretch;
+  gap: 2cqi;
 }
 
 /* Three wide letters in the cabinet's yellow, as an arcade asks for them. */
@@ -246,6 +261,31 @@
 }
 
 .letters:focus-visible {
+  outline: 0.5cqi solid var(--macman-text);
+  outline-offset: 0.5cqi;
+}
+
+/* Big enough for a thumb, in the field's own yellow. */
+.save {
+  min-width: 18cqi;
+  padding: 0 3cqi;
+  border: 0.5cqi solid var(--macman-yellow);
+  background: var(--macman-yellow);
+  color: var(--macman-black);
+  font: 800 4.2cqi var(--font-sans);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.save:disabled {
+  background: var(--macman-black);
+  color: var(--macman-yellow);
+  opacity: 0.5;
+  cursor: default;
+}
+
+.save:focus-visible {
   outline: 0.5cqi solid var(--macman-text);
   outline-offset: 0.5cqi;
 }
