@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { CORNERING, type MacManState, moveMacMan } from "./macman";
+import { CORNERING, type MacManState, moveMacMan, QUEUE_HOLD } from "./macman";
 import { type Dir, MAZE } from "./maze";
 
 const at = (x: number, y: number, dir: Dir, queued: Dir | null = null): MacManState => ({
@@ -8,6 +8,7 @@ const at = (x: number, y: number, dir: Dir, queued: Dir | null = null): MacManSt
   y,
   dir,
   queued,
+  queuedAt: 0,
   stall: 0,
   travelled: 0,
 });
@@ -59,5 +60,26 @@ describe("moveMacMan", () => {
     for (let i = 0; i < 10; i++) macman = moveMacMan(MAZE, macman, 0.1);
     expect(macman.x).toBeGreaterThan(26);
     expect(macman.y).toBe(14);
+  });
+
+  it("takes a turn asked for 0.38 of a tile late, which the play-test missed", () => {
+    const moved = moveMacMan(MAZE, at(6.38, 5, "right", "up"), 0.1);
+    expect(moved).toMatchObject({ x: 6, dir: "up" });
+  });
+
+  it("lets a turn lapse once he has gone a tile and a half without it", () => {
+    // Late for the opening up at column 6; the next is column 12. Without the
+    // lapse he would turn up there.
+    let macman = at(6 + CORNERING + 0.05, 5, "right", "up");
+    for (let i = 0; i < 70; i++) macman = moveMacMan(MAZE, macman, 0.1);
+    expect(macman.x).toBeGreaterThan(12.5);
+    expect(macman).toMatchObject({ dir: "right", queued: null, y: 5 });
+    expect(macman.travelled).toBeGreaterThan(QUEUE_HOLD);
+  });
+
+  it("still takes a turn asked for a tile early", () => {
+    let macman = at(5, 5, "right", "up");
+    for (let i = 0; i < 12; i++) macman = moveMacMan(MAZE, macman, 0.1);
+    expect(macman.dir).toBe("up");
   });
 });

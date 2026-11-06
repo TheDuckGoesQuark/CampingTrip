@@ -50,6 +50,15 @@ describe("reduce", () => {
     expect(run(ready, READY_TICKS).phase).toBe("playing");
   });
 
+  it("holds a direction pressed during READY! for when play starts", () => {
+    const ready = reduce(initialState(), { type: "start" });
+    const asked = reduce(ready, { type: "move", dir: "right" });
+    expect(asked.round.macman.queued).toBe("right");
+    const playing = run(asked, READY_TICKS + 1);
+    expect(playing.phase).toBe("playing");
+    expect(playing.round.macman.dir).toBe("right");
+  });
+
   it("moves MacMan one tick's worth of distance per tick", () => {
     const next = reduce(playing(), tick);
     expect(next.round.macman.x).toBeCloseTo(MAZE.spawns.macman.x - SPEED.macman);

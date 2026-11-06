@@ -23,6 +23,8 @@ export function perform(command: Command, actions: Actions): void {
       if (command.kind !== "move") actions.resume();
       return;
     case "ready":
+      if (command.kind === "move") actions.move(command.dir);
+      return;
     case "dying":
     case "levelCleared":
       return;

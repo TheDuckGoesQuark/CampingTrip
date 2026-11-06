@@ -4,7 +4,7 @@ import type { Action, GameState, Phase } from "./state";
 /** What the player may do in each phase, and nothing else. */
 export interface PhaseActions {
   attract: { start(): void };
-  ready: Record<never, never>;
+  ready: { move(dir: Dir): void };
   playing: { move(dir: Dir): void; pause(): void };
   paused: { resume(): void };
   dying: Record<never, never>;
@@ -28,6 +28,7 @@ export function actionsForPhase(phase: Phase, dispatch: Dispatch): Actions {
     case "gameOver":
       return { phase, start: () => dispatch({ type: "start" }) };
     case "ready":
+      return { phase, move: (dir) => dispatch({ type: "move", dir }) };
     case "dying":
     case "levelCleared":
       return { phase };
