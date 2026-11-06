@@ -76,6 +76,25 @@ describe("LaptopScreenOverlay (CatOS)", () => {
     expect(screen.queryByRole("dialog")).toBeNull();
   });
 
+  it("opens the hidden game when the Konami code is typed on the desktop", () => {
+    useSceneStore.setState({ laptopFocused: true });
+    renderWithPath("/blog");
+    const keys = [
+      "ArrowUp",
+      "ArrowUp",
+      "ArrowDown",
+      "ArrowDown",
+      "ArrowLeft",
+      "ArrowRight",
+      "ArrowLeft",
+      "ArrowRight",
+      "b",
+      "a",
+    ];
+    for (const key of keys) fireEvent.keyDown(window, { key });
+    expect(currentPath()).toBe(blogPaths.pacmac);
+  });
+
   it("mounts the CatOS takeover dialog when focused", () => {
     useSceneStore.setState({ laptopFocused: true });
     renderOverlay();

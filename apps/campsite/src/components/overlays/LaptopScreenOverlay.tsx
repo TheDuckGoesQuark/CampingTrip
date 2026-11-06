@@ -6,6 +6,7 @@ import { STATS_DASHBOARD } from "../../analytics/visitorCounts";
 import { playSoftClick, playWindowOpen } from "../../audio/soundEffects";
 import { iconOfDesktopItem, resolveBlogPage, type BlogPage } from "../../data/blogPages";
 import { desktopItems, desktopItemSlug } from "../../data/desktopItems";
+import { useKonamiCode } from "../../hooks/useKonamiCode";
 import { blogPaths, parseBlogPath } from "../../routing/blogPaths";
 import { routes } from "../../routing/navigation";
 import { frontWindow, isBrowserWindow, pathForWindow } from "../../routing/windows";
@@ -100,6 +101,12 @@ export default function LaptopScreenOverlay() {
       playWindowOpen();
     },
     [navigate],
+  );
+
+  // The hidden game's only way in, besides knowing its address.
+  useKonamiCode(
+    laptopFocused,
+    useCallback(() => open(blogPaths.pacmac), [open]),
   );
 
   /** The dashboard is a real site, so it opens as one: a new tab, no window. */
