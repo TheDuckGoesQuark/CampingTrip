@@ -1,6 +1,7 @@
 import { asset } from "../../../utils/assetPath";
+import type { GhostName } from "../engine/ghosts";
 
-export type GhostName = "blinky" | "pinky" | "inky" | "clyde";
+export type { GhostName };
 
 export type FruitName = "cherry";
 

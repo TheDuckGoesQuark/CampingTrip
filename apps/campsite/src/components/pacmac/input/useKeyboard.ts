@@ -10,6 +10,8 @@ import { type Command, commandFor } from "./keyboard";
 function perform(command: Command, actions: Actions): void {
   switch (actions.phase) {
     case "attract":
+    case "won":
+    case "gameOver":
       if (command.kind === "primary") actions.start();
       return;
     case "playing":
@@ -20,6 +22,8 @@ function perform(command: Command, actions: Actions): void {
       if (command.kind !== "move") actions.resume();
       return;
     case "ready":
+    case "dying":
+    case "levelCleared":
       return;
   }
 }

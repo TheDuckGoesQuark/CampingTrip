@@ -14,6 +14,10 @@ describe("actionsFor", () => {
     expect(keysOf("ready")).toEqual([]);
     expect(keysOf("playing")).toEqual(["move", "pause"]);
     expect(keysOf("paused")).toEqual(["resume"]);
+    expect(keysOf("dying")).toEqual([]);
+    expect(keysOf("levelCleared")).toEqual([]);
+    expect(keysOf("won")).toEqual(["start"]);
+    expect(keysOf("gameOver")).toEqual(["start"]);
   });
 
   it("dispatches what each action names", () => {

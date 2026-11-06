@@ -7,6 +7,10 @@ export interface PhaseActions {
   ready: Record<never, never>;
   playing: { move(dir: Dir): void; pause(): void };
   paused: { resume(): void };
+  dying: Record<never, never>;
+  levelCleared: Record<never, never>;
+  won: { start(): void };
+  gameOver: { start(): void };
 }
 
 /** The actions for one phase, tagged with it so a caller can narrow by it. */
@@ -20,8 +24,12 @@ export function actionsForPhase<P extends Phase>(phase: P, dispatch: Dispatch): 
 export function actionsForPhase(phase: Phase, dispatch: Dispatch): Actions {
   switch (phase) {
     case "attract":
+    case "won":
+    case "gameOver":
       return { phase, start: () => dispatch({ type: "start" }) };
     case "ready":
+    case "dying":
+    case "levelCleared":
       return { phase };
     case "playing":
       return {
