@@ -20,6 +20,9 @@
     "react/no-unknown-property": "off",
     "import/no-unassigned-import": ["warn", { "allow": ["**/*.css"] }],
     "react/forbid-dom-props": ["error", { "forbid": ["style"] }],
+    // `application` is the role for a region that takes the keyboard for itself,
+    // a game's screen, and it cannot do that without being focusable.
+    "jsx-a11y/no-noninteractive-tabindex": ["error", { "roles": ["tabpanel", "application"] }],
 
     // Reinvention rules from ./scripts/oxlint/ds-plugin.mjs. They live at top
     // level with opt-out overrides below rather than being scoped to apps/**,

@@ -1,0 +1,92 @@
+/* Type for everything the cabinet says: the site's Nunito at its heaviest
+   cut, sized from the screen so it scales with the board. */
+.hud {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding-inline: 4cqi;
+}
+
+.readout {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  font-weight: 800;
+  line-height: 1.05;
+}
+
+.label {
+  font-size: 3cqi;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--macman-text);
+}
+
+.figure {
+  font-size: 4.2cqi;
+  font-variant-numeric: tabular-nums;
+  color: var(--macman-yellow);
+}
+
+/* A band across the ghost house, the board still showing above and below. */
+.band {
+  position: absolute;
+  inset: 30% 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3cqi;
+  text-align: center;
+  background: rgb(0 0 0 / 0.8);
+}
+
+/* Stroked and dropped on a hard shadow, so it reads as a cabinet marquee
+   rather than a heading. */
+.marquee {
+  margin: 0;
+  font-size: 12cqi;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  color: var(--macman-yellow);
+  -webkit-text-stroke: 0.08em var(--macman-shadow);
+  paint-order: stroke fill;
+  text-shadow: 0 0.08em 0 var(--macman-shadow);
+}
+
+.prompt {
+  margin: 0;
+  font-size: 3.6cqi;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--macman-text);
+  animation: blink 1.1s steps(2, jump-none) infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prompt {
+    animation: none;
+  }
+}
+
+/* Where the arcade writes it: the row under the ghost house, row 17 of 31. */
+.ready {
+  position: absolute;
+  inset-inline: 0;
+  top: calc(100% * 17 / 31);
+  translate: 0 -50%;
+  margin: 0;
+  text-align: center;
+  font-size: 4.6cqi;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: var(--macman-yellow);
+}
