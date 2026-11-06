@@ -47,6 +47,29 @@ describe("useHighScores", () => {
     expect(result.current.table[0]).toEqual({ initials: "MAC", score: 300 });
   });
 
+  it("points at the row just signed, the lowest of equal ones", async () => {
+    const store = fakeStore();
+    store.write.mockResolvedValue([
+      { initials: "TOP", score: 900 },
+      { initials: "MAC", score: 300 },
+      { initials: "MAC", score: 300 },
+    ]);
+    const { result, finish } = played(store, at("gameOver", 300));
+    await finish();
+    await act(async () => result.current.submit("MAC"));
+    expect(result.current.signed).toBe(2);
+  });
+
+  it("forgets the signed row when the next game starts", async () => {
+    const store = fakeStore();
+    const { result, finish, rerender } = played(store, at("gameOver", 300));
+    await finish();
+    await act(async () => result.current.submit("MAC"));
+    expect(result.current.signed).toBe(0);
+    rerender({ state: at("playing", 0) });
+    expect(result.current.signed).toBeNull();
+  });
+
   it("asks after a win too", async () => {
     const store = fakeStore();
     const { result, finish } = played(store, at("won", 14_800));

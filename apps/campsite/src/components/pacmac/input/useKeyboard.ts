@@ -31,6 +31,10 @@ export function perform(command: Command, actions: Actions): void {
   }
 }
 
+/** Whether an event came from the initials form, which takes its own keys and taps. */
+const fromForm = (target: EventTarget) =>
+  target instanceof Element && target.closest("form") !== null;
+
 /**
  * Handlers for the game's focusable element. They only ever call `actions`,
  * and `onStart`, which runs inside the key press that starts a game, where a
@@ -40,8 +44,7 @@ export function useKeyboard(actions: Actions, onStart: () => void = () => {}) {
   return {
     onKeyDown(event: KeyboardEvent) {
       if (event.altKey || event.ctrlKey || event.metaKey) return;
-      // The initials field takes its own letters, Space and Enter.
-      if (event.target instanceof HTMLInputElement) return;
+      if (fromForm(event.target)) return;
       const command = commandFor(event.key);
       if (!command) return;
       // The arrows would otherwise scroll the window, and Space page it.
@@ -50,7 +53,7 @@ export function useKeyboard(actions: Actions, onStart: () => void = () => {}) {
       perform(command, actions);
     },
     onClick(event: MouseEvent) {
-      if (event.target instanceof HTMLInputElement) return;
+      if (fromForm(event.target)) return;
       if ("start" in actions) onStart();
       perform({ kind: "primary" }, actions);
     },

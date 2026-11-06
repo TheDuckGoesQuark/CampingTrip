@@ -419,8 +419,6 @@ inside the Canvas:
 An agent played two full games in headless Chromium. Nothing broke; these
 are the smaller things it found awkward, still open:
 
-- Between games the top ten shows only on the attract screen, so a player
-  who has just signed it does not see it until the tab is reopened.
 - MacMan's face turns sideways going up or down; a mirrored or fixed
   orientation may read better with a photographic sprite.
 - The cat fruit is dark on the black board, and the cyan ghost points are
