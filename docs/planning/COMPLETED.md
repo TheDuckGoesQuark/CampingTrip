@@ -6,6 +6,45 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## MacMan, a hidden Pac-Man in CatOS
+
+**Date**: 2026-11-05
+
+**What changed**: `/blog/pacmac.html` is an unlisted CatNav tab holding MacMan,
+a Pac-Man ripoff, opened by the Konami code on the CatOS desktop. One board
+of the classic maze, four ghosts with the arcade's targeting rules and
+scatter-chase timings, power pellets, eyes, fruit, three lives and a win
+screen. Sound says MackaMackaMacka per pellet through the site's mute and
+volume. Scores go to a top-ten leaderboard (`infra/pacmac.tf`, a Lambda and
+a DynamoDB table behind `/api/pacmac/scores`) with this browser's own table
+as the fallback. Jordan's sprites for MacMan, the ghosts, the eyes and the
+cat fruit, and a game-over picture, are in `public/images/pacmac/`.
+
+**Why**: a joke easter egg that reads like a flash game inside the fake desktop.
+
+**Decisions**:
+
+- The game is one folder, `components/pacmac/`, loaded as its own chunk. The
+  engine is a pure reducer over phases with a fixed 60Hz tick, and
+  `actionsFor` derives the legal actions from the phase; rendering, input,
+  sound and scores sit around it and only read state or call actions.
+- Drawing goes through a pure draw list, so the board is tested without a
+  canvas. Sprites are one PNG strip each, described in a manifest, with
+  code-drawn placeholders while a file is missing; a frightened ghost is its
+  own sprite tinted blue.
+- Frightened ghosts wander on a seeded generator carried in the state, so a
+  game replays the same way from the same inputs.
+- The leaderboard rejects anything above one board's maximum, 14,800, and a
+  game test reads the Lambda's constant to keep the two equal. A daily
+  counter caps writes, and a score that would not make the board spends none.
+- `VirtualJoystick` gained an inline placement for the game; the tent's use is
+  unchanged.
+
+**Deferred**: the recorded "macka" clip (the synthesised bite stands in) and a
+`frightened.png`; the play-test notes in TODO.
+
+---
+
 ## A failed newsletter check is an alarm, and the confirmation must authenticate
 
 **Date**: 2026-10-21

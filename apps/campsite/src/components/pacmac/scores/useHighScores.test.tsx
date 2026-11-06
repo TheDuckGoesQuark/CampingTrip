@@ -2,47 +2,73 @@ import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { dealRound, type GameState } from "../engine/state";
-import type { HighScoreStore } from "./store";
+import { type HighScoreStore, type ScoreTable, TABLE_SIZE } from "./store";
 import { useHighScores } from "./useHighScores";
 
-function fakeStore(): HighScoreStore & { write: ReturnType<typeof vi.fn> } {
+function fakeStore(table: ScoreTable = []): HighScoreStore & { write: ReturnType<typeof vi.fn> } {
   return {
-    read: vi.fn().mockResolvedValue([{ initials: null, score: 900 }]),
-    write: vi.fn().mockImplementation(async (entry) => [entry]),
+    read: vi.fn().mockResolvedValue(table),
+    write: vi.fn().mockImplementation(async (entry) => [entry, ...table]),
   };
 }
 
 const at = (phase: "playing" | "gameOver" | "won", score: number): GameState =>
   ({ phase, round: { ...dealRound(), score } }) as GameState;
 
+function played(store: HighScoreStore, end: GameState) {
+  const hook = renderHook(({ state }) => useHighScores(store, state), {
+    initialProps: { state: at("playing", end.round.score) },
+  });
+  return {
+    ...hook,
+    finish: async () => {
+      await act(async () => {});
+      hook.rerender({ state: end });
+    },
+  };
+}
+
 describe("useHighScores", () => {
   it("reads the table when the game opens", async () => {
-    const store = fakeStore();
+    const store = fakeStore([{ initials: "OLD", score: 900 }]);
     const { result } = renderHook(() => useHighScores(store, at("playing", 0)));
     await act(async () => {});
-    expect(result.current).toEqual([{ initials: null, score: 900 }]);
+    expect(result.current.table).toEqual([{ initials: "OLD", score: 900 }]);
   });
 
-  it("writes the score once, when the game ends", async () => {
+  it("asks for initials when a game ends on a score that makes the table, and writes them", async () => {
     const store = fakeStore();
-    const { rerender } = renderHook(({ state }) => useHighScores(store, state), {
-      initialProps: { state: at("playing", 300) },
-    });
-    rerender({ state: at("gameOver", 300) });
-    rerender({ state: at("gameOver", 300) });
-    await act(async () => {});
-    expect(store.write).toHaveBeenCalledExactlyOnceWith({ initials: null, score: 300 });
+    const { result, finish } = played(store, at("gameOver", 300));
+    await finish();
+    expect(result.current.asking).toBe(300);
+    await act(async () => result.current.submit("MAC"));
+    expect(store.write).toHaveBeenCalledExactlyOnceWith({ initials: "MAC", score: 300 });
+    expect(result.current.asking).toBeNull();
+    expect(result.current.table[0]).toEqual({ initials: "MAC", score: 300 });
   });
 
-  it("writes a win too, but never a game that scored nothing", async () => {
+  it("asks after a win too", async () => {
     const store = fakeStore();
-    const { rerender } = renderHook(({ state }) => useHighScores(store, state), {
-      initialProps: { state: at("playing", 0) },
-    });
-    rerender({ state: at("gameOver", 0) });
-    rerender({ state: at("playing", 14_800) });
-    rerender({ state: at("won", 14_800) });
-    await act(async () => {});
-    expect(store.write.mock.calls).toEqual([[{ initials: null, score: 14_800 }]]);
+    const { result, finish } = played(store, at("won", 14_800));
+    await finish();
+    expect(result.current.asking).toBe(14_800);
+  });
+
+  it("asks nothing of a score that would not make a full table", async () => {
+    const full = Array.from({ length: TABLE_SIZE }, () => ({ initials: "TOP", score: 5000 }));
+    const store = fakeStore(full);
+    const { result, finish } = played(store, at("gameOver", 100));
+    await finish();
+    expect(result.current.asking).toBeNull();
+    expect(store.write).not.toHaveBeenCalled();
+  });
+
+  it("drops the question when the next game starts unsigned", async () => {
+    const store = fakeStore();
+    const { result, finish, rerender } = played(store, at("gameOver", 300));
+    await finish();
+    rerender({ state: at("playing", 0) });
+    expect(result.current.asking).toBeNull();
+    expect(store.write).not.toHaveBeenCalled();
   });
 });

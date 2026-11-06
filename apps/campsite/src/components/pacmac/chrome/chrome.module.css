@@ -176,3 +176,85 @@
   clip-path: inset(50%);
   white-space: nowrap;
 }
+
+/* The table between games: rank, initials and score in three columns. */
+.topTen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1cqi;
+}
+
+.ranks {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: auto auto auto;
+  column-gap: 4cqi;
+  row-gap: 0.4cqi;
+}
+
+/* Each row lays its cells into the list's columns, so they line up across rows. */
+.rank {
+  display: contents;
+}
+
+.place,
+.who,
+.points {
+  font-size: 3.4cqi;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.place {
+  text-align: right;
+  color: var(--macman-text);
+}
+
+.who {
+  letter-spacing: 0.2em;
+  color: var(--macman-yellow);
+}
+
+.points {
+  text-align: right;
+  color: var(--macman-text);
+}
+
+.initials {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5cqi;
+}
+
+/* Three wide letters in the cabinet's yellow, as an arcade asks for them. */
+.letters {
+  /* Three letters, their tracking, and room either side. */
+  width: 6ch;
+  padding: 0.5cqi 1cqi 0.5cqi 2cqi;
+  border: 0.5cqi solid var(--macman-yellow);
+  background: var(--macman-black);
+  color: var(--macman-yellow);
+  font: 800 7cqi var(--font-sans);
+  letter-spacing: 0.25em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.letters:focus-visible {
+  outline: 0.5cqi solid var(--macman-text);
+  outline-offset: 0.5cqi;
+}
+
+.hint {
+  margin: 0;
+  font-size: 3cqi;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--macman-text);
+}

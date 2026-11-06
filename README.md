@@ -83,6 +83,11 @@ Americanisms deliberately left unenforced, and why, is commented in
   the hand-dispatched `Newsletter` workflow. The `Newsletter check` workflow
   subscribes a throwaway address daily and fails if the confirmation or the
   welcome does not arrive. Runbook in `infra/newsletter/README.md`.
+- **MacMan**: a hidden Pac-Man at `/blog/pacmac.html`, opened by the Konami
+  code in CatOS and loaded as its own chunk. Its top ten is a Lambda and a
+  DynamoDB table behind `/api/pacmac/scores` (`infra/pacmac.tf`), with the
+  browser's own table as the fallback. Layout, sprites and sound are in
+  `apps/campsite/src/components/pacmac/README.md`.
 - **Analytics**: GoatCounter self-hosted on the same box at `stats.jordanscamp.site`,
   counting a view only once a visitor has scrolled, clicked or typed. No cookies.
 - **Hosting**: Caddy (auto-TLS static file server) on a single EC2 instance
