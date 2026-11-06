@@ -8,6 +8,7 @@ tab opens, and is never prerendered.
 | `engine/`  | The rules: the maze and everything that moves on it. No React, no DOM.              |
 | `render/`  | The canvas. Reads a `Scene` and draws it; never changes anything.                   |
 | `sprites/` | Which PNG each entity is drawn from, and the code-drawn stand-ins for missing ones. |
+| `sound/`   | What each change of state sounds like, played through the site's mute and volume.   |
 
 The maze is `engine/maze.txt`, one character per tile:
 
@@ -47,3 +48,12 @@ A file that is missing, or not the size its row says, is replaced by a
 code-drawn placeholder, and the console names the mismatch. Until
 `frightened.png` exists, a frightened ghost is its own sprite tinted blue, and
 white as it recovers.
+
+## Sound
+
+Every sound is synthesised except the bite, which prefers Jordan's recording
+of the word "macka" at `apps/campsite/public/audio/pacmac/macka.mp3`. Each
+pellet plays half of it, the first half and the second in turn, so a run of
+pellets says MackaMackaMacka. Until the file exists, a synthesised voice says
+the two halves instead. Trim the recording so the word is centred: the split
+is at the exact middle.
