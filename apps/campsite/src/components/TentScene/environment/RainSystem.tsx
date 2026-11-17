@@ -20,7 +20,7 @@ export default function RainSystem() {
       pos[i * 3] = (Math.random() - 0.5) * 16;
       pos[i * 3 + 1] = Math.random() * 10;
       pos[i * 3 + 2] = -4 - Math.random() * 14;
-      vel[i] = 5 + Math.random() * 3; // vary fall speed per drop
+      vel[i] = 9 + Math.random() * 5.4; // vary fall speed per drop
     }
     return { positions: pos, velocities: vel };
   }, []);
