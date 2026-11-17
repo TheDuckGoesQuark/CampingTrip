@@ -6,6 +6,25 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## Rain falls as fast as it sounds
+
+**Date**: 2026-11-17
+
+**What changed**: the drops outside the tent fall at 9 to 14.4 units a second,
+up from 5 to 8 (`TentScene/environment/RainSystem.tsx`).
+
+**Why**: a visitor reported that the rain on the canvas sounded faster than the
+rain outside looked.
+
+**Decisions**:
+
+- The picture moved to meet the recording, since the recording's tempo is fixed.
+- The speed was set by eye against `rain-on-tent.mp3`, in two rounds. Nothing
+  measures the match, so a new rain recording means judging it again.
+- Wind drift is unchanged, so the rain falls a little closer to vertical.
+
+---
+
 ## MacMan, a hidden Pac-Man in CatOS
 
 **Date**: 2026-11-05
