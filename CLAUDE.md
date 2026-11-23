@@ -1,4 +1,4 @@
-# Jordan's Camp — Claude Code Instructions
+# Jordan's Campsite — Claude Code Instructions
 
 Read `README.md` for project context, architecture, tech stack, and commands.
 

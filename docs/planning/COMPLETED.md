@@ -12,7 +12,7 @@ History of what's been built, key decisions made, and what was deferred along th
 
 **What changed**: the landing page's title and first heading are "Jordan Mackie",
 its description leads with the name, and it links to the CV. Its JSON-LD is a
-`WebSite` named "Jordan's Camp" (alternate name "Jordan Mackie"), a `WebPage`,
+`WebSite` named "Jordan's Campsite" (alternate name "Jordan Mackie"), a `WebPage`,
 and a `Person`, who shares one `@id` with the `Person` on the CV pages and the
 author of each post. That `Person` carries a portrait, and every page carries
 the same portrait as `og:image` and `twitter:image`
@@ -25,10 +25,11 @@ body text, and the only page titled with the name was the one Google lacked.
 
 **Decisions**:
 
-- "Jordan's Camp" is the site and "Jordan's Campsite" stays the name of the 3D
-  scene, as the CV's project list already has it. Google's site-name guidance
-  asks for one name used consistently on the home page, so the title, the
-  `WebSite` and `og:site_name` all say "Jordan's Camp".
+- The site is "Jordan's Campsite" everywhere a reader or a crawler meets its
+  name: page titles, `og:site_name`, the `WebSite`, the feed and the CatNav
+  window. It was "Jordan's Camp" in most of those, which reads as a remark
+  about a person, not the name of a place, and Google's site-name guidance
+  asks for one name used consistently on the home page.
 - The preview image is a JPEG copy of the footer's WebP portrait, because link
   unfurlers do not all read WebP. It is square, which suits the `summary` card
   the pages already declare. A wide per-page image is a separate piece of work.

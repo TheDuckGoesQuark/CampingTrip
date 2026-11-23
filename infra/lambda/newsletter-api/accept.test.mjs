@@ -100,7 +100,7 @@ describe("notices", () => {
 
 describe("unsubscribePage", () => {
   it("carries the token in a hidden field on a POST form", () => {
-    const html = unsubscribePage({ token: TOKEN, siteName: "Jordan's Camp" });
+    const html = unsubscribePage({ token: TOKEN, siteName: "Jordan's Campsite" });
     assert.match(html, /<form method="post">/);
     assert.match(html, new RegExp(`name="t" value="${TOKEN}"`));
   });
@@ -123,7 +123,7 @@ describe("unsubscribePage", () => {
 describe("confirmationMail", () => {
   const mail = confirmationMail({
     link: "https://example.com/confirm?t=abc",
-    siteName: "Jordan's Camp",
+    siteName: "Jordan's Campsite",
   });
 
   it("puts the link in both parts", () => {

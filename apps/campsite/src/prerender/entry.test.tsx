@@ -92,7 +92,7 @@ describe("prerender entry", () => {
 
   it("names its owner in the landing page's title and first heading", () => {
     const page = renderLanding();
-    expect(page.head).toContain(`<title>${cv.name} · Jordan's Camp</title>`);
+    expect(page.head).toContain(`<title>${cv.name} · Jordan's Campsite</title>`);
     expect(page.html).toContain(`<h1>${cv.name}</h1>`);
   });
 
@@ -101,7 +101,7 @@ describe("prerender entry", () => {
     const node = (type: string) =>
       graph.find((entry: { "@type": string }) => entry["@type"] === type);
     const person = node("Person");
-    expect(node("WebSite")).toMatchObject({ name: "Jordan's Camp", alternateName: cv.name });
+    expect(node("WebSite")).toMatchObject({ name: "Jordan's Campsite", alternateName: cv.name });
     expect(node("WebPage").mainEntity).toEqual({ "@id": person["@id"] });
     expect(person["@id"]).toBe(jsonLdOf(render(blogPaths.cv)!.head).mainEntity["@id"]);
   });

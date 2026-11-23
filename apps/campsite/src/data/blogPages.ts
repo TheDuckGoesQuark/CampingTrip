@@ -120,7 +120,7 @@ export function resolveBlogPage(ref: BlogRef): BlogPage | null {
 export function titleOfBlogPage(page: BlogPage): string {
   switch (page.kind) {
     case "home":
-      return "Jordan's Camp";
+      return SITE;
     case "archive":
       return "All posts";
     case "post":

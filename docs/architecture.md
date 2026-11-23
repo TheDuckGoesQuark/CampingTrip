@@ -2,7 +2,7 @@
 
 ## Overview
 
-Jordan's Camp is a monorepo hosting web apps under the `jordanscamp.site` domain. Each frontend app is a separate Vite project in `apps/`. They are currently **static SPAs** — there is no backend or database. All are served as static files by Caddy on a single EC2 instance.
+Jordan's Campsite is a monorepo hosting web apps under the `jordanscamp.site` domain. Each frontend app is a separate Vite project in `apps/`. They are currently **static SPAs** — there is no backend or database. All are served as static files by Caddy on a single EC2 instance.
 
 ```
 Browser
