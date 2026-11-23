@@ -1,6 +1,6 @@
 # @jordanscamp/ds
 
-The Jordan's Camp design system. Source-only package consumed via `workspace:*`
+The Jordan's Campsite design system. Source-only package consumed via `workspace:*`
 by the apps in `apps/*`. Modelled on the citrus2 design system, with its
 Tailwind + `tailwind-variants` styling swapped for **CSS-variable tokens + CSS
 Modules + `cva`**, on top of **Base UI**.

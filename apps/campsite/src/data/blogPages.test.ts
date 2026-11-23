@@ -67,7 +67,7 @@ describe("resolveBlogPage", () => {
 
 describe("titleOfBlogPage and iconOfBlogPage", () => {
   it("name and illustrate each kind", () => {
-    expect(titleOfBlogPage({ kind: "home" })).toBe("Jordan's Camp");
+    expect(titleOfBlogPage({ kind: "home" })).toBe("Jordan's Campsite");
     expect(titleOfBlogPage({ kind: "tag", tag: "music", posts: [] })).toBe("Tag: music");
     expect(iconOfBlogPage({ kind: "home" })).toBe("house");
     expect(iconOfBlogPage({ kind: "tag", tag: "music", posts: [] })).toBe("tag");

@@ -63,7 +63,7 @@ function atom(entries) {
     .join("\n");
   return `<?xml version="1.0" encoding="UTF-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
-  <title>Jordan's Camp</title>
+  <title>Jordan's Campsite</title>
   <link href="${ORIGIN}/" />
   <link rel="self" href="${ORIGIN}${FEED_PATH}" />
   <id>${ORIGIN}/</id>

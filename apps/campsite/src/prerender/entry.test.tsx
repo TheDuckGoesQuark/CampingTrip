@@ -1,3 +1,5 @@
+import { existsSync } from "node:fs";
+
 import { describe, expect, it } from "vitest";
 
 import { cv } from "../data/cv";
@@ -5,6 +7,12 @@ import { posts, published } from "../data/posts";
 import { slugify } from "../data/slug";
 import { blogPaths } from "../routing/blogPaths";
 import { blogUrls, feedEntries, render, renderLanding } from "./entry";
+
+function jsonLdOf(head: string) {
+  const script = /<script type="application\/ld\+json">(.+?)<\/script>/.exec(head);
+  if (!script) throw new Error("no JSON-LD in the head");
+  return JSON.parse(script[1]);
+}
 
 describe("prerender entry", () => {
   it("renders every blog URL to a page with its own head", () => {
@@ -33,7 +41,7 @@ describe("prerender entry", () => {
     const page = render(blogPaths.cv)!;
     expect(page.head).toContain('<meta property="og:type" content="profile" />');
     expect(page.head).toContain('"@type":"ProfilePage"');
-    expect(page.head).toContain(`"mainEntity":{"@type":"Person","name":"${cv.name}"`);
+    expect(jsonLdOf(page.head).mainEntity).toMatchObject({ "@type": "Person", name: cv.name });
     expect(page.head).toContain(
       '<link rel="alternate" type="application/pdf" href="https://jordanscamp.site/cv.pdf" />',
     );
@@ -77,9 +85,37 @@ describe("prerender entry", () => {
 
   it("renders the landing page with links into the blog", () => {
     const page = renderLanding();
-    expect(page.head).toContain("<title>Jordan&#x27;s Campsite</title>".replace("&#x27;", "'"));
     expect(page.html).toContain('href="/blog/index.html"');
     expect(page.html).toContain('href="/blog/posts/index.html"');
+    expect(page.html).toContain(`href="${blogPaths.cv}"`);
+  });
+
+  it("names its owner in the landing page's title and first heading", () => {
+    const page = renderLanding();
+    expect(page.head).toContain(`<title>${cv.name} · Jordan's Campsite</title>`);
+    expect(page.html).toContain(`<h1>${cv.name}</h1>`);
+  });
+
+  it("describes the landing page as a site about the person the CV describes", () => {
+    const graph = jsonLdOf(renderLanding().head)["@graph"];
+    const node = (type: string) =>
+      graph.find((entry: { "@type": string }) => entry["@type"] === type);
+    const person = node("Person");
+    expect(node("WebSite")).toMatchObject({ name: "Jordan's Campsite", alternateName: cv.name });
+    expect(node("WebPage").mainEntity).toEqual({ "@id": person["@id"] });
+    expect(person["@id"]).toBe(jsonLdOf(render(blogPaths.cv)!.head).mainEntity["@id"]);
+  });
+
+  it("gives every page a link-preview image that is a file in public", () => {
+    const { head } = render(blogPaths.home)!;
+    const image =
+      /<meta property="og:image" content="https:\/\/jordanscamp\.site(\/[^"]+)" \/>/.exec(head);
+    expect(image).not.toBeNull();
+    // Vitest runs from the app's own directory.
+    expect(existsSync(`public${image![1]}`)).toBe(true);
+    expect(jsonLdOf(render(blogPaths.cv)!.head).mainEntity.image).toBe(
+      `https://jordanscamp.site${image![1]}`,
+    );
   });
 
   it("feeds every published post, newest first, with its body as HTML", () => {

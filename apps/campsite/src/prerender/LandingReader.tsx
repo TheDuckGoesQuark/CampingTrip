@@ -41,24 +41,27 @@ const CREDITS: { name: string; href?: string; by?: string }[] = [
 export default function LandingReader() {
   return (
     <div className="blog-prose">
-      <h1>Jordan's Campsite</h1>
-      <p>
-        A cosy 3D camping scene built with React Three Fiber. Sit inside a tent on a rainy night:
-        there's a lantern overhead, a cat strolling past, a campfire crackling outside, and a laptop
-        with my projects. Enable JavaScript to experience the full interactive scene.
-      </p>
-
-      <h2>About</h2>
+      <h1>Jordan Mackie</h1>
       <p>
         Hi, I'm Jordan Mackie. This is my personal website, a geocities-style art experiment
         disguised as a camping trip. The scene has a day/night cycle, spatial audio, and a few
         things to click on.
       </p>
 
+      <h2>Jordan's Campsite</h2>
+      <p>
+        A cosy 3D camping scene built with React Three Fiber. Sit inside a tent on a rainy night:
+        there's a lantern overhead, a cat strolling past, a campfire crackling outside, and a laptop
+        with my projects. Enable JavaScript to experience the full interactive scene.
+      </p>
+
       <h2>Read</h2>
       <ul>
         <li>
           <a href={blogPaths.home}>The laptop: who I am, what I've built, what I use</a>
+        </li>
+        <li>
+          <a href={blogPaths.cv}>My CV</a>
         </li>
         <li>
           <a href={blogPaths.archive}>All blog posts</a>

@@ -529,7 +529,7 @@ describe("LaptopScreenOverlay (CatOS)", () => {
     it("closing the browser ends the browsing session, tab strip included", () => {
       openStack([WINDOW_BROWSER, WORDS], HOME);
       renderWithPath();
-      fireEvent.click(closeLightOf("Jordan's Camp — CatNav"));
+      fireEvent.click(closeLightOf("Jordan's Campsite — CatNav"));
       const state = useSceneStore.getState();
       expect(state.openWindows).toEqual([WORDS]);
       expect(state.openBlogPaths).toEqual([]);
@@ -570,7 +570,7 @@ describe("LaptopScreenOverlay (CatOS)", () => {
       it("survives CatNav closing, rather than being owned by it", () => {
         openStack([WINDOW_MAIL, WINDOW_BROWSER], HOME);
         renderWithPath();
-        fireEvent.click(closeLightOf("Jordan's Camp — CatNav"));
+        fireEvent.click(closeLightOf("Jordan's Campsite — CatNav"));
         expect(useSceneStore.getState().openWindows).toEqual([WINDOW_MAIL]);
         // Not bare /blog, which is the one address that means "close everything".
         expect(currentPath()).toBe(WINDOW_MAIL);

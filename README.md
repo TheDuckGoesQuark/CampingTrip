@@ -1,4 +1,4 @@
-# Jordan's Camp
+# Jordan's Campsite
 
 A personal platform hosted at **[jordanscamp.site](https://jordanscamp.site)**, structured as a pnpm monorepo of static frontend apps. There is currently no backend — the apps are static SPAs served by Caddy on a single EC2 instance.
 

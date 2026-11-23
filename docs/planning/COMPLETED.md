@@ -6,6 +6,42 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## The site says whose it is
+
+**Date**: 2026-11-23
+
+**What changed**: the landing page's title and first heading are "Jordan Mackie",
+its description leads with the name, and it links to the CV. Its JSON-LD is a
+`WebSite` named "Jordan's Campsite" (alternate name "Jordan Mackie"), a `WebPage`,
+and a `Person`, who shares one `@id` with the `Person` on the CV pages and the
+author of each post. That `Person` carries a portrait, and every page carries
+the same portrait as `og:image` and `twitter:image`
+(`src/prerender/head.ts`, `src/prerender/entry.tsx`, `LandingReader.tsx`).
+
+**Why**: a Google search for "jordan mackie" showed the site nowhere in the
+first two pages, and `site:jordanscamp.site/blog/cv.html` matched no documents.
+The landing page, the strongest page on the domain, named its owner once in
+body text, and the only page titled with the name was the one Google lacked.
+
+**Decisions**:
+
+- The site is "Jordan's Campsite" everywhere a reader or a crawler meets its
+  name: page titles, `og:site_name`, the `WebSite`, the feed and the CatNav
+  window. It was "Jordan's Camp" in most of those, which reads as a remark
+  about a person, not the name of a place, and Google's site-name guidance
+  asks for one name used consistently on the home page.
+- The preview image is a JPEG copy of the footer's WebP portrait, because link
+  unfurlers do not all read WebP. It is square, which suits the `summary` card
+  the pages already declare. A wide per-page image is a separate piece of work.
+- `/blog` was left alone. It serves the landing HTML, and it is the CatOS
+  desktop's own route, so redirecting it to the blog home would break the desktop.
+
+**Deferred**: unknown URLs answer 200 with the landing page (see TODO). Search
+Console verification and the profile links on GitHub and LinkedIn happen
+outside the repo.
+
+---
+
 ## Rain falls as fast as it sounds
 
 **Date**: 2026-11-17
