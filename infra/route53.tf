@@ -68,3 +68,14 @@ resource "aws_route53_record" "www" {
   ttl     = 300
   records = [var.domain_name]
 }
+
+# Proves ownership of the domain to Google Search Console, which checks for this
+# record again from time to time, so removing it loses the property. The value
+# is public by nature, since anyone can read a TXT record.
+resource "aws_route53_record" "google_site_verification" {
+  zone_id = aws_route53_zone.main.zone_id
+  name    = var.domain_name
+  type    = "TXT"
+  ttl     = 300
+  records = ["google-site-verification=g43NtOO4oM0CXPB432p2qNM-4EW4MtARKwywU7c35o8"]
+}
