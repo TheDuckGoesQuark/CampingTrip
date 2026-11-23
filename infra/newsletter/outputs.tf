@@ -38,6 +38,11 @@ output "inbox_domain" {
   value       = local.inbox_domain
 }
 
+output "inbox_rule_set" {
+  description = "The account's one active receipt rule set, for any other rule that receives mail"
+  value       = aws_ses_receipt_rule_set.inbox.rule_set_name
+}
+
 output "inbox_bucket" {
   description = "Where SES writes mail received for the inbox domain; the check reads and clears it"
   value       = aws_s3_bucket.inbox.bucket

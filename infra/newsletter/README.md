@@ -145,15 +145,16 @@ MX.
 
 ## The check's inbox
 
-`inbox.tf` makes the one place this project receives mail: an MX on
+`inbox.tf` makes the inbox the check reads: an MX on
 `e2e.<domain>` pointing at SES, a receipt rule that matches that subdomain
 only, and a bucket SES writes each message to under `inbox/`. The newsletter
 check in CI subscribes an address there, reads the confirmation and the
 welcome out of the bucket, and deletes what it read; the bucket expires
 anything left after a day.
 
-Nothing else sees this mail. The apex has no MX, so a reply to the From
-address goes nowhere; the Reply-To is the contact address.
+Nothing else sees this mail. A reply to the From address is a different
+path: `infra/mailbox.tf` receives it at the apex and forwards it to the
+private inbox.
 
 A failed run publishes its reason and link to the alerts topic, so it is
 emailed as an alarm is. The confirmation is also held to the verdicts SES
