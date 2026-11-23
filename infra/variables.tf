@@ -42,13 +42,13 @@ variable "github_repo" {
 
 
 variable "contact_email" {
-  description = "Where MouseMail's notes are sent. Already public in the CV, so not a secret."
+  description = "The private inbox: where MouseMail's notes and mail to the public addresses are sent."
   type        = string
   default     = "jmackie97@hotmail.com"
 }
 
 variable "alert_email" {
-  description = "Where alarms are sent. The same public address as contact_email, kept separate so one can move without the other."
+  description = "Where alarms are sent. Kept separate from contact_email so one can move without the other."
   type        = string
   default     = "jmackie97@hotmail.com"
 }

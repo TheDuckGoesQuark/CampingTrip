@@ -1,5 +1,5 @@
 # The check's inbox: one subdomain SES receives mail for, each message written
-# whole to a bucket for the newsletter check in CI. The apex keeps no MX.
+# whole to a bucket for the newsletter check in CI.
 
 locals {
   inbox_domain   = "${var.inbox_subdomain}.${var.domain_name}"

@@ -6,6 +6,39 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## Public addresses on the domain, forwarded to a private inbox
+
+**Date**: 2026-11-23
+
+**What changed**: the site shows `jordan@jordanscamp.site` in place of a
+personal address (`data/cv.tsx`, which every contact link reads). SES receives
+mail for `jordan@` and `hello@` at the apex and a function resends it to the
+private inbox (`infra/mailbox.tf`, `infra/lambda/mailbox`). The newsletter's
+Reply-To is `hello@`.
+
+**Why**: a personal address on a public page is scraped, and it is also the
+login name for other accounts. An alias can be retired; the inbox cannot.
+
+**Decisions**:
+
+- Forwarding inside the AWS account, over a third-party forwarder or a hosted
+  mailbox: no outside company relays the mail and nothing is paid monthly.
+- The forwarded copy is sent from the alias with the sender in Reply-To, since
+  the sender's DMARC policy would reject a copy claiming to be them.
+- Mail SES marks as spam or a virus is not forwarded. It stays in the bucket
+  until it expires.
+- Two aliases, so the one on the CV can change without touching newsletter
+  replies.
+
+**Deferred**:
+
+- The private address is still the default of `contact_email` and
+  `alert_email` in `infra/variables.tf`, and the author of most commits. It
+  was left because the commit metadata publishes it whatever the files say.
+- Replies leave from the private inbox, so a correspondent learns it.
+
+---
+
 ## The site says whose it is
 
 **Date**: 2026-11-23

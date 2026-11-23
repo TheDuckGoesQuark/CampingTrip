@@ -11,7 +11,7 @@ module "newsletter" {
 
   alerts_topic_arn = aws_sns_topic.alerts.arn
   from_address     = "Jordan Mackie <hello@${var.domain_name}>"
-  reply_to         = var.contact_email
+  reply_to         = "hello@${var.domain_name}"
   site_origin      = "https://${var.domain_name}"
   consent_version  = var.newsletter_consent_version
 

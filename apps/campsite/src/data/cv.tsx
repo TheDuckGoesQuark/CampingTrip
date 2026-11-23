@@ -333,7 +333,7 @@ export const cv: Cv = {
   /* The address is its own label: a link that only says "Email" hides the one
      thing a reader might want to copy rather than click. */
   links: [
-    { label: "jmackie97@hotmail.com", url: "mailto:jmackie97@hotmail.com" },
+    { label: "jordan@jordanscamp.site", url: "mailto:jordan@jordanscamp.site" },
     { label: "LinkedIn", url: "https://www.linkedin.com/in/jordan-mackie/" },
     { label: "GitHub", url: "https://github.com/TheDuckGoesQuark" },
   ],

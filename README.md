@@ -88,6 +88,9 @@ Americanisms deliberately left unenforced, and why, is commented in
   DynamoDB table behind `/api/pacmac/scores` (`infra/pacmac.tf`), with the
   browser's own table as the fallback. Layout, sprites and sound are in
   `apps/campsite/src/components/pacmac/README.md`.
+- **Mail to the site**: `jordan@` and `hello@jordanscamp.site` are received by
+  SES and forwarded to a private inbox by a Lambda (`infra/mailbox.tf`), so no
+  page carries a personal address.
 - **Analytics**: GoatCounter self-hosted on the same box at `stats.jordanscamp.site`,
   counting a view only once a visitor has scrolled, clicked or typed. No cookies.
 - **Hosting**: Caddy (auto-TLS static file server) on a single EC2 instance
