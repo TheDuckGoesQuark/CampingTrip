@@ -414,6 +414,17 @@ inside the Canvas:
 
 ## Backlog
 
+### SEO: an unknown URL answers 200 with the landing page
+
+`try_files {path} {path}.html /index.html` in `infra/Caddyfile` hands the shell
+to any path that names no file, so `/no-such-page` is a 200 whose canonical is
+`/`. The canonical keeps it out of the index, but nothing ever answers 404.
+
+The shell fallback is also how the client-only routes load: `/blog`,
+`/blog/desk/*`, `/blog/about`, `/blog/activity`, `/blog/pacmac.html` and the
+legacy `/blog/<slug>` links. A real 404 therefore needs Caddy to know which
+paths the client router owns, and a test that keeps the two lists together.
+
 ### MacMan — notes from the first play-test
 
 An agent played two full games in headless Chromium. Nothing broke; these

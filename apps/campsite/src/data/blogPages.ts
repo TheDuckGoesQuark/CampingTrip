@@ -14,7 +14,7 @@ import { findDesktopItem } from "./desktopItems";
 import { issues, sentIssues } from "./newsletters";
 import { posts } from "./posts";
 import { projects } from "./projects";
-import { SITE } from "./site";
+import { PORTRAIT, SITE } from "./site";
 import { slugify } from "./slug";
 import { noticeNamed, type SubscribeNotice } from "./subscribeNotices";
 import { postsTagged } from "./tags";
@@ -234,6 +234,8 @@ export interface PersonMeta {
   email?: string;
   address?: string;
   knowsAbout: string[];
+  /** Root-relative path of a portrait. */
+  image: string;
   /** ISO date. */
   dateModified: string;
 }
@@ -250,11 +252,13 @@ export type PageMeta = {
    * follows an action is not a destination.
    */
   unlisted?: true;
-} & (
-  | { kind: "website" }
-  | { kind: "article"; published: string }
-  | { kind: "profile"; person: PersonMeta }
-);
+} &
+  /** `owner` is set on the site's home page alone: whose site this is. */
+  (
+    | { kind: "website"; owner?: PersonMeta }
+    | { kind: "article"; published: string }
+    | { kind: "profile"; person: PersonMeta }
+  );
 
 const MAX_DESCRIPTION = 160;
 
@@ -365,7 +369,7 @@ export function metaOfBlogPage(page: BrowserPage): PageMeta {
   }
 }
 
-function personOf(person: Cv): PersonMeta {
+export function personOf(person: Cv): PersonMeta {
   const urls = person.links.map((link) => link.url);
   return {
     name: person.name,
@@ -374,6 +378,7 @@ function personOf(person: Cv): PersonMeta {
     email: emailOf(person),
     address: person.location,
     knowsAbout: person.skills.flatMap((group) => group.items),
+    image: PORTRAIT.path,
     dateModified: person.updated,
   };
 }

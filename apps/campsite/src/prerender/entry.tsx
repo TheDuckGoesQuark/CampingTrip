@@ -5,9 +5,10 @@ import { StaticRouter } from "react-router-dom";
 
 import BlogPageView from "../components/blog/BlogPageView";
 import { CONTACT_HEADING } from "../components/blog/ContactFooter";
-import { isBrowserPage, metaOfBlogPage, resolveBlogPage } from "../data/blogPages";
+import { isBrowserPage, metaOfBlogPage, personOf, resolveBlogPage } from "../data/blogPages";
 import { cv } from "../data/cv";
 import { published } from "../data/posts";
+import { SITE } from "../data/site";
 import { slugify } from "../data/slug";
 import { issueSlugs, renderIssueBySlug } from "../newsletter/renderIssue";
 import { blogPaths, parseBlogPath } from "../routing/blogPaths";
@@ -67,10 +68,10 @@ export function render(path: string): RenderedPage | null {
 
 export function renderLanding(): RenderedPage {
   const meta = {
-    title: "Jordan's Campsite",
-    description:
-      "A cosy 3D camping scene: sit inside a tent on a rainy night with a crackling campfire, a wandering cat, and a lantern overhead. Personal website of Jordan Mackie.",
+    title: `${cv.name} · ${SITE}`,
+    description: `${cv.name}'s personal website. A cosy 3D camping scene: sit inside a tent on a rainy night with a crackling campfire, a wandering cat, and a lantern overhead.`,
     kind: "website" as const,
+    owner: personOf(cv),
   };
   return { head: headTags(meta, "/"), html: toStatic("/", <LandingReader />) };
 }
