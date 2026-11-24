@@ -6,6 +6,27 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## The CV's `dateModified` carries a time and an offset
+
+**Date**: 2026-11-24
+
+**What changed**: the `ProfilePage` JSON-LD on both CV pages emits
+`dateModified` as a full datetime, midnight UTC on the day in `cv.updated`
+(`prerender/head.ts`).
+
+**Why**: Search Console reported "Invalid datetime value for 'dateModified'"
+on the site's profile pages, which served a bare date. Google types the
+property as `DateTime` and its examples all carry a time and an offset.
+
+**Decisions**:
+
+- The time is added where the JSON-LD is built. `cv.updated` stays a plain
+  date, because the page prints it.
+- `datePublished` on blog posts stays a bare date: Search Console has not
+  flagged it.
+
+---
+
 ## Public addresses on the domain, forwarded to a private inbox
 
 **Date**: 2026-11-23
