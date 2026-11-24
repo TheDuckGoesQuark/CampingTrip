@@ -69,7 +69,7 @@ export function render(path: string): RenderedPage | null {
 export function renderLanding(): RenderedPage {
   const meta = {
     title: `${cv.name} · ${SITE}`,
-    description: `${cv.name}'s personal website. A cosy 3D camping scene: sit inside a tent on a rainy night with a crackling campfire, a wandering cat, and a lantern overhead.`,
+    description: `Hi, I'm ${cv.name}. A curious and creative creator of sound, systems, and solutions.`,
     kind: "website" as const,
     owner: personOf(cv),
   };

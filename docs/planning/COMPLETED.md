@@ -6,6 +6,32 @@ History of what's been built, key decisions made, and what was deferred along th
 
 ---
 
+## A favicon, and a landing description in Jordan's words
+
+**Date**: 2026-11-24
+
+**What changed**: the site has an icon, the pixel cat, as `favicon.png` and a
+48px `favicon.ico` in `apps/campsite/public`, linked from `index.html`. The
+landing page's description reads "Hi, I'm Jordan Mackie. A curious and creative
+creator of sound, systems, and solutions." (`prerender/entry.tsx`, and the
+fallback in `index.html`).
+
+**Why**: Google showed its default globe beside the site in search results.
+`index.html` linked `/favicon.svg`, a file that did not exist, so the URL
+served the app's HTML. The description listed the scenery and said nothing
+about its owner.
+
+**Decisions**:
+
+- A PNG over an SVG: Google's favicon guidance lists raster formats and asks
+  for a square larger than 48px.
+- The pixel cat over the portrait or new art: it already reads at 48px.
+
+**Deferred**: requesting indexing of the home page in Search Console, which is
+the only way to hurry Google's refresh of the icon.
+
+---
+
 ## The CV's `dateModified` carries a time and an offset
 
 **Date**: 2026-11-24
