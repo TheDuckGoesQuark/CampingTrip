@@ -52,7 +52,8 @@ function jsonLd(meta: PageMeta, url: string): object {
       return {
         "@context": "https://schema.org",
         "@type": "ProfilePage",
-        dateModified: meta.person.dateModified,
+        // Search Console rejects a bare date here; it wants a time and an offset.
+        dateModified: `${meta.person.dateModified}T00:00:00Z`,
         url,
         mainEntity: personLd(meta.person, url, meta.description),
       };

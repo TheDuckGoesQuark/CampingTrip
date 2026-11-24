@@ -41,6 +41,7 @@ describe("prerender entry", () => {
     const page = render(blogPaths.cv)!;
     expect(page.head).toContain('<meta property="og:type" content="profile" />');
     expect(page.head).toContain('"@type":"ProfilePage"');
+    expect(jsonLdOf(page.head).dateModified).toBe(`${cv.updated}T00:00:00Z`);
     expect(jsonLdOf(page.head).mainEntity).toMatchObject({ "@type": "Person", name: cv.name });
     expect(page.head).toContain(
       '<link rel="alternate" type="application/pdf" href="https://jordanscamp.site/cv.pdf" />',
